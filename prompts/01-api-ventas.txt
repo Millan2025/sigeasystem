@@ -1,0 +1,20 @@
+Genera un endpoint API en Next.js 14 App Router para:
+
+POST /api/sales - Crear venta con las siguientes reglas:
+1. Validar que existe sesión de caja abierta (cash_sessions.status = 'open')
+2. Recibir: { sessionId, items: [{productId, quantity}], paymentMethod, customerName? }
+3. Para cada producto:
+   - Si is_recipe = true: Descontar ingredientes según recipes (quantity_required * quantity)
+   - Si is_recipe = false: Descontar stock directo del producto
+4. Calcular total y subtotales
+5. Crear registro en sales y sale_items
+6. Retornar la venta creada con sus items
+
+Usa:
+- Prisma Client desde @/lib/prisma/client
+- Zod para validación
+- Tipos desde @/types
+- Manejo de errores con try/catch
+- Respuestas: { success: boolean, data?: any, error?: string }
+
+Formato: Solo código TypeScript, sin explicaciones.

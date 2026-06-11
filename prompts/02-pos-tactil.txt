@@ -1,0 +1,30 @@
+Crea un componente React/Next.js para POS táctil mobile-first:
+
+1. Grid de productos (2 columnas, tarjetas grandes con iconos/emoji)
+2. Teclado numérico virtual para cantidades
+3. Carrito lateral con lista de items
+4. Botones de pago rápido: Efectivo, Nequi, Daviplata
+5. Total en tiempo real
+6. Modo oscuro completo
+7. Diseño optimizado para pulgar (botones grandes, fácil alcance)
+
+Usa:
+- TailwindCSS para estilos
+- Zustand para estado del carrito (cartStore)
+- Framer Motion para animaciones
+- Lucide React para iconos
+- TypeScript estricto
+- Next.js 14 App Router
+- Componentes @radix-ui para modales
+
+Estructura del store:
+interface CartStore {
+  items: CartItem[]
+  addItem: (product: Product) => void
+  removeItem: (productId: string) => void
+  updateQuantity: (productId: string, quantity: number) => void
+  clearCart: () => void
+  total: number
+}
+
+Formato: Solo código del componente, sin explicaciones.

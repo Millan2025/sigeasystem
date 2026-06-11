@@ -1,0 +1,34 @@
+project:
+  name: "SIGEA System"
+  type: "nextjs"
+  language: "typescript"
+  framework: "nextjs-14"
+
+audit:
+  security: true
+  performance: true
+  typescript: true
+  accessibility: true
+  best_practices: true
+  rules:
+    no_any_type: error
+    explicit_return_types: warn
+    max_function_length: 50
+    require_error_handling: true
+    no_sql_injection: error
+  ignore:
+    - "**/*.test.ts"
+    - "**/*.spec.ts"
+    - "node_modules/**"
+
+mentor:
+  explain_fixes: true
+  suggest_improvements: true
+  learning_mode: true
+  style_guide: "airbnb-typescript"
+  language: "es"
+
+integrations:
+  github_dev: true
+  auto_fix: false
+  report_format: "markdown"

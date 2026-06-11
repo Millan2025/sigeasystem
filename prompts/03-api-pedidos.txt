@@ -1,0 +1,23 @@
+Genera endpoints API en Next.js 14 para:
+
+1. POST /api/orders - Cliente crea pedido:
+   - Recibe: { customerId, items, direccionEntrega, metodoPago, comprobanteUrl? }
+   - Crea customer_order + order_items
+   - Genera notificación al admin
+   - Retorna el pedido creado
+
+2. PUT /api/orders/[id]/status - Admin actualiza estado:
+   - Estados: payment_confirmed → preparing → ready → assigned → in_transit → delivered
+   - Al asignar repartidor (assigned), notificar al driver
+   - Al marcar en_camino (in_transit), notificar al cliente
+   - Tracking automático en order_tracking
+
+3. GET /api/orders/pending - Admin ve pedidos pendientes
+
+Usa:
+- Prisma Client
+- Zod validación
+- Notificaciones vía notifications table
+- Tipos desde @/types
+
+Formato: Solo código TypeScript, sin explicaciones.

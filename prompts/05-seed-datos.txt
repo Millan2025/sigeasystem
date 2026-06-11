@@ -1,0 +1,20 @@
+Genera un archivo seed.ts para Prisma que inserte datos de prueba para:
+
+1. Categorías: Panadería, Pastelería, Bebidas
+2. Productos con receta:
+   - Pan Aliñado Familiar ($5,000) - receta: 250g harina, 30g azúcar, 50g mantequilla, 1 huevo
+   - Porción Torta Tres Leches ($7,500) - receta: 100g harina, 80g azúcar, 2 huevos
+3. Productos directos:
+   - Coca-Cola 350ml ($3,500) - stock: 48
+   - Café Tinto 7oz ($1,800) - stock: 100
+4. Ingredientes con stock inicial:
+   - Harina de Trigo: 50,000g
+   - Azúcar Refinada: 25,000g
+   - Mantequilla Premium: 10,000g
+   - Huevos Tipo A: 360 unidades
+5. 3 empleados de ejemplo con horarios
+6. 1 configuración de negocio (panadería)
+
+Usa Prisma Client, UUIDs fijos para referencias.
+
+Formato: Solo código TypeScript del seed, sin explicaciones.

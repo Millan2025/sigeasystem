@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  icon        String?
+  products    Product[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@map("categories")
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  sku         String?    @unique
+  name        String
+  description String?
+  price       Decimal    @db.Decimal(12,2)
+  cost        Decimal?   @db.Decimal(12,2)
+  stock       Decimal    @default(0) @db.Decimal(12,2)
+  minStock    Decimal    @default(5) @db.Decimal(12,2) @map("min_stock")
+  isRecipe    Boolean    @default(false) @map("is_recipe")
+  imageUrl    String?    @map("image_url")
+  categoryId  String?    @map("category_id")
+  active      Boolean    @default(true)
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  recipes     Recipe[]
+  saleItems   SaleItem[]
+  orderItems  OrderItem[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  @@map("products")
+}
+
+model Ingredient {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  stock       Decimal    @default(0) @db.Decimal(12,2)
+  minStock    Decimal    @default(5) @db.Decimal(12,2) @map("min_stock")
+  unit        String
+  costPerUnit Decimal    @default(0) @db.Decimal(12,2) @map("cost_per_unit")
+  supplier    String?
+  recipes     Recipe[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  @@map("ingredients")
+}
+
+model Recipe {
+  id               String    @id @default(uuid())
+  productId        String    @map("product_id")
+  ingredientId     String    @map("ingredient_id")
+  quantityRequired Decimal   @db.Decimal(12,2) @map("quantity_required")
+  notes            String?
+  product          Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredient       Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  @@unique([productId, ingredientId])
+  @@map("recipes")
+}
+
+model CashSession {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  cashierName    String    @map("cashier_name")
+  status         String    @default("open")
+  initialBalance Decimal   @db.Decimal(12,2) @map("initial_balance")
+  finalBalance   Decimal?  @db.Decimal(12,2) @map("final_balance")
+  expectedCash   Decimal?  @db.Decimal(12,2) @map("expected_cash")
+  difference     Decimal?  @db.Decimal(12,2)
+  notes          String?
+  openedAt       DateTime  @default(now()) @map("opened_at")
+  closedAt       DateTime? @map("closed_at")
+  sales          Sale[]
+  @@map("cash_sessions")
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  sessionId     String     @map("session_id")
+  customerName  String     @default("Cliente General") @map("customer_name")
+  totalAmount   Decimal    @db.Decimal(12,2) @map("total_amount")
+  paymentMethod String     @default("Efectivo") @map("payment_method")
+  status        String     @default("completed")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  session       CashSession @relation(fields: [sessionId], references: [id])
+  items         SaleItem[]
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String  @id @default(uuid())
+  saleId      String  @map("sale_id")
+  productId   String  @map("product_id")
+  quantity    Decimal @db.Decimal(12,2)
+  priceAtSale Decimal @db.Decimal(12,2) @map("price_at_sale")
+  subtotal    Decimal @db.Decimal(12,2)
+  sale        Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id])
+  @@map("sale_items")
+}
+
+model Employee {
+  id            String   @id @default(uuid())
+  userId        String?  @map("user_id") @unique
+  nombre        String
+  apellido      String?
+  documento     String?  @unique
+  telefono      String?
+  cargo         String   @default("operario")
+  salarioBase   Decimal  @db.Decimal(12,2) @map("salario_base")
+  activo        Boolean  @default(true)
+  fechaIngreso  DateTime @default(now()) @map("fecha_ingreso")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  @@map("employees")
+}
+
+model Customer {
+  id          String          @id @default(uuid())
+  userId      String?         @map("user_id") @unique
+  nombre      String
+  telefono    String
+  email       String?
+  direcciones Json            @default("[]")
+  orders      CustomerOrder[]
+  createdAt   DateTime        @default(now()) @map("created_at")
+  @@map("customers")
+}
+
+model DeliveryDriver {
+  id           String          @id @default(uuid())
+  employeeId   String?         @map("employee_id")
+  userId       String?         @map("user_id") @unique
+  tipoVehiculo String          @default("moto") @map("tipo_vehiculo")
+  placa        String?
+  activo       Boolean         @default(true)
+  disponible   Boolean         @default(true)
+  deliveries   CustomerOrder[]
+  createdAt    DateTime        @default(now()) @map("created_at")
+  @@map("delivery_drivers")
+}
+
+model CustomerOrder {
+  id               String          @id @default(uuid())
+  customerId       String          @map("customer_id")
+  driverId         String?         @map("driver_id")
+  status           String          @default("pending_payment")
+  subtotal         Decimal         @db.Decimal(12,2)
+  costoEnvio       Decimal         @default(0) @db.Decimal(12,2) @map("costo_envio")
+  total            Decimal         @db.Decimal(12,2)
+  metodoPago       String          @map("metodo_pago")
+  direccionEntrega String          @map("direccion_entrega")
+  notas            String?
+  createdAt        DateTime        @default(now()) @map("created_at")
+  customer         Customer        @relation(fields: [customerId], references: [id])
+  driver           DeliveryDriver? @relation(fields: [driverId], references: [id])
+  items            OrderItem[]
+  tracking         OrderTracking[]
+  @@map("customer_orders")
+}
+
+model OrderItem {
+  id           String         @id @default(uuid())
+  orderId      String         @map("order_id")
+  productId    String         @map("product_id")
+  quantity     Int
+  priceAtOrder Decimal        @db.Decimal(12,2) @map("price_at_order")
+  subtotal     Decimal        @db.Decimal(12,2)
+  order        CustomerOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product        @relation(fields: [productId], references: [id])
+  @@map("order_items")
+}
+
+model OrderTracking {
+  id          String         @id @default(uuid())
+  orderId     String         @map("order_id")
+  status      String
+  descripcion String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  order       CustomerOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@map("order_tracking")
+}
+
+model BusinessConfig {
+  id            String   @id @default(uuid())
+  nombreNegocio String   @map("nombre_negocio")
+  tipoNegocio   String   @map("tipo_negocio")
+  direccion     String?
+  telefono      String?
+  moneda        String   @default("COP")
+  createdAt     DateTime @default(now()) @map("created_at")
+  @@map("business_config")
+}
+
+model SensorIoT {
+  id        String   @id @default(uuid())
+  nombre    String
+  tipo      String
+  ubicacion String
+  unidad    String
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("sensores_iot")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tipo      String
+  titulo    String
+  mensaje   String?
+  leida     Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("notifications")
+}
+
+model Alert {
+  id        String   @id @default(uuid())
+  tipo      String
+  severidad String   @default("media")
+  mensaje   String
+  resuelta  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("alerts")
+}

@@ -1,0 +1,20 @@
+Crea un componente Dashboard para el administrador con:
+
+1. Resumen de ventas del día (total, cantidad, método pago más usado)
+2. Alertas críticas en tiempo real:
+   - Stock bajo (productos con stock < minStock)
+   - Ingredientes bajo mínimo
+   - Caja sin cerrar
+   - Pedidos pendientes de revisión
+3. Acciones rápidas: Nueva Venta, Abrir Caja, Ver Inventario
+4. Gráfico simple de ventas por hora (últimas 8 horas)
+5. Lista de últimos pedidos con su estado
+
+Usa:
+- Supabase Realtime para suscripciones en vivo
+- Recharts para gráficos
+- TailwindCSS modo oscuro
+- sonner para toasts
+- TypeScript
+
+Formato: Solo código del componente, sin explicaciones.
