@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Mic, Scale } from 'lucide-react'
 import Link from 'next/link'
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
-  precio?: number; precioPorKg?: number;
+  precio?: number; precioPorKg?: number; keywords?: string[];
 }
 
 interface CartItem {
@@ -14,15 +14,15 @@ interface CartItem {
 }
 
 const productos: ProductoBase[] = [
-  { id: 'p1', nombre: 'Pan Aliñado Familiar', precio: 5000, icono: '🍞', stock: 15, cat: 'Panadería', esPeso: false },
-  { id: 'p2', nombre: 'Torta Tres Leches', precio: 7500, icono: '🍰', stock: 8, cat: 'Pastelería', esPeso: false },
-  { id: 'p3', nombre: 'Croissant', precio: 3200, icono: '🥐', stock: 12, cat: 'Panadería', esPeso: false },
-  { id: 'p4', nombre: 'Cafe Tinto 7oz', precio: 1800, icono: '☕', stock: 100, cat: 'Bebidas', esPeso: false },
-  { id: 'p5', nombre: 'Coca-Cola 350ml', precio: 3500, icono: '🥤', stock: 48, cat: 'Bebidas', esPeso: false },
-  { id: 'p6', nombre: 'Jugo Natural', precio: 4000, icono: '🧃', stock: 20, cat: 'Bebidas', esPeso: false },
-  { id: 'p7', nombre: 'Queso Campesino', precioPorKg: 28000, icono: '🧀', stock: 5, cat: 'Lacteos', esPeso: true },
-  { id: 'p8', nombre: 'Tomate Chonto', precioPorKg: 5000, icono: '🍅', stock: 10, cat: 'Verduras', esPeso: true },
-  { id: 'p9', nombre: 'Aguacate Hass', precioPorKg: 8000, icono: '🥑', stock: 15, cat: 'Verduras', esPeso: true },
+  { id: 'p1', nombre: 'Pan Aliñado Familiar', precio: 5000, icono: '🍞', stock: 15, cat: 'Panaderia', esPeso: false, keywords: ['pan', 'aliñado', 'familiar'] },
+  { id: 'p2', nombre: 'Torta Tres Leches', precio: 7500, icono: '🍰', stock: 8, cat: 'Pasteleria', esPeso: false, keywords: ['torta', 'tres', 'leches', 'pastel'] },
+  { id: 'p3', nombre: 'Croissant', precio: 3200, icono: '🥐', stock: 12, cat: 'Panaderia', esPeso: false, keywords: ['croissant', 'cruasan', 'cruasan'] },
+  { id: 'p4', nombre: 'Cafe Tinto 7oz', precio: 1800, icono: '☕', stock: 100, cat: 'Bebidas', esPeso: false, keywords: ['cafe', 'tinto', 'café', 'tintico'] },
+  { id: 'p5', nombre: 'Coca-Cola 350ml', precio: 3500, icono: '🥤', stock: 48, cat: 'Bebidas', esPeso: false, keywords: ['coca', 'cola', 'cocacola', 'gaseosa'] },
+  { id: 'p6', nombre: 'Jugo Natural', precio: 4000, icono: '🧃', stock: 20, cat: 'Bebidas', esPeso: false, keywords: ['jugo', 'natural', 'zumo'] },
+  { id: 'p7', nombre: 'Queso Campesino', precioPorKg: 28000, icono: '🧀', stock: 5, cat: 'Lacteos', esPeso: true, keywords: ['queso', 'campesino', 'lacteo'] },
+  { id: 'p8', nombre: 'Tomate Chonto', precioPorKg: 5000, icono: '🍅', stock: 10, cat: 'Verduras', esPeso: true, keywords: ['tomate', 'chonto', 'verdura'] },
+  { id: 'p9', nombre: 'Aguacate Hass', precioPorKg: 8000, icono: '🥑', stock: 15, cat: 'Verduras', esPeso: true, keywords: ['aguacate', 'hass', 'palta'] },
 ]
 
 export default function POSPage() {
@@ -35,6 +35,7 @@ export default function POSPage() {
   const [voiceText, setVoiceText] = useState('')
   const [productoPesaje, setProductoPesaje] = useState<ProductoBase | null>(null)
   const [pesoInput, setPesoInput] = useState('')
+  const recognitionRef = useRef<any>(null)
 
   const cats = ['Todo', 'Panaderia', 'Pasteleria', 'Bebidas', 'Lacteos', 'Verduras']
   const filtered = catFilter === 'Todo' ? productos : productos.filter(p => p.cat === catFilter)
@@ -50,6 +51,25 @@ export default function POSPage() {
       }
       return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0 }]
     })
+    setMsg('✅ ' + p.nombre + ' agregado')
+    setTimeout(function() { setMsg('') }, 1500)
+  }
+
+  function buscarProducto(nombreBuscar: string): ProductoBase | null {
+    var buscar = nombreBuscar.toLowerCase().trim()
+    var encontrado: ProductoBase | null = null
+    
+    encontrado = productos.find(function(p: ProductoBase) {
+      return (p.keywords || []).some(function(k: string) { return buscar.includes(k) || k.includes(buscar) })
+    }) || null
+
+    if (!encontrado) {
+      encontrado = productos.find(function(p: ProductoBase) {
+        return p.nombre.toLowerCase().includes(buscar)
+      }) || null
+    }
+
+    return encontrado
   }
 
   function confirmarPeso() {
@@ -63,49 +83,106 @@ export default function POSPage() {
   }
 
   function pay(m: string) {
-    setMsg('Venta realizada: $' + totalPrecio.toLocaleString() + ' - ' + m)
+    setMsg('✅ Venta realizada: $' + totalPrecio.toLocaleString() + ' - ' + m)
     setCart([]); setShowPay(false); setShowCart(false)
     setTimeout(function() { setMsg('') }, 3000)
   }
 
   function startVoice() {
-    var SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) { alert('Usa Chrome en Android para voz'); return }
-    var recognition = new SpeechRecognition()
-    recognition.lang = 'es-CO'; recognition.continuous = false
-    recognition.onresult = function(event: any) {
-      var texto = event.results[0][0].transcript.toLowerCase()
-      setVoiceText(texto); procesarVoz(texto); setListening(false)
+    if (listening) {
+      if (recognitionRef.current) { recognitionRef.current.stop() }
+      setListening(false)
+      return
     }
-    recognition.onerror = function() { setListening(false) }
-    recognition.onend = function() { setListening(false) }
-    recognition.start(); setListening(true)
+
+    var SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      setMsg('⚠️ Usa Chrome en Android para usar voz')
+      setTimeout(function() { setMsg('') }, 3000)
+      return
+    }
+
+    var recognition = new SpeechRecognition()
+    recognition.lang = 'es-CO'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    recognition.onresult = function(event: any) {
+      var texto = event.results[0][0].transcript.toLowerCase().trim()
+      setVoiceText(texto)
+      procesarVoz(texto)
+      setListening(false)
+    }
+
+    recognition.onerror = function(event: any) {
+      setListening(false)
+      if (event.error === 'not-allowed') {
+        setMsg('⚠️ Permiso de microfono denegado. Toca el candado 🔒 en la barra de direcciones y activa el microfono.')
+      } else if (event.error === 'no-speech') {
+        setMsg('⚠️ No se detecto voz. Intenta de nuevo.')
+      } else {
+        setMsg('⚠️ Error: ' + event.error)
+      }
+      setTimeout(function() { setMsg('') }, 4000)
+    }
+
+    recognition.onend = function() {
+      setListening(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setListening(true)
+    setVoiceText('')
   }
 
   function procesarVoz(texto: string) {
+    var itemsAgregados = 0
     var partes = texto.split(/,| y /)
+    
     partes.forEach(function(parte: string) {
-      var match = parte.match(/(\d+|[un]na?)\s*(?:de\s+)?([a-záéíóúñ\s]+?)(?:\s+de\s+(\d+))?$/)
-      if (match) {
-        var cantidad = 1
-        if (match[1] === 'un' || match[1] === 'una') cantidad = 1
-        else if (!isNaN(Number(match[1]))) cantidad = Number(match[1])
-        var nombreBuscar = match[2].trim()
-        var prod = productos.find(function(p: ProductoBase) { return p.nombre.toLowerCase().includes(nombreBuscar) })
-        if (prod) {
-          if (prod.esPeso && match[3]) {
-            var gramos = Number(match[3])
-            var pf = Math.round((gramos / 1000) * (prod.precioPorKg || 0))
-            setCart(function(prev: CartItem[]) { return [...prev, { id: prod!.id + '-' + Date.now(), nombre: prod!.nombre + ' (' + gramos + 'g)', icono: prod!.icono, cantidad: cantidad, precioUnitario: pf, subtotal: pf * cantidad }] })
-          } else if (!prod.esPeso) {
-            agregarAlCarrito(prod)
-            if (cantidad > 1) {
-              setCart(function(prev: CartItem[]) { return prev.map(function(i: CartItem) { return i.id === prod!.id ? { ...i, cantidad: i.cantidad + cantidad - 1, subtotal: i.precioUnitario * (i.cantidad + cantidad - 1) } : i }) })
-            }
+      parte = parte.trim()
+      if (!parte) return
+      
+      var match = parte.match(/^(\d+|[un]na?)\s*(?:de\s+)?(.+?)(?:\s+de\s+(\d+))?$/)
+      if (!match) return
+
+      var cantidad = 1
+      if (match[1] === 'un' || match[1] === 'una') cantidad = 1
+      else if (!isNaN(Number(match[1]))) cantidad = Number(match[1])
+      
+      var nombreBuscar = match[2].trim()
+      var prod = buscarProducto(nombreBuscar)
+
+      if (prod) {
+        if (prod.esPeso) {
+          var gramos = match[3] ? Number(match[3]) : cantidad
+          var pf = Math.round((gramos / 1000) * (prod.precioPorKg || 0))
+          setCart(function(prev: CartItem[]) { 
+            return [...prev, { id: prod!.id + '-' + Date.now(), nombre: prod!.nombre + ' (' + gramos + 'g)', icono: prod!.icono, cantidad: 1, precioUnitario: pf, subtotal: pf }] 
+          })
+          itemsAgregados++
+        } else {
+          for (var q = 0; q < cantidad; q++) {
+            setCart(function(prev: CartItem[]) {
+              var exist = prev.find(function(i: CartItem) { return i.id === prod!.id })
+              if (exist) {
+                return prev.map(function(i: CartItem) { return i.id === prod!.id ? { ...i, cantidad: i.cantidad + 1, subtotal: i.precioUnitario * (i.cantidad + 1) } : i })
+              }
+              return [...prev, { id: prod!.id, nombre: prod!.nombre, icono: prod!.icono, cantidad: 1, precioUnitario: prod!.precio || 0, subtotal: prod!.precio || 0 }]
+            })
           }
+          itemsAgregados += cantidad
         }
       }
     })
+
+    if (itemsAgregados > 0) {
+      setMsg('✅ ' + itemsAgregados + ' items agregados por voz')
+    } else {
+      setMsg('⚠️ No se encontro: "' + texto + '". Toca los productos para agregarlos.')
+    }
+    setTimeout(function() { setMsg('') }, 3000)
   }
 
   return (
@@ -120,8 +197,8 @@ export default function POSPage() {
           <ShoppingCart className="w-4 h-4 inline mr-1" />{totalItems}
         </button>
       </header>
-      {voiceText && <div className="mx-4 mt-2 p-2 bg-sky-50 rounded-xl text-sm text-sky-700 italic">🎤 "{voiceText}"</div>}
-      {msg && <div className="mx-4 mt-3 p-3 bg-emerald-100 text-emerald-800 rounded-xl text-sm">{msg}</div>}
+      {voiceText && <div className="mx-4 mt-2 p-2 bg-sky-50 rounded-xl text-sm text-sky-700 italic">🎤 &quot;{voiceText}&quot;</div>}
+      {msg && <div className={`mx-4 mt-2 p-2 rounded-xl text-sm ${msg.startsWith('✅') ? 'bg-emerald-100 text-emerald-800' : msg.startsWith('⚠️') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}`}>{msg}</div>}
 
       <div className="flex gap-2 p-3 overflow-x-auto">
         {cats.map(c => <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap ${catFilter === c ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'}`}>{c}</button>)}
