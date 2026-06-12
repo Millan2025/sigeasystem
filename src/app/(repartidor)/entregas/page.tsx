@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { MapPin, CheckCircle, Navigation, Phone } from 'lucide-react'
 
 const pedidosAsignados = [
-  { id: 'ord-001', direccion: 'Calle 45 #23-12, Barrio La Paz', total: 25000, cliente: 'Ana García', telefono: '3124567890', distancia: '1.2 km' },
+  { id: 'ord-001', direccion: 'Calle 45 #23-12, Barrio La Paz', total: 25000, cliente: 'Ana GarcÃ­a', telefono: '3124567890', distancia: '1.2 km' },
 ]
 
 export default function EntregasPage() {
@@ -14,8 +14,8 @@ export default function EntregasPage() {
   return (
     <div className="min-h-screen">
       <header className="bg-gradient-to-r from-orange-500 to-red-500 p-6">
-        <h1 className="text-2xl font-bold">🛵 Repartidor</h1>
-        <p className="text-sm opacity-80">Panadería Doña Rosa</p>
+        <h1 className="text-2xl font-bold">ðŸ›µ Repartidor</h1>
+        <p className="text-sm opacity-80">PanaderÃ­a DoÃ±a Rosa</p>
       </header>
 
       <div className="p-4">
@@ -56,14 +56,14 @@ export default function EntregasPage() {
           </div>
         ) : (
           <div className="py-12 text-center">
-            <span className="text-6xl">✅</span>
-            <h2 className="mt-4 text-xl font-bold">¡Entrega completada!</h2>
+            <span className="text-6xl">âœ…</span>
+            <h2 className="mt-4 text-xl font-bold">Â¡Entrega completada!</h2>
             <p className="mt-2 text-gray-400">Esperando nuevo pedido...</p>
           </div>
         )}
 
         <div className="mt-4 rounded-2xl bg-gray-800 p-4">
-          <h3 className="mb-2 font-bold">💰 Hoy</h3>
+          <h3 className="mb-2 font-bold">ðŸ’° Hoy</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-xl font-bold">5</p>
@@ -75,7 +75,7 @@ export default function EntregasPage() {
             </div>
             <div>
               <p className="text-xl font-bold text-yellow-400">4.9</p>
-              <p className="text-xs text-gray-400">⭐ Rating</p>
+              <p className="text-xs text-gray-400">â­ Rating</p>
             </div>
           </div>
         </div>

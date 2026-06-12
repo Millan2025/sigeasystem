@@ -45,7 +45,7 @@ export default function TiendaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 max-w-lg mx-auto">
+    <div className="min-h-screen bg-stone-50 max-w-lg lg:max-w-2xl mx-auto">
       <header className="sticky top-0 z-10 bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-2xl">
@@ -116,3 +116,4 @@ export default function TiendaPage() {
     </div>
   )
 }
+

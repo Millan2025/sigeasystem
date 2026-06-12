@@ -195,7 +195,7 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-100 max-w-lg mx-auto">
+    <div className="min-h-screen bg-stone-100 max-w-lg lg:max-w-2xl mx-auto">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-10">
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1"><h1 className="font-bold text-stone-800 text-base">Punto de Venta</h1></div>
@@ -282,3 +282,4 @@ export default function POSPage() {
     </div>
   )
 }
+
