@@ -1,0 +1,4 @@
+﻿TIPO_NEGOCIO,NOMBRE,MODULOS,PRODUCTO_SKU,PRODUCTO_NOMBRE,PRODUCTO_PRECIO,PRODUCTO_ES_RECETA,INGREDIENTES,STOCK_INICIAL,PROVEEDOR,PROVEEDOR_API,EMPLEADO_NOMBRE,EMPLEADO_CARGO,EMPLEADO_SALARIO,EMPLEADO_HORARIO,SENSOR_NOMBRE,SENSOR_TIPO,SENSOR_UMBRAL
+panaderia,Panadería Ejemplo,"produccion,ventas,inventario",PAN-001,Pan Aliñado Familiar,5000,SI,"Harina:250g,Azúcar:30g,Mantequilla:50g,Huevos:1unidad",50,Harinas El Trigo,,Carlos Gómez,cajero,1423500,06:00-14:00,Nevera Principal,temperatura,4°C
+panaderia,,,,PAN-002,Croissant,3200,SI,"Harina:200g,Mantequilla:100g,Levadura:10g",30,Harinas El Trigo,,María López,panadero,1500000,02:00-10:00,Horno Industrial,temperatura,250°C
+panaderia,,,,BEB-001,Café Tinto 7oz,1800,NO,,100,,,Juan Pérez,repartidor,1300000,08:00-16:00,,,
