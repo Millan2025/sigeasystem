@@ -13,15 +13,15 @@ interface Product {
 }
 
 const products: Product[] = [
-  { id: 'p1', name: 'Pan Aliñado Familiar', price: 5000, icon: '🍞', stock: 15, category: 'Panadería' },
-  { id: 'p2', name: 'Torta Tres Leches', price: 7500, icon: '🍰', stock: 8, category: 'Pastelería' },
-  { id: 'p3', name: 'Coca-Cola 350ml', price: 3500, icon: '🥤', stock: 48, category: 'Bebidas' },
-  { id: 'p4', name: 'Café Tinto 7oz', price: 1800, icon: '☕', stock: 100, category: 'Bebidas' },
-  { id: 'p5', name: 'Croissant', price: 3200, icon: '🥐', stock: 12, category: 'Panadería' },
-  { id: 'p6', name: 'Jugo Natural', price: 4000, icon: '🧃', stock: 20, category: 'Bebidas' },
+  { id: 'p1', name: 'Pan AliÃ±ado Familiar', price: 5000, icon: 'ðŸž', stock: 15, category: 'PanaderÃ­a' },
+  { id: 'p2', name: 'Torta Tres Leches', price: 7500, icon: 'ðŸ°', stock: 8, category: 'PastelerÃ­a' },
+  { id: 'p3', name: 'Coca-Cola 350ml', price: 3500, icon: 'ðŸ¥¤', stock: 48, category: 'Bebidas' },
+  { id: 'p4', name: 'CafÃ© Tinto 7oz', price: 1800, icon: 'â˜•', stock: 100, category: 'Bebidas' },
+  { id: 'p5', name: 'Croissant', price: 3200, icon: 'ðŸ¥', stock: 12, category: 'PanaderÃ­a' },
+  { id: 'p6', name: 'Jugo Natural', price: 4000, icon: 'ðŸ§ƒ', stock: 20, category: 'Bebidas' },
 ]
 
-const categories = ['Todo', 'Panadería', 'Pastelería', 'Bebidas']
+const categories = ['Todo', 'PanaderÃ­a', 'PastelerÃ­a', 'Bebidas']
 
 export default function TiendaPage() {
   const [cart, setCart] = useState<Product[]>([])
@@ -45,14 +45,14 @@ export default function TiendaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 max-w-lg mx-auto">
       <header className="sticky top-0 z-10 bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-2xl">
-            🍞
+            ðŸž
           </div>
           <div>
-            <h1 className="text-lg font-bold">Panadería Doña Rosa</h1>
+            <h1 className="text-lg font-bold">PanaderÃ­a DoÃ±a Rosa</h1>
             <div className="flex items-center gap-2 text-sm text-yellow-500">
               <Star className="h-4 w-4 fill-current" />
               <span>4.8 (256 pedidos)</span>
@@ -99,7 +99,7 @@ export default function TiendaPage() {
             </div>
             <h3 className="text-sm font-semibold">{product.name}</h3>
             <p className="text-lg font-bold text-orange-600">${product.price.toLocaleString()}</p>
-            {product.stock < 10 && <span className="text-xs text-red-500">¡Quedan {product.stock}!</span>}
+            {product.stock < 10 && <span className="text-xs text-red-500">Â¡Quedan {product.stock}!</span>}
           </button>
         ))}
       </div>
@@ -107,9 +107,9 @@ export default function TiendaPage() {
       {cart.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 border-t bg-white p-4">
           <button className="flex w-full items-center justify-between rounded-2xl bg-orange-500 p-4 text-lg font-bold text-white shadow-lg">
-            <span>🛒 {cart.length} productos</span>
+            <span>ðŸ›’ {cart.length} productos</span>
             <span>${cart.reduce((sum, product) => sum + product.price, 0).toLocaleString()}</span>
-            <span>Ver carrito →</span>
+            <span>Ver carrito â†’</span>
           </button>
         </div>
       )}

@@ -9,13 +9,13 @@ interface Cliente {
 }
 
 const clientesDemo: Cliente[] = [
-  { id: '1', nombre: 'Panaderia Doña Rosa', tipo: 'panaderia', estado: 'activo', fechaCreacion: '2025-01-15', suscripcion: 'Pro' },
+  { id: '1', nombre: 'Panaderia DoÃ±a Rosa', tipo: 'panaderia', estado: 'activo', fechaCreacion: '2025-01-15', suscripcion: 'Pro' },
   { id: '2', nombre: 'Minimarket La Esquina', tipo: 'tienda', estado: 'activo', fechaCreacion: '2025-03-20', suscripcion: 'Free' },
   { id: '3', nombre: 'Distribuidora El Mayorista', tipo: 'distribuidora', estado: 'suspendido', fechaCreacion: '2025-02-10', suscripcion: 'Enterprise' },
 ]
 
 const cambios = [
-  { fecha: '2025-06-10 14:30', cliente: 'Doña Rosa', accion: 'Nuevo producto: Pan Integral', tipo: 'producto' },
+  { fecha: '2025-06-10 14:30', cliente: 'DoÃ±a Rosa', accion: 'Nuevo producto: Pan Integral', tipo: 'producto' },
   { fecha: '2025-06-10 11:15', cliente: 'La Esquina', accion: 'Nuevo empleado: Ana Ruiz', tipo: 'personal' },
   { fecha: '2025-06-09 16:45', cliente: 'El Mayorista', accion: 'Sensor IoT desconectado', tipo: 'alerta' },
 ]
@@ -32,7 +32,7 @@ export default function AdminMasterPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 max-w-lg mx-auto">
       <header className="bg-gradient-to-r from-stone-900 to-stone-800 text-white p-5">
         <div className="flex items-center gap-3 mb-4">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
