@@ -14,15 +14,15 @@ interface CartItem {
 }
 
 const productos: ProductoBase[] = [
-  { id: 'p1', nombre: 'Pan AliÃƒÂ±ado Familiar', precio: 5000, icono: 'Ã°Å¸ÂÅ¾', stock: 15, cat: 'Panaderia', esPeso: false, keywords: ['pan', 'aliÃƒÂ±ado', 'familiar'] },
-  { id: 'p2', nombre: 'Torta Tres Leches', precio: 7500, icono: 'Ã°Å¸ÂÂ°', stock: 8, cat: 'Pasteleria', esPeso: false, keywords: ['torta', 'tres', 'leches', 'pastel'] },
-  { id: 'p3', nombre: 'Croissant', precio: 3200, icono: 'Ã°Å¸Â¥Â', stock: 12, cat: 'Panaderia', esPeso: false, keywords: ['croissant', 'cruasan', 'cruasan'] },
-  { id: 'p4', nombre: 'Cafe Tinto 7oz', precio: 1800, icono: 'Ã¢Ëœâ€¢', stock: 100, cat: 'Bebidas', esPeso: false, keywords: ['cafe', 'tinto', 'cafÃƒÂ©', 'tintico'] },
-  { id: 'p5', nombre: 'Coca-Cola 350ml', precio: 3500, icono: 'Ã°Å¸Â¥Â¤', stock: 48, cat: 'Bebidas', esPeso: false, keywords: ['coca', 'cola', 'cocacola', 'gaseosa'] },
-  { id: 'p6', nombre: 'Jugo Natural', precio: 4000, icono: 'Ã°Å¸Â§Æ’', stock: 20, cat: 'Bebidas', esPeso: false, keywords: ['jugo', 'natural', 'zumo'] },
-  { id: 'p7', nombre: 'Queso Campesino', precioPorKg: 28000, icono: 'Ã°Å¸Â§â‚¬', stock: 5, cat: 'Lacteos', esPeso: true, keywords: ['queso', 'campesino', 'lacteo'] },
-  { id: 'p8', nombre: 'Tomate Chonto', precioPorKg: 5000, icono: 'Ã°Å¸Ââ€¦', stock: 10, cat: 'Verduras', esPeso: true, keywords: ['tomate', 'chonto', 'verdura'] },
-  { id: 'p9', nombre: 'Aguacate Hass', precioPorKg: 8000, icono: 'Ã°Å¸Â¥â€˜', stock: 15, cat: 'Verduras', esPeso: true, keywords: ['aguacate', 'hass', 'palta'] },
+  { id: 'p1', nombre: 'Pan AliÃƒÆ’Ã‚Â±ado Familiar', precio: 5000, icono: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ…Â¾', stock: 15, cat: 'Panaderia', esPeso: false, keywords: ['pan', 'aliÃƒÆ’Ã‚Â±ado', 'familiar'] },
+  { id: 'p2', nombre: 'Torta Tres Leches', precio: 7500, icono: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ‚Â°', stock: 8, cat: 'Pasteleria', esPeso: false, keywords: ['torta', 'tres', 'leches', 'pastel'] },
+  { id: 'p3', nombre: 'Croissant', precio: 3200, icono: 'ÃƒÂ°Ã…Â¸Ã‚Â¥Ã‚Â', stock: 12, cat: 'Panaderia', esPeso: false, keywords: ['croissant', 'cruasan', 'cruasan'] },
+  { id: 'p4', nombre: 'Cafe Tinto 7oz', precio: 1800, icono: 'ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¢', stock: 100, cat: 'Bebidas', esPeso: false, keywords: ['cafe', 'tinto', 'cafÃƒÆ’Ã‚Â©', 'tintico'] },
+  { id: 'p5', nombre: 'Coca-Cola 350ml', precio: 3500, icono: 'ÃƒÂ°Ã…Â¸Ã‚Â¥Ã‚Â¤', stock: 48, cat: 'Bebidas', esPeso: false, keywords: ['coca', 'cola', 'cocacola', 'gaseosa'] },
+  { id: 'p6', nombre: 'Jugo Natural', precio: 4000, icono: 'ÃƒÂ°Ã…Â¸Ã‚Â§Ã†â€™', stock: 20, cat: 'Bebidas', esPeso: false, keywords: ['jugo', 'natural', 'zumo'] },
+  { id: 'p7', nombre: 'Queso Campesino', precioPorKg: 28000, icono: 'ÃƒÂ°Ã…Â¸Ã‚Â§Ã¢â€šÂ¬', stock: 5, cat: 'Lacteos', esPeso: true, keywords: ['queso', 'campesino', 'lacteo'] },
+  { id: 'p8', nombre: 'Tomate Chonto', precioPorKg: 5000, icono: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â¦', stock: 10, cat: 'Verduras', esPeso: true, keywords: ['tomate', 'chonto', 'verdura'] },
+  { id: 'p9', nombre: 'Aguacate Hass', precioPorKg: 8000, icono: 'ÃƒÂ°Ã…Â¸Ã‚Â¥Ã¢â‚¬Ëœ', stock: 15, cat: 'Verduras', esPeso: true, keywords: ['aguacate', 'hass', 'palta'] },
 ]
 
 export default function POSPage() {
@@ -51,7 +51,7 @@ export default function POSPage() {
       }
       return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0 }]
     })
-    setMsg('Ã¢Å“â€¦ ' + p.nombre + ' agregado')
+    setMsg('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ ' + p.nombre + ' agregado')
     setTimeout(function() { setMsg('') }, 1500)
   }
 
@@ -83,12 +83,21 @@ export default function POSPage() {
   }
 
   function pay(m: string) {
-    setMsg('Ã¢Å“â€¦ Venta realizada: $' + totalPrecio.toLocaleString() + ' - ' + m)
+    setMsg('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Venta realizada: $' + totalPrecio.toLocaleString() + ' - ' + m)
     setCart([]); setShowPay(false); setShowCart(false)
     setTimeout(function() { setMsg('') }, 3000)
   }
 
   function startVoice() {
+    var ua = navigator.userAgent
+    var isChrome = /Chrome/i.test(ua) && !/Edge|OPR|Brave/i.test(ua)
+    var isEdge = /Edg/i.test(ua)
+    
+    if (!isChrome && !isEdge) {
+      setMsg('📱 El dictado por voz funciona en Chrome o Edge. Abre esta pagina en uno de esos navegadores para usar voz. Mientras tanto, agrega productos tocando los botones.')
+      setTimeout(function() { setMsg('') }, 6000)
+      return
+    }
     if (listening) {
       if (recognitionRef.current) { recognitionRef.current.stop() }
       setListening(false)
@@ -97,7 +106,7 @@ export default function POSPage() {
 
     var SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || (window as any).mozSpeechRecognition || (window as any).msSpeechRecognition
     if (!SpeechRecognition) {
-      setMsg('⚠️ Voz solo disponible en Chrome. En Firefox/Safari usa los botones para agregar productos.')
+      setMsg('âš ï¸ Voz solo disponible en Chrome. En Firefox/Safari usa los botones para agregar productos.')
       setTimeout(function() { setMsg('') }, 5000)
       return
     }
@@ -117,11 +126,11 @@ export default function POSPage() {
     recognition.onerror = function(event: any) {
       setListening(false)
       if (event.error === 'not-allowed') {
-        setMsg('Ã¢Å¡Â Ã¯Â¸Â Permiso de microfono denegado. Toca el candado Ã°Å¸â€â€™ en la barra de direcciones y activa el microfono.')
+        setMsg('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Permiso de microfono denegado. Toca el candado ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬â„¢ en la barra de direcciones y activa el microfono.')
       } else if (event.error === 'no-speech') {
-        setMsg('Ã¢Å¡Â Ã¯Â¸Â No se detecto voz. Intenta de nuevo.')
+        setMsg('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â No se detecto voz. Intenta de nuevo.')
       } else {
-        setMsg('Ã¢Å¡Â Ã¯Â¸Â Error: ' + event.error)
+        setMsg('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Error: ' + event.error)
       }
       setTimeout(function() { setMsg('') }, 4000)
     }
@@ -178,9 +187,9 @@ export default function POSPage() {
     })
 
     if (itemsAgregados > 0) {
-      setMsg('Ã¢Å“â€¦ ' + itemsAgregados + ' items agregados por voz')
+      setMsg('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ ' + itemsAgregados + ' items agregados por voz')
     } else {
-      setMsg('Ã¢Å¡Â Ã¯Â¸Â No se encontro: "' + texto + '". Toca los productos para agregarlos.')
+      setMsg('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â No se encontro: "' + texto + '". Toca los productos para agregarlos.')
     }
     setTimeout(function() { setMsg('') }, 3000)
   }
@@ -197,8 +206,8 @@ export default function POSPage() {
           <ShoppingCart className="w-4 h-4 inline mr-1" />{totalItems}
         </button>
       </header>
-      {voiceText && <div className="mx-4 mt-2 p-2 bg-sky-50 rounded-xl text-sm text-sky-700 italic">Ã°Å¸Å½Â¤ &quot;{voiceText}&quot;</div>}
-      {msg && <div className={`mx-4 mt-2 p-2 rounded-xl text-sm ${msg.startsWith('Ã¢Å“â€¦') ? 'bg-emerald-100 text-emerald-800' : msg.startsWith('Ã¢Å¡Â Ã¯Â¸Â') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}`}>{msg}</div>}
+      {voiceText && <div className="mx-4 mt-2 p-2 bg-sky-50 rounded-xl text-sm text-sky-700 italic">ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¤ &quot;{voiceText}&quot;</div>}
+      {msg && <div className={`mx-4 mt-2 p-2 rounded-xl text-sm ${msg.startsWith('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦') ? 'bg-emerald-100 text-emerald-800' : msg.startsWith('ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}`}>{msg}</div>}
 
       <div className="flex gap-2 p-3 overflow-x-auto">
         {cats.map(c => <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap ${catFilter === c ? 'bg-stone-800 text-white' : 'bg-white text-stone-600 border border-stone-200'}`}>{c}</button>)}
@@ -263,9 +272,9 @@ export default function POSPage() {
             <h2 className="font-bold text-lg mb-3">Metodo de pago</h2>
             <p className="text-stone-500 mb-4">Total: <span className="text-emerald-600 font-bold text-xl">${totalPrecio.toLocaleString()}</span></p>
             <div className="grid grid-cols-3 gap-3">
-              <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white rounded-2xl py-5 font-bold text-sm">Ã°Å¸â€™Âµ<br/>EFECTIVO</button>
-              <button onClick={() => pay('Nequi')} className="bg-purple-500 text-white rounded-2xl py-5 font-bold text-sm">Ã°Å¸â€œÂ±<br/>NEQUI</button>
-              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-sm">Ã°Å¸ÂÂ§<br/>DAVIPLATA</button>
+              <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white rounded-2xl py-5 font-bold text-sm">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Âµ<br/>EFECTIVO</button>
+              <button onClick={() => pay('Nequi')} className="bg-purple-500 text-white rounded-2xl py-5 font-bold text-sm">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â±<br/>NEQUI</button>
+              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-sm">ÃƒÂ°Ã…Â¸Ã‚ÂÃ‚Â§<br/>DAVIPLATA</button>
             </div>
           </div>
         </div>
