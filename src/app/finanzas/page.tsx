@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -38,7 +38,7 @@ export default function FinanzasPage() {
   ]
 
   function descargarExcel() {
-    var csv = 'Fecha,Concepto,Ingreso,Egreso\n'
+    var csv = '\uFEFFFecha,Concepto,Ingreso,Egreso\n'
     libroDiario.forEach(function(l) {
       csv += l.fecha + ',' + l.concepto + ',' + l.ingreso + ',' + l.egreso + '\n'
     })
@@ -63,9 +63,9 @@ export default function FinanzasPage() {
     var porcentaje = ((Math.abs(diferencia) / efectivoEsperado) * 100).toFixed(1)
     
     if (Math.abs(diferencia) > efectivoEsperado * 0.02) {
-      setResultadoCierre('âš ï¸ DESCUADRE: Diferencia de $' + Math.abs(diferencia).toLocaleString() + ' (' + porcentaje + '%). Revisar ventas del dia.')
+      setResultadoCierre('Ã¢Å¡Â Ã¯Â¸Â DESCUADRE: Diferencia de $' + Math.abs(diferencia).toLocaleString() + ' (' + porcentaje + '%). Revisar ventas del dia.')
     } else {
-      setResultadoCierre('âœ… CUADRE CORRECTO: Diferencia de solo $' + Math.abs(diferencia).toLocaleString() + ' (' + porcentaje + '%). Todo en orden.')
+      setResultadoCierre('Ã¢Å“â€¦ CUADRE CORRECTO: Diferencia de solo $' + Math.abs(diferencia).toLocaleString() + ' (' + porcentaje + '%). Todo en orden.')
     }
     setShowCierre(true)
   }
@@ -76,8 +76,8 @@ export default function FinanzasPage() {
         <div className="flex items-center gap-3 mb-4">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
           <div>
-            <h1 className="text-xl font-bold">ðŸ¦ Finanzas</h1>
-            <p className="text-stone-400 text-sm">Panaderia DoÃ±a Rosa</p>
+            <h1 className="text-xl font-bold">Ã°Å¸ÂÂ¦ Finanzas</h1>
+            <p className="text-stone-400 text-sm">Panaderia DoÃƒÂ±a Rosa</p>
           </div>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
@@ -192,7 +192,7 @@ export default function FinanzasPage() {
               <input type="number" value={efectivoContado} onChange={e => setEfectivoContado(e.target.value)} placeholder="Ingresa el efectivo fisico" className="w-full p-4 text-xl text-center bg-stone-100 rounded-2xl mb-3" />
               <button onClick={calcularCierre} disabled={!efectivoContado} className="w-full bg-stone-800 text-white rounded-2xl py-4 font-bold disabled:opacity-50">Calcular Cuadre</button>
               {showCierre && resultadoCierre && (
-                <div className={'mt-4 p-4 rounded-2xl ' + (resultadoCierre.startsWith('âœ…') ? 'bg-emerald-50 border border-emerald-300' : 'bg-red-50 border border-red-300')}>
+                <div className={'mt-4 p-4 rounded-2xl ' + (resultadoCierre.startsWith('Ã¢Å“â€¦') ? 'bg-emerald-50 border border-emerald-300' : 'bg-red-50 border border-red-300')}>
                   <p className="font-medium text-sm">{resultadoCierre}</p>
                 </div>
               )}

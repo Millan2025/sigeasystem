@@ -1,17 +1,17 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Truck, MapPin, Phone, CheckCircle, Clock, User } from 'lucide-react'
 
 const pedidosDemo = [
-  { id: 'ORD-001', cliente: 'Ana GarcÃ­a', direccion: 'Calle 45 #23-12, La Paz', telefono: '3124567890', total: 25000, estado: 'pendiente', hora: '10:30', items: 'Pan AliÃ±ado x2, CafÃ© x1' },
-  { id: 'ORD-002', cliente: 'Pedro LÃ³pez', direccion: 'Carrera 12 #34-56, Centro', telefono: '3156789012', total: 35000, estado: 'en_camino', hora: '10:15', repartidor: 'Juan PÃ©rez', items: 'Torta Tres Leches x1, Jugo x2' },
-  { id: 'ORD-003', cliente: 'MarÃ­a RodrÃ­guez', direccion: 'Calle 78 #90-12, Norte', telefono: '3189012345', total: 18000, estado: 'entregado', hora: '09:50', repartidor: 'Juan PÃ©rez', items: 'Croissant x3, CafÃ© x2' },
-  { id: 'ORD-004', cliente: 'Luis MartÃ­nez', direccion: 'Diagonal 23 #45-67, Sur', telefono: '3201234567', total: 42000, estado: 'pendiente', hora: '10:45', items: 'Pan AliÃ±ado x4, Queso 500g, Jugo x3' },
+  { id: 'ORD-001', cliente: 'Ana GarcÃƒÂ­a', direccion: 'Calle 45 #23-12, La Paz', telefono: '3124567890', total: 25000, estado: 'pendiente', hora: '10:30', items: 'Pan AliÃƒÂ±ado x2, CafÃƒÂ© x1' },
+  { id: 'ORD-002', cliente: 'Pedro LÃƒÂ³pez', direccion: 'Carrera 12 #34-56, Centro', telefono: '3156789012', total: 35000, estado: 'en_camino', hora: '10:15', repartidor: 'Juan PÃƒÂ©rez', items: 'Torta Tres Leches x1, Jugo x2' },
+  { id: 'ORD-003', cliente: 'MarÃƒÂ­a RodrÃƒÂ­guez', direccion: 'Calle 78 #90-12, Norte', telefono: '3189012345', total: 18000, estado: 'entregado', hora: '09:50', repartidor: 'Juan PÃƒÂ©rez', items: 'Croissant x3, CafÃƒÂ© x2' },
+  { id: 'ORD-004', cliente: 'Luis MartÃƒÂ­nez', direccion: 'Diagonal 23 #45-67, Sur', telefono: '3201234567', total: 42000, estado: 'pendiente', hora: '10:45', items: 'Pan AliÃƒÂ±ado x4, Queso 500g, Jugo x3' },
 ]
 
-const repartidores = ['Juan PÃ©rez', 'Carlos GÃ³mez (apoyo)']
+const repartidores = ['Juan PÃƒÂ©rez', 'Carlos GÃƒÂ³mez (apoyo)']
 
 export default function PedidosPage() {
   const [tab, setTab] = useState<'pendientes'|'camino'|'entregados'>('pendientes')
@@ -35,7 +35,7 @@ export default function PedidosPage() {
         <div className="flex items-center gap-3 mb-4">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
           <div>
-            <h1 className="text-xl font-bold">ðŸ›µ Pedidos</h1>
+            <h1 className="text-xl font-bold">Ã°Å¸â€ºÂµ Pedidos</h1>
             <p className="text-stone-400 text-sm">Domicilios</p>
           </div>
         </div>
@@ -57,7 +57,7 @@ export default function PedidosPage() {
           <div key={p.id} className="bg-white rounded-2xl p-4 border border-stone-200">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="font-semibold text-stone-800">{p.id} â€¢ {p.cliente}</h3>
+                <h3 className="font-semibold text-stone-800">{p.id} Ã¢â‚¬Â¢ {p.cliente}</h3>
                 <p className="text-sm text-stone-400">{p.hora}</p>
               </div>
               <span className={'px-3 py-1 rounded-full text-xs font-bold ' + getEstadoColor(p.estado)}>
@@ -100,7 +100,7 @@ export default function PedidosPage() {
             <p className="text-sm text-stone-500 mb-3">Pedido: {showAsignar}</p>
             {repartidores.map(r => (
               <button key={r} onClick={() => { alert('Repartidor asignado: ' + r); setShowAsignar(null) }} className="w-full bg-stone-50 hover:bg-emerald-50 p-3 rounded-xl mb-2 text-left text-sm font-medium">
-                ðŸ›µ {r}
+                Ã°Å¸â€ºÂµ {r}
               </button>
             ))}
             <button onClick={() => setShowAsignar(null)} className="w-full bg-stone-100 py-3 rounded-xl font-medium mt-2">Cancelar</button>

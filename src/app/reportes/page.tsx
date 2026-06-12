@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -11,11 +11,11 @@ const ventasPorHora = [
 ]
 
 const topProductos = [
-  { nombre: 'Pan AliÃ±ado Familiar', ventas: 140, total: 700000, icono: 'ðŸž' },
-  { nombre: 'CafÃ© Tinto 7oz', ventas: 225, total: 405000, icono: 'â˜•' },
-  { nombre: 'Croissant', ventas: 60, total: 192000, icono: 'ðŸ¥' },
-  { nombre: 'Torta Tres Leches', ventas: 20, total: 150000, icono: 'ðŸ°' },
-  { nombre: 'Coca-Cola 350ml', ventas: 75, total: 262500, icono: 'ðŸ¥¤' },
+  { nombre: 'Pan AliÃƒÂ±ado Familiar', ventas: 140, total: 700000, icono: 'Ã°Å¸ÂÅ¾' },
+  { nombre: 'CafÃƒÂ© Tinto 7oz', ventas: 225, total: 405000, icono: 'Ã¢Ëœâ€¢' },
+  { nombre: 'Croissant', ventas: 60, total: 192000, icono: 'Ã°Å¸Â¥Â' },
+  { nombre: 'Torta Tres Leches', ventas: 20, total: 150000, icono: 'Ã°Å¸ÂÂ°' },
+  { nombre: 'Coca-Cola 350ml', ventas: 75, total: 262500, icono: 'Ã°Å¸Â¥Â¤' },
 ]
 
 const metodoPago = [
@@ -30,7 +30,7 @@ export default function ReportesPage() {
   const [periodo, setPeriodo] = useState<'hoy'|'semana'|'mes'>('hoy')
 
   function descargarExcel() {
-    var csv = 'Producto,Unidades Vendidas,Total Ventas\n'
+    var csv = '\uFEFFProducto,Unidades Vendidas,Total Ventas\n'
     topProductos.forEach(function(p) { csv += p.nombre + ',' + p.ventas + ',' + p.total + '\n' })
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     var url = URL.createObjectURL(blob)
@@ -45,7 +45,7 @@ export default function ReportesPage() {
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex items-center gap-3 mb-3">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
-          <div className="flex-1"><h1 className="text-xl font-bold">ðŸ“ˆ Reportes</h1></div>
+          <div className="flex-1"><h1 className="text-xl font-bold">Ã°Å¸â€œË† Reportes</h1></div>
           <button onClick={descargarExcel} className="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Download className="w-4 h-4" /> Excel</button>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
@@ -65,7 +65,7 @@ export default function ReportesPage() {
           <p className="text-sm text-emerald-100 mt-2">{periodo === 'hoy' ? '24' : periodo === 'semana' ? '168' : '720'} transacciones</p>
         </div>
 
-        {/* GrÃ¡fico de barras - Ventas por hora */}
+        {/* GrÃƒÂ¡fico de barras - Ventas por hora */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200">
           <h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Ventas por Hora</h3>
           <div className="flex items-end gap-1 h-32">
@@ -81,7 +81,7 @@ export default function ReportesPage() {
 
         {/* TOP 10 productos */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200">
-          <h3 className="font-bold text-stone-800 mb-3 flex items-center gap-2"><Star className="w-4 h-4 text-amber-500" /> MÃ¡s Vendidos</h3>
+          <h3 className="font-bold text-stone-800 mb-3 flex items-center gap-2"><Star className="w-4 h-4 text-amber-500" /> MÃƒÂ¡s Vendidos</h3>
           {topProductos.map((p, i) => (
             <div key={p.nombre} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
               <div className="flex items-center gap-2">
@@ -96,9 +96,9 @@ export default function ReportesPage() {
           ))}
         </div>
 
-        {/* MÃ©todos de pago */}
+        {/* MÃƒÂ©todos de pago */}
         <div className="bg-white rounded-2xl p-5 border border-stone-200">
-          <h3 className="font-bold text-stone-800 mb-3 flex items-center gap-2"><PieChart className="w-4 h-4" /> MÃ©todos de Pago</h3>
+          <h3 className="font-bold text-stone-800 mb-3 flex items-center gap-2"><PieChart className="w-4 h-4" /> MÃƒÂ©todos de Pago</h3>
           {metodoPago.map(m => (
             <div key={m.metodo} className="mb-3">
               <div className="flex justify-between text-sm mb-1"><span className="text-stone-600">{m.metodo}</span><span className="font-medium">{m.porcentaje}%</span></div>

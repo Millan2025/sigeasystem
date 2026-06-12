@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -22,16 +22,16 @@ interface ProductoInv {
 }
 
 const inventarioDemo: ProductoInv[] = [
-  { id: '1', nombre: 'Pan Aliñado Familiar', icono: '🍞', categoria: 'Panaderia', stock: 45, stockMin: 20, precio: 5000, costo: 1800, ventasDiarias: 28, importancia: 5, esPeso: false, proveedor: 'Harinas El Trigo', diasParaAgotar: 1.6 },
-  { id: '2', nombre: 'Torta Tres Leches', icono: '🍰', categoria: 'Pasteleria', stock: 8, stockMin: 5, precio: 7500, costo: 3200, ventasDiarias: 4, importancia: 4, esPeso: false, proveedor: 'Harinas El Trigo', diasParaAgotar: 2 },
-  { id: '3', nombre: 'Coca-Cola 350ml', icono: '🥤', categoria: 'Bebidas', stock: 48, stockMin: 12, precio: 3500, costo: 2800, ventasDiarias: 15, importancia: 3, esPeso: false, proveedor: 'Coca-Cola FEMSA', diasParaAgotar: 3.2 },
-  { id: '4', nombre: 'Cafe Tinto 7oz', icono: '☕', categoria: 'Bebidas', stock: 100, stockMin: 20, precio: 1800, costo: 600, ventasDiarias: 45, importancia: 5, esPeso: false, proveedor: 'Cafe Colombiano', diasParaAgotar: 2.2 },
-  { id: '5', nombre: 'Harina de Trigo (kg)', icono: '🌾', categoria: 'Insumos', stock: 12, stockMin: 5, precio: 0, costo: 3200, ventasDiarias: 8, importancia: 5, esPeso: true, precioPorKg: 3200, proveedor: 'Harinas El Trigo', diasParaAgotar: 1.5 },
-  { id: '6', nombre: 'Queso Campesino (kg)', icono: '🧀', categoria: 'Lacteos', stock: 5, stockMin: 2, precio: 0, costo: 18000, ventasDiarias: 3, importancia: 4, esPeso: true, precioPorKg: 28000, proveedor: 'Lacteos La Finca', diasParaAgotar: 1.6 },
-  { id: '7', nombre: 'Tomate Chonto (kg)', icono: '🍅', categoria: 'Verduras', stock: 10, stockMin: 3, precio: 0, costo: 2500, ventasDiarias: 6, importancia: 4, esPeso: true, precioPorKg: 5000, proveedor: 'Fruver El Campo', diasParaAgotar: 1.6 },
-  { id: '8', nombre: 'Aguacate Hass (kg)', icono: '🥑', categoria: 'Verduras', stock: 15, stockMin: 5, precio: 0, costo: 4000, ventasDiarias: 8, importancia: 3, esPeso: true, precioPorKg: 8000, proveedor: 'Fruver El Campo', diasParaAgotar: 1.8 },
-  { id: '9', nombre: 'Jugo Natural', icono: '🧃', categoria: 'Bebidas', stock: 3, stockMin: 10, precio: 4000, costo: 2200, ventasDiarias: 6, importancia: 2, esPeso: false, proveedor: 'Jugos del Valle', diasParaAgotar: 0.5 },
-  { id: '10', nombre: 'Croissant', icono: '🥐', categoria: 'Panaderia', stock: 25, stockMin: 10, precio: 3200, costo: 1100, ventasDiarias: 12, importancia: 3, esPeso: false, proveedor: 'Harinas El Trigo', diasParaAgotar: 2 },
+  { id: '1', nombre: 'Pan AliÃ±ado Familiar', icono: 'ðŸž', categoria: 'Panaderia', stock: 45, stockMin: 20, precio: 5000, costo: 1800, ventasDiarias: 28, importancia: 5, esPeso: false, proveedor: 'Harinas El Trigo', diasParaAgotar: 1.6 },
+  { id: '2', nombre: 'Torta Tres Leches', icono: 'ðŸ°', categoria: 'Pasteleria', stock: 8, stockMin: 5, precio: 7500, costo: 3200, ventasDiarias: 4, importancia: 4, esPeso: false, proveedor: 'Harinas El Trigo', diasParaAgotar: 2 },
+  { id: '3', nombre: 'Coca-Cola 350ml', icono: 'ðŸ¥¤', categoria: 'Bebidas', stock: 48, stockMin: 12, precio: 3500, costo: 2800, ventasDiarias: 15, importancia: 3, esPeso: false, proveedor: 'Coca-Cola FEMSA', diasParaAgotar: 3.2 },
+  { id: '4', nombre: 'Cafe Tinto 7oz', icono: 'â˜•', categoria: 'Bebidas', stock: 100, stockMin: 20, precio: 1800, costo: 600, ventasDiarias: 45, importancia: 5, esPeso: false, proveedor: 'Cafe Colombiano', diasParaAgotar: 2.2 },
+  { id: '5', nombre: 'Harina de Trigo (kg)', icono: 'ðŸŒ¾', categoria: 'Insumos', stock: 12, stockMin: 5, precio: 0, costo: 3200, ventasDiarias: 8, importancia: 5, esPeso: true, precioPorKg: 3200, proveedor: 'Harinas El Trigo', diasParaAgotar: 1.5 },
+  { id: '6', nombre: 'Queso Campesino (kg)', icono: 'ðŸ§€', categoria: 'Lacteos', stock: 5, stockMin: 2, precio: 0, costo: 18000, ventasDiarias: 3, importancia: 4, esPeso: true, precioPorKg: 28000, proveedor: 'Lacteos La Finca', diasParaAgotar: 1.6 },
+  { id: '7', nombre: 'Tomate Chonto (kg)', icono: 'ðŸ…', categoria: 'Verduras', stock: 10, stockMin: 3, precio: 0, costo: 2500, ventasDiarias: 6, importancia: 4, esPeso: true, precioPorKg: 5000, proveedor: 'Fruver El Campo', diasParaAgotar: 1.6 },
+  { id: '8', nombre: 'Aguacate Hass (kg)', icono: 'ðŸ¥‘', categoria: 'Verduras', stock: 15, stockMin: 5, precio: 0, costo: 4000, ventasDiarias: 8, importancia: 3, esPeso: true, precioPorKg: 8000, proveedor: 'Fruver El Campo', diasParaAgotar: 1.8 },
+  { id: '9', nombre: 'Jugo Natural', icono: 'ðŸ§ƒ', categoria: 'Bebidas', stock: 3, stockMin: 10, precio: 4000, costo: 2200, ventasDiarias: 6, importancia: 2, esPeso: false, proveedor: 'Jugos del Valle', diasParaAgotar: 0.5 },
+  { id: '10', nombre: 'Croissant', icono: 'ðŸ¥', categoria: 'Panaderia', stock: 25, stockMin: 10, precio: 3200, costo: 1100, ventasDiarias: 12, importancia: 3, esPeso: false, proveedor: 'Harinas El Trigo', diasParaAgotar: 2 },
 ]
 
 export default function InventarioPage() {
@@ -69,7 +69,7 @@ export default function InventarioPage() {
   }
 
   function descargarInventario() {
-    var csv = 'Producto,Categoria,Stock,Stock Min,Precio,Costo,Ventas/dia,Importancia,Dias para agotar,Proveedor\n'
+    var csv = '\uFEFFProducto,Categoria,Stock,Stock Min,Precio,Costo,Ventas/dia,Importancia,Dias para agotar,Proveedor\n'
     filtrado.forEach(function(p: ProductoInv) {
       csv += p.nombre + ',' + p.categoria + ',' + p.stock + ',' + p.stockMin + ',' + p.precio + ',' + p.costo + ',' + p.ventasDiarias + ',' + p.importancia + ',' + p.diasParaAgotar.toFixed(1) + ',' + p.proveedor + '\n'
     })
@@ -86,7 +86,7 @@ export default function InventarioPage() {
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex items-center gap-3 mb-3">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
-          <div className="flex-1"><h1 className="text-xl font-bold">📦 Inventario</h1></div>
+          <div className="flex-1"><h1 className="text-xl font-bold">ðŸ“¦ Inventario</h1></div>
           <button onClick={descargarInventario} className="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Download className="w-4 h-4" /> Excel</button>
         </div>
         <div className="flex gap-2">
@@ -115,7 +115,7 @@ export default function InventarioPage() {
           </select>
         </div>
 
-        {/* Resumen rápido */}
+        {/* Resumen rÃ¡pido */}
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-white rounded-xl p-3 border border-stone-200">
             <p className="text-xs text-stone-400">Productos</p>
@@ -140,7 +140,7 @@ export default function InventarioPage() {
                   <span className="text-3xl">{p.icono}</span>
                   <div>
                     <h3 className="font-semibold text-stone-800 text-sm">{p.nombre}</h3>
-                    <p className="text-xs text-stone-400">{p.categoria} • {p.proveedor}</p>
+                    <p className="text-xs text-stone-400">{p.categoria} â€¢ {p.proveedor}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -160,7 +160,7 @@ export default function InventarioPage() {
 
               {p.diasParaAgotar <= 2 && (
                 <div className="mt-3 bg-amber-50 rounded-xl p-3 text-sm">
-                  <p className="font-medium text-amber-800">📋 Pedido sugerido: {Math.ceil(p.ventasDiarias * 7 - p.stock)} unidades</p>
+                  <p className="font-medium text-amber-800">ðŸ“‹ Pedido sugerido: {Math.ceil(p.ventasDiarias * 7 - p.stock)} unidades</p>
                   <p className="text-xs text-amber-600">Proveedor: {p.proveedor}</p>
                 </div>
               )}
@@ -188,7 +188,7 @@ export default function InventarioPage() {
             </select>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm text-stone-500">Importancia:</span>
-              {[1,2,3,4,5].map(function(e: number) { return <button key={e} className="text-lg">{e <= 3 ? '⭐' : '☆'}</button> })}
+              {[1,2,3,4,5].map(function(e: number) { return <button key={e} className="text-lg">{e <= 3 ? 'â­' : 'â˜†'}</button> })}
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowAdd(false)} className="flex-1 bg-stone-100 py-3 rounded-xl font-medium">Cancelar</button>
