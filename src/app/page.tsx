@@ -1,11 +1,28 @@
 ﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp } from 'lucide-react'
+import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, QrCode, Copy } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [cajaAbierta, setCajaAbierta] = useState(true)
+  const [showShare, setShowShare] = useState(false)
+
+  const shareLinks = [
+    { label: 'POS Vendedor', url: '/pos', icon: '💰', color: 'bg-emerald-600' },
+    { label: 'Tienda Clientes', url: '/tienda', icon: '🛒', color: 'bg-amber-600' },
+    { label: 'App Repartidor', url: '/entregas', icon: '🛵', color: 'bg-sky-600' },
+  ]
+
+  function copiarEnlace(url: string, label: string) {
+    navigator.clipboard.writeText('https://sigea-system.vercel.app' + url)
+    alert('✅ Enlace copiado: ' + label)
+  }
+
+  function compartirWhatsApp(url: string, label: string) {
+    var msg = '🔗 Accede a ' + label + ': https://sigea-system.vercel.app' + url
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank')
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 max-w-lg mx-auto">
@@ -15,11 +32,38 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold">Panadería Doña Rosa</h1>
             <p className="text-stone-300 text-sm">{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
-          <span className={'px-4 py-2 rounded-full text-sm font-semibold ' + (cajaAbierta ? 'bg-emerald-500' : 'bg-red-500')}>
-            {cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}
-          </span>
+          <div className="flex gap-2">
+            <button onClick={() => setShowShare(!showShare)} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition">
+              <Share2 className="w-5 h-5" />
+            </button>
+            <span className={'px-4 py-2 rounded-full text-sm font-semibold ' + (cajaAbierta ? 'bg-emerald-500' : 'bg-red-500')}>
+              {cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}
+            </span>
+          </div>
         </div>
       </header>
+
+      {showShare && (
+        <div className="bg-white mx-4 mt-4 p-5 rounded-2xl shadow-lg border border-stone-200">
+          <h3 className="font-semibold text-stone-800 mb-3 flex items-center gap-2">
+            <Share2 className="w-4 h-4" /> Compartir Accesos
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            {shareLinks.map(link => (
+              <div key={link.url} className="text-center">
+                <button onClick={() => copiarEnlace(link.url, link.label)} className={link.color + ' w-full text-white p-3 rounded-xl font-medium text-sm hover:opacity-90 transition'}>
+                  <span className="text-2xl block mb-1">{link.icon}</span>
+                  {link.label}
+                </button>
+                <button onClick={() => compartirWhatsApp(link.url, link.label)} className="text-green-600 text-xs mt-1 hover:underline">
+                  📤 WhatsApp
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="p-4 space-y-4">
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white cursor-pointer" onClick={() => router.push('/finanzas')}>
           <p className="text-emerald-100 text-sm">VENTAS DE HOY</p>
