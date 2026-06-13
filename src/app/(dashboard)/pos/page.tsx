@@ -210,18 +210,18 @@ export default function POSPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center md:justify-center" onClick={() => setShowCart(false)}>
           <div className="bg-white w-full md:max-w-lg md:rounded-3xl rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
-              <h2 className="font-bold text-xl">🛒 Carrito ({totalItems} items)</h2>
-              <button onClick={() => setShowCart(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5" /></button>
+              <h2 className="font-bold text-xl text-stone-900">🛒 Carrito ({totalItems} items)</h2>
+              <button onClick={() => setShowCart(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-800" /></button>
             </div>
             
             {cart.map(i => (
               <div key={i.id} className="flex items-center justify-between py-3 border-b border-stone-100 gap-2">
                 <span className="text-base flex-1 font-medium text-stone-800 truncate">{i.icono} {i.nombre}</span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: Math.max(1, x.cantidad - 1), subtotal: x.precioUnitario * Math.max(1, x.cantidad - 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Minus className="w-4 h-4" /></button>
+                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: Math.max(1, x.cantidad - 1), subtotal: x.precioUnitario * Math.max(1, x.cantidad - 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Minus className="w-4 h-4 text-stone-800" /></button>
                   <span className="w-7 text-center font-bold">{i.cantidad}</span>
-                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: x.cantidad + 1, subtotal: x.precioUnitario * (x.cantidad + 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Plus className="w-4 h-4" /></button>
-                  <button onClick={() => setCart(prev => prev.filter(x => x.id !== i.id))} className="p-1.5 text-red-400 ml-1"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: x.cantidad + 1, subtotal: x.precioUnitario * (x.cantidad + 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Plus className="w-4 h-4 text-stone-800" /></button>
+                  <button onClick={() => setCart(prev => prev.filter(x => x.id !== i.id))} className="p-1.5 text-red-400 ml-1"><Trash2 className="w-4 h-4 text-red-500" /></button>
                 </div>
                 <span className="w-24 text-right font-bold text-emerald-600 text-base shrink-0">${i.subtotal.toLocaleString()}</span>
               </div>
@@ -255,3 +255,4 @@ export default function POSPage() {
     </div>
   )
 }
+
