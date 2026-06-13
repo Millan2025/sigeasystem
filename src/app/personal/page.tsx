@@ -14,7 +14,7 @@ export default function PersonalPage() {
   const [tab, setTab] = useState<'empleados'|'nomina'>('empleados')
 
   return (
-    <div className="min-h-screen bg-stone-50 max-w-lg lg:max-w-2xl mx-auto">
+    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex items-center gap-3 mb-4"><Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link><div><h1 className="text-xl font-bold">Personal</h1></div></div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
@@ -44,3 +44,4 @@ export default function PersonalPage() {
     </div>
   )
 }
+

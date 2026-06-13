@@ -25,7 +25,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 max-w-lg lg:max-w-2xl mx-auto">
+    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex justify-between items-center">
           <div>
@@ -117,4 +117,5 @@ export default function DashboardPage() {
     </div>
   )
 }
+
 

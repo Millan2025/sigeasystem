@@ -24,7 +24,7 @@ export default function TiendaPage() {
   })
 
   return (
-    <div className="min-h-screen bg-stone-50 max-w-lg lg:max-w-2xl mx-auto">
+    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
       <header className="sticky top-0 bg-white shadow-sm p-4 z-10">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-2xl">🍞</div>
@@ -49,7 +49,7 @@ export default function TiendaPage() {
         ))}
       </div>
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t max-w-lg lg:max-w-2xl mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t md:max-w-2xl lg:max-w-4xl mx-auto">
           <button className="w-full bg-orange-500 text-white p-4 rounded-2xl font-bold text-lg shadow-lg flex justify-between">
             <span>{cart.length} productos</span><span>${cart.reduce((s, p) => s + p.price, 0).toLocaleString()}</span><span>Ver carrito →</span>
           </button>
@@ -58,3 +58,4 @@ export default function TiendaPage() {
     </div>
   )
 }
+
