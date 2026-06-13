@@ -175,8 +175,8 @@ export default function POSPage() {
       {productoPesaje && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setProductoPesaje(null)}>
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-xl mb-1">{productoPesaje.icono} {productoPesaje.nombre}</h3>
-            <p className="text-stone-500 mb-4">${(productoPesaje.precioPorKg || 0).toLocaleString()} / kilogramo</p>
+            <h3 className="font-bold text-xl mb-1 text-stone-900">{productoPesaje.icono} {productoPesaje.nombre}</h3>
+            <p className="text-stone-700 mb-4 font-medium">${(productoPesaje.precioPorKg || 0).toLocaleString()} / kilogramo</p>
             
             {/* INPUT GRANDE Y VISIBLE */}
             <input 
@@ -215,15 +215,19 @@ export default function POSPage() {
             </div>
             
             {cart.map(i => (
-              <div key={i.id} className="flex items-center py-3 border-b border-stone-100 gap-3">
-                <span className="text-sm flex-1 font-medium text-stone-900 min-w-0">{i.icono} {i.nombre}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: Math.max(1, x.cantidad - 1), subtotal: x.precioUnitario * Math.max(1, x.cantidad - 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Minus className="w-4 h-4 text-stone-800" /></button>
-                  <span className="w-7 text-center font-bold">{i.cantidad}</span>
-                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: x.cantidad + 1, subtotal: x.precioUnitario * (x.cantidad + 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Plus className="w-4 h-4 text-stone-800" /></button>
-                  <button onClick={() => setCart(prev => prev.filter(x => x.id !== i.id))} className="p-1.5 text-red-400 ml-1"><Trash2 className="w-4 h-4 text-red-500" /></button>
+              <div key={i.id} className="py-3 border-b border-stone-100">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-semibold text-stone-900">{i.icono} {i.nombre}</span>
+                  <button onClick={() => setCart(prev => prev.filter(x => x.id !== i.id))} className="p-1 text-red-400 hover:bg-red-50 rounded-lg shrink-0 ml-2"><Trash2 className="w-4 h-4 text-red-500" /></button>
                 </div>
-                <span className="text-right font-bold text-emerald-600 text-base shrink-0 ml-2">${i.subtotal.toLocaleString()}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: Math.max(1, x.cantidad - 1), subtotal: x.precioUnitario * Math.max(1, x.cantidad - 1) } : x))} className="p-2 bg-stone-200 rounded-lg hover:bg-stone-300"><Minus className="w-4 h-4 text-stone-800" /></button>
+                    <span className="w-8 text-center font-bold text-stone-900 text-lg">{i.cantidad}</span>
+                    <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: x.cantidad + 1, subtotal: x.precioUnitario * (x.cantidad + 1) } : x))} className="p-2 bg-stone-200 rounded-lg hover:bg-stone-300"><Plus className="w-4 h-4 text-stone-800" /></button>
+                  </div>
+                  <span className="font-bold text-emerald-600 text-lg">${i.subtotal.toLocaleString()}</span>
+                </div>
               </div>
             ))}
             
@@ -255,5 +259,6 @@ export default function POSPage() {
     </div>
   )
 }
+
 
 
