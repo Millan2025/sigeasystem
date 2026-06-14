@@ -63,14 +63,14 @@ export default function PedidosPage() {
           </div>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
-          <button onClick={() => setTab('pendientes')} className={'flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 ' + (tab === 'pendientes' ? 'bg-white text-stone-800' : 'text-stone-300')}>
-            Pendientes <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{pendientes.length}</span>
+          <button onClick={() => setTab('pendientes')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'pendientes' ? 'bg-white text-stone-800' : 'text-stone-300')}>
+            Pendientes <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendientes.length}</span>
           </button>
-          <button onClick={() => setTab('camino')} className={'flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 ' + (tab === 'camino' ? 'bg-white text-stone-800' : 'text-stone-300')}>
-            En Camino <span className="bg-sky-500 text-white text-xs px-2 py-0.5 rounded-full">{enCamino.length}</span>
+          <button onClick={() => setTab('camino')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'camino' ? 'bg-white text-stone-800' : 'text-stone-300')}>
+            En Camino <span className="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{enCamino.length}</span>
           </button>
-          <button onClick={() => setTab('entregados')} className={'flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 ' + (tab === 'entregados' ? 'bg-white text-stone-800' : 'text-stone-300')}>
-            Entregados <span className="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full">{entregados.length}</span>
+          <button onClick={() => setTab('entregados')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'entregados' ? 'bg-white text-stone-800' : 'text-stone-300')}>
+            Entregados <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{entregados.length}</span>
           </button>
         </div>
       </header>
@@ -162,5 +162,6 @@ export default function PedidosPage() {
     </div>
   )
 }
+
 
 
