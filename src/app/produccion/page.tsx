@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Package, Beaker, ShoppingCart, Calculator, TrendingDown, AlertTriangle, Plus, X, Download, ChefHat } from 'lucide-react'
+import { ArrowLeft, Package, Beaker, ShoppingCart, Calculator, TrendingDown, AlertTriangle, Plus, X, Download, ChefHat, Pencil, Trash2 } from 'lucide-react'
 
 // DATOS SINCRONIZADOS (simulan conexión con Supabase - products + recipes + ingredients)
 const recetas = [
@@ -94,9 +94,7 @@ export default function ProduccionPage() {
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex items-center gap-3 mb-4">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
-          <div className="flex-1"><h1 className="text-xl font-bold">🏭 Producción</h1><p className="text-stone-400 text-xs">Recetas, producción y compras</p></div>
-        </div>
-        <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
+          <div className="flex-1"><h1 className="text-xl font-bold">🏭 Producción</h1><p className="text-stone-400 text-xs">Recetas, produccion y compras</p></div><button onClick={() => alert("Nueva receta en desarrollo")} className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0"><Plus className="w-3 h-3" /> Nueva</button></div><div className="flex gap-1 bg-stone-700 rounded-xl p-1">
           {[
             { id: 'recetas' as const, label: 'Recetas', icon: Beaker },
             { id: 'produccion' as const, label: 'Producción', icon: ChefHat },
@@ -133,7 +131,10 @@ export default function ProduccionPage() {
                   </div>
                 </div>
                 
-                {showReceta === r.id && (
+                              <div className="flex gap-2 mt-2 pt-2 border-t border-stone-100">
+                <button onClick={(e) => { e.stopPropagation(); alert("Editar: " + r.producto) }} className="flex-1 bg-amber-50 border border-amber-200 text-amber-700 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-100 flex items-center justify-center gap-1"><Pencil className="w-3 h-3" /> Editar</button>
+                <button onClick={(e) => { e.stopPropagation(); alert("Borrar: " + r.producto) }} className="flex-1 bg-red-50 border border-red-200 text-red-600 py-1.5 rounded-lg text-xs font-medium hover:bg-red-100 flex items-center justify-center gap-1"><Trash2 className="w-3 h-3" /> Borrar</button>
+              </div>{showReceta === r.id && (
                   <div className="border-t border-stone-200 p-4 bg-stone-50">
                     <h4 className="font-semibold text-stone-700 text-sm mb-2">📋 Ingredientes por unidad</h4>
                     {r.ingredientes.map(ing => (
@@ -261,4 +262,5 @@ export default function ProduccionPage() {
     </div>
   )
 }
+
 
