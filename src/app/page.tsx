@@ -82,7 +82,12 @@ export default function DashboardPage() {
             <span className="font-semibold text-stone-800 block">{cajaAbierta ? 'Cerrar Caja' : 'Abrir Caja'}</span>
             <span className="text-xs text-stone-500">Control de caja</span>
           </button>
-          <button onClick={() => router.push('/inventario')} className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-left hover:bg-amber-100">
+          <button onClick={() => router.push('/produccion')} className="bg-lime-50 border border-lime-200 rounded-2xl p-5 text-left hover:bg-lime-100">
+            <ChefHat className="w-7 h-7 text-lime-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Producción</span>
+            <span className="text-xs text-stone-500">Recetas y compras</span>
+          </button>
+<button onClick={() => router.push('/inventario')} className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-left hover:bg-amber-100">
             <Package className="w-7 h-7 text-amber-600 mb-2" />
             <span className="font-semibold text-stone-800 block">Inventario</span>
             <span className="text-xs text-stone-500">Stock, alarmas, pedidos</span>
@@ -117,5 +122,6 @@ export default function DashboardPage() {
     </div>
   )
 }
+
 
 
