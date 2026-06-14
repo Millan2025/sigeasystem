@@ -117,7 +117,7 @@ export default function ProduccionPage() {
               <div key={r.id} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                 <div className="p-4 cursor-pointer" onClick={() => setShowReceta(showReceta === r.id ? null : r.id)}>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
+                    <div className="space-y-2">
                       <span className="text-3xl">{r.icono}</span>
                       <div>
                         <h3 className="font-bold text-stone-900">{r.producto}</h3>
@@ -182,7 +182,7 @@ export default function ProduccionPage() {
                   <div className="flex-1"><h3 className="font-bold text-stone-900">{r.producto}</h3></div>
                   <span className="text-sm text-stone-500">Producidos: {r.producidosHoy}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="space-y-2">
                   <input 
                     type="number" 
                     value={cantidadProducir[r.id] || ''} 
@@ -193,7 +193,7 @@ export default function ProduccionPage() {
                   <button 
                     onClick={() => alert('✅ Orden de producción: ' + (cantidadProducir[r.id] || 0) + ' unidades de ' + r.producto)}
                     disabled={!cantidadProducir[r.id]}
-                    className="bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold disabled:opacity-30"
+                    className="bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-30"
                   >
                     Producir
                   </button>
@@ -261,3 +261,4 @@ export default function ProduccionPage() {
     </div>
   )
 }
+
