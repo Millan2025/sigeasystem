@@ -116,7 +116,7 @@ export default function ReportesPage() {
         </div>
 
         {/* KPIs rápidos */}
-        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+        <div className="grid grid-cols-2 gap-2 text-center text-xs">
           <div className="bg-white rounded-xl p-3 border border-stone-200">
             <p className="text-stone-400">Utilidad</p>
             <p className="text-lg font-bold text-emerald-600">${datos.utilidad.toLocaleString()}</p>
@@ -135,14 +135,18 @@ export default function ReportesPage() {
         {seccion === 'ventas' && (
           <div className="bg-white rounded-2xl p-5 border border-stone-200">
             <h3 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Ventas por Hora</h3>
-            <div className="flex items-end gap-1 h-36">
-              {ventasPorHora.map(v => (
-                <div key={v.hora} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-stone-500">${(v.ventas/1000).toFixed(0)}k</span>
-                  <div className="w-full bg-emerald-500 rounded-t-lg transition-all" style={{ height: (v.ventas / maxVentaHora * 100) + '%', minHeight: v.ventas > 0 ? '4px' : '0' }}></div>
-                  <span className="text-[10px] text-stone-400">{v.hora}</span>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2">
+              {[0,1,2,3].map(row => (
+              <div key={row} className="flex items-end gap-1 h-20">
+                {ventasPorHora.slice(row * 4, row * 4 + 4).map(v => (
+                  <div key={v.hora} className="flex-1 flex flex-col items-center gap-0.5">
+                    <span className="text-[9px] text-stone-500">${(v.ventas/1000).toFixed(0)}k</span>
+                    <div className="w-full bg-emerald-500 rounded-t-md" style={{ height: (v.ventas / maxVentaHora * 100) + '%', minHeight: '6px' }}></div>
+                    <span className="text-[9px] text-stone-400">{v.hora}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
             </div>
           </div>
         )}
@@ -209,3 +213,5 @@ export default function ReportesPage() {
     </div>
   )
 }
+
+
