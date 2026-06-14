@@ -103,11 +103,10 @@ export default function PedidosPage() {
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-stone-100">
+            <div className="flex justify-between items-center pt-3 pb-1 border-t border-stone-100">
               <p className="text-base font-bold text-emerald-600">${p.total.toLocaleString()}</p>
               
-              <div className="flex gap-2">
-                {p.estado === 'pendiente' && (
+              <div className="flex gap-2 pr-1">{p.estado === 'pendiente' && (
                   <>
                     <button onClick={() => setShowCancelar(p.id)} className="bg-stone-100 hover:bg-red-50 text-stone-500 hover:text-red-500 px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-1"><Ban className="w-3 h-3" /> Cancelar</button>
                     <button onClick={() => setShowAsignar(p.id)} className="bg-sky-500 text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1"><User className="w-4 h-4" /> Asignar</button>
@@ -162,4 +161,5 @@ export default function PedidosPage() {
     </div>
   )
 }
+
 
