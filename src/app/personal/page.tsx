@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Users, DollarSign, Download, Plus, X, FileText } from 'lucide-react'
+import { ArrowLeft, Users, DollarSign, Download, Plus, X, FileText, Pencil, Trash2 } from 'lucide-react'
 
 interface Empleado {
   id: string; nombre: string; documento: string; cargo: string; tipoContrato: string;
@@ -28,6 +28,10 @@ export default function PersonalPage() {
   const [perfil, setPerfil] = useState<'micro'|'mediana'>('micro')
   const [showAdd, setShowAdd] = useState(false)
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<Empleado | null>(null)
+  const [showEdit, setShowEdit] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [empleados, setEmpleados] = useState<Empleado[]>(empleadosDemo)
+  const [editForm, setEditForm] = useState<Empleado | null>(null)
 
   function calcularNomina(emp: Empleado) {
     const valorHora = emp.salarioBase / 240
@@ -43,11 +47,9 @@ export default function PersonalPage() {
     return { valorHora, totalHorasExtras, auxilioTransp, totalDevengado, saludEmp, pensionEmp, fondo, totalDeducciones, netoPagar, ibc }
   }
 
-  // NUEVO: Desprendible individual
   function exportarDesprendible(emp: Empleado) {
     const n = calcularNomina(emp)
-    var csv = '\uFEFFDESPRENDIBLE DE PAGO\n'
-    csv += 'EMPLEADO:,' + emp.nombre + '\nDOCUMENTO:,' + emp.documento + '\nCARGO:,' + emp.cargo + '\n\nCONCEPTO,VALOR\n'
+    var csv = '\uFEFFDESPRENDIBLE DE PAGO\nEMPLEADO:,' + emp.nombre + '\nDOCUMENTO:,' + emp.documento + '\nCARGO:,' + emp.cargo + '\n\nCONCEPTO,VALOR\n'
     csv += 'Salario Basico,$' + emp.salarioBase.toLocaleString() + '\n'
     if (emp.horasExtrasDiurnas > 0) csv += 'Horas Extra Diurnas,$' + Math.round(emp.horasExtrasDiurnas * n.valorHora * 1.25).toLocaleString() + '\n'
     if (n.auxilioTransp > 0) csv += 'Auxilio Transporte,$' + n.auxilioTransp.toLocaleString() + '\n'
@@ -62,14 +64,37 @@ export default function PersonalPage() {
 
   function exportarExcel() {
     var csv = '\uFEFFEMPLEADO,DOCUMENTO,CARGO,SALARIO BASE,DEVENGADO,DEDUCCIONES,NETO\n'
-    empleadosDemo.forEach(e => { const n = calcularNomina(e); csv += e.nombre + ',' + e.documento + ',' + e.cargo + ',' + e.salarioBase + ',' + n.totalDevengado + ',' + n.totalDeducciones + ',' + n.netoPagar + '\n' })
+    empleados.forEach(e => { const n = calcularNomina(e); csv += e.nombre + ',' + e.documento + ',' + e.cargo + ',' + e.salarioBase + ',' + n.totalDevengado + ',' + n.totalDeducciones + ',' + n.netoPagar + '\n' })
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     var url = URL.createObjectURL(blob)
     var a = document.createElement('a')
     a.href = url; a.download = 'nomina_' + new Date().toISOString().split('T')[0] + '.csv'; a.click()
   }
 
-  function getEstadoColor(estado: string) { return estado === 'Activo' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }
+  function guardarEdicion() {
+    if (!editForm) return
+    setEmpleados(prev => prev.map(e => e.id === editForm.id ? editForm : e))
+    setShowEdit(false)
+    setEditForm(null)
+  }
+
+  function eliminarEmpleado() {
+    if (!editForm) return
+    setEmpleados(prev => prev.filter(e => e.id !== editForm.id))
+    setShowDelete(false)
+    setEditForm(null)
+    setEmpleadoSeleccionado(null)
+  }
+
+  function abrirEditar(emp: Empleado) {
+    setEditForm({...emp})
+    setShowEdit(true)
+  }
+
+  function abrirEliminar(emp: Empleado) {
+    setEditForm({...emp})
+    setShowDelete(true)
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -93,16 +118,21 @@ export default function PersonalPage() {
         {tab === 'empleados' && (
           <div className="space-y-3">
             <button onClick={() => setShowAdd(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-3 font-bold flex items-center justify-center gap-2"><Plus className="w-5 h-5" /> Agregar Empleado</button>
-            {empleadosDemo.map(e => (
-              <div key={e.id} className="bg-white rounded-2xl p-4 border border-stone-200 cursor-pointer hover:shadow-md" onClick={() => setEmpleadoSeleccionado(e)}>
-                <div className="flex justify-between items-start mb-3">
+            {empleados.map(e => (
+              <div key={e.id} className="bg-white rounded-2xl p-4 border border-stone-200">
+                <div className="flex justify-between items-start mb-3 cursor-pointer" onClick={() => setEmpleadoSeleccionado(e)}>
                   <div><h3 className="font-semibold text-stone-900 text-base">{e.nombre}</h3><p className="text-sm text-stone-500">{e.cargo} - {e.tipoContrato}</p><p className="text-xs text-stone-400">CC: {e.documento}</p></div>
-                  <span className={'px-3 py-1 rounded-full text-xs font-bold ' + getEstadoColor(e.estado)}>{e.estado}</span>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">{e.estado}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="grid grid-cols-3 gap-2 text-center text-xs mb-3">
                   <div className="bg-stone-50 rounded-xl p-2"><p className="text-stone-400">Salario Base</p><p className="font-bold text-stone-800">${e.salarioBase.toLocaleString()}</p></div>
                   <div className="bg-stone-50 rounded-xl p-2"><p className="text-stone-400">Aux. Transporte</p><p className="font-bold text-stone-800">{e.auxilioTransporte ? 'Si' : 'No'}</p></div>
                   <div className="bg-stone-50 rounded-xl p-2"><p className="text-stone-400">Riesgo</p><p className="font-bold text-stone-800">Nivel {e.riesgoLaboral}</p></div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setEmpleadoSeleccionado(e)} className="flex-1 bg-stone-100 hover:bg-stone-200 py-2 rounded-lg text-xs font-medium text-stone-700 flex items-center justify-center gap-1">👁️ Ver</button>
+                  <button onClick={() => abrirEditar(e)} className="flex-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 py-2 rounded-lg text-xs font-medium text-amber-700 flex items-center justify-center gap-1"><Pencil className="w-3 h-3" /> Editar</button>
+                  <button onClick={() => abrirEliminar(e)} className="flex-1 bg-red-50 hover:bg-red-100 border border-red-200 py-2 rounded-lg text-xs font-medium text-red-600 flex items-center justify-center gap-1"><Trash2 className="w-3 h-3" /> Eliminar</button>
                 </div>
               </div>
             ))}
@@ -111,7 +141,7 @@ export default function PersonalPage() {
 
         {tab === 'nomina' && (
           <div className="space-y-4">
-            {empleadosDemo.map(e => { const n = calcularNomina(e); return (
+            {empleados.map(e => { const n = calcularNomina(e); return (
               <div key={e.id} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                 <div className="bg-stone-100 px-4 py-3"><h3 className="font-bold text-stone-900">{e.nombre} - {e.cargo}</h3></div>
                 <div className="p-4 space-y-3">
@@ -131,18 +161,6 @@ export default function PersonalPage() {
                     </div>
                   </div>
                   <div className="bg-emerald-50 rounded-2xl p-4"><div className="flex justify-between text-lg font-bold"><span className="text-stone-800">NETO A PAGAR</span><span className="text-emerald-600">${n.netoPagar.toLocaleString()}</span></div></div>
-                  {perfil === 'mediana' && (
-                    <div className="mt-3 pt-3 border-t border-stone-200">
-                      <h4 className="text-sm font-bold text-purple-600 mb-2">APROPIACIONES (Empleador)</h4>
-                      <div className="grid grid-cols-2 gap-1 text-xs">
-                        <span className="text-stone-500">Salud (8.5%):</span><span className="text-right font-medium">${Math.round(n.ibc * 0.085).toLocaleString()}</span>
-                        <span className="text-stone-500">Pension (12%):</span><span className="text-right font-medium">${Math.round(n.ibc * 0.12).toLocaleString()}</span>
-                        <span className="text-stone-500">Cesantias (8.33%):</span><span className="text-right font-medium">${Math.round(n.ibc * 0.0833).toLocaleString()}</span>
-                        <span className="text-stone-500">Prima (8.33%):</span><span className="text-right font-medium">${Math.round(n.ibc * 0.0833).toLocaleString()}</span>
-                        <span className="text-stone-500">Vacaciones (4.17%):</span><span className="text-right font-medium">${Math.round(n.ibc * 0.0417).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )})}
@@ -156,11 +174,76 @@ export default function PersonalPage() {
             <h3 className="font-bold text-stone-900 text-lg mb-2">Exportar Informacion</h3>
             <p className="text-stone-500 text-sm mb-4">Descarga la nomina en formato CSV compatible con software contable.</p>
             <button onClick={exportarExcel} className="bg-emerald-500 text-white rounded-2xl py-4 px-8 font-bold"><Download className="w-5 h-5 inline mr-2" />Descargar CSV</button>
-            <div className="mt-6 pt-6 border-t border-stone-200"><h4 className="font-bold text-stone-800 mb-2">API DIAN (Proximamente)</h4><p className="text-xs text-stone-400">POST /api/nomina/exportar-dian</p></div>
           </div>
         )}
       </div>
 
+      {/* MODAL VER DETALLE */}
+      {empleadoSeleccionado && !showEdit && !showDelete && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto" onClick={() => setEmpleadoSeleccionado(null)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-5"><h2 className="font-bold text-xl text-stone-900">{empleadoSeleccionado.nombre}</h2><button onClick={() => setEmpleadoSeleccionado(null)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-600" /></button></div>
+            {(() => { const n = calcularNomina(empleadoSeleccionado); return (
+              <div className="space-y-3">
+                <p className="text-sm text-stone-500">CC: {empleadoSeleccionado.documento} - {empleadoSeleccionado.cargo}</p>
+                <p className="text-sm text-stone-500">Contrato: {empleadoSeleccionado.tipoContrato} - Ingreso: {empleadoSeleccionado.fechaIngreso}</p>
+                <div className="bg-stone-50 rounded-xl p-3"><p className="text-xs text-stone-400">Salario Base</p><p className="text-xl font-bold text-stone-900">${empleadoSeleccionado.salarioBase.toLocaleString()}</p></div>
+                <div className="bg-emerald-50 rounded-xl p-3"><p className="text-xs text-emerald-500">Neto a Pagar (Mes)</p><p className="text-xl font-bold text-emerald-600">${n.netoPagar.toLocaleString()}</p></div>
+                <button onClick={() => { exportarDesprendible(empleadoSeleccionado!); setEmpleadoSeleccionado(null) }} className="w-full bg-emerald-500 text-white rounded-2xl py-3 font-bold flex items-center justify-center gap-2"><Download className="w-4 h-4" /> Descargar Desprendible</button>
+              </div>
+            )})()}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EDITAR */}
+      {showEdit && editForm && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto" onClick={() => setShowEdit(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-5"><h2 className="font-bold text-xl text-stone-900">Editar - {editForm.nombre}</h2><button onClick={() => setShowEdit(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-600" /></button></div>
+            <div className="space-y-3">
+              <div><label className="block text-sm font-medium text-stone-700 mb-1">Nombre completo</label><input value={editForm.nombre} onChange={e => setEditForm({...editForm, nombre: e.target.value})} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-sm font-medium text-stone-700 mb-1">Cargo</label><select value={editForm.cargo} onChange={e => setEditForm({...editForm, cargo: e.target.value})} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none"><option>Cajero</option><option>Panadero</option><option>Repartidor</option><option>Vendedor</option></select></div>
+                <div><label className="block text-sm font-medium text-stone-700 mb-1">Tipo Contrato</label><select value={editForm.tipoContrato} onChange={e => setEditForm({...editForm, tipoContrato: e.target.value})} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none"><option>Fijo</option><option>Indefinido</option><option>Obra/Labor</option><option>Aprendiz</option></select></div>
+              </div>
+              <div><label className="block text-sm font-medium text-stone-700 mb-1">Salario base</label><input type="number" value={editForm.salarioBase} onChange={e => setEditForm({...editForm, salarioBase: Number(e.target.value)})} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none" /></div>
+              <label className="flex items-center gap-2 text-sm text-stone-700"><input type="checkbox" checked={editForm.auxilioTransporte} onChange={e => setEditForm({...editForm, auxilioTransporte: e.target.checked})} className="w-4 h-4 rounded" /> Auxilio de transporte</label>
+              <div className="grid grid-cols-3 gap-2">
+                <div><label className="block text-xs font-medium text-stone-500 mb-1">Hrs Extras Diurnas</label><input type="number" value={editForm.horasExtrasDiurnas} onChange={e => setEditForm({...editForm, horasExtrasDiurnas: Number(e.target.value)})} className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 outline-none" /></div>
+                <div><label className="block text-xs font-medium text-stone-500 mb-1">Hrs Extras Nocturnas</label><input type="number" value={editForm.horasExtrasNocturnas} onChange={e => setEditForm({...editForm, horasExtrasNocturnas: Number(e.target.value)})} className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 outline-none" /></div>
+                <div><label className="block text-xs font-medium text-stone-500 mb-1">Dominicales</label><input type="number" value={editForm.horasDominicales} onChange={e => setEditForm({...editForm, horasDominicales: Number(e.target.value)})} className="w-full p-2 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 outline-none" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-sm font-medium text-stone-700 mb-1">Comisiones</label><input type="number" value={editForm.comisiones} onChange={e => setEditForm({...editForm, comisiones: Number(e.target.value)})} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none" /></div>
+                <div><label className="block text-sm font-medium text-stone-700 mb-1">Bonificaciones</label><input type="number" value={editForm.bonificaciones} onChange={e => setEditForm({...editForm, bonificaciones: Number(e.target.value)})} className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 outline-none" /></div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setShowEdit(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
+              <button onClick={guardarEdicion} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">💾 Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ELIMINAR */}
+      {showDelete && editForm && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowDelete(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="font-bold text-xl text-stone-900 mb-3">Eliminar Empleado</h2>
+            <p className="text-stone-500 mb-2">Estas seguro de eliminar a:</p>
+            <p className="font-bold text-lg text-stone-900 mb-4">{editForm.nombre} - {editForm.cargo}</p>
+            <p className="text-xs text-red-500 mb-4">Esta accion no se puede deshacer.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDelete(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
+              <button onClick={eliminarEmpleado} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">🗑️ Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL AGREGAR */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto" onClick={() => setShowAdd(false)}>
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -172,22 +255,6 @@ export default function PersonalPage() {
               <div><label className="block text-sm font-medium text-stone-700 mb-1">Salario base</label><input type="number" placeholder="$1,423,500" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-stone-400 outline-none" /></div>
             </div>
             <div className="flex gap-3 mt-5"><button onClick={() => setShowAdd(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button><button onClick={() => { alert('Empleado agregado'); setShowAdd(false) }} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button></div>
-          </div>
-        </div>
-      )}
-
-      {empleadoSeleccionado && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto" onClick={() => setEmpleadoSeleccionado(null)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-5"><h2 className="font-bold text-xl text-stone-900">{empleadoSeleccionado.nombre}</h2><button onClick={() => setEmpleadoSeleccionado(null)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-600" /></button></div>
-            {(() => { const n = calcularNomina(empleadoSeleccionado); return (
-              <div className="space-y-3">
-                <p className="text-sm text-stone-500">CC: {empleadoSeleccionado.documento} - {empleadoSeleccionado.cargo}</p>
-                <div className="bg-stone-50 rounded-xl p-3"><p className="text-xs text-stone-400">Salario Base</p><p className="text-xl font-bold text-stone-900">${empleadoSeleccionado.salarioBase.toLocaleString()}</p></div>
-                <div className="bg-emerald-50 rounded-xl p-3"><p className="text-xs text-emerald-500">Neto a Pagar (Mes)</p><p className="text-xl font-bold text-emerald-600">${n.netoPagar.toLocaleString()}</p></div>
-                <button onClick={() => { exportarDesprendible(empleadoSeleccionado!); setEmpleadoSeleccionado(null) }} className="w-full bg-emerald-500 text-white rounded-2xl py-3 font-bold flex items-center justify-center gap-2"><Download className="w-4 h-4" /> Descargar Desprendible</button>
-              </div>
-            )})()}
           </div>
         </div>
       )}
