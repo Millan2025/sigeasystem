@@ -1,7 +1,7 @@
 ﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, QrCode, Copy } from 'lucide-react'
+import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, QrCode, Copy, ChefHat } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -77,6 +77,11 @@ export default function DashboardPage() {
             <span className="font-semibold text-stone-800 block">Nueva Venta</span>
             <span className="text-xs text-stone-500">POS Táctil con Voz</span>
           </button>
+          <button onClick={() => router.push("/produccion")} className="bg-lime-50 border border-lime-200 rounded-2xl p-5 text-left hover:bg-lime-100">
+            <ChefHat className="w-7 h-7 text-lime-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Produccion</span>
+            <span className="text-xs text-stone-500">Recetas y compras</span>
+          </button>
           <button onClick={() => setCajaAbierta(!cajaAbierta)} className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-left hover:bg-blue-100">
             <DollarSign className="w-7 h-7 text-blue-600 mb-2" />
             <span className="font-semibold text-stone-800 block">{cajaAbierta ? 'Cerrar Caja' : 'Abrir Caja'}</span>
@@ -117,6 +122,8 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+
 
 
 
