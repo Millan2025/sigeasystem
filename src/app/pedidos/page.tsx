@@ -64,13 +64,13 @@ export default function PedidosPage() {
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
           <button onClick={() => setTab('pendientes')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'pendientes' ? 'bg-white text-stone-800' : 'text-stone-300')}>
-            Pendientes <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendientes.length}</span>
+            Pendientes <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{pendientes.length}</span>
           </button>
           <button onClick={() => setTab('camino')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'camino' ? 'bg-white text-stone-800' : 'text-stone-300')}>
-            En Camino <span className="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{enCamino.length}</span>
+            En Camino <span className="bg-sky-500 text-white text-xs px-2 py-0.5 rounded-full">{enCamino.length}</span>
           </button>
           <button onClick={() => setTab('entregados')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'entregados' ? 'bg-white text-stone-800' : 'text-stone-300')}>
-            Entregados <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{entregados.length}</span>
+            Entregados <span className="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full">{entregados.length}</span>
           </button>
         </div>
       </header>
@@ -104,13 +104,13 @@ export default function PedidosPage() {
             </div>
 
             <div className="flex justify-between items-center pt-3 border-t border-stone-100">
-              <p className="text-xl font-bold text-emerald-600">${p.total.toLocaleString()}</p>
+              <p className="text-base font-bold text-emerald-600">${p.total.toLocaleString()}</p>
               
               <div className="flex gap-2">
                 {p.estado === 'pendiente' && (
                   <>
-                    <button onClick={() => setShowCancelar(p.id)} className="bg-stone-100 hover:bg-red-50 text-stone-500 hover:text-red-500 px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1"><Ban className="w-3 h-3" /> Cancelar</button>
-                    <button onClick={() => setShowAsignar(p.id)} className="bg-sky-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><User className="w-4 h-4" /> Asignar</button>
+                    <button onClick={() => setShowCancelar(p.id)} className="bg-stone-100 hover:bg-red-50 text-stone-500 hover:text-red-500 px-2 py-1 rounded-lg text-[10px] font-medium flex items-center gap-1"><Ban className="w-3 h-3" /> Cancelar</button>
+                    <button onClick={() => setShowAsignar(p.id)} className="bg-sky-500 text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1"><User className="w-4 h-4" /> Asignar</button>
                   </>
                 )}
                 {p.estado === 'en_camino' && (
@@ -162,6 +162,4 @@ export default function PedidosPage() {
     </div>
   )
 }
-
-
 
