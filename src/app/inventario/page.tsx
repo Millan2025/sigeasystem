@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search, Plus, Star, AlertTriangle, Package, X, Scale } from 'lucide-react'
 
-interface ProductoInv {
+interface ProductoInv { imageUrl?: string | null;
   id: string; nombre: string; icono: string; categoria: string; stock: number; stockMin: number;
   precio: number; costo: number; ventasDiarias: number; importancia: number;
   esPeso: boolean; precioPorKg?: number; proveedor: string; diasParaAgotar: number; unidad: string;
@@ -163,7 +163,7 @@ export default function InventarioPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Nombre del producto</label>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Foto del producto</label><input type="file" accept="image/*" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 mb-3" /><label className="block text-sm font-medium text-stone-700 mb-1">Nombre del producto</label>
                 <input value={nuevoProducto.nombre} onChange={e => setNuevoProducto({...nuevoProducto, nombre: e.target.value})} placeholder="Ej: Pan Integral" className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-stone-400 focus:border-emerald-400 outline-none" />
               </div>
 
@@ -237,4 +237,5 @@ export default function InventarioPage() {
     </div>
   )
 }
+
 
