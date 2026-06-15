@@ -250,7 +250,7 @@ export default function POSPage() {
             <div className="grid grid-cols-3 gap-3 mb-3">
               <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-emerald-600">💵<br/>Efectivo</button>
               <button onClick={() => pay('Nequi')} className="bg-purple-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-purple-600">📱<br/>Nequi</button>
-              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-red-600">🏧<br/>Daviplata</button>
+              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-red-600">🏧<br/>DAVIPLATA</button><button onClick={() => pay('Bancolombia')} className='bg-yellow-500 text-white rounded-2xl py-5 font-bold text-sm'>🏦<br/>BANCOLOMBIA</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full py-3 text-stone-500 font-medium">Cancelar</button>
           </div>
@@ -259,6 +259,7 @@ export default function POSPage() {
     </div>
   )
 }
+
 
 
 
