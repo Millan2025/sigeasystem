@@ -1,0 +1,5 @@
+﻿<!DOCTYPE html>
+<html><body><canvas id="c"></canvas><script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+[192,512].forEach(s=>{c.width=c.height=s;x.fillStyle='#059669';x.beginPath();x.arc(s/2,s/2,s/2,0,Math.PI*2);x.fill();x.fillStyle='white';x.font=(s/2)+'px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText('🍞',s/2,s/2)})
+</script></body></html>
