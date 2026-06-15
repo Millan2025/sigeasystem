@@ -65,7 +65,7 @@ export default function FinanzasPage() {
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex items-center gap-3 mb-4">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
-          <div><h1 className="text-xl font-bold">Finanzas</h1><p className="text-stone-600 text-xs">Panaderia Doña Rosa</p></div>
+          <div><h1 className="text-xl font-bold">Finanzas</h1><p className="text-stone-300 text-xs">Panaderia Doña Rosa</p></div>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
           {tabs.map(t => (
@@ -112,11 +112,11 @@ export default function FinanzasPage() {
                   <span className="text-stone-600">{l.fecha.split('-')[2]}/{l.fecha.split('-')[1]}</span>
                   <span className="text-stone-700">{l.concepto}</span>
                   <span className="text-stone-600 text-[10px]">{l.cuenta}</span>
-                  <span className="text-right text-emerald-600">{l.ingreso > 0 ? '$'+l.ingreso.toLocaleString() : ''}</span>
-                  <span className="text-right text-rose-600">{l.egreso > 0 ? '$'+l.egreso.toLocaleString() : ''}</span>
+                  <span className="text-right pr-2 text-emerald-600">{l.ingreso > 0 ? '$'+l.ingreso.toLocaleString() : ''}</span>
+                  <span className="text-right pr-2 text-rose-600">{l.egreso > 0 ? '$'+l.egreso.toLocaleString() : ''}</span>
                 </div>
               ))}
-              <div className="grid grid-cols-5 gap-1 p-2 bg-stone-50 font-bold text-xs"><span></span><span></span><span>TOTALES</span><span className="text-right text-emerald-600">${totalIngresos.toLocaleString()}</span><span className="text-right text-rose-600">${totalEgresos.toLocaleString()}</span></div>
+              <div className="grid grid-cols-5 gap-1 p-2 bg-stone-50 font-bold text-xs"><span></span><span></span><span>TOTAL INGRESOS</span><span></span><span className="text-right pr-2 text-emerald-600">${totalIngresos.toLocaleString()}</span></div><div className="grid grid-cols-5 gap-1 p-2 bg-stone-50 font-bold text-xs"><span></span><span></span><span>TOTAL EGRESOS</span><span></span><span className="text-right pr-2 text-rose-600">${totalEgresos.toLocaleString()}</span></div>
             </div>
           </div>
         )}
@@ -213,4 +213,5 @@ export default function FinanzasPage() {
     </div>
   )
 }
+
 
