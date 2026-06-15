@@ -4,7 +4,7 @@ function getIcono(categoria: string, nombre: string): string {
   const mapaIconos: {[key: string]: string} = {
     'pan': '🍞', 'panadería': '🍞', 'torta': '🍰', 'pastelería': '🍰', 'pastel': '🍰',
     'croissant': '🥐', 'café': '☕', 'cafe': '☕', 'tinto': '☕', 'bebida': '🥤',
-    'coca': '🥤', 'gaseosa': '🥤', 'jugo': '🧃', 'queso': '🧀', 'lácteo': '🧀',
+    'coca': '🥤', 'cola': '🥤', 'gaseosa': '🥤', 'jugo': '🧃', 'queso': '🧀', 'lácteo': '🧀',
     'tomate': '🍅', 'verdura': '🥑', 'aguacate': '🥑', 'harina': '🌾', 'insumo': '🌾',
     'huevo': '🥚', 'mantequilla': '🧈', 'azúcar': '🍬', 'leche': '🥛',
   }
@@ -70,3 +70,4 @@ export async function GET() {
     return NextResponse.json({ success: true, data: [], source: 'error' })
   }
 }
+
