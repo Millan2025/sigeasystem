@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Star, Clock, ShoppingCart, Plus, Minus, X, MapPin, Phone } from 'lucide-react'
 import Link from 'next/link'
 
@@ -23,7 +23,7 @@ export default function TiendaPage() {
   const [search, setSearch] = useState('')
   const [showCart, setShowCart] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
-  const [orderPlaced, setOrderPlaced] = useState(false)
+  const [orderPlaced, setOrderPlaced] = useState(false); const [loading, setLoading] = useState(false); const [metodoPago, setMetodoPago] = useState('Efectivo')
 
   const filtered = products.filter(p => {
     if (selectedCat !== 'Todo' && p.category !== selectedCat) return false
@@ -42,12 +42,36 @@ export default function TiendaPage() {
     })
   }
 
-  function placeOrder() {
-    setOrderPlaced(true)
-    setCart([])
-    setShowCart(false)
-    setShowCheckout(false)
-    setTimeout(() => setOrderPlaced(false), 5000)
+  async function placeOrder() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(i => ({
+            productId: i.product.id,
+            productName: i.product.name,
+            price: i.product.price,
+            quantity: i.qty,
+            cantidad: i.qty
+          })),
+          paymentMethod: metodoPago || 'Efectivo',
+          customerName: 'Cliente Tienda'
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setOrderPlaced(true)
+        setCart([])
+        setShowCart(false)
+        setShowCheckout(false)
+        setTimeout(() => setOrderPlaced(false), 5000)
+      }
+    } catch (e) {
+      alert('Error al procesar pedido')
+    }
+    setLoading(false)
   }
 
   return (
@@ -199,3 +223,4 @@ export default function TiendaPage() {
     </div>
   )
 }
+
