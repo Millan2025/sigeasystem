@@ -65,7 +65,7 @@ export default function FinanzasPage() {
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex items-center gap-3 mb-4">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
-          <div><h1 className="text-xl font-bold">Finanzas</h1><p className="text-stone-400 text-xs">Panaderia Doña Rosa</p></div>
+          <div><h1 className="text-xl font-bold">Finanzas</h1><p className="text-stone-600 text-xs">Panaderia Doña Rosa</p></div>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
           {tabs.map(t => (
@@ -81,19 +81,19 @@ export default function FinanzasPage() {
         {tab === 'resumen' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-2xl p-4 border border-stone-200"><p className="text-xs text-stone-400">Ingresos</p><p className="text-2xl font-bold text-emerald-600">${totalIngresos.toLocaleString()}</p></div>
-              <div className="bg-white rounded-2xl p-4 border border-stone-200"><p className="text-xs text-stone-400">Egresos</p><p className="text-2xl font-bold text-rose-600">${totalEgresos.toLocaleString()}</p></div>
-              <div className="bg-white rounded-2xl p-4 border border-stone-200"><p className="text-xs text-stone-400">Nomina</p><p className="text-2xl font-bold text-amber-600">${nominaHoy.toLocaleString()}</p></div>
-              <div className={'rounded-2xl p-4 border ' + (utilidadHoy >= 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')}><p className="text-xs text-stone-400">Utilidad</p><p className={'text-2xl font-bold ' + (utilidadHoy >= 0 ? 'text-emerald-600' : 'text-rose-600')}>${utilidadHoy.toLocaleString()}</p></div>
+              <div className="bg-white rounded-2xl p-4 border border-stone-200"><p className="text-xs text-stone-600">Ingresos</p><p className="text-2xl font-bold text-emerald-600">${totalIngresos.toLocaleString()}</p></div>
+              <div className="bg-white rounded-2xl p-4 border border-stone-200"><p className="text-xs text-stone-600">Egresos</p><p className="text-2xl font-bold text-rose-600">${totalEgresos.toLocaleString()}</p></div>
+              <div className="bg-white rounded-2xl p-4 border border-stone-200"><p className="text-xs text-stone-600">Nomina</p><p className="text-2xl font-bold text-amber-600">${nominaHoy.toLocaleString()}</p></div>
+              <div className={'rounded-2xl p-4 border ' + (utilidadHoy >= 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')}><p className="text-xs text-stone-600">Utilidad</p><p className={'text-2xl font-bold ' + (utilidadHoy >= 0 ? 'text-emerald-600' : 'text-rose-600')}>${utilidadHoy.toLocaleString()}</p></div>
             </div>
 
             <div className="bg-white rounded-2xl p-5 border border-stone-200">
               <h3 className="font-bold text-stone-800 mb-3">Estado de Resultados (P&G)</h3>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-stone-500">Ventas Totales</span><span className="text-emerald-600">${ventasHoy.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-stone-500">Compras Proveedores</span><span className="text-rose-600">-${comprasHoy.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-stone-500">Nomina</span><span className="text-rose-600">-${nominaHoy.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-stone-500">Gastos Operativos</span><span className="text-rose-600">-${gastosHoy.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-stone-600">Ventas Totales</span><span className="text-emerald-600">${ventasHoy.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-stone-600">Compras Proveedores</span><span className="text-rose-600">-${comprasHoy.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-stone-600">Nomina</span><span className="text-rose-600">-${nominaHoy.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-stone-600">Gastos Operativos</span><span className="text-rose-600">-${gastosHoy.toLocaleString()}</span></div>
                 <hr /><div className="flex justify-between font-bold text-lg"><span>Utilidad Neta</span><span className={utilidadHoy >= 0 ? 'text-emerald-600' : 'text-rose-600'}>${utilidadHoy.toLocaleString()}</span></div>
               </div>
             </div>
@@ -109,9 +109,9 @@ export default function FinanzasPage() {
               <div className="grid grid-cols-5 gap-1 p-2 bg-stone-100 text-[10px] font-medium text-stone-600"><span>Fecha</span><span>Concepto</span><span>Cuenta</span><span className="text-right">Ingreso</span><span className="text-right">Egreso</span></div>
               {libroDiario.map((l, i) => (
                 <div key={i} className="grid grid-cols-5 gap-1 p-2 text-xs border-b border-stone-50">
-                  <span className="text-stone-400">{l.fecha.split('-')[2]}/{l.fecha.split('-')[1]}</span>
+                  <span className="text-stone-600">{l.fecha.split('-')[2]}/{l.fecha.split('-')[1]}</span>
                   <span className="text-stone-700">{l.concepto}</span>
-                  <span className="text-stone-400 text-[10px]">{l.cuenta}</span>
+                  <span className="text-stone-600 text-[10px]">{l.cuenta}</span>
                   <span className="text-right text-emerald-600">{l.ingreso > 0 ? '$'+l.ingreso.toLocaleString() : ''}</span>
                   <span className="text-right text-rose-600">{l.egreso > 0 ? '$'+l.egreso.toLocaleString() : ''}</span>
                 </div>
@@ -126,12 +126,12 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-5 border border-stone-200">
             <h3 className="font-bold text-stone-800 mb-3">Balance General Simplificado</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-stone-500">Caja</span><span>$292,500</span></div>
-              <div className="flex justify-between"><span className="text-stone-500">Inventario</span><span>$1,850,000</span></div>
-              <div className="flex justify-between"><span className="text-stone-500">Cuentas por Cobrar</span><span>$120,000</span></div>
+              <div className="flex justify-between"><span className="text-stone-600">Caja</span><span>$292,500</span></div>
+              <div className="flex justify-between"><span className="text-stone-600">Inventario</span><span>$1,850,000</span></div>
+              <div className="flex justify-between"><span className="text-stone-600">Cuentas por Cobrar</span><span>$120,000</span></div>
               <hr /><div className="flex justify-between font-bold"><span>Total Activos</span><span>$2,262,500</span></div>
-              <hr /><div className="flex justify-between"><span className="text-stone-500">Cuentas por Pagar</span><span className="text-rose-600">$180,000</span></div>
-              <div className="flex justify-between"><span className="text-stone-500">Prestamos</span><span className="text-rose-600">$500,000</span></div>
+              <hr /><div className="flex justify-between"><span className="text-stone-600">Cuentas por Pagar</span><span className="text-rose-600">$180,000</span></div>
+              <div className="flex justify-between"><span className="text-stone-600">Prestamos</span><span className="text-rose-600">$500,000</span></div>
               <hr /><div className="flex justify-between font-bold"><span>Total Pasivos</span><span className="text-rose-600">$680,000</span></div>
               <hr /><div className="flex justify-between font-bold text-lg"><span>Patrimonio Neto</span><span className="text-emerald-600">$1,582,500</span></div>
             </div>
@@ -162,7 +162,7 @@ export default function FinanzasPage() {
           <div className="space-y-4">
             <div className="bg-white rounded-2xl p-5 border border-stone-200">
               <h3 className="font-bold text-stone-800 mb-3 flex items-center gap-2"><Link2 className="w-4 h-4" /> Conexion API Contable</h3>
-              <p className="text-sm text-stone-500 mb-4">Conecta SIGEA con software contable legalizado ante la DIAN para exportacion automatica de informacion financiera.</p>
+              <p className="text-sm text-stone-600 mb-4">Conecta SIGEA con software contable legalizado ante la DIAN para exportacion automatica de informacion financiera.</p>
               
               <div className="bg-stone-50 rounded-xl p-4 mb-3">
                 <h4 className="font-bold text-stone-700 text-sm mb-2">Endpoints disponibles</h4>
@@ -213,3 +213,4 @@ export default function FinanzasPage() {
     </div>
   )
 }
+
