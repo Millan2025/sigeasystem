@@ -1,11 +1,11 @@
 ﻿'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, QrCode, Copy, ChefHat } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [cajaAbierta, setCajaAbierta] = useState(true)
+  const [cajaAbierta, setCajaAbierta] = useState(true); const [modulos, setModulos] = useState<string[]>(['pos','produccion','inventario','personal','pedidos','reportes','finanzas','tienda']); useEffect(() => { const s = localStorage.getItem('businessConfig'); if (s) { const c = JSON.parse(s); setModulos(c.modulosActivos || []) } }, [])
   const [showShare, setShowShare] = useState(false)
 
   const shareLinks = [
@@ -122,6 +122,7 @@ export default function DashboardPage() {
     </div>
   )
 }
+
 
 
 
