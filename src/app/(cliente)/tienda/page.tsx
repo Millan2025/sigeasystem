@@ -23,7 +23,11 @@ export default function TiendaPage() {
   const [search, setSearch] = useState('')
   const [showCart, setShowCart] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
-  const [orderPlaced, setOrderPlaced] = useState(false); const [loading, setLoading] = useState(false); const [metodoPago, setMetodoPago] = useState('Efectivo')
+  const [orderPlaced, setOrderPlaced] = useState(false)
+  const [clienteNombre, setClienteNombre] = useState('')
+  const [clienteTelefono, setClienteTelefono] = useState('')
+  const [clienteDireccion, setClienteDireccion] = useState('')
+  const [guardarDatos, setGuardarDatos] = useState(false); const [loading, setLoading] = useState(false); const [metodoPago, setMetodoPago] = useState('Efectivo')
 
   const filtered = products.filter(p => {
     if (selectedCat !== 'Todo' && p.category !== selectedCat) return false
@@ -57,7 +61,7 @@ export default function TiendaPage() {
             cantidad: i.qty
           })),
           paymentMethod: metodoPago || 'Efectivo',
-          customerName: 'Cliente Tienda'
+          customerName: clienteNombre || 'Cliente Tienda'
         })
       })
       const data = await res.json()
@@ -186,21 +190,29 @@ export default function TiendaPage() {
             <h2 className="font-bold text-xl text-stone-900 mb-4">📍 Datos de entrega</h2>
             <div className="space-y-3 mb-4">
               <div>
-                <label className="block text-sm font-bold text-stone-700 mb-1">Direccion</label>
+                <label className="block text-sm font-bold text-stone-700 mb-1">Nombre</label>
+              <div className="flex items-center gap-2 p-3 bg-stone-50 border border-stone-200 rounded-xl mb-3">
+                <input value={clienteNombre} onChange={e => setClienteNombre(e.target.value)} placeholder="Tu nombre completo" className="flex-1 bg-transparent text-sm text-stone-900 placeholder-stone-400 outline-none" />
+              </div>
+<label className="block text-sm font-bold text-stone-700 mb-1">Direccion</label>
                 <div className="flex items-center gap-2 p-3 bg-stone-50 border border-stone-200 rounded-xl">
                   <MapPin className="w-4 h-4 text-red-400 shrink-0" />
-                  <input placeholder="Calle, barrio, No." className="flex-1 bg-transparent text-sm text-stone-900 placeholder-stone-400 outline-none" />
+                  <input value={clienteDireccion} onChange={e => setClienteDireccion(e.target.value)} placeholder='Calle, barrio, No.' className="flex-1 bg-transparent text-sm text-stone-900 placeholder-stone-400 outline-none" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-1">Telefono</label>
                 <div className="flex items-center gap-2 p-3 bg-stone-50 border border-stone-200 rounded-xl">
                   <Phone className="w-4 h-4 text-green-500 shrink-0" />
-                  <input placeholder="312 456 7890" className="flex-1 bg-transparent text-sm text-stone-900 placeholder-stone-400 outline-none" />
+                  <input value={clienteTelefono} onChange={e => setClienteTelefono(e.target.value)} placeholder='312 456 7890' className="flex-1 bg-transparent text-sm text-stone-900 placeholder-stone-400 outline-none" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-1">Metodo de pago</label>
+              <label className="flex items-center gap-2 text-sm text-stone-600 mb-3">
+                <input type="checkbox" checked={guardarDatos} onChange={e => setGuardarDatos(e.target.checked)} className="w-4 h-4 rounded" />
+                Guardar mis datos para futuros pedidos
+              </label>
                 <div className="grid grid-cols-3 gap-2">
                   {['Efectivo','Nequi','Daviplata'].map(m => (
                     <button key={m} className="p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-medium text-stone-700 hover:bg-orange-50 hover:border-orange-300">{m}</button>
@@ -223,4 +235,5 @@ export default function TiendaPage() {
     </div>
   )
 }
+
 
