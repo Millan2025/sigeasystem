@@ -1,8 +1,8 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Package, Beaker, ShoppingCart, Calculator, TrendingDown, AlertTriangle, Plus, X, Download, ChefHat, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Package, Beaker, ShoppingCart, Calculator, TrendingDown, AlertTriangle, Plus, X, Download, ChefHat, Pencil, Trash2, Utensils } from 'lucide-react'
 
 // DATOS SINCRONIZADOS (simulan conexión con Supabase - products + recipes + ingredients)
 const recetas = [
@@ -68,7 +68,7 @@ function calcularConsumoTotal() {
 const consumoTotal = calcularConsumoTotal()
 
 export default function ProduccionPage() {
-  const [tab, setTab] = useState<'recetas'|'produccion'|'compras'>('recetas')
+  const [tipoNegocio, setTipoNegocio] = useState('panaderia'); useEffect(() => { const s = localStorage.getItem('businessConfig'); if (s) { const c = JSON.parse(s); setTipoNegocio(c.tipoNegocio || 'panaderia') } }, []); const [tab, setTab] = useState<'recetas'|'produccion'|'compras'>('recetas')
   const [showReceta, setShowReceta] = useState<string | null>(null)
   const [cantidadProducir, setCantidadProducir] = useState<{[key: string]: number}>({})
 
@@ -262,5 +262,6 @@ export default function ProduccionPage() {
     </div>
   )
 }
+
 
 
