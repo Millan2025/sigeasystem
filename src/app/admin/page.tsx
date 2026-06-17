@@ -1,5 +1,7 @@
 ﻿'use client'
 
+'use client'
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight } from 'lucide-react'
@@ -138,3 +140,4 @@ export default function AdminMasterPage() {
     </div>
   )
 }
+

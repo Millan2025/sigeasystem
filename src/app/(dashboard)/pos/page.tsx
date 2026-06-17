@@ -30,14 +30,14 @@ export default function POSPage() {
   const [showCart, setShowCart] = useState(false)
   const [showPay, setShowPay] = useState(false)
   const [msg, setMsg] = useState('')
-  const [catFilter, setCatFilter] = useState('Todo')
+  const [catFilter, setCatFilter] = useState('Todo'); const [searchTerm, setSearchTerm] = useState('')
   const [listening, setListening] = useState(false)
   const [voiceText, setVoiceText] = useState('')
   const [productoPesaje, setProductoPesaje] = useState<ProductoBase | null>(null)
   const [pesoInput, setPesoInput] = useState('')
 
   const cats = ['Todo', 'Panadería', 'Pastelería', 'Bebidas', 'Lácteos', 'Verduras']
-  const filtered = catFilter === 'Todo' ? productos : productos.filter(p => p.cat === catFilter)
+  const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos; const filtered = catFilter === 'Todo' ? searchFiltered : searchFiltered.filter(p => p.cat === catFilter)
   const totalItems = cart.reduce((s, i) => s + i.cantidad, 0)
   const totalPrecio = cart.reduce((s, i) => s + i.subtotal, 0)
 
@@ -259,6 +259,7 @@ export default function POSPage() {
     </div>
   )
 }
+
 
 
 
