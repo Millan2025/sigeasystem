@@ -35,10 +35,7 @@ export default function RegistroPage() {
       }
     })
 
-    if (error) {
-      setError(error.message === 'User already registered' ? 'Este email ya está registrado' : 'Error al crear cuenta')
-      setLoading(false)
-    } else {
+    if (error) { setError(error.message === 'User already registered' ? 'Este email ya esta registrado' : (data.error || 'Error al crear cuenta')); setLoading(false); } else {
       router.push('/')
       router.refresh()
     }
@@ -99,3 +96,4 @@ export default function RegistroPage() {
     </div>
   )
 }
+
