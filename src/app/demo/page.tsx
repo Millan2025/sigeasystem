@@ -1,148 +1,206 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
-import { BarChart3, TrendingUp, ShoppingCart, Truck, ChefHat, Package, DollarSign, Users, Star, Zap, ArrowRight, Phone, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
+import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, ChefHat, Zap, Phone, X, ArrowRight } from 'lucide-react'
 
-const stats = [
-  { label: 'Ventas Hoy', value: '$450,000', icon: TrendingUp, color: 'text-emerald-600' },
-  { label: 'Productos', value: '45+', icon: Package, color: 'text-amber-600' },
-  { label: 'Clientes', value: '120+', icon: Users, color: 'text-sky-600' },
-  { label: 'Pedidos', value: '24', icon: Truck, color: 'text-purple-600' },
-]
-
-const beneficios = [
-  { title: 'Control Total', desc: 'Inventario en tiempo real, ventas, compras, nomina. Todo en un solo lugar.', icon: Zap },
-  { title: 'Voz y Peso', desc: 'Dicta pedidos por voz. Productos por peso con calculo automatico.', icon: ShoppingCart },
-  { title: 'Produccion', desc: 'Recetas, food cost, lista de compras automatica segun ventas.', icon: ChefHat },
-  { title: 'Reportes', desc: 'Ventas por hora, productos mas vendidos, margenes de ganancia.', icon: BarChart3 },
-  { title: 'Domicilios', desc: 'Tus clientes compran desde la app. Tu asignas repartidor.', icon: Truck },
-  { title: 'Finanzas', desc: 'P&G, Balance, Cierre de caja. Listo para tu contador.', icon: DollarSign },
-]
-
-const demosNegocios = [
-  { tipo: 'Panaderia', icono: '🍞', color: 'bg-amber-500', modulos: 'POS · Produccion · Inventario · Domicilios · Finanzas' },
-  { tipo: 'Restaurante', icono: '🍽️', color: 'bg-red-500', modulos: 'Menu · Food Cost · Produccion · Pedidos · Reportes' },
-  { tipo: 'Tienda', icono: '🏪', color: 'bg-blue-500', modulos: 'POS · Inventario · Pedidos · Finanzas · Reportes' },
-  { tipo: 'Distribuidora', icono: '📦', color: 'bg-purple-500', modulos: 'Inventario · Lotes · IoT · Facturacion · Pedidos' },
-]
+const beneficiosPorModulo = {
+  pos: {
+    titulo: 'Punto de Venta Inteligente',
+    icono: '💰',
+    beneficios: [
+      'Dictado por voz: "500 de tomate, 2 panes, un cafe"',
+      'Productos por peso: balanza integrada, precio automatico',
+      'Cobro: Efectivo, Nequi, Daviplata, Bancolombia',
+      'Busqueda rapida de productos',
+      'Descuento automatico de inventario',
+      'Registro de ventas en tiempo real',
+    ],
+    color: 'bg-emerald-500'
+  },
+  produccion: {
+    titulo: 'Produccion y Recetas',
+    icono: '🏭',
+    beneficios: [
+      'Fichas tecnicas con ingredientes y cantidades exactas',
+      'Food cost: costo real vs precio de venta',
+      'Calculo automatico de materia prima segun ventas',
+      'Ordenes de produccion diarias',
+      'Lista de compras sugerida al proveedor',
+      'Adaptable a panaderia, restaurante, cafeteria',
+    ],
+    color: 'bg-lime-500'
+  },
+  inventario: {
+    titulo: 'Inventario Inteligente',
+    icono: '📦',
+    beneficios: [
+      'Control de stock en tiempo real',
+      'Alarmas: urgente, pedir ya, OK',
+      'Ponderacion por importancia del producto',
+      'Prediccion de agotamiento',
+      'Multiples unidades: kg, g, L, ml, unidades',
+      'Exportar a Excel para analisis',
+    ],
+    color: 'bg-amber-500'
+  },
+  personal: {
+    titulo: 'Gestion de Personal',
+    icono: '👥',
+    beneficios: [
+      'Registro de empleados con datos completos',
+      'Control de asistencia y horarios',
+      'Nomina: devengados, deducciones, neto a pagar',
+      'Apropiaciones para mediana empresa',
+      'Desprendible individual por empleado',
+      'Exportar para contador',
+    ],
+    color: 'bg-purple-500'
+  },
+  pedidos: {
+    titulo: 'Pedidos y Domicilios',
+    icono: '🛵',
+    beneficios: [
+      'Tus clientes compran desde la app',
+      'Recibes notificacion de nuevos pedidos',
+      'Asignas repartidor disponible',
+      'Seguimiento en tiempo real',
+      'Confirmacion de entrega',
+      'Historial de pedidos por cliente',
+    ],
+    color: 'bg-sky-500'
+  },
+  reportes: {
+    titulo: 'Reportes y Estadisticas',
+    icono: '📈',
+    beneficios: [
+      'Ventas por hora, dia, semana, mes',
+      'Top 10 productos mas vendidos',
+      'Margenes de ganancia por producto',
+      'Metodos de pago: % y montos',
+      'Graficos interactivos',
+      'Descargar en Excel para analisis',
+    ],
+    color: 'bg-rose-500'
+  },
+  finanzas: {
+    titulo: 'Finanzas y Contabilidad',
+    icono: '🏦',
+    beneficios: [
+      'Estado de Resultados (P&G)',
+      'Balance General simplificado',
+      'Libro Diario con cuentas contables',
+      'Cierre de caja con cuadre automatico',
+      'Exportar para contador',
+      'API de conexion con software DIAN',
+    ],
+    color: 'bg-teal-500'
+  },
+  tienda: {
+    titulo: 'Tienda Online',
+    icono: '🛒',
+    beneficios: [
+      'Tus clientes ven tu catalogo actualizado',
+      'Busqueda y filtro por categorias',
+      'Carrito de compras',
+      'Checkout con datos de entrega',
+      'Pago: Efectivo, Nequi, Daviplata, Bancolombia',
+      'Pedido confirmado con notificacion',
+    ],
+    color: 'bg-orange-500'
+  },
+}
 
 export default function DemoPage() {
-  const [contador, setContador] = useState(0)
-  const [showNegocio, setShowNegocio] = useState<number | null>(null)
+  const [moduloActivo, setModuloActivo] = useState<string | null>(null)
+  const [cajaAbierta, setCajaAbierta] = useState(true)
 
-  useEffect(() => {
-    const interval = setInterval(() => setContador(c => (c + 1) % 100), 50)
-    return () => clearInterval(interval)
-  }, [])
+  const modulos = [
+    { id: 'pos', label: 'Nueva Venta', icon: ShoppingCart, color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
+    { id: 'produccion', label: 'Produccion', icon: ChefHat, color: 'bg-lime-50 border-lime-200 text-lime-600' },
+    { id: 'inventario', label: 'Inventario', icon: Package, color: 'bg-amber-50 border-amber-200 text-amber-600' },
+    { id: 'personal', label: 'Personal', icon: Users, color: 'bg-purple-50 border-purple-200 text-purple-600' },
+    { id: 'pedidos', label: 'Pedidos', icon: Truck, color: 'bg-sky-50 border-sky-200 text-sky-600' },
+    { id: 'reportes', label: 'Reportes', icon: BarChart3, color: 'bg-rose-50 border-rose-200 text-rose-600' },
+    { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, color: 'bg-teal-50 border-teal-200 text-teal-600' },
+    { id: 'tienda', label: 'Tienda', icon: ShoppingCart, color: 'bg-orange-50 border-orange-200 text-orange-600' },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
-      {/* HERO */}
-      <header className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
-        <div className="max-w-2xl mx-auto px-6 py-16 text-center">
-          <span className="text-6xl block mb-6">🍞</span>
-          <h1 className="text-4xl font-extrabold mb-4 tracking-tight">SIGEA System</h1>
-          <p className="text-xl text-emerald-100 mb-2">El ERP inteligente para negocios de barrio</p>
-          <p className="text-emerald-200 text-sm mb-8">Panaderías · Restaurantes · Tiendas · Distribuidoras</p>
-          
-          <div className="bg-white/10 rounded-3xl p-6 mb-8">
-            <div className="grid grid-cols-4 gap-4">
-              {stats.map(s => (
-                <div key={s.label} className="text-center">
-                  <s.icon className="w-6 h-6 mx-auto mb-1 opacity-80" />
-                  <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-xs text-emerald-200">{s.label}</p>
-                </div>
-              ))}
-            </div>
+    <div className="min-h-screen bg-stone-50">
+      {/* HEADER */}
+      <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Panaderia Doña Rosa</h1>
+            <p className="text-stone-300 text-sm">Demo Interactiva · Todos los modulos</p>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="https://wa.me/573124567890?text=Hola%20Quiero%20probar%20SIGEA" target="_blank" className="bg-white text-emerald-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-emerald-50 transition flex items-center justify-center gap-2">
-              <Phone className="w-5 h-5" /> Hablar por WhatsApp
-            </a>
-            <a href="/tienda" className="bg-emerald-800 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-emerald-900 transition flex items-center justify-center gap-2">
-              Ver Demo en Vivo <ArrowRight className="w-5 h-5" />
-            </a>
-          </div>
+          <span className={'px-4 py-2 rounded-full text-sm font-semibold ' + (cajaAbierta ? 'bg-emerald-500' : 'bg-red-500')}>
+            {cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}
+          </span>
         </div>
       </header>
 
-      {/* TIPOS DE NEGOCIO */}
-      <section className="max-w-2xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold text-stone-800 text-center mb-2">Un sistema, todos los negocios</h2>
-        <p className="text-stone-500 text-center mb-8">Se adapta automaticamente al tipo de negocio</p>
-        
-        <div className="space-y-4">
-          {demosNegocios.map((d, i) => (
-            <div key={d.tipo} className="bg-white rounded-2xl border border-stone-200 overflow-hidden cursor-pointer hover:shadow-lg transition" onClick={() => setShowNegocio(showNegocio === i ? null : i)}>
-              <div className="p-5 flex items-center gap-4">
-                <div className={d.color + ' w-12 h-12 rounded-xl flex items-center justify-center text-2xl'}>{d.icono}</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-stone-800">{d.tipo}</h3>
-                  <p className="text-xs text-stone-400">{d.modulos}</p>
-                </div>
-                <ChevronDown className={'w-5 h-5 text-stone-400 transition ' + (showNegocio === i ? 'rotate-180' : '')} />
-              </div>
-              {showNegocio === i && (
-                <div className="px-5 pb-5 border-t border-stone-100 pt-4">
-                  <p className="text-sm text-stone-600 mb-3">
-                    {d.tipo === 'Panaderia' && 'Controla recetas, produccion diaria, inventario de ingredientes y ventas por voz. Calcula automaticamente la lista de compras segun lo vendido.'}
-                    {d.tipo === 'Restaurante' && 'Gestiona tu menu con food cost, fichas tecnicas por plato, control de ingredientes y pedidos a domicilio. Optimiza tus compras.'}
-                    {d.tipo === 'Tienda' && 'Inventario inteligente con alarmas de stock, ventas rapidas, pedidos a proveedores y domicilios. Todo desde el celular.'}
-                    {d.tipo === 'Distribuidora' && 'Control de lotes, facturacion electronica, IoT para bodegas, multi-almacen y reportes gerenciales.'}
-                  </p>
-                  <a href="/tienda" className="text-emerald-600 font-bold text-sm hover:underline">Ver demo en vivo →</a>
-                </div>
-              )}
-            </div>
+      {/* VENTAS DE HOY */}
+      <div className="p-4">
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white mb-4">
+          <p className="text-emerald-100 text-sm">VENTAS DE HOY (DEMO)</p>
+          <p className="text-4xl font-bold mt-1">$450,000</p>
+          <p className="text-sm text-emerald-100 mt-2">24 transacciones · Efectivo 65% · Nequi 20% · Daviplata 15%</p>
+        </div>
+
+        {/* BOTONES DE MÓDULOS */}
+        <h2 className="font-semibold text-stone-700 mb-3">CONOCE CADA MODULO (Toca para ver beneficios)</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {modulos.map(m => (
+            <button key={m.id} onClick={() => setModuloActivo(moduloActivo === m.id ? null : m.id)} className={m.color + ' rounded-2xl p-5 text-left border hover:shadow-md transition'}>
+              <m.icon className="w-7 h-7 mb-2" />
+              <span className="font-semibold text-stone-800 block">{m.label}</span>
+              <span className="text-xs text-stone-500">Toca para ver beneficios</span>
+            </button>
           ))}
         </div>
-      </section>
 
-      {/* BENEFICIOS */}
-      <section className="bg-stone-50 py-12">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-stone-800 text-center mb-8">¿Por que SIGEA?</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {beneficios.map(b => (
-              <div key={b.title} className="bg-white rounded-2xl p-5 border border-stone-200 hover:shadow-md transition">
-                <b.icon className="w-8 h-8 text-emerald-600 mb-3" />
-                <h3 className="font-bold text-stone-800 mb-1">{b.title}</h3>
-                <p className="text-sm text-stone-500">{b.desc}</p>
-              </div>
-            ))}
+        {/* CTA WHATSAPP */}
+        <a href="https://wa.me/573016111412?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System" target="_blank" className="mt-6 w-full bg-green-500 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-green-600 transition">
+          <Phone className="w-5 h-5" /> Escribenos por WhatsApp · 301-6111412
+        </a>
+        <a href="/registro" className="mt-3 w-full bg-stone-800 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-stone-900 transition">
+          🚀 Comenzar Gratis <ArrowRight className="w-5 h-5" />
+        </a>
+      </div>
+
+      {/* MODAL DE BENEFICIOS */}
+      {moduloActivo && beneficiosPorModulo[moduloActivo as keyof typeof beneficiosPorModulo] && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setModuloActivo(null)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {(() => {
+              const b = beneficiosPorModulo[moduloActivo as keyof typeof beneficiosPorModulo]
+              return (
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl">{b.icono}</span>
+                      <h2 className="font-bold text-xl text-stone-900">{b.titulo}</h2>
+                    </div>
+                    <button onClick={() => setModuloActivo(null)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-600" /></button>
+                  </div>
+                  <div className="space-y-2">
+                    {b.beneficios.map((ben, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl">
+                        <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                        <span className="text-sm text-stone-700">{ben}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <a href="/registro" className="mt-4 w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold flex items-center justify-center gap-2">
+                    🚀 Probar ahora gratis <ArrowRight className="w-5 h-5" />
+                  </a>
+                </>
+              )
+            })()}
           </div>
         </div>
-      </section>
-
-      {/* CONTADOR ANIMADO */}
-      <section className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-12 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <p className="text-6xl font-extrabold mb-2">${(contador * 5000).toLocaleString()}</p>
-          <p className="text-emerald-100">pesos ahorrados por nuestros clientes este mes</p>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-3xl font-bold text-stone-800 mb-4">¿Listo para transformar tu negocio?</h2>
-        <p className="text-stone-500 mb-8">Sin instalaciones complicadas. Sin costos ocultos. Empieza hoy.</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="https://wa.me/573124567890?text=Hola%20Quiero%20empezar%20con%20SIGEA" target="_blank" className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-emerald-700 transition">
-            💬 Escribenos por WhatsApp
-          </a>
-          <a href="/registro" className="bg-stone-800 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-stone-900 transition">
-            🚀 Comenzar Gratis
-          </a>
-        </div>
-        <p className="text-xs text-stone-400 mt-4">Plan gratuito disponible. Sin tarjeta de credito.</p>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-stone-900 text-stone-400 text-center py-6 text-sm">
-        <p>© 2025 SIGEA System · Francisco Millan · fjmillan38@gmail.com</p>
-      </footer>
+      )}
     </div>
   )
 }
