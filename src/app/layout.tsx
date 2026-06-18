@@ -1,5 +1,8 @@
-﻿import type { Metadata } from "next";
+﻿import LogoutButton from '@/components/shared/LogoutButton'
+import type { Metadata } from "next";
+import LogoutButton from '@/components/shared/LogoutButton'
 import { Geist, Geist_Mono } from "next/font/google";
+import LogoutButton from '@/components/shared/LogoutButton'
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,8 +30,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><LogoutButton />{children}</body>
     </html>
   );
 }
+
 

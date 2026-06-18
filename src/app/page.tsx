@@ -41,7 +41,7 @@ export default function DashboardPage() {
             </span>
           </div>
         </div>
-      </header><button onClick={() => window.location.href = "/login"} className="fixed top-4 right-4 z-50 bg-red-500 text-white p-2 rounded-full shadow-lg"><LogOut className="w-4 h-4" /></button>
+      </header>
 
       {showShare && (
         <div className="bg-white mx-4 mt-4 p-5 rounded-2xl shadow-lg border border-stone-200">
@@ -122,7 +122,6 @@ export default function DashboardPage() {
     </div>
   )
 }
-
 
 
 
