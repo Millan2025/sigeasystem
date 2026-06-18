@@ -25,7 +25,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto"><LogoutButton />
+    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto"><a href="/login" className="fixed top-4 left-4 z-50 bg-red-500 text-white p-2 rounded-full shadow-lg text-xs font-bold no-underline">Salir</a>
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex justify-between items-center">
           <div>
