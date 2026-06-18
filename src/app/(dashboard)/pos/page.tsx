@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale } from 'lucide-react'
 import Link from 'next/link'
 
@@ -24,11 +24,11 @@ export default function POSPage() {
   const [pesoInput, setPesoInput] = useState('')
   const [productos, setProductos] = useState<ProductoBase[]>([])
 
-  useState(() => {
+  useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(d => {
       if (d.success && d.data.length > 0) {
         setProductos(d.data.map((p: any) => ({
-          id: p.id, nombre: p.nombre || p.name, icono: p.icono || '📦',
+          id: p.id, nombre: p.nombre || p.name, icono: p.icono || 'ðŸ“¦',
           precio: p.precio || p.price || 0, precioPorKg: p.precioPorKg,
           stock: p.stock || 0, cat: p.categoria || p.category || 'General',
           esPeso: p.esPeso || false, keywords: [(p.nombre || '').toLowerCase()]
@@ -37,7 +37,7 @@ export default function POSPage() {
     }).catch(() => {})
   }, [])
 
-  const cats = ['Todo', 'Panadería', 'Pastelería', 'Bebidas', 'Lácteos', 'Verduras']
+  const cats = ['Todo', 'Panaderia', 'Pasteleria', 'Bebidas', 'Lacteos', 'Verduras']
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos
   const filtered = catFilter === 'Todo' ? searchFiltered : searchFiltered.filter(p => p.cat === catFilter)
   const totalItems = cart.reduce((s, i) => s + i.cantidad, 0)
@@ -73,7 +73,7 @@ export default function POSPage() {
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
-        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">🛒 {totalItems} · ${totalPrecio.toLocaleString()}</button>
+        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">ðŸ›’ {totalItems} Â· ${totalPrecio.toLocaleString()}</button>
       </header>
 
       {msg && <div className="px-4 py-2 text-sm font-medium bg-emerald-100 text-emerald-800">{msg}</div>}
@@ -91,7 +91,7 @@ export default function POSPage() {
           {filtered.map(p => (
             <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-2 shadow-sm border border-stone-200 active:scale-95 transition text-left">
               <span className="text-3xl block text-center mb-1">{p.icono}</span>
-              <h3 className="font-medium text-stone-800 text-xs leading-tight line-clamp-2">{p.nombre}</h3>
+              <h3 className="font-medium text-stone-800 text-xs leading-tight">{p.nombre}</h3>
               <p className="text-emerald-600 font-bold text-sm mt-1">{p.esPeso ? '$' + (p.precioPorKg || 0).toLocaleString() + '/kg' : '$' + (p.precio || 0).toLocaleString()}</p>
               {p.esPeso && <span className="text-[10px] text-amber-500 flex items-center gap-0.5"><Scale className="w-2.5 h-2.5" />gramos</span>}
             </button>
@@ -101,7 +101,7 @@ export default function POSPage() {
 
       {cart.length > 0 && (
         <div className="bg-white border-t p-3 shrink-0">
-          <button onClick={() => setShowPay(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg hover:bg-emerald-600 transition shadow-lg">💰 Cobrar ${totalPrecio.toLocaleString()}</button>
+          <button onClick={() => setShowPay(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg">ðŸ’° Cobrar ${totalPrecio.toLocaleString()}</button>
         </div>
       )}
 
@@ -139,7 +139,7 @@ export default function POSPage() {
                 <span className="w-24 text-right font-bold text-emerald-600 text-base shrink-0">${i.subtotal.toLocaleString()}</span>
               </div>
             ))}
-            <div className="mt-4 pt-4 border-t-2 border-stone-200"><p className="text-right text-2xl font-bold text-stone-900">Total: <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span></p><button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg mt-3">💰 Cobrar</button></div>
+            <div className="mt-4 pt-4 border-t-2 border-stone-200"><p className="text-right text-2xl font-bold text-stone-900">Total: <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span></p><button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg mt-3">ðŸ’° Cobrar</button></div>
           </div>
         </div>
       )}
