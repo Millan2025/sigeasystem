@@ -73,7 +73,7 @@ export default function POSPage() {
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
-        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">ðŸ›’ {totalItems} Â· ${totalPrecio.toLocaleString()}</button>
+        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">ðŸ›’ {totalItems} · ${totalPrecio.toLocaleString()}</button>
       </header>
 
       {msg && <div className="px-4 py-2 text-sm font-medium bg-emerald-100 text-emerald-800">{msg}</div>}
@@ -161,3 +161,4 @@ export default function POSPage() {
     </div>
   )
 }
+

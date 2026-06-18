@@ -28,11 +28,11 @@ export default function LoginPage() {
     } else {
       const { data: profile } = await supabase.from('profiles').select('rol').eq('id', data.user.id).single()
       if (profile?.rol === 'admin_master') {
-        router.push('/admin')
+        window.location.href = '/admin'
       } else {
-        router.push('/')
+        window.location.href = '/'
       }
-      router.refresh()
+      
     }
   }
 
@@ -55,3 +55,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
