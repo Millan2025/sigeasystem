@@ -1,4 +1,4 @@
-﻿TIPO_NEGOCIO,NOMBRE_NEGOCIO,MODULOS,PRODUCTO_SKU,PRODUCTO_NOMBRE,PRODUCTO_PRECIO,PRODUCTO_COSTO,PRODUCTO_STOCK,PRODUCTO_ES_RECETA,INGREDIENTES,UNIDAD_MEDIDA,CATEGORIA,PROVEEDOR,PROVEEDOR_TELEFONO,EMPLEADO_NOMBRE,EMPLEADO_CARGO,EMPLEADO_SALARIO,EMPLEADO_HORARIO
+﻿﻿TIPO_NEGOCIO,NOMBRE_NEGOCIO,MODULOS,PRODUCTO_SKU,PRODUCTO_NOMBRE,PRODUCTO_PRECIO,PRODUCTO_COSTO,PRODUCTO_STOCK,PRODUCTO_ES_RECETA,INGREDIENTES,UNIDAD_MEDIDA,CATEGORIA,PROVEEDOR,PROVEEDOR_TELEFONO,EMPLEADO_NOMBRE,EMPLEADO_CARGO,EMPLEADO_SALARIO,EMPLEADO_HORARIO
 panaderia,Panadería Doña Rosa,"pos,produccion,inventario,finanzas,personal,pedidos,reportes,tienda",PAN-001,Pan Aliñado Familiar,5000,1800,50,SI,"Harina de Trigo:250g|Azúcar Refinada:30g|Mantequilla:50g|Huevos:1unidad",unidad,Panadería,Harinas El Trigo,3001234567,Carlos Gómez,Cajero,1423500,06:00-14:00
 panaderia,,,,PAN-002,Pan Integral,4500,1600,40,SI,"Harina Integral:250g|Levadura:10g|Sal:5g|Agua:150ml",unidad,Panadería,Harinas El Trigo,3001234567,María López,Panadera,1500000,02:00-10:00
 panaderia,,,,PAN-003,Pan de Queso,3800,1400,35,SI,"Harina de Trigo:200g|Queso:100g|Mantequilla:30g|Leche:50ml",unidad,Panadería,Harinas El Trigo,3001234567,Juan Pérez,Repartidor,1300000,08:00-16:00
@@ -11,3 +11,4 @@ restaurante,Restaurante Doña Rosa,"pos,produccion,inventario,finanzas,personal,
 restaurante,,,,MENU-002,Sancocho de Gallina,12000,5200,25,SI,"Gallina:300g|Yuca:150g|Papa:200g|Plátano:1unidad|Mazorca:0.5unidad",plato,Sopas,Carnes El Pastor,3007890123,Pedro López,Cocinero,1800000,08:00-16:00
 tienda,Tienda La Esquina,"pos,inventario,finanzas,pedidos,tienda",TIEN-001,Coca-Cola 350ml,3500,2800,48,NO,,unidad,Bebidas,Coca-Cola FEMSA,3003214567,Luis Martínez,Vendedor,1300000,09:00-17:00
 tienda,,,,TIEN-002,Pan Tajado Bimbo,4500,3500,25,NO,,unidad,Panadería,Bimbo Colombia,3001472589,,,,
+
