@@ -21,29 +21,12 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Rutas que requieren autenticación
+  // Rutas protegidas (requieren login)
   const rutasProtegidas = ['/pos', '/inventario', '/personal', '/pedidos', '/produccion', '/reportes', '/finanzas', '/admin']
   const necesitaAuth = rutasProtegidas.some(r => request.nextUrl.pathname.startsWith(r))
 
-  // Rutas públicas (no requieren auth)
-  const rutasPublicas = ['/login', '/registro', '/tienda', '/entregas', '/api', '/_next', '/favicon.ico']
-  const esPublica = rutasPublicas.some(r => request.nextUrl.pathname.startsWith(r))
-
   if (necesitaAuth && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // Admin Master solo para rol admin_master
-  if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('rol')
-      .eq('id', user.id)
-      .single()
-    
-    if (profile?.rol !== 'admin_master') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
   }
 
   return response
