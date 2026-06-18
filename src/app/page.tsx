@@ -24,7 +24,8 @@ export default function DashboardPage() {
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank')
   }
 
-  return (<><LogoutButton /><div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
+  return (
+    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto"><LogoutButton />
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex justify-between items-center">
           <div>
@@ -60,7 +61,8 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        </div></>) }
+        </div>
+      )}
 
       <div className="p-4 space-y-4">
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white cursor-pointer" onClick={() => router.push('/finanzas')}>
@@ -117,8 +119,9 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
-    </div></>) }
-
+    </div>
+  )
+}
 
 
 
