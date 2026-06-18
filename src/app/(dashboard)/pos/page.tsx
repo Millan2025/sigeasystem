@@ -75,7 +75,7 @@ export default function POSPage() {
     setTimeout(() => setMsg(''), 3000)
   }
 
-  function startVoice() {
+  function startVoice() { alert('Voz disponible proximamente'); return; 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SpeechRecognition) { setMsg('Usa Chrome para voz'); setTimeout(() => setMsg(''), 3000); return }
     const recognition = new SpeechRecognition()
@@ -259,6 +259,7 @@ export default function POSPage() {
     </div>
   )
 }
+
 
 
 
