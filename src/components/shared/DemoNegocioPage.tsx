@@ -37,7 +37,7 @@ export default function DemoNegocioPage({ config }: { config: DemoConfig }) {
               <div key={i} className="bg-stone-50 rounded-xl p-3 text-center">
                 <span className="text-3xl block mb-1">{p.icono}</span>
                 <p className="text-sm font-medium text-stone-800">{p.nombre}</p>
-                <p className="text-emerald-600 font-bold">${p.precio.toLocaleString()}</p>
+                <p className="text-emerald-600 font-bold">${String(p.precio)()}</p>
               </div>
             ))}
           </div>
@@ -75,3 +75,4 @@ export default function DemoNegocioPage({ config }: { config: DemoConfig }) {
     </div>
   )
 }
+
