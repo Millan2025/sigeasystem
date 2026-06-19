@@ -1,11 +1,13 @@
 ﻿'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -18,30 +20,19 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClient()
-    
-    try {
-      const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password })
-      alert('PASO 1: Login ' + (loginError ? 'FALLÓ: ' + loginError.message : 'OK. Email: ' + data.user.email))
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password })
 
-      if (loginError) {
-        setError('Email o contraseña incorrectos')
-        setLoading(false)
-        return
-      }
-
-      const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
-      
-      if (adminEmails.includes(data.user.email)) {
-        alert('PASO 2: Es admin. Redirigiendo a /admin')
-        window.location.href = '/admin'
-      } else {
-        alert('PASO 2: Es cliente. Redirigiendo a /')
-        window.location.href = '/'
-      }
-    } catch (err: any) {
-      alert('ERROR: ' + err.message)
-      setError('Error: ' + err.message)
+    if (loginError) {
+      setError('Email o contraseña incorrectos')
       setLoading(false)
+      return
+    }
+
+    const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
+    if (adminEmails.includes(data.user.email)) {
+      router.push('/admin')
+    } else {
+      router.push('/')
     }
   }
 
