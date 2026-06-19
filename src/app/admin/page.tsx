@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight, ExternalLink, Copy, Bell, X, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight, ExternalLink, Copy, Bell, X } from 'lucide-react'
 
 interface Cliente {
   id: string; nombre: string; tipo: string; estado: string; fechaCreacion: string; suscripcion: string;
@@ -53,7 +53,7 @@ export default function AdminMasterPage() {
   }
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) { setUploadMsg('✅ Plantilla cargada: ' + file.name); setTimeout(() => setUploadMsg(''), 3000) }
+    if (file) { setUploadMsg('Plantilla cargada: ' + file.name); setTimeout(() => setUploadMsg(''), 3000) }
   }
 
   return (
@@ -65,7 +65,7 @@ export default function AdminMasterPage() {
         </div>
         <div className="flex gap-2 mb-3">
           <a href="/demo" target="_blank" className="bg-purple-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-600 inline-flex items-center gap-1 no-underline"><ExternalLink className="w-3 h-3" /> Demo</a>
-          <button onClick={copiarEnlace} className="bg-stone-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-stone-600 inline-flex items-center gap-1">{copied ? '✓ Copiado' : <><Copy className="w-3 h-3" /> Copiar</>}</button>
+          <button onClick={copiarEnlace} className="bg-stone-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-stone-600 inline-flex items-center gap-1">{copied ? 'Copiado' : <><Copy className="w-3 h-3" /> Copiar</>}</button>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
           {[{ id: 'clientes' as const, label: 'Clientes', icon: Users }, { id: 'trazabilidad' as const, label: 'Trazabilidad', icon: Activity }, { id: 'suscripciones' as const, label: 'Pagos', icon: CreditCard }, { id: 'config' as const, label: 'Config', icon: Settings }].map(t => (
@@ -135,9 +135,17 @@ export default function AdminMasterPage() {
       {/* MODAL VER CLIENTE */}
       {clienteDetalle && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setClienteDetalle(null)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4"><h2 className="font-bold text-xl text-stone-900">{clienteDetalle.nombre}</h2><button onClick={() => setClienteDetalle(null)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-600" /></button></div>
-            <div className="space-y-2 text-sm"><p className='text-stone-700 font-medium'><span className='text-stone-500'>Tipo:</span> {clienteDetalle.tipo}</p><p className='text-stone-700 font-medium'><span className='text-stone-500'>Gerente:</span> {clienteDetalle.gerente}</p><p className='text-stone-700 font-medium'><span className='text-stone-500'>Email:</span> {clienteDetalle.email}</p><p className='text-stone-700 font-medium'><span className='text-stone-500'>Telefono:</span> {clienteDetalle.telefono}</p><p><span className="text-stone-500">Plan:</span> <span className="font-bold text-emerald-600">{clienteDetalle.suscripcion}</span></p><p><span className="text-stone-500">Modulos:</span> {clienteDetalle.modulos.join(', ')}</p></div>
+            <div className="space-y-3 text-sm">
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Tipo:</span> {clienteDetalle.tipo}</p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Gerente:</span> {clienteDetalle.gerente}</p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Email:</span> {clienteDetalle.email}</p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Telefono:</span> {clienteDetalle.telefono}</p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Plan:</span> <span className="text-emerald-600 font-bold">{clienteDetalle.suscripcion}</span></p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Modulos:</span> {clienteDetalle.modulos.join(', ')}</p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Creado:</span> {clienteDetalle.fechaCreacion}</p>
+            </div>
           </div>
         </div>
       )}
@@ -145,14 +153,16 @@ export default function AdminMasterPage() {
       {/* MODAL NUEVO CLIENTE */}
       {showNuevoCliente && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowNuevoCliente(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h2 className="font-bold text-xl text-stone-900 mb-4">Nuevo Cliente</h2>
-            <div className="space-y-3"><div><label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio</label><input placeholder="Ej: Panaderia Doña Rosa" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div>
+            <div className="space-y-3">
+              <div><label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio</label><input placeholder="Ej: Panaderia Doña Rosa" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div>
               <div className="grid grid-cols-2 gap-2"><div><label className="block text-xs font-bold text-stone-700 mb-1">Gerente</label><input placeholder="Nombre completo" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div><div><label className="block text-xs font-bold text-stone-700 mb-1">Tipo Negocio</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"><option>panaderia</option><option>restaurante</option><option>tienda</option><option>distribuidora</option></select></div></div>
               <div className="grid grid-cols-2 gap-2"><div><label className="block text-xs font-bold text-stone-700 mb-1">Email</label><input type="email" placeholder="correo@email.com" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div><div><label className="block text-xs font-bold text-stone-700 mb-1">Telefono</label><input placeholder="3001234567" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div></div>
               <div><label className="block text-xs font-bold text-stone-700 mb-1">Direccion</label><input placeholder="Calle 123 #45-67" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div>
-              <div><label className="block text-xs font-bold text-stone-700 mb-1">Plan</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"><option>Free</option><option>Pro</option><option>Enterprise</option></select></div> className="w-full p-3 bg-stone-50 border rounded-xl text-sm" /><input placeholder="Gerente" className="w-full p-3 bg-stone-50 border rounded-xl text-sm" /><input placeholder="Email" className="w-full p-3 bg-stone-50 border rounded-xl text-sm" /><input placeholder="Telefono" className="w-full p-3 bg-stone-50 border rounded-xl text-sm" /></div>
-            <div className="flex gap-3 mt-4"><button onClick={() => setShowNuevoCliente(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold">Cancelar</button><button onClick={() => { alert('Cliente creado'); setShowNuevoCliente(false) }} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button></div>
+              <div><label className="block text-xs font-bold text-stone-700 mb-1">Plan</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"><option>Free</option><option>Pro</option><option>Enterprise</option></select></div>
+            </div>
+            <div className="flex gap-3 mt-4"><button onClick={() => setShowNuevoCliente(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button><button onClick={() => { alert('Cliente creado'); setShowNuevoCliente(false) }} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button></div>
           </div>
         </div>
       )}
@@ -160,15 +170,17 @@ export default function AdminMasterPage() {
       {/* MODAL PRODUCTO */}
       {showProducto && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowProducto(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h2 className="font-bold text-xl text-stone-900 mb-4">Agregar Producto</h2>
-            <div className="space-y-3"><div><label className="block text-xs font-bold text-stone-700 mb-1">Cliente</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">{clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
+            <div className="space-y-3">
+              <div><label className="block text-xs font-bold text-stone-700 mb-1">Cliente</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">{clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
               <div><label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Producto</label><input placeholder="Ej: Pan Aliñado Familiar" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div>
               <div className="grid grid-cols-2 gap-2"><div><label className="block text-xs font-bold text-stone-700 mb-1">SKU</label><input placeholder="PAN-001" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div><div><label className="block text-xs font-bold text-stone-700 mb-1">Categoria</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"><option>Panaderia</option><option>Pasteleria</option><option>Bebidas</option><option>Lacteos</option><option>Verduras</option></select></div></div>
               <div className="grid grid-cols-3 gap-2"><div><label className="block text-xs font-bold text-stone-700 mb-1">Precio</label><input type="number" placeholder="$5000" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div><div><label className="block text-xs font-bold text-stone-700 mb-1">Costo</label><input type="number" placeholder="$1800" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div><div><label className="block text-xs font-bold text-stone-700 mb-1">Stock</label><input type="number" placeholder="50" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div></div>
               <div className="grid grid-cols-2 gap-2"><div><label className="block text-xs font-bold text-stone-700 mb-1">Unidad</label><select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"><option>unidad</option><option>kg</option><option>g</option><option>L</option><option>ml</option></select></div><div><label className="block text-xs font-bold text-stone-700 mb-1">Proveedor</label><input placeholder="Nombre proveedor" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" /></div></div>
-              <label className="flex items-center gap-2 text-sm text-stone-700"><input type="checkbox" className="w-4 h-4 rounded" /> Producto por peso (precio variable)</label> className="w-full p-3 bg-stone-50 border rounded-xl text-sm" /><div className="grid grid-cols-2 gap-2"><input type="number" placeholder="Precio" className="p-3 bg-stone-50 border rounded-xl text-sm" /><input type="number" placeholder="Stock" className="p-3 bg-stone-50 border rounded-xl text-sm" /></div></div>
-            <div className="flex gap-3 mt-4"><button onClick={() => setShowProducto(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold">Cancelar</button><button onClick={() => { alert('Producto agregado'); setShowProducto(false) }} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button></div>
+              <label className="flex items-center gap-2 text-sm text-stone-700"><input type="checkbox" className="w-4 h-4 rounded" /> Producto por peso (precio variable)</label>
+            </div>
+            <div className="flex gap-3 mt-4"><button onClick={() => setShowProducto(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button><button onClick={() => { alert('Producto agregado'); setShowProducto(false) }} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button></div>
           </div>
         </div>
       )}
@@ -180,12 +192,10 @@ export default function AdminMasterPage() {
             <h2 className="font-bold text-xl text-stone-900 mb-4">Cargar Plantilla</h2>
             <label className="block cursor-pointer"><input type="file" accept=".csv" onChange={handleUpload} className="hidden" /><div className="bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl p-8 text-center"><Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" /><p className="text-blue-600 font-bold">Seleccionar archivo CSV</p></div></label>
             {uploadMsg && <p className="mt-3 text-sm text-emerald-600 font-medium">{uploadMsg}</p>}
-            <button onClick={() => setShowCargar(false)} className="w-full mt-4 bg-stone-200 py-3 rounded-xl font-bold">Cerrar</button>
+            <button onClick={() => setShowCargar(false)} className="w-full mt-4 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cerrar</button>
           </div>
         </div>
       )}
     </div>
   )
 }
-
-
