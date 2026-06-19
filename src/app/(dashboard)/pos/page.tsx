@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
@@ -35,7 +35,7 @@ export default function POSPage() {
           else if (cat.includes('Lact')) cat = 'Lacteos'
           else if (cat.includes('Verdu')) cat = 'Verduras'
           return {
-            id: p.id, nombre: p.nombre || p.name, icono: p.icono || '📦',
+            id: p.id, nombre: p.nombre || p.name, icono: p.icono || 'ðŸ“¦',
             precio: p.precio || p.price || 0, precioPorKg: p.precioPorKg,
             stock: p.stock || 0, cat: cat, esPeso: p.esPeso || false
           }
@@ -68,7 +68,7 @@ export default function POSPage() {
   }
 
   function pay(m: string) {
-    setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
+    setMsg('âœ… Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
     setCart([]); setShowPay(false); setShowCart(false)
     setTimeout(() => setMsg(''), 3000)
   }
@@ -79,7 +79,7 @@ export default function POSPage() {
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
         <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">
-          <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} · ${totalPrecio.toLocaleString()}
+          <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} Â· ${totalPrecio.toLocaleString()}
         </button>
       </header>
 
@@ -100,7 +100,7 @@ export default function POSPage() {
         <div className="grid grid-cols-2 gap-2">
           {filtered.map(p => (
             <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 active:scale-95 transition text-left hover:shadow-md">
-              <span className="text-3xl block text-center mb-2">{p.icono || '📦'}</span>
+              <span className="text-3xl block text-center mb-2">{p.icono || 'ðŸ“¦'}</span>
               <h3 className="font-medium text-stone-800 text-xs leading-tight">{p.nombre}</h3>
               <p className="text-emerald-600 font-bold text-sm mt-1">{p.esPeso ? '$' + (p.precioPorKg || 0).toLocaleString() + '/kg' : '$' + (p.precio || 0).toLocaleString()}</p>
               {p.esPeso && <span className="text-[10px] text-amber-500 flex items-center gap-0.5 mt-0.5"><Scale className="w-2.5 h-2.5" />Por peso</span>}
@@ -162,7 +162,7 @@ export default function POSPage() {
             <div className="grid grid-cols-3 gap-3 mb-3">
               <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-emerald-600">Efectivo</button>
               <button onClick={() => pay('Nequi')} className="bg-purple-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-purple-600">Nequi</button>
-              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-red-600">Daviplata</button>
+              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-red-600">Daviplata</button><button onClick={() => pay('Bancolombia')} className='bg-yellow-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-yellow-600'>Bancolombia</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full py-3 text-stone-500 font-medium">Cancelar</button>
           </div>
