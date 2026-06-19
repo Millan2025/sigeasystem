@@ -29,7 +29,7 @@ export default function LoginPage() {
     }
 
     const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
-    if (adminEmails.includes(data.user.email)) {
+    if (adminEmails.includes(data.user.email || '')) {
       router.push('/admin')
     } else {
       router.push('/')
@@ -55,3 +55,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
