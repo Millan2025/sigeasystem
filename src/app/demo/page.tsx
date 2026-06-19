@@ -8,7 +8,7 @@ const beneficiosPorModulo = {
     titulo: 'Punto de Venta Inteligente',
     icono: '💰',
     beneficios: [
-      'Dictado por voz: "500 de tomate, 2 panes, un cafe"',
+      
       'Productos por peso: balanza integrada, precio automatico',
       'Cobro: Efectivo, Nequi, Daviplata, Bancolombia',
       'Busqueda rapida de productos',
@@ -207,6 +207,8 @@ export default function DemoPage() {
     </div>
   )
 }
+
+
 
 
 
