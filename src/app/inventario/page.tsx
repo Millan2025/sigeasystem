@@ -59,9 +59,20 @@ export default function InventarioPage() {
   }
 
   function descargarInventario() {
-    var csv = '\uFEFFProducto,Categoria,Stock,Stock Min,Precio,Costo,Ventas/día,Importancia,Días para agotar,Proveedor\n'
-    filtrado.forEach(function(p: ProductoInv) {
-      csv += p.nombre + ',' + p.categoria + ',' + p.stock + ',' + p.stockMin + ',' + p.precio + ',' + p.costo + ',' + p.ventasDiarias + ',' + p.importancia + ',' + p.diasParaAgotar.toFixed(1) + ',' + p.proveedor + '\n'
+    var csv = '\uFEFFSKU,NOMBRE,PRECIO,COSTO,STOCK_INICIAL,ES_RECETA,UNIDAD_MEDIDA,PRECIO_POR_KG,CATEGORIA,PROVEEDOR,PROVEEDOR_TELEFONO\n'
+    filtrado.forEach(function(p) {
+      var sku = p.sku || p.id || ''
+      var nombre = p.nombre || ''
+      var precio = p.precio || 0
+      var costo = p.costo || 0
+      var stock = p.stock || 0
+      var esReceta = p.is_recipe ? 'SI' : 'NO'
+      var unidad = p.esPeso ? 'kg' : 'unidad'
+      var precioPorKg = p.precioPorKg || ''
+      var categoria = p.categoria || ''
+      var proveedor = p.proveedor || ''
+      var telefono = p.proveedorTelefono || ''
+      csv += sku + ',' + nombre + ',' + precio + ',' + costo + ',' + stock + ',' + esReceta + ',' + unidad + ',' + precioPorKg + ',' + categoria + ',' + proveedor + ',' + telefono + '\n'
     })
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     var url = URL.createObjectURL(blob)
@@ -237,5 +248,6 @@ export default function InventarioPage() {
     </div>
   )
 }
+
 
 
