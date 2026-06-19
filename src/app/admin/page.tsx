@@ -1,8 +1,8 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight, ExternalLink, Copy } from 'lucide-react'
+import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight, ExternalLink, Copy, Bell } from 'lucide-react'
 
 interface Cliente {
   id: string; nombre: string; tipo: string; estado: string; fechaCreacion: string; suscripcion: string;
@@ -57,6 +57,11 @@ export default function AdminMasterPage() {
               <button className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left hover:bg-blue-100"><Upload className="w-6 h-6 text-blue-600 mb-2" /><span className="font-bold text-stone-800 block text-sm">Cargar Plantilla</span><span className="text-xs text-blue-600">Procesar datos</span></button>
               <button className="bg-purple-50 border border-purple-200 rounded-2xl p-4 text-left hover:bg-purple-100"><UserPlus className="w-6 h-6 text-purple-600 mb-2" /><span className="font-bold text-stone-800 block text-sm">Nuevo Cliente</span></button>
               <button className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left hover:bg-amber-100"><Package className="w-6 h-6 text-amber-600 mb-2" /><span className="font-bold text-stone-800 block text-sm">+ Producto/Insumo</span></button>
+            <button onClick={() => setShowNotif(true)} className="relative bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left hover:bg-blue-100">
+              <Bell className="w-6 h-6 text-blue-600 mb-2" />
+              <span className="font-bold text-stone-800 block text-sm">Notificaciones</span>
+              {notificaciones.length > 0 && <span className="absolute top-2 right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">{notificaciones.length}</span>}
+            </button>
             </div>
             <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" /><input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar cliente..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-stone-200 text-sm text-stone-900" /></div>
             {clientesDemo.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase())).map(c => (
@@ -82,6 +87,25 @@ export default function AdminMasterPage() {
           </div>
         )}
       </div>
-    </div>
+    
+      {/* MODAL NOTIFICACIONES */}
+      {showNotif && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-8 overflow-y-auto" onClick={() => setShowNotif(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4"><h2 className="font-bold text-xl text-stone-900">🔔 Nuevos Registros</h2><button onClick={() => setShowNotif(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-600" /></button></div>
+            {notificaciones.length === 0 ? <p className="text-center text-stone-400 py-8">Sin notificaciones nuevas</p> : notificaciones.map((l: any, i: number) => (
+              <div key={i} className="bg-blue-50 rounded-xl p-3 mb-2">
+                <div className="flex justify-between items-start"><div><p className="font-bold text-stone-800 text-sm">{l.nombre}</p><p className="text-xs text-stone-500">{l.email} · {l.origen}</p></div><span className="text-[10px] text-stone-400">{new Date(l.created_at).toLocaleDateString()}</span></div>
+                <div className="flex gap-2 mt-2">
+                  <a href={'https://wa.me/57' + (l.telefono || '3016111412') + '?text=Hola ' + l.nombre + ', vi tu registro en SIGEA'} target="_blank" className="text-xs text-green-600 font-medium hover:underline">📞 Contactar</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+</div>
   )
 }
+
+
