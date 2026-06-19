@@ -37,7 +37,8 @@ export default function RegistroPage() {
         setError(data.error || 'Error al crear cuenta')
         setLoading(false)
       } else {
-        router.push('/')
+        fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, email, origen: 'registro' }) }).catch(() => {})
+              router.push('/')
         router.refresh()
       }
     } catch {
@@ -69,3 +70,4 @@ export default function RegistroPage() {
     </div>
   )
 }
+

@@ -110,7 +110,7 @@ const beneficiosPorModulo = {
   },
 }
 
-export default function DemoPage() {
+export default function DemoPage() { useEffect(() => { fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: 'Visitante Demo', email: 'anonimo@demo.com', origen: 'tour_demo' }) }).catch(() => {}) }, [])
   const [moduloActivo, setModuloActivo] = useState<string | null>(null)
   const [cajaAbierta, setCajaAbierta] = useState(true)
 
@@ -204,3 +204,4 @@ export default function DemoPage() {
     </div>
   )
 }
+
