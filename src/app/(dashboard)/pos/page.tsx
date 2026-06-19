@@ -28,7 +28,7 @@ export default function POSPage() {
     fetch('/api/products').then(r => r.json()).then(d => {
       if (d.success && d.data.length > 0) {
         setProductos(d.data.map((p: any) => ({
-          id: p.id, nombre: p.nombre || p.name, icono: p.icono || 'ðŸ“¦',
+          id: p.id, nombre: p.nombre || p.name, icono: p.icono || '$¦',
           precio: p.precio || p.price || 0, precioPorKg: p.precioPorKg,
           stock: p.stock || 0, cat: p.categoria || p.category || 'General',
           esPeso: p.esPeso || false, keywords: [(p.nombre || '').toLowerCase()]
@@ -73,7 +73,7 @@ export default function POSPage() {
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
-        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">ðŸ›’ {totalItems} · ${totalPrecio.toLocaleString()}</button>
+        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">C {totalItems} · ${totalPrecio.toLocaleString()}</button>
       </header>
 
       {msg && <div className="px-4 py-2 text-sm font-medium bg-emerald-100 text-emerald-800">{msg}</div>}
@@ -101,7 +101,7 @@ export default function POSPage() {
 
       {cart.length > 0 && (
         <div className="bg-white border-t p-3 shrink-0">
-          <button onClick={() => setShowPay(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg">ðŸ’° Cobrar ${totalPrecio.toLocaleString()}</button>
+          <button onClick={() => setShowPay(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg">$° Cobrar ${totalPrecio.toLocaleString()}</button>
         </div>
       )}
 
@@ -139,7 +139,7 @@ export default function POSPage() {
                 <span className="w-24 text-right font-bold text-emerald-600 text-base shrink-0">${i.subtotal.toLocaleString()}</span>
               </div>
             ))}
-            <div className="mt-4 pt-4 border-t-2 border-stone-200"><p className="text-right text-2xl font-bold text-stone-900">Total: <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span></p><button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg mt-3">ðŸ’° Cobrar</button></div>
+            <div className="mt-4 pt-4 border-t-2 border-stone-200"><p className="text-right text-2xl font-bold text-stone-900">Total: <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span></p><button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg mt-3">$° Cobrar</button></div>
           </div>
         </div>
       )}
@@ -161,4 +161,5 @@ export default function POSPage() {
     </div>
   )
 }
+
 
