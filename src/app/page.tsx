@@ -31,7 +31,7 @@ export default function DashboardPage() {
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Panaderia Doña Rosa</h1>
+            <h1 className="text-2xl font-bold">Panaderia Doña Rosa v2</h1>
             <p className="text-stone-300 text-sm">{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
           <div className="flex gap-2">
@@ -120,3 +120,4 @@ export default function DashboardPage() {
     </div>
   )
 }
+
