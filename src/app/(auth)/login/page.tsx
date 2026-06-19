@@ -1,13 +1,11 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -25,14 +23,15 @@ export default function LoginPage() {
     if (error) {
       setError('Email o contraseña incorrectos')
       setLoading(false)
+      return
+    }
+
+    const { data: profile } = await supabase.from('profiles').select('rol').eq('id', data.user.id).single()
+
+    if (profile?.rol === 'admin_master') {
+      window.location.href = '/admin'
     } else {
-      const { data: profile } = await supabase.from('profiles').select('rol').eq('id', data.user.id).single()
-      if (profile?.rol === 'admin_master') {
-        window.location.href = '/admin'
-      } else {
-        window.location.href = '/'
-      }
-      
+      window.location.href = '/'
     }
   }
 
@@ -55,4 +54,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
