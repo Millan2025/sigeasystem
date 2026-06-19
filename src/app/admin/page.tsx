@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ExternalLink, Copy, Bell, X, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight, ExternalLink, Copy, Bell, X, CheckCircle } from 'lucide-react'
 
 interface Cliente {
   id: string; nombre: string; tipo: string; estado: string; fechaCreacion: string; suscripcion: string;
@@ -178,3 +178,4 @@ export default function AdminMasterPage() {
     </div>
   )
 }
+
