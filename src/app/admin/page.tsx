@@ -61,7 +61,12 @@ export default function AdminMasterPage() {
               <Bell className="w-6 h-6 text-blue-600 mb-2" />
               <span className="font-bold text-stone-800 block text-sm">Notificaciones</span>
               {notificaciones.length > 0 && <span className="absolute top-2 right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">{notificaciones.length}</span>}
+            </div>
+            <button onClick={() => setShowNotif(true)} className="w-full bg-blue-50 border border-blue-200 rounded-2xl p-4 text-left hover:bg-blue-100 mb-3">
+              <Bell className="w-6 h-6 text-blue-600 mb-2 inline" />
+              <span className="font-bold text-stone-800 block text-sm">Notificaciones {notificaciones.length > 0 ? '(' + notificaciones.length + ')' : ''}</span>
             </button>
+</button>
             </div>
             <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" /><input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar cliente..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-stone-200 text-sm text-stone-900" /></div>
             {clientesDemo.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase())).map(c => (
@@ -107,5 +112,6 @@ export default function AdminMasterPage() {
 </div>
   )
 }
+
 
 
