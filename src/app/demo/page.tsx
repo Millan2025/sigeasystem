@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, ChefHat, Zap, Phone, X, ArrowRight } from 'lucide-react'
 
 const beneficiosPorModulo = {
@@ -111,9 +111,11 @@ const beneficiosPorModulo = {
 }
 
 export default function DemoPage() {
-  useEffect(() => { fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: 'Visitante Demo', email: 'anonimo@demo.com', origen: 'tour_demo' }) }).catch(() => {}) }, [])
   const [moduloActivo, setModuloActivo] = useState<string | null>(null)
   const [cajaAbierta, setCajaAbierta] = useState(true)
+  useEffect(() => {
+    fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: 'Visitante Demo', email: 'anonimo@demo.com', origen: 'tour_demo' }) }).catch(() => {})
+  }, [])
 
   const modulos = [
     { id: 'pos', label: 'Nueva Venta', icon: ShoppingCart, color: 'bg-emerald-50 border-emerald-200 text-emerald-600' },
