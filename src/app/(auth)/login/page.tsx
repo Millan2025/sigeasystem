@@ -18,20 +18,30 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClient()
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    
+    try {
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+      alert('PASO 1: Login ' + (loginError ? 'FALLÓ: ' + loginError.message : 'OK. Email: ' + data.user.email))
 
-    if (error) {
-      setError('Email o contraseña incorrectos')
+      if (loginError) {
+        setError('Email o contraseña incorrectos')
+        setLoading(false)
+        return
+      }
+
+      const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
+      
+      if (adminEmails.includes(data.user.email)) {
+        alert('PASO 2: Es admin. Redirigiendo a /admin')
+        window.location.href = '/admin'
+      } else {
+        alert('PASO 2: Es cliente. Redirigiendo a /')
+        window.location.href = '/'
+      }
+    } catch (err: any) {
+      alert('ERROR: ' + err.message)
+      setError('Error: ' + err.message)
       setLoading(false)
-      return
-    }
-
-    const { data: profile } = await supabase.from('profiles').select('rol').eq('id', data.user.id).single()
-
-    if (profile?.rol === 'admin_master') {
-      window.location.href = '/admin'
-    } else {
-      window.location.href = '/'
     }
   }
 
@@ -54,4 +64,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
