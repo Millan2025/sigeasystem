@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search, Plus, Star, AlertTriangle, Package, X, Scale } from 'lucide-react'
 
@@ -24,8 +24,7 @@ const inventarioDemo: ProductoInv[] = [
 ]
 
 export default function InventarioPage() {
-  const [productos, setProductos] = useState<ProductoInv[]>(inventarioDemo); useEffect(() => { fetch('/api/inventory').then(r => r.json()).then(d => { if (d.success && d.data.length > 0) setProductos(d.data.map((p: any) => ({ id: p.id, nombre: p.name || p.nombre, icono: '📦', categoria: p.category || 'General', stock: Number(p.stock) || 0, stockMin: Number(p.min_stock) || 5, precio: Number(p.price) || 0, costo: Number(p.cost) || 0, ventasDiarias: 5, importancia: 3, esPeso: false, proveedor: '', diasParaAgotar: 10, unidad: 'unidad' }))) }).catch(() => {}) }, []); const [busqueda, setBusqueda] = useState('')
-  const [catFilter, setCatFilter] = useState('Todas')
+  const [busqueda, setBusqueda] = useState(''); const [catFilter, setCatFilter] = useState('Todas')
   const [alertaFilter, setAlertaFilter] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [ordenarPor, setOrdenarPor] = useState<'importancia'|'dias'|'nombre'>('importancia')
