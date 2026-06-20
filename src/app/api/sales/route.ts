@@ -68,18 +68,7 @@ export async function POST(request: Request) {
             }
           }
         }
-        // Si la venta viene de Tienda, crear pedido automático
-            if (customerName && customerName !== 'Cliente POS') {
-              await supabase.from('customer_orders').insert({
-                customer_id: customerId || '00000000-0000-0000-0000-000000000000',
-                status: 'pending',
-                subtotal: totalAmount,
-                total: totalAmount,
-                metodo_pago: paymentMethod,
-                direccion_entrega: 'Pendiente',
-              })
-            }
-            return NextResponse.json({ success: true, data: sale, source: 'supabase' }, { status: 201 })
+        return NextResponse.json({ success: true, data: sale, source: 'supabase' }, { status: 201 })
       }
     } catch (e) {
       console.error('Supabase error:', e)
@@ -122,4 +111,3 @@ export async function GET() {
     return NextResponse.json({ success: true, data: [], totales: { total: 0, count: 0 } })
   }
 }
-
