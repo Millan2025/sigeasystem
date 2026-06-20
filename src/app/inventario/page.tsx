@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search, Plus, Star, AlertTriangle, Package, X, Scale } from 'lucide-react'
 
@@ -24,7 +24,8 @@ const inventarioDemo: ProductoInv[] = [
 ]
 
 export default function InventarioPage() {
-  const [busqueda, setBusqueda] = useState(''); const [catFilter, setCatFilter] = useState('Todas')
+  const [busqueda, setBusqueda] = useState('')
+  const [catFilter, setCatFilter] = useState('Todas')
   const [alertaFilter, setAlertaFilter] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [ordenarPor, setOrdenarPor] = useState<'importancia'|'dias'|'nombre'>('importancia')
@@ -32,14 +33,14 @@ export default function InventarioPage() {
 
   const cats = ['Todas', 'Panadería', 'Pastelería', 'Bebidas', 'Lácteos', 'Verduras', 'Insumos']
 
-  const filtrado = productos.filter((p: ProductoInv) => {
+  var filtrado = inventarioDemo.filter(function(p: ProductoInv) {
     if (catFilter !== 'Todas' && p.categoria !== catFilter) return false
     if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false
     if (alertaFilter && p.diasParaAgotar > 2) return false
     return true
   })
 
-  productos.filter((p: ProductoInv) => { if (catFilter !== 'Todas' && p.categoria !== catFilter) return false; if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false; if (alertaFilter && p.diasParaAgotar > 2) return false; return true }).sort(function(a: ProductoInv, b: ProductoInv) {
+  filtrado.sort(function(a: ProductoInv, b: ProductoInv) {
     if (ordenarPor === 'importancia') return b.importancia - a.importancia
     if (ordenarPor === 'dias') return a.diasParaAgotar - b.diasParaAgotar
     return a.nombre.localeCompare(b.nombre)
@@ -60,7 +61,7 @@ export default function InventarioPage() {
   function descargarInventario() {
     const header = '\uFEFFSKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR;PROVEEDOR_TELEFONO\n'
     let csv = header
-    for (let i = 0; i < productos.length; i++) {
+    for (let i = 0; i < filtrado.length; i++) {
       const p = filtrado[i]
       csv += (p.id || '') + ';' + p.nombre + ';' + p.precio + ';' + p.costo + ';' + p.stock + ';' + (p.esPeso ? 'SI' : 'NO') + ';' + (p.unidad || 'unidad') + ';' + (p.precioPorKg || '') + ';' + p.categoria + ';' + p.proveedor + ',\n'
     }
@@ -106,20 +107,20 @@ export default function InventarioPage() {
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-white rounded-xl p-3 border border-stone-200">
             <p className="text-xs text-stone-400">Productos</p>
-            <p className="text-xl font-bold text-stone-800">{productos.length}</p>
+            <p className="text-xl font-bold text-stone-800">{inventarioDemo.length}</p>
           </div>
           <div className="bg-red-50 rounded-xl p-3 border border-red-200">
             <p className="text-xs text-red-500">Urgentes</p>
-            <p className="text-xl font-bold text-red-600">{productos.filter(p => p.diasParaAgotar <= 1).length}</p>
+            <p className="text-xl font-bold text-red-600">{inventarioDemo.filter(p => p.diasParaAgotar <= 1).length}</p>
           </div>
           <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
             <p className="text-xs text-amber-500">Por pedir</p>
-            <p className="text-xl font-bold text-amber-600">{productos.filter(p => p.diasParaAgotar > 1 && p.diasParaAgotar <= 2).length}</p>
+            <p className="text-xl font-bold text-amber-600">{inventarioDemo.filter(p => p.diasParaAgotar > 1 && p.diasParaAgotar <= 2).length}</p>
           </div>
         </div>
 
         <div className="space-y-2">
-          {productos.filter((p: ProductoInv) => { if (catFilter !== 'Todas' && p.categoria !== catFilter) return false; if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false; if (alertaFilter && p.diasParaAgotar > 2) return false; return true }).map(p => (
+          {filtrado.map(p => (
             <div key={p.id} className={'bg-white rounded-2xl p-4 border-2 ' + getAlertaColor(p.diasParaAgotar)}>
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -238,11 +239,6 @@ export default function InventarioPage() {
     </div>
   )
 }
-
-
-
-
-
 
 
 
