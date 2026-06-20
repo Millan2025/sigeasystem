@@ -59,11 +59,11 @@ export default function InventarioPage() {
   }
 
   function descargarInventario() {
-    const header = '\uFEFFSKU,NOMBRE,PRECIO,COSTO,STOCK_INICIAL,ES_RECETA,UNIDAD_MEDIDA,PRECIO_POR_KG,CATEGORIA,PROVEEDOR,PROVEEDOR_TELEFONO\n'
+    const header = '\uFEFFSKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR;PROVEEDOR_TELEFONO\n'
     let csv = header
     for (let i = 0; i < filtrado.length; i++) {
       const p = filtrado[i]
-      csv += (p.id || '') + ',' + p.nombre + ',' + p.precio + ',' + p.costo + ',' + p.stock + ',' + (p.esPeso ? 'SI' : 'NO') + ',' + (p.unidad || 'unidad') + ',' + (p.precioPorKg || '') + ',' + p.categoria + ',' + p.proveedor + ',\n'
+      csv += (p.id || '') + ';' + p.nombre + ';' + p.precio + ';' + p.costo + ';' + p.stock + ';' + (p.esPeso ? 'SI' : 'NO') + ';' + (p.unidad || 'unidad') + ';' + (p.precioPorKg || '') + ';' + p.categoria + ';' + p.proveedor + ',\n'
     }
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -239,6 +239,7 @@ export default function InventarioPage() {
     </div>
   )
 }
+
 
 
 
