@@ -1,10 +1,10 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, TrendingUp, DollarSign, Calculator, FileText, Link2, Building } from 'lucide-react'
 
-const [ventasHoy, setVentasHoy] = useState(450000); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, [])
+const ventasHoy = 450000
 const comprasHoy = 180000
 const nominaHoy = 85000
 const gastosHoy = 45000
@@ -213,5 +213,4 @@ export default function FinanzasPage() {
     </div>
   )
 }
-
 
