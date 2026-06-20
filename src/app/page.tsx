@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, ChefHat } from 'lucide-react'
-import PushNotificationButton from '@/components/shared/PushNotificationButton' from 'lucide-react'
+import PushNotificationButton from '@/components/shared/PushNotificationButton'
 
 export default function DashboardPage() {
   const router = useRouter()
