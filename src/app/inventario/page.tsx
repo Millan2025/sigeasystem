@@ -39,7 +39,7 @@ export default function InventarioPage() {
     return true
   })
 
-  filtrado.sort(function(a: ProductoInv, b: ProductoInv) {
+  productos.filter((p: ProductoInv) => { if (catFilter !== 'Todas' && p.categoria !== catFilter) return false; if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false; if (alertaFilter && p.diasParaAgotar > 2) return false; return true }).sort(function(a: ProductoInv, b: ProductoInv) {
     if (ordenarPor === 'importancia') return b.importancia - a.importancia
     if (ordenarPor === 'dias') return a.diasParaAgotar - b.diasParaAgotar
     return a.nombre.localeCompare(b.nombre)
@@ -60,7 +60,7 @@ export default function InventarioPage() {
   function descargarInventario() {
     const header = '\uFEFFSKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR;PROVEEDOR_TELEFONO\n'
     let csv = header
-    for (let i = 0; i < filtrado.length; i++) {
+    for (let i = 0; i < productos.length; i++) {
       const p = filtrado[i]
       csv += (p.id || '') + ';' + p.nombre + ';' + p.precio + ';' + p.costo + ';' + p.stock + ';' + (p.esPeso ? 'SI' : 'NO') + ';' + (p.unidad || 'unidad') + ';' + (p.precioPorKg || '') + ';' + p.categoria + ';' + p.proveedor + ',\n'
     }
@@ -119,7 +119,7 @@ export default function InventarioPage() {
         </div>
 
         <div className="space-y-2">
-          {filtrado.map(p => (
+          {productos.filter((p: ProductoInv) => { if (catFilter !== 'Todas' && p.categoria !== catFilter) return false; if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false; if (alertaFilter && p.diasParaAgotar > 2) return false; return true }).map(p => (
             <div key={p.id} className={'bg-white rounded-2xl p-4 border-2 ' + getAlertaColor(p.diasParaAgotar)}>
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -238,6 +238,7 @@ export default function InventarioPage() {
     </div>
   )
 }
+
 
 
 
