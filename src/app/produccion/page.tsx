@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, Plus, X, ChefHat, ShoppingCart, AlertTriangle, Beaker } from 'lucide-react'
+import { ArrowLeft, Download, Plus, ChefHat, ShoppingCart, AlertTriangle, Beaker } from 'lucide-react'
 
 interface Receta {
   id: string; producto: string; icono: string; costoTotal: number; precioVenta: number;
@@ -16,13 +16,14 @@ export default function ProduccionPage() {
 
   useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(d => {
-      if (d.success) {
-        const recetasDemo: Receta[] = [
-          { id: '1', producto: 'Pan Aliñado Familiar', icono: '🍞', costoTotal: 602, precioVenta: 5000, vendidosHoy: 45, producidosHoy: 50, ingredientes: [{ nombre: 'Harina', cantidad: 250, unidad: 'g' }, { nombre: 'Azúcar', cantidad: 30, unidad: 'g' }] },
-          { id: '2', producto: 'Torta Tres Leches', icono: '🍰', costoTotal: 1202, precioVenta: 7500, vendidosHoy: 12, producidosHoy: 15, ingredientes: [{ nombre: 'Harina', cantidad: 100, unidad: 'g' }, { nombre: 'Huevos', cantidad: 2, unidad: 'unidad' }] },
-        ]
-        setRecetas(recetasDemo)
-      }
+      const productos = d.data || []
+      const recetasDemo: Receta[] = productos.filter((p: any) => p.is_recipe).map((p: any, i: number) => ({
+        id: p.id || String(i), producto: p.name || p.nombre, icono: '🍞', costoTotal: Number(p.cost || 600), precioVenta: Number(p.price || 5000), vendidosHoy: Math.floor(Math.random() * 50), producidosHoy: Math.floor(Math.random() * 60), ingredientes: [{ nombre: 'Harina', cantidad: 250, unidad: 'g' }, { nombre: 'Azúcar', cantidad: 30, unidad: 'g' }]
+      }))
+      setRecetas(recetasDemo.length > 0 ? recetasDemo : [
+        { id: '1', producto: 'Pan Aliñado Familiar', icono: '🍞', costoTotal: 602, precioVenta: 5000, vendidosHoy: 45, producidosHoy: 50, ingredientes: [{ nombre: 'Harina', cantidad: 250, unidad: 'g' }, { nombre: 'Azúcar', cantidad: 30, unidad: 'g' }] },
+        { id: '2', producto: 'Torta Tres Leches', icono: '🍰', costoTotal: 1202, precioVenta: 7500, vendidosHoy: 12, producidosHoy: 15, ingredientes: [{ nombre: 'Harina', cantidad: 100, unidad: 'g' }, { nombre: 'Huevos', cantidad: 2, unidad: 'unidad' }] },
+      ])
     }).catch(() => {})
   }, [])
 
