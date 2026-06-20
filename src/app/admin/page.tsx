@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import LogoHeader from '@/components/shared/LogoHeader'
 import { ArrowLeft, Download, Upload, Users, UserPlus, Package, Search, Eye, Ban, Trash2, Activity, CreditCard, Settings, ChevronRight, ExternalLink, Copy, Bell, X } from 'lucide-react'
 
 interface Cliente {
@@ -60,7 +61,7 @@ export default function AdminMasterPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-gradient-to-r from-stone-900 to-stone-800 text-white p-5">
         <div className="flex items-center gap-3 mb-2">
-          <Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link>
+          <LogoHeader /><Link href="/" className="p-2 hover:bg-white/10 rounded-xl ml-2"><ArrowLeft className="w-5 h-5" /></Link>
           <div className="flex-1"><h1 className="text-xl font-bold">Admin Master</h1><p className="text-stone-400 text-xs">Control total del sistema</p></div>
         </div>
         <div className="flex gap-2 mb-3">
@@ -199,4 +200,5 @@ export default function AdminMasterPage() {
     </div>
   )
 }
+
 

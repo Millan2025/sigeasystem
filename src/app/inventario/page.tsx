@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import LogoHeader from '@/components/shared/LogoHeader'
 import { ArrowLeft, Download, Search, Plus, Star, AlertTriangle, Package, X, Scale } from 'lucide-react'
 
 interface ProductoInv {
@@ -66,7 +67,7 @@ export default function InventarioPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex items-center gap-3 mb-3"><Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link><div className="flex-1"><h1 className="text-xl font-bold">📦 Inventario</h1></div><button onClick={descargarInventario} className="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Download className="w-4 h-4" /> Excel</button></div>
+        <div className="flex items-center gap-3 mb-3"><LogoHeader /><Link href="/" className="p-2 hover:bg-white/10 rounded-xl ml-2"><ArrowLeft className="w-5 h-5" /></Link><div className="flex-1"><h1 className="text-xl font-bold">📦 Inventario</h1></div><button onClick={descargarInventario} className="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Download className="w-4 h-4" /> Excel</button></div>
         <div className="flex gap-2"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" /><input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar producto..." className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-white/50 text-sm border border-white/20" /></div><button onClick={() => setShowAdd(true)} className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-1"><Plus className="w-4 h-4" /> Agregar</button></div>
       </header>
       <div className="p-3 space-y-3">
@@ -96,3 +97,4 @@ export default function InventarioPage() {
     </div>
   )
 }
+

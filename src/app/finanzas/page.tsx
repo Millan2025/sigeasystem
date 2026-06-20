@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import LogoHeader from '@/components/shared/LogoHeader'
 import { ArrowLeft, Download, TrendingUp, DollarSign, Calculator, FileText, Link2, Building } from 'lucide-react'
 
 const libroDiario = [
@@ -33,7 +34,7 @@ export default function FinanzasPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex items-center gap-3 mb-4"><Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link><div><h1 className="text-xl font-bold">Finanzas</h1></div></div>
+        <div className="flex items-center gap-3 mb-4"><LogoHeader /><Link href="/" className="p-2 hover:bg-white/10 rounded-xl ml-2"><ArrowLeft className="w-5 h-5" /></Link><div><h1 className="text-xl font-bold">Finanzas</h1></div></div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
           {[{ id: 'resumen', label: 'Resumen', icon: TrendingUp }, { id: 'libro', label: 'Libro Diario', icon: FileText }, { id: 'balance', label: 'Balance', icon: Calculator }, { id: 'cierre', label: 'Cierre Caja', icon: DollarSign }, { id: 'api', label: 'API', icon: Link2 }].map(t => (
             <button key={t.id} onClick={() => setTab(t.id as any)} className={'flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap ' + (tab === t.id ? 'bg-white text-stone-800' : 'text-stone-300')}><t.icon className="w-3.5 h-3.5" /> {t.label}</button>
@@ -64,3 +65,4 @@ export default function FinanzasPage() {
     </div>
   )
 }
+

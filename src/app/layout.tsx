@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es"><head><link rel="icon" href="/logo%20Negro-sigea.png" /><link rel="apple-touch-icon" href="/logo%20Negro-sigea.png" /></head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         
         {children}
@@ -28,4 +28,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
