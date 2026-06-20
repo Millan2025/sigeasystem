@@ -24,7 +24,7 @@ const inventarioDemo: ProductoInv[] = [
 ]
 
 export default function InventarioPage() {
-  const [busqueda, setBusqueda] = useState('')
+  const [productos, setProductos] = useState<ProductoInv[]>(inventarioDemo); useEffect(() => { fetch('/api/inventory').then(r => r.json()).then(d => { if (d.success && d.data.length > 0) setProductos(d.data.map((p: any) => ({ id: p.id, nombre: p.name || p.nombre, icono: '📦', categoria: p.category || 'General', stock: Number(p.stock) || 0, stockMin: Number(p.min_stock) || 5, precio: Number(p.price) || 0, costo: Number(p.cost) || 0, ventasDiarias: 5, importancia: 3, esPeso: false, proveedor: '', diasParaAgotar: 10, unidad: 'unidad' }))) }).catch(() => {}) }, []); const [busqueda, setBusqueda] = useState('')
   const [catFilter, setCatFilter] = useState('Todas')
   const [alertaFilter, setAlertaFilter] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
@@ -33,7 +33,7 @@ export default function InventarioPage() {
 
   const cats = ['Todas', 'Panadería', 'Pastelería', 'Bebidas', 'Lácteos', 'Verduras', 'Insumos']
 
-  var filtrado = inventarioDemo.filter(function(p: ProductoInv) {
+  var filtrado = productos.filter(function(p: ProductoInv) {
     if (catFilter !== 'Todas' && p.categoria !== catFilter) return false
     if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false
     if (alertaFilter && p.diasParaAgotar > 2) return false
@@ -107,15 +107,15 @@ export default function InventarioPage() {
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-white rounded-xl p-3 border border-stone-200">
             <p className="text-xs text-stone-400">Productos</p>
-            <p className="text-xl font-bold text-stone-800">{inventarioDemo.length}</p>
+            <p className="text-xl font-bold text-stone-800">{productos.length}</p>
           </div>
           <div className="bg-red-50 rounded-xl p-3 border border-red-200">
             <p className="text-xs text-red-500">Urgentes</p>
-            <p className="text-xl font-bold text-red-600">{inventarioDemo.filter(p => p.diasParaAgotar <= 1).length}</p>
+            <p className="text-xl font-bold text-red-600">{productos.filter(p => p.diasParaAgotar <= 1).length}</p>
           </div>
           <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
             <p className="text-xs text-amber-500">Por pedir</p>
-            <p className="text-xl font-bold text-amber-600">{inventarioDemo.filter(p => p.diasParaAgotar > 1 && p.diasParaAgotar <= 2).length}</p>
+            <p className="text-xl font-bold text-amber-600">{productos.filter(p => p.diasParaAgotar > 1 && p.diasParaAgotar <= 2).length}</p>
           </div>
         </div>
 
@@ -239,6 +239,7 @@ export default function InventarioPage() {
     </div>
   )
 }
+
 
 
 

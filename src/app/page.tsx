@@ -6,7 +6,7 @@ import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp,
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [cajaAbierta, setCajaAbierta] = useState(true)
+  const [cajaAbierta, setCajaAbierta] = useState(true); const [ventasHoy, setVentasHoy] = useState(450000); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, [])
   const [showShare, setShowShare] = useState(false)
 
   const shareLinks = [
@@ -64,7 +64,7 @@ export default function DashboardPage() {
       <div className="p-4 space-y-4">
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white cursor-pointer" onClick={() => router.push('/finanzas')}>
           <p className="text-emerald-100 text-sm">VENTAS DE HOY</p>
-          <p className="text-4xl font-bold mt-1">$450,000</p>
+          <p className="text-4xl font-bold mt-1">${ventasHoy.toLocaleString()}</p>
           <p className="text-sm text-emerald-100 mt-2">24 transacciones - Efectivo 65%</p>
         </div>
 
@@ -120,4 +120,5 @@ export default function DashboardPage() {
     </div>
   )
 }
+
 

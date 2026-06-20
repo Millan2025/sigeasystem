@@ -1,11 +1,11 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Download, BarChart3, PieChart, Star, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Package, Clock } from 'lucide-react'
 
 // DATOS INTEGRADOS DE TODOS LOS MÓDULOS
-const datos = {
+const [datos, setDatos] = useState({
   ventasHoy: 450000,
   ventasSemana: 3150000,
   ventasMes: 13500000,
@@ -21,8 +21,7 @@ const datos = {
   pedidosPendientes: 3,
   pedidosEntregados: 12,
   empleados: 3,
-  produccionesHoy: 90,
-}
+  produccionesHoy: 90, }); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setDatos(prev => ({ ...prev, ventasHoy: d.totales.total || 0, transaccionesHoy: d.totales.count || 0 })) }).catch(() => {}) }, [])
 
 const ventasPorHora = [
   { hora: '6am', ventas: 85000 }, { hora: '7am', ventas: 120000 }, { hora: '8am', ventas: 95000 },
@@ -213,5 +212,6 @@ export default function ReportesPage() {
     </div>
   )
 }
+
 
 
