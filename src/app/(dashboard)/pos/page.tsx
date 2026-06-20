@@ -81,7 +81,7 @@ export default function POSPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setMsg('✅ Venta registrada: 
+        setMsg('Venta registrada: 
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
@@ -185,11 +185,11 @@ export default function POSPage() {
         setCart([]); setShowPay(false); setShowCart(false)
         setTimeout(() => setMsg(''), 3000)
       } else {
-        setMsg('❌ Error: ' + (data.error || 'Desconocido'))
+        setMsg('Error: ' + (data.error || 'Desconocido'))
         setTimeout(() => setMsg(''), 3000)
       }
     } catch {
-      setMsg('❌ Error de conexion')
+      setMsg('Error de conexion')
       setTimeout(() => setMsg(''), 3000)
     }
   }
