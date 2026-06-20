@@ -29,7 +29,7 @@ export default function TiendaPage() {
   const [clienteDireccion, setClienteDireccion] = useState('')
   const [guardarDatos, setGuardarDatos] = useState(false); const [loading, setLoading] = useState(false); const [metodoPago, setMetodoPago] = useState('Efectivo')
 
-  const filtered = products.filter(p => {
+  const filtered = (products || []).filter(p => {
     if (selectedCat !== 'Todo' && p.category !== selectedCat) return false
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
     return true
@@ -235,5 +235,6 @@ export default function TiendaPage() {
     </div>
   )
 }
+
 
 
