@@ -6,7 +6,7 @@ import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp,
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [cajaAbierta, setCajaAbierta] = useState(true); const [ventasHoy, setVentasHoy] = useState(450000); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, [])
+  const [cajaAbierta, setCajaAbierta] = useState(true); const [ventasHoy, setVentasHoy] = useState(450000); const [pedidosPendientes, setPedidosPendientes] = useState(0); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, []); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, [])
   const [showShare, setShowShare] = useState(false)
 
   const shareLinks = [
@@ -65,7 +65,7 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white cursor-pointer" onClick={() => router.push('/finanzas')}>
           <p className="text-emerald-100 text-sm">VENTAS DE HOY</p>
           <p className="text-4xl font-bold mt-1">${ventasHoy.toLocaleString()}</p>
-          <p className="text-sm text-emerald-100 mt-2">24 transacciones - Efectivo 65%</p>
+          <p className="text-sm text-emerald-100 mt-2">{transacciones} transacciones</p>
         </div>
 
         <h2 className="font-semibold text-stone-700 mt-4">ACCESOS RAPIDOS</h2>
@@ -120,5 +120,6 @@ export default function DashboardPage() {
     </div>
   )
 }
+
 
 
