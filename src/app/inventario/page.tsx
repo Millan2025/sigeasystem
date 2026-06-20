@@ -32,7 +32,7 @@ export default function InventarioPage() {
 
   const cats = ['Todas', 'Panadería', 'Pastelería', 'Bebidas', 'Lácteos', 'Verduras', 'Insumos']
 
-  var filtrado = productos.filter(function(p: ProductoInv) {
+  const filtrado = productos.filter(function(p: ProductoInv) {
     if (catFilter !== 'Todas' && p.categoria !== catFilter) return false
     if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false
     if (alertaFilter && p.diasParaAgotar > 2) return false
@@ -238,6 +238,7 @@ export default function InventarioPage() {
     </div>
   )
 }
+
 
 
 
