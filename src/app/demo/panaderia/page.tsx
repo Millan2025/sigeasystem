@@ -12,14 +12,7 @@ const config = {
     { nombre: 'Café Tinto 7oz', precio: 1800, icono: '☕' },
     { nombre: 'Jugo Natural', precio: 4000, icono: '🧃' },
   ],
-  beneficios: [
-    'Controla tus recetas y el costo de cada producto',
-    'Calcula automaticamente la lista de compras segun ventas',
-    'Produccion diaria con ordenes de trabajo',
-    'Inventario de ingredientes con alertas de agotamiento',
-    'Ventas rapidas desde el celular con buscador',
-    'Domicilios: tus clientes compran desde la app',
-  ],
+  beneficios: ['Controla tus recetas y el costo de cada producto', 'Calcula automaticamente la lista de compras segun ventas', 'Produccion diaria con ordenes de trabajo', 'Inventario de ingredientes con alertas de agotamiento', 'Ventas rapidas desde el celular con buscador', 'Domicilios: tus clientes compran desde la app'],
   modulos: ['POS', 'Produccion', 'Inventario', 'Recetas', 'Domicilios', 'Finanzas', 'Reportes'],
 }
 
