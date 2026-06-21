@@ -51,7 +51,7 @@ export default function RegistroPage() {
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span className="text-6xl block mb-4"><img src="/logoBlanco-sigea.png" alt="SIGEA" className="w-20 h-20 mx-auto object-contain" /></span>
+          <span className="text-6xl block mb-4">🍞</span>
           <h1 className="text-2xl font-bold text-stone-800">Crear Cuenta</h1>
           <p className="text-stone-500 text-sm mt-1">Unete a SIGEA</p>
         </div>
@@ -70,6 +70,4 @@ export default function RegistroPage() {
     </div>
   )
 }
-
-
 

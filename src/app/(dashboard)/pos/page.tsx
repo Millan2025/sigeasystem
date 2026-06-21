@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
-import LogoHeader from '@/components/shared/LogoHeader'
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -77,7 +76,7 @@ export default function POSPage() {
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
-        <LogoHeader /><Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0 ml-2"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
+        <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
         <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">
           <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} Â· ${totalPrecio.toLocaleString()}
@@ -172,5 +171,4 @@ export default function POSPage() {
     </div>
   )
 }
-
 

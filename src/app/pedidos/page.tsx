@@ -1,7 +1,6 @@
 ﻿'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import LogoHeader from '@/components/shared/LogoHeader'
 import { ArrowLeft, Truck, MapPin, CheckCircle, User, Phone, Search, X, Navigation, Ban } from 'lucide-react'
 
 interface Pedido {
@@ -36,7 +35,7 @@ export default function PedidosPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex items-center gap-3 mb-3"><LogoHeader /><Link href="/" className="p-2 hover:bg-white/10 rounded-xl ml-2"><ArrowLeft className="w-5 h-5" /></Link><div className="flex-1"><h1 className="text-xl font-bold">Pedidos</h1></div></div>
+        <div className="flex items-center gap-3 mb-3"><Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link><div className="flex-1"><h1 className="text-xl font-bold">Pedidos</h1></div></div>
         <div className="flex gap-2 mb-2"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" /><input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/10 text-white text-sm" /></div></div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">
           <button onClick={() => setTab('pendientes')} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (tab === 'pendientes' ? 'bg-white text-stone-800' : 'text-stone-300')}>Pendientes ({pendientes.length})</button>
@@ -65,4 +64,3 @@ export default function PedidosPage() {
     </div>
   )
 }
-

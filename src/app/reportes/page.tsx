@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import LogoHeader from '@/components/shared/LogoHeader'
 import { ArrowLeft, Download, BarChart3, Star } from 'lucide-react'
 
 const ventasPorHora = [{ hora: '6am', ventas: 85000 }, { hora: '7am', ventas: 120000 }, { hora: '8am', ventas: 95000 }, { hora: '9am', ventas: 65000 }, { hora: '10am', ventas: 45000 }, { hora: '11am', ventas: 35000 }]
@@ -24,7 +23,7 @@ export default function ReportesPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex items-center gap-3 mb-3"><LogoHeader /><Link href="/" className="p-2 hover:bg-white/10 rounded-xl ml-2"><ArrowLeft className="w-5 h-5" /></Link><div className="flex-1"><h1 className="text-xl font-bold">📈 Reportes</h1></div><button onClick={descargarExcel} className="bg-white/20 px-3 py-2 rounded-xl text-xs"><Download className="w-3.5 h-3.5 inline mr-1" />Excel</button></div>
+        <div className="flex items-center gap-3 mb-3"><Link href="/" className="p-2 hover:bg-white/10 rounded-xl"><ArrowLeft className="w-5 h-5" /></Link><div className="flex-1"><h1 className="text-xl font-bold">📈 Reportes</h1></div><button onClick={descargarExcel} className="bg-white/20 px-3 py-2 rounded-xl text-xs"><Download className="w-3.5 h-3.5 inline mr-1" />Excel</button></div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1">{['hoy','semana','mes'].map(p => <button key={p} onClick={() => setPeriodo(p as any)} className={'flex-1 py-1.5 rounded-lg text-xs font-medium ' + (periodo === p ? 'bg-white text-stone-800' : 'text-stone-300')}>{p === 'hoy' ? 'Hoy' : p === 'semana' ? 'Semana' : 'Mes'}</button>)}</div>
       </header>
       <div className="p-4 space-y-4">
@@ -35,4 +34,3 @@ export default function ReportesPage() {
     </div>
   )
 }
-
