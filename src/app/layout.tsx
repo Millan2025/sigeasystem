@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SIGEA System",
+  title: "SIGEA System v2",
   description: "Sistema Integral de Gestion Empresarial Adaptativa",
   manifest: "/manifest.json",
 };
@@ -28,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
 
 
