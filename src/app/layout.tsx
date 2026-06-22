@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es"><head><link rel="icon" href="/favicon.ico" /><link rel="apple-touch-icon" href="/favicon.ico" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-title" content="SIGEA" /></head>
+    <html lang="es"><head><link rel="icon" href="/favicon.ico" /><link rel="apple-touch-icon" href="/favicon.ico" /><meta name="mobile-web-app-capable" content="yes" /><meta name="application-name" content="SIGEA" /></head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         
         {children}
@@ -28,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
 
 
