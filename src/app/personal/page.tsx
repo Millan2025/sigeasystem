@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Edit2, Trash2, Download, Search, X, ArrowLeft } from "lucide-react";
+import { Plus, Edit2, Trash2, Download, Search, X, ArrowLeft, Eye } from "lucide-react";
 import Link from "next/link";
 
 interface Colaborador {
@@ -25,6 +25,7 @@ export default function PersonalPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
+  const [showDetail, setShowDetail] = useState<Colaborador | null>(null);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -188,33 +189,42 @@ export default function PersonalPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="bg-amber-50 border-b border-stone-200">
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Colaborador</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Cargo</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Email</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Estado</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-stone-700">Acciones</th>
+                    <th className="px-3 py-3 text-left text-sm font-semibold text-stone-700">Colaborador</th>
+                    <th className="px-3 py-3 text-left text-sm font-semibold text-stone-700">Teléfono</th>
+                    <th className="px-3 py-3 text-left text-sm font-semibold text-stone-700">Cargo</th>
+                    <th className="px-3 py-3 text-left text-sm font-semibold text-stone-700">Fecha Contratación</th>
+                    <th className="px-3 py-3 text-left text-sm font-semibold text-stone-700">Estado</th>
+                    <th className="px-3 py-3 text-left text-sm font-semibold text-stone-700">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {colaboradoresFiltrados.map((c) => (
                     <tr key={c.id} className="border-b border-stone-100 hover:bg-stone-50/50 transition">
-                      <td className="px-4 py-3 text-sm text-stone-800 font-medium">{c.nombre} {c.apellido}</td>
-                      <td className="px-4 py-3 text-sm text-stone-600">{c.cargo || "-"}</td>
-                      <td className="px-4 py-3 text-sm text-stone-600">{c.email}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3 text-sm text-stone-800 font-medium">
+                        {c.nombre} {c.apellido}
+                        <div className="text-xs text-stone-400">{c.email}</div>
+                      </td>
+                      <td className="px-3 py-3 text-sm text-stone-600">{c.telefono || "-"}</td>
+                      <td className="px-3 py-3 text-sm text-stone-600">{c.cargo || "-"}</td>
+                      <td className="px-3 py-3 text-sm text-stone-600">{c.fecha_contratacion || "-"}</td>
+                      <td className="px-3 py-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           c.estado === "activo" ? "bg-emerald-100 text-emerald-700" :
                           c.estado === "inactivo" ? "bg-red-100 text-red-700" :
                           "bg-amber-100 text-amber-700"
                         }`}>{c.estado}</span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3">
                         <div className="flex gap-2">
-                          <button onClick={() => editarColaborador(c)} className="p-1 text-amber-600 hover:bg-amber-50 rounded-lg transition"><Edit2 className="w-4 h-4" /></button>
-                          <button onClick={() => eliminarColaborador(c.id)} className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => editarColaborador(c)} className="p-1 text-amber-600 hover:bg-amber-50 rounded-lg transition" title="Editar">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => eliminarColaborador(c.id)} className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition" title="Eliminar">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -226,7 +236,7 @@ export default function PersonalPage() {
         </div>
       </div>
 
-      {/* Modal independiente */}
+      {/* Modal para crear/editar */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
