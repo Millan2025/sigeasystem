@@ -27,7 +27,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
       <a href="/login" className="fixed top-4 left-4 z-50 bg-red-500 text-white px-3 py-1.5 rounded-full shadow-lg text-xs font-bold no-underline hover:bg-red-600">Salir</a>
-
+      
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex justify-between items-center">
           <div>
@@ -105,11 +105,6 @@ export default function DashboardPage() {
             <span className="font-semibold text-stone-800 block">Reportes</span>
             <span className="text-xs text-stone-500">Estadisticas y graficos</span>
           </button>
-          <button onClick={() => router.push('/ventas')} className="bg-cyan-50 border border-cyan-200 rounded-2xl p-5 text-left hover:bg-cyan-100">
-            <DollarSign className="w-7 h-7 text-cyan-600 mb-2" />
-            <span className="font-semibold text-stone-800 block">Ventas</span>
-            <span className="text-xs text-stone-500">Historial de ventas</span>
-          </button>
           <button onClick={() => router.push('/finanzas')} className="bg-teal-50 border border-teal-200 rounded-2xl p-5 text-left hover:bg-teal-100">
             <TrendingUp className="w-7 h-7 text-teal-600 mb-2" />
             <span className="font-semibold text-stone-800 block">Finanzas</span>
@@ -125,3 +120,14 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+

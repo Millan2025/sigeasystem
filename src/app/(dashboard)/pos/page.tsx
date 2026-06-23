@@ -1,7 +1,6 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
-import { useDemoMode } from '@/hooks/useDemoMode'
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
 
@@ -15,7 +14,6 @@ interface CartItem {
 }
 
 export default function POSPage() {
-  const { isDemo, demoTenantId } = useDemoMode()
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [showPay, setShowPay] = useState(false)
@@ -28,10 +26,12 @@ export default function POSPage() {
   const [cliente, setCliente] = useState('Cliente Universal')
 
   useEffect(() => {
-    fetch(isDemo ? '/api/products?demo=true' : '/api/products').then(r => r.json()).then(d => {
+    fetch('/api/products').then(r => r.json()).then(d => {
+      console.log('Productos recibidos:', d.data?.length)
       if (d.success && d.data && d.data.length > 0) {
         setProductos(d.data.map((p: any) => {
           let cat = (p.categoria || p.category || 'General')
+          // Normalizar categorías
           const catMap: Record<string, string> = {
             'Panadería': 'Panadería', 'Panaderia': 'Panadería',
             'Pastelería': 'Pastelería', 'Pasteleria': 'Pastelería',
@@ -41,7 +41,7 @@ export default function POSPage() {
             'Restaurante': 'Restaurante',
             'Ferretería': 'Ferretería', 'Ferreteria': 'Ferretería',
             'Carnicería': 'Carnicería', 'Carniceria': 'Carnicería',
-            'Verduras': 'Verduras', 'Limpieza': 'Limpieza'
+            'Verduras': 'Verduras'
           }
           return {
             id: p.id, 
@@ -56,9 +56,10 @@ export default function POSPage() {
           }
         }))
       }
-    }).catch(() => {})
+    }).catch((e) => console.error('Error cargando productos:', e))
   }, [])
 
+  // Obtener todas las categorías únicas
   const allCats = ['Todo', ...new Set(productos.map(p => p.cat))].filter(Boolean)
   
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos
@@ -91,44 +92,10 @@ export default function POSPage() {
     setProductoPesaje(null); setPesoInput('')
   }
 
-  // Guardar venta en Supabase
-  async function guardarVenta(items: CartItem[], metodo: string) {
-    try {
-      const ventas = items.map(item => ({
-        producto_id: item.id.split('-')[0],
-        producto_nombre: item.nombre,
-        cantidad: item.cantidad,
-        precio_unitario: item.precioUnitario,
-        subtotal: item.subtotal,
-        metodo_pago: metodo,
-        cliente: cliente
-      }));
-
-      const res = await fetch('/api/ventas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ventas })
-      });
-      
-      if (!res.ok) {
-        console.error('Error guardando venta');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-
-  // Función de pago
   function pay(m: string) {
-    if (cart.length === 0) return;
-    
-    guardarVenta(cart, m).then(() => {
-      setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m + ' - Cliente: ' + cliente);
-      setCart([]); 
-      setShowPay(false); 
-      setShowCart(false);
-      setTimeout(() => setMsg(''), 3000);
-    });
+    setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m + ' - Cliente: ' + cliente)
+    setCart([]); setShowPay(false); setShowCart(false)
+    setTimeout(() => setMsg(''), 3000)
   }
 
   return (
@@ -234,7 +201,6 @@ export default function POSPage() {
               <button onClick={() => pay('Tarjeta Débito')} className="bg-blue-500 text-white py-3 rounded-xl font-bold">Débito</button>
               <button onClick={() => pay('Tarjeta Crédito')} className="bg-purple-500 text-white py-3 rounded-xl font-bold">Crédito</button>
               <button onClick={() => pay('Transferencia')} className="bg-amber-500 text-white py-3 rounded-xl font-bold">Transferencia</button>
-              <button onClick={() => pay('Crédito')} className="bg-rose-500 text-white py-3 rounded-xl font-bold">Crédito</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full mt-3 text-stone-400 py-2">Cancelar</button>
           </div>
@@ -258,4 +224,3 @@ export default function POSPage() {
     </div>
   )
 }
-
