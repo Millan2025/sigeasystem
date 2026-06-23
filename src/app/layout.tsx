@@ -8,9 +8,9 @@ export const metadata: Metadata = {
   title: "SIGEA System - Gestión Empresarial",
   description: "Sistema Integral de Gestión Empresarial Adaptativa",
   icons: {
-    icon: "/favicon-v3.ico",
-    shortcut: "/favicon-v3.ico",
-    apple: "/favicon-v3.ico",
+    icon: "/favicon-v4.ico",
+    shortcut: "/favicon-v4.ico",
+    apple: "/favicon-v4.ico",
   },
   manifest: "/manifest.json",
   appleWebApp: {
@@ -32,9 +32,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="icon" href="/favicon-v3.ico" />
-        <link rel="shortcut icon" href="/favicon-v3.ico" />
-        <link rel="apple-touch-icon" href="/favicon-v3.ico" />
+        <link rel="icon" href="/favicon-v4.ico" />
+        <link rel="shortcut icon" href="/favicon-v4.ico" />
+        <link rel="apple-touch-icon" href="/favicon-v4.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="SIGEA" />
         <meta name="application-name" content="SIGEA" />
@@ -46,3 +46,4 @@ export default function RootLayout({
     </html>
   );
 }
+
