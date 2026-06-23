@@ -6,14 +6,14 @@ export default function IntroPage() {
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
 
   const modulos = [
-    { id: "pos", nombre: "Punto de Venta", color: "from-amber-500 to-amber-600", beneficio: "Vende más rápido, cobra sin errores." },
-    { id: "inventario", nombre: "Inventario", color: "from-amber-500 to-amber-600", beneficio: "Sabes exactamente qué tienes, qué falta y qué sobra." },
-    { id: "produccion", nombre: "Producción", color: "from-amber-500 to-amber-600", beneficio: "Planifica tu producción diaria, reduce mermas." },
-    { id: "finanzas", nombre: "Finanzas", color: "from-amber-500 to-amber-600", beneficio: "Conoce tus utilidades en tiempo real." },
-    { id: "pedidos", nombre: "Pedidos", color: "from-amber-500 to-amber-600", beneficio: "Organiza tus pedidos, nunca olvides una entrega." },
-    { id: "personal", nombre: "Personal", color: "from-amber-500 to-amber-600", beneficio: "Gestiona tu equipo, horarios y desempeño." },
-    { id: "reportes", nombre: "Reportes", color: "from-amber-500 to-amber-600", beneficio: "Visualiza tus datos, encuentra oportunidades." },
-    { id: "admin", nombre: "Administración", color: "from-amber-500 to-amber-600", beneficio: "Configura tu negocio a tu medida." }
+    { id: "pos", nombre: "Punto de Venta", icono: "🛒", color: "from-amber-500 to-amber-600", beneficio: "Vende más rápido, cobra sin errores. Tu atención al cliente mejora y tus ventas crecen." },
+    { id: "inventario", nombre: "Inventario", icono: "📦", color: "from-amber-500 to-amber-600", beneficio: "Sabes exactamente qué tienes, qué falta y qué sobra. Compras con datos, no con corazonadas." },
+    { id: "produccion", nombre: "Producción", icono: "🏭", color: "from-amber-500 to-amber-600", beneficio: "Planifica tu producción diaria, reduce mermas y maximiza tu rendimiento." },
+    { id: "finanzas", nombre: "Finanzas", icono: "💰", color: "from-amber-500 to-amber-600", beneficio: "Conoce tus utilidades en tiempo real. Toma decisiones financieras con confianza." },
+    { id: "pedidos", nombre: "Pedidos", icono: "📋", color: "from-amber-500 to-amber-600", beneficio: "Organiza tus pedidos, nunca olvides una entrega. Clientes felices, negocios que crecen." },
+    { id: "personal", nombre: "Personal", icono: "👨‍🍳", color: "from-amber-500 to-amber-600", beneficio: "Gestiona tu equipo, horarios y desempeño. Un equipo motivado da mejores resultados." },
+    { id: "reportes", nombre: "Reportes", icono: "📊", color: "from-amber-500 to-amber-600", beneficio: "Visualiza tus datos, encuentra oportunidades y crece con información real." },
+    { id: "admin", nombre: "Administración", icono: "⚙️", color: "from-amber-500 to-amber-600", beneficio: "Configura tu negocio a tu medida. SIGEA se adapta a ti, no tú a SIGEA." }
   ];
 
   return (
@@ -60,7 +60,7 @@ export default function IntroPage() {
           </div>
         </div>
 
-        {/* DEMO - MÓDULOS */}
+        {/* DEMO - MÓDULOS CON "ENTRA AQUÍ" */}
         <div>
           <h2 className="text-3xl font-light text-center text-amber-700 mb-8">✦ Explora lo que SIGEA puede hacer por ti ✦</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -69,15 +69,18 @@ export default function IntroPage() {
                 key={mod.id}
                 onClick={() => setModuloActivo(moduloActivo === mod.id ? null : mod.id)}
                 className={`p-4 rounded-xl border text-left transition-all duration-300 ${
-                  moduloActivo === mod.id 
-                    ? `bg-gradient-to-r ${mod.color} text-white shadow-lg scale-105 border-amber-400` 
+                  moduloActivo === mod.id
+                    ? `bg-gradient-to-r ${mod.color} text-white shadow-lg scale-105 border-amber-400`
                     : "border-stone-200 hover:border-amber-400 hover:shadow-md hover:bg-amber-50/30"
                 }`}
               >
-                <div className={`text-2xl ${moduloActivo === mod.id ? "text-white/80" : "text-amber-500"}`}>✦</div>
+                <div className="text-3xl">{mod.icono}</div>
                 <div className={`text-sm font-semibold mt-1 ${moduloActivo === mod.id ? "text-white" : "text-amber-700"}`}>{mod.nombre}</div>
+                <div className={`text-xs mt-1 ${moduloActivo === mod.id ? "text-white/80" : "text-amber-500"}`}>
+                  {moduloActivo === mod.id ? "👆" : "👉"} {moduloActivo === mod.id ? "¡Entra Aquí!" : "Entra Aquí"}
+                </div>
                 {moduloActivo === mod.id && (
-                  <p className="text-xs text-white/90 mt-2 leading-relaxed">{mod.beneficio}</p>
+                  <p className="text-xs text-white/90 mt-2 leading-relaxed border-t border-white/20 pt-2">{mod.beneficio}</p>
                 )}
               </button>
             ))}
