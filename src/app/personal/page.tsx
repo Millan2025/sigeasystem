@@ -15,8 +15,6 @@ interface Colaborador {
   fecha_contratacion: string;
   salario: number;
   estado: string;
-  horario: any;
-  permisos: any;
   observaciones: string;
 }
 
@@ -37,23 +35,6 @@ export default function PersonalPage() {
     fecha_contratacion: "",
     salario: "",
     estado: "activo",
-    horario: {
-      lunes: { entrada: "08:00", salida: "17:00" },
-      martes: { entrada: "08:00", salida: "17:00" },
-      miercoles: { entrada: "08:00", salida: "17:00" },
-      jueves: { entrada: "08:00", salida: "17:00" },
-      viernes: { entrada: "08:00", salida: "17:00" },
-      sabado: { entrada: "", salida: "" },
-      domingo: { entrada: "", salida: "" }
-    },
-    permisos: {
-      admin: false,
-      ventas: true,
-      inventario: true,
-      produccion: true,
-      finanzas: false,
-      personal: false
-    },
     observaciones: ""
   });
 
@@ -70,6 +51,7 @@ export default function PersonalPage() {
 
     if (error) {
       console.error("Error:", error);
+      setColaboradores([]);
     } else {
       setColaboradores(data || []);
     }
@@ -79,9 +61,7 @@ export default function PersonalPage() {
   const guardarColaborador = async () => {
     const data = {
       ...form,
-      salario: parseFloat(form.salario) || 0,
-      horario: form.horario,
-      permisos: form.permisos
+      salario: parseFloat(form.salario) || 0
     };
 
     if (editing) {
@@ -118,8 +98,6 @@ export default function PersonalPage() {
       fecha_contratacion: colaborador.fecha_contratacion || "",
       salario: colaborador.salario?.toString() || "",
       estado: colaborador.estado || "activo",
-      horario: colaborador.horario || form.horario,
-      permisos: colaborador.permisos || form.permisos,
       observaciones: colaborador.observaciones || ""
     });
     setShowModal(true);
@@ -135,30 +113,12 @@ export default function PersonalPage() {
       fecha_contratacion: "",
       salario: "",
       estado: "activo",
-      horario: {
-        lunes: { entrada: "08:00", salida: "17:00" },
-        martes: { entrada: "08:00", salida: "17:00" },
-        miercoles: { entrada: "08:00", salida: "17:00" },
-        jueves: { entrada: "08:00", salida: "17:00" },
-        viernes: { entrada: "08:00", salida: "17:00" },
-        sabado: { entrada: "", salida: "" },
-        domingo: { entrada: "", salida: "" }
-      },
-      permisos: {
-        admin: false,
-        ventas: true,
-        inventario: true,
-        produccion: true,
-        finanzas: false,
-        personal: false
-      },
       observaciones: ""
     });
     setEditing(null);
     setShowModal(false);
   };
 
-  // Exportar a Excel con punto y coma (;)
   const exportarExcel = () => {
     if (colaboradores.length === 0) { alert("No hay colaboradores"); return; }
 
@@ -198,7 +158,6 @@ export default function PersonalPage() {
       </header>
 
       <div className="max-w-7xl mx-auto p-4">
-        {/* Barra de herramientas */}
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -220,7 +179,6 @@ export default function PersonalPage() {
           </div>
         </div>
 
-        {/* Tabla */}
         <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
           {loading ? (
             <div className="p-8 text-center text-stone-400">Cargando...</div>
@@ -266,58 +224,42 @@ export default function PersonalPage() {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => resetForm()}>
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-stone-800">{editing ? "Editar" : "Nuevo"} Colaborador</h2>
-                <button onClick={resetForm} className="text-stone-400 hover:text-stone-600"><X className="w-5 h-5" /></button>
+      {/* Modal independiente */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-stone-800">{editing ? "Editar" : "Nuevo"} Colaborador</h2>
+              <button onClick={resetForm} className="text-stone-400 hover:text-stone-600"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="space-y-3">
+              <div><label className="block text-sm font-medium text-stone-700">Nombre *</label><input type="text" value={form.nombre} onChange={(e) => setForm({...form, nombre: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Apellido *</label><input type="text" value={form.apellido} onChange={(e) => setForm({...form, apellido: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Email *</label><input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Teléfono</label><input type="text" value={form.telefono} onChange={(e) => setForm({...form, telefono: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Cargo</label><input type="text" value={form.cargo} onChange={(e) => setForm({...form, cargo: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Fecha Contratación</label><input type="date" value={form.fecha_contratacion} onChange={(e) => setForm({...form, fecha_contratacion: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Salario</label><input type="number" value={form.salario} onChange={(e) => setForm({...form, salario: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
+              <div><label className="block text-sm font-medium text-stone-700">Estado</label>
+                <select value={form.estado} onChange={(e) => setForm({...form, estado: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800">
+                  <option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="vacaciones">Vacaciones</option>
+                </select>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Nombre *</label><input type="text" value={form.nombre} onChange={(e) => setForm({...form, nombre: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Apellido *</label><input type="text" value={form.apellido} onChange={(e) => setForm({...form, apellido: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Email *</label><input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Teléfono</label><input type="text" value={form.telefono} onChange={(e) => setForm({...form, telefono: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Cargo</label><input type="text" value={form.cargo} onChange={(e) => setForm({...form, cargo: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Fecha Contratación</label><input type="date" value={form.fecha_contratacion} onChange={(e) => setForm({...form, fecha_contratacion: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Salario</label><input type="number" value={form.salario} onChange={(e) => setForm({...form, salario: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" /></div>
-                <div><label className="block text-sm font-medium text-stone-700 mb-1">Estado</label>
-                  <select value={form.estado} onChange={(e) => setForm({...form, estado: e.target.value})} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800">
-                    <option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="vacaciones">Vacaciones</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Horario */}
-              <div className="mt-4"><h3 className="font-semibold text-stone-700 mb-2">Horario Semanal</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {["lunes","martes","miercoles","jueves","viernes","sabado","domingo"].map((dia) => (
-                    <div key={dia} className="flex items-center gap-1 text-sm">
-                      <span className="w-16 text-stone-600 capitalize">{dia.slice(0,3)}</span>
-                      <input type="time" value={form.horario[dia]?.entrada || ""} onChange={(e) => setForm({...form, horario: {...form.horario, [dia]: {...form.horario[dia], entrada: e.target.value}}})} className="w-16 px-1 py-1 border border-stone-200 rounded text-sm text-stone-800" />
-                      <span className="text-stone-400">-</span>
-                      <input type="time" value={form.horario[dia]?.salida || ""} onChange={(e) => setForm({...form, horario: {...form.horario, [dia]: {...form.horario[dia], salida: e.target.value}}})} className="w-16 px-1 py-1 border border-stone-200 rounded text-sm text-stone-800" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Observaciones */}
-              <div className="mt-4"><label className="block text-sm font-medium text-stone-700 mb-1">Observaciones</label>
+              <div><label className="block text-sm font-medium text-stone-700">Observaciones</label>
                 <textarea value={form.observaciones} onChange={(e) => setForm({...form, observaciones: e.target.value})} rows={2} className="w-full px-3 py-2 border border-stone-200 rounded-xl focus:border-amber-400 outline-none text-stone-800" placeholder="Notas adicionales..." />
               </div>
+            </div>
 
-              <div className="flex gap-3 mt-6">
-                <button onClick={guardarColaborador} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-xl font-medium transition">{editing ? "Actualizar" : "Crear"} Colaborador</button>
-                <button onClick={resetForm} className="px-6 py-2 border border-stone-300 rounded-xl hover:bg-stone-50 transition text-stone-700">Cancelar</button>
-              </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={guardarColaborador} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-2 rounded-xl font-medium transition">{editing ? "Actualizar" : "Crear"} Colaborador</button>
+              <button onClick={resetForm} className="px-6 py-2 border border-stone-300 rounded-xl hover:bg-stone-50 transition text-stone-700">Cancelar</button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
