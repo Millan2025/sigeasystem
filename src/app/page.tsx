@@ -1,163 +1,132 @@
-﻿"use client";
+﻿'use client'
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { 
-  ShoppingCart, Package, ChefHat, DollarSign, 
-  ClipboardList, Users, BarChart3, Settings,
-  Store, ArrowRight, LogOut
-} from "lucide-react";
-
-interface Usuario {
-  nombre: string;
-  email: string;
-  rol: string;
-}
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, ChefHat } from 'lucide-react'
 
 export default function DashboardPage() {
-  const supabase = createClient();
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [ventasHoy, setVentasHoy] = useState(0);
+  const router = useRouter()
+  const [cajaAbierta, setCajaAbierta] = useState(true); const [ventasHoy, setVentasHoy] = useState(450000); const [pedidosPendientes, setPedidosPendientes] = useState(0); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, [])
+  const [showShare, setShowShare] = useState(false)
 
-  useEffect(() => {
-    cargarUsuario();
-    cargarVentas();
-  }, []);
+  const shareLinks = [
+    { label: 'POS Vendedor', url: '/pos', icon: '💰', color: 'bg-emerald-600' },
+    { label: 'Tienda Clientes', url: '/tienda', icon: '🛒', color: 'bg-amber-600' },
+    { label: 'App Repartidor', url: '/entregas', icon: '🛵', color: 'bg-sky-600' },
+  ]
 
-  const cargarUsuario = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+  function copiarEnlace(url: string, label: string) {
+    navigator.clipboard.writeText('https://sigea-system.vercel.app' + url)
+    alert('Enlace copiado: ' + label)
+  }
 
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("nombre, email, rol")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        setUsuario({ 
-          nombre: "Mi Negocio", 
-          email: user.email || "",
-          rol: "usuario"
-        });
-      } else {
-        setUsuario(data);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cargarVentas = async () => {
-    try {
-      const res = await fetch('/api/sales');
-      const data = await res.json();
-      if (data.success && data.totales) {
-        setVentasHoy(data.totales.total || 0);
-      }
-    } catch (error) {
-      console.error("Error cargando ventas:", error);
-    }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login';
-  };
-
-  const modulos = [
-    { id: "pos", nombre: "Punto de Venta", icono: <ShoppingCart className="w-6 h-6" />, color: "from-emerald-500 to-emerald-600", href: "/pos" },
-    { id: "inventario", nombre: "Inventario", icono: <Package className="w-6 h-6" />, color: "from-blue-500 to-blue-600", href: "/inventario" },
-    { id: "produccion", nombre: "Producción", icono: <ChefHat className="w-6 h-6" />, color: "from-amber-500 to-amber-600", href: "/produccion" },
-    { id: "finanzas", nombre: "Finanzas", icono: <DollarSign className="w-6 h-6" />, color: "from-purple-500 to-purple-600", href: "/finanzas" },
-    { id: "pedidos", nombre: "Pedidos", icono: <ClipboardList className="w-6 h-6" />, color: "from-rose-500 to-rose-600", href: "/pedidos" },
-    { id: "personal", nombre: "Personal", icono: <Users className="w-6 h-6" />, color: "from-teal-500 to-teal-600", href: "/personal" },
-    { id: "reportes", nombre: "Reportes", icono: <BarChart3 className="w-6 h-6" />, color: "from-indigo-500 to-indigo-600", href: "/reportes" },
-    { id: "admin", nombre: "Administración", icono: <Settings className="w-6 h-6" />, color: "from-stone-500 to-stone-600", href: "/admin" }
-  ];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-          <p className="text-stone-500 mt-4">Cargando...</p>
-        </div>
-      </div>
-    );
+  function compartirWhatsApp(url: string, label: string) {
+    window.open('https://wa.me/?text=' + encodeURIComponent('Accede a ' + label + ': https://sigea-system.vercel.app' + url), '_blank')
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Header con nombre dinámico */}
-      <header className="bg-gradient-to-r from-stone-900 to-stone-800 text-white p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <Store className="w-8 h-8 text-amber-400" />
-                <h1 className="text-2xl font-bold">
-                  {usuario?.nombre || "Mi Negocio"}
-                </h1>
-              </div>
-              <p className="text-stone-400 text-sm">
-                {usuario?.email || ""} · {usuario?.rol === "admin" ? "Administrador" : "Usuario"}
-              </p>
-              <p className="text-stone-500 text-xs mt-1">SIGEA System</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500/20 hover:bg-red-500/30 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="text-sm">Salir</span>
+    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
+      <a href="/login" className="fixed top-4 left-4 z-50 bg-red-500 text-white px-3 py-1.5 rounded-full shadow-lg text-xs font-bold no-underline hover:bg-red-600">Salir</a>
+      
+      <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
+        <div className="flex justify-between items-center">
+          <div>
+            <img src="/favicon.ico" alt="SIGEA" className="h-8 object-contain mb-1" /><h1 className="text-2xl font-bold">Panaderia Doña Rosa v2</h1>
+            <p className="text-stone-300 text-sm">{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setShowShare(!showShare)} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition">
+              <Share2 className="w-5 h-5" />
             </button>
+            <span className={'px-4 py-2 rounded-full text-sm font-semibold ' + (cajaAbierta ? 'bg-emerald-500' : 'bg-red-500')}>
+              {cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}
+            </span>
           </div>
         </div>
       </header>
 
-      {/* Ventas Hoy */}
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
+      {showShare && (
+        <div className="bg-white mx-4 mt-4 p-5 rounded-2xl shadow-lg border border-stone-200">
+          <h3 className="font-semibold text-stone-800 mb-3 flex items-center gap-2"><Share2 className="w-4 h-4" /> Compartir Accesos</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {shareLinks.map(link => (
+              <div key={link.url} className="text-center">
+                <button onClick={() => copiarEnlace(link.url, link.label)} className={link.color + ' w-full text-white p-3 rounded-xl font-medium text-sm hover:opacity-90 transition'}>
+                  <span className="text-2xl block mb-1">{link.icon}</span>{link.label}
+                </button>
+                <button onClick={() => compartirWhatsApp(link.url, link.label)} className="text-green-600 text-xs mt-1 hover:underline">WhatsApp</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 space-y-4">
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white cursor-pointer" onClick={() => router.push('/finanzas')}>
           <p className="text-emerald-100 text-sm">VENTAS DE HOY</p>
           <p className="text-4xl font-bold mt-1">${ventasHoy.toLocaleString()}</p>
-          <p className="text-sm text-emerald-100 mt-2">Actualizado en tiempo real</p>
-        </div>
-      </div>
-
-      {/* Módulos */}
-      <div className="max-w-7xl mx-auto p-6">
-        <h2 className="text-xl font-semibold text-stone-800 mb-6">
-          📋 Módulos del Sistema
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {modulos.map((mod) => (
-            <Link
-              key={mod.id}
-              href={mod.href}
-              className={`bg-gradient-to-br ${mod.color} text-white p-6 rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 flex flex-col items-center text-center`}
-            >
-              <div className="bg-white/20 p-3 rounded-xl mb-3">
-                {mod.icono}
-              </div>
-              <span className="font-medium">{mod.nombre}</span>
-              <ArrowRight className="w-4 h-4 mt-2 opacity-70" />
-            </Link>
-          ))}
+          <p className="text-sm text-emerald-100 mt-2">24 transacciones - Efectivo 65%</p>
         </div>
 
-        <div className="mt-12 text-center text-xs text-stone-400 border-t border-stone-100 pt-6">
-          SIGEA System · v2.0
+        <h2 className="font-semibold text-stone-700 mt-4">ACCESOS RAPIDOS</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => router.push('/pos')} className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-left hover:bg-emerald-100">
+            <ShoppingCart className="w-7 h-7 text-emerald-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Nueva Venta</span>
+            <span className="text-xs text-stone-500">POS con Buscador</span>
+          </button>
+          <button onClick={() => setCajaAbierta(!cajaAbierta)} className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-left hover:bg-blue-100">
+            <DollarSign className="w-7 h-7 text-blue-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">{cajaAbierta ? 'Cerrar Caja' : 'Abrir Caja'}</span>
+            <span className="text-xs text-stone-500">Control de caja</span>
+          </button>
+          <button onClick={() => router.push('/produccion')} className="bg-lime-50 border border-lime-200 rounded-2xl p-5 text-left hover:bg-lime-100">
+            <ChefHat className="w-7 h-7 text-lime-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Produccion</span>
+            <span className="text-xs text-stone-500">Recetas y compras</span>
+          </button>
+          <button onClick={() => router.push('/inventario')} className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-left hover:bg-amber-100">
+            <Package className="w-7 h-7 text-amber-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Inventario</span>
+            <span className="text-xs text-stone-500">Stock, alarmas, pedidos</span>
+          </button>
+          <button onClick={() => router.push('/personal')} className="bg-purple-50 border border-purple-200 rounded-2xl p-5 text-left hover:bg-purple-100">
+            <Users className="w-7 h-7 text-purple-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Personal</span>
+            <span className="text-xs text-stone-500">Empleados y nomina</span>
+          </button>
+          <button onClick={() => router.push('/pedidos')} className="bg-sky-50 border border-sky-200 rounded-2xl p-5 text-left hover:bg-sky-100">
+            <Truck className="w-7 h-7 text-sky-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Pedidos</span>
+            <span className="text-xs text-stone-500">Domicilios activos</span>
+          </button>
+          <button onClick={() => router.push('/reportes')} className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-left hover:bg-rose-100">
+            <BarChart3 className="w-7 h-7 text-rose-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Reportes</span>
+            <span className="text-xs text-stone-500">Estadisticas y graficos</span>
+          </button>
+          <button onClick={() => router.push('/finanzas')} className="bg-teal-50 border border-teal-200 rounded-2xl p-5 text-left hover:bg-teal-100">
+            <TrendingUp className="w-7 h-7 text-teal-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Finanzas</span>
+            <span className="text-xs text-stone-500">P&G, Balance, Cierre</span>
+          </button>
+          <button onClick={() => router.push('/tienda')} className="bg-orange-50 border border-orange-200 rounded-2xl p-5 text-left hover:bg-orange-100">
+            <ShoppingCart className="w-7 h-7 text-orange-600 mb-2" />
+            <span className="font-semibold text-stone-800 block">Tienda</span>
+            <span className="text-xs text-stone-500">Vista del cliente</span>
+          </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
+
+
+
+
+
+
+
+
+
+
