@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { useDemoMode } from '@/hooks/useDemoMode'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search, Plus, Star, AlertTriangle, Package, X, Scale } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -12,6 +13,7 @@ interface ProductoInv {
 }
 
 export default function InventarioPage() {
+  const { isDemo, demoTenantId } = useDemoMode()
   const supabase = createClient()
   const [busqueda, setBusqueda] = useState('')
   const [catFilter, setCatFilter] = useState('Todas')
@@ -22,10 +24,10 @@ export default function InventarioPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    cargarProductos()
+    cargarProductosDemo()
   }, [])
 
-  const cargarProductos = async () => {
+  const cargarProductosDemo = async () => {
     setLoading(true)
     try {
       // Obtener tenant_id del usuario actual
@@ -185,3 +187,4 @@ export default function InventarioPage() {
     </div>
   )
 }
+

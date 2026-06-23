@@ -17,6 +17,7 @@ interface Venta {
 }
 
 export default function VentasPage() {
+  const { isDemo, demoTenantId } = useDemoMode()
   const supabase = createClient();
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,3 +162,4 @@ export default function VentasPage() {
     </div>
   );
 }
+

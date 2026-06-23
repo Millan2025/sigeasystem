@@ -1,34 +1,43 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    // 1. Obtener tenant_id del usuario autenticado
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ success: true, data: [], source: 'no-auth' })
+    // Verificar si es modo demo
+    const url = new URL(request.url)
+    const isDemo = url.searchParams.get('demo') === 'true'
+
+    let tenantId = null
+
+    if (isDemo) {
+      // Modo demo: usar tenant_id de fjmillan39
+      tenantId = '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
+    } else {
+      // Modo normal: obtener usuario autenticado
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.json({ success: true, data: [], source: 'no-auth' })
+      }
+
+      const { data: userData } = await supabase
+        .from('usuarios')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+      tenantId = userData?.tenant_id
     }
 
-    // 2. Obtener tenant_id de la tabla usuarios
-    const { data: userData } = await supabase
-      .from('usuarios')
-      .select('tenant_id')
-      .eq('id', user.id)
-      .single()
-
-    const tenantId = userData?.tenant_id
-
-    // 3. Si no tiene tenant_id, devolver vacío
     if (!tenantId) {
       return NextResponse.json({ success: true, data: [], source: 'no-tenant' })
     }
 
-    // 4. Obtener productos de la tabla productos
+    // Obtener productos
     const { data, error } = await supabase
       .from('productos')
       .select('*')
@@ -40,7 +49,6 @@ export async function GET() {
       return NextResponse.json({ success: true, data: [], source: 'error' })
     }
 
-    // 5. Formatear productos para el POS
     const productos = data.map((p: any) => ({
       id: p.id,
       name: p.nombre,
@@ -61,7 +69,7 @@ export async function GET() {
       sku: p.sku || null,
     }))
 
-    return NextResponse.json({ success: true, data: productos, source: 'productos' })
+    return NextResponse.json({ success: true, data: productos, source: isDemo ? 'demo' : 'productos' })
   } catch (error) {
     console.error('Error en API productos:', error)
     return NextResponse.json({ success: true, data: [], source: 'catch' })

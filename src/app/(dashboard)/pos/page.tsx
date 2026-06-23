@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { useDemoMode } from '@/hooks/useDemoMode'
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
 
@@ -14,6 +15,7 @@ interface CartItem {
 }
 
 export default function POSPage() {
+  const { isDemo, demoTenantId } = useDemoMode()
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [showPay, setShowPay] = useState(false)
@@ -26,7 +28,7 @@ export default function POSPage() {
   const [cliente, setCliente] = useState('Cliente Universal')
 
   useEffect(() => {
-    fetch('/api/products').then(r => r.json()).then(d => {
+    fetch(isDemo ? '/api/products?demo=true' : '/api/products').then(r => r.json()).then(d => {
       if (d.success && d.data && d.data.length > 0) {
         setProductos(d.data.map((p: any) => {
           let cat = (p.categoria || p.category || 'General')
@@ -256,3 +258,4 @@ export default function POSPage() {
     </div>
   )
 }
+
