@@ -1,57 +1,69 @@
 ﻿import { NextResponse } from 'next/server'
-
-function getIcono(sku: string, name: string): string {
-  const nameLower = (name || '').toLowerCase()
-  if (nameLower.includes('pan') && nameLower.includes('queso')) return '🧀'
-  if (nameLower.includes('pan')) return '🍞'
-  if (nameLower.includes('torta') || nameLower.includes('pastel') || nameLower.includes('leches')) return '🍰'
-  if (nameLower.includes('café') || nameLower.includes('cafe') || nameLower.includes('tinto')) return '☕'
-  if (nameLower.includes('jugo')) return '🧃'
-  if (nameLower.includes('agua')) return '💧'
-  if (nameLower.includes('bandeja') || nameLower.includes('paisa')) return '🍛'
-  if (nameLower.includes('sancocho') || nameLower.includes('sopa')) return '🍲'
-  if (nameLower.includes('coca') || nameLower.includes('gaseosa')) return '🥤'
-  return '📦'
-}
-
-function getCategoria(sku: string, name: string, catName: string): string {
-  if (catName && catName !== 'General') return catName
-  const skuPrefix = (sku || '').substring(0, 3)
-  if (skuPrefix === 'PAN') return 'Panaderia'
-  if (skuPrefix === 'PAS') return 'Pasteleria'
-  if (skuPrefix === 'BEB') return 'Bebidas'
-  if (skuPrefix === 'MEN') return 'Plato Fuerte'
-  return 'General'
-}
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET() {
   try {
-    const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    
-    const { data, error } = await supabase.from('products').select('*, categories(name)').eq('active', true)
-    
-    if (!error && data && data.length > 0) {
-      const productos = data.map((p: any) => {
-        const catName = p.categories?.name || ''
-        return {
-          id: p.id, name: p.name, nombre: p.name,
-          price: Number(p.price), precio: Number(p.price),
-          stock: Number(p.stock),
-          icon: getIcono(p.sku, p.name), icono: getIcono(p.sku, p.name),
-          category: getCategoria(p.sku, p.name, catName),
-          categoria: getCategoria(p.sku, p.name, catName),
-          is_recipe: p.is_recipe, esPeso: false,
-          image_url: p.image_url, imageUrl: p.image_url, sku: p.sku,
-        }
-      })
-      return NextResponse.json({ success: true, data: productos, source: 'supabase' })
+
+    // 1. Obtener tenant_id del usuario autenticado
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ success: true, data: [], source: 'no-auth' })
     }
-    return NextResponse.json({ success: true, data: [], source: 'vacio' })
-  } catch {
-    return NextResponse.json({ success: true, data: [], source: 'error' })
+
+    // 2. Obtener tenant_id de la tabla usuarios
+    const { data: userData } = await supabase
+      .from('usuarios')
+      .select('tenant_id')
+      .eq('id', user.id)
+      .single()
+
+    const tenantId = userData?.tenant_id
+
+    // 3. Si no tiene tenant_id, devolver vacío
+    if (!tenantId) {
+      return NextResponse.json({ success: true, data: [], source: 'no-tenant' })
+    }
+
+    // 4. Obtener productos de la tabla productos
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .order('nombre')
+
+    if (error) {
+      console.error('Error al obtener productos:', error)
+      return NextResponse.json({ success: true, data: [], source: 'error' })
+    }
+
+    // 5. Formatear productos para el POS
+    const productos = data.map((p: any) => ({
+      id: p.id,
+      name: p.nombre,
+      nombre: p.nombre,
+      price: Number(p.precio) || 0,
+      precio: Number(p.precio) || 0,
+      stock: Number(p.stock) || 0,
+      icon: p.icono || '📦',
+      icono: p.icono || '📦',
+      category: p.categoria || 'General',
+      categoria: p.categoria || 'General',
+      is_recipe: false,
+      esPeso: p.esPeso || false,
+      precioPorKg: p.precioPorKg || 0,
+      unidad: p.unidad || 'unidad',
+      image_url: null,
+      imageUrl: null,
+      sku: p.sku || null,
+    }))
+
+    return NextResponse.json({ success: true, data: productos, source: 'productos' })
+  } catch (error) {
+    console.error('Error en API productos:', error)
+    return NextResponse.json({ success: true, data: [], source: 'catch' })
   }
 }
