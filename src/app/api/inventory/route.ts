@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     } else {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        return NextResponse.json({ success: true, data: [], source: 'no-auth' })
+        return NextResponse.json({ success: false, data: [], error: 'No autenticado' }, { status: 401 })
       }
 
       const { data: userData } = await supabase
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     }
 
     if (!tenantId) {
-      return NextResponse.json({ success: true, data: [], source: 'no-tenant' })
+      return NextResponse.json({ success: false, data: [], error: 'Sin tenant' }, { status: 400 })
     }
 
     const { data, error } = await supabase
@@ -41,11 +41,13 @@ export async function GET(request: Request) {
       .order('nombre')
 
     if (error) {
-      return NextResponse.json({ success: true, data: [], source: 'error' })
+      console.error('Error en query:', error)
+      return NextResponse.json({ success: false, data: [], error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, data: data || [], source: isDemo ? 'demo' : 'productos' })
-  } catch {
-    return NextResponse.json({ success: true, data: [], source: 'catch' })
+  } catch (error) {
+    console.error('Error en API inventory:', error)
+    return NextResponse.json({ success: false, data: [], error: 'Error interno' }, { status: 500 })
   }
 }
