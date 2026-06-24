@@ -1,53 +1,22 @@
 ﻿import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
-    const url = new URL(request.url)
-    const isDemo = url.searchParams.get('demo') === 'true'
-
-    let tenantId = null
-
-    if (isDemo) {
-      tenantId = '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
-    } else {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        return NextResponse.json({ success: false, data: [], error: 'No autenticado' }, { status: 401 })
+    if (process.env.DATABASE_URL) {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      
+      const { data, error } = await supabase.from('products').select('*').order('name')
+      if (!error && data) {
+        return NextResponse.json({ success: true, data, source: 'supabase' })
       }
-
-      const { data: userData } = await supabase
-        .from('usuarios')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-      tenantId = userData?.tenant_id
     }
-
-    if (!tenantId) {
-      return NextResponse.json({ success: false, data: [], error: 'Sin tenant' }, { status: 400 })
-    }
-
-    const { data, error } = await supabase
-      .from('productos')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .order('nombre')
-
-    if (error) {
-      console.error('Error en query:', error)
-      return NextResponse.json({ success: false, data: [], error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: true, data: data || [], source: isDemo ? 'demo' : 'productos' })
-  } catch (error) {
-    console.error('Error en API inventory:', error)
-    return NextResponse.json({ success: false, data: [], error: 'Error interno' }, { status: 500 })
+    
+    return NextResponse.json({ success: true, data: [], source: 'respaldo' })
+  } catch {
+    return NextResponse.json({ success: true, data: [], source: 'error' })
   }
 }

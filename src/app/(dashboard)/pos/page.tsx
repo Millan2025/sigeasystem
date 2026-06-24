@@ -1,17 +1,16 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
-
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
-  precio?: number; precioPorKg?: number; unidad?: string;
+  precio?: number; precioPorKg?: number;
 }
 
 interface CartItem {
-  id: string; nombre: string; icono: string; cantidad: number; precioUnitario: number; subtotal: number; unidad?: string;
+  id: string; nombre: string; icono: string; cantidad: number; precioUnitario: number; subtotal: number;
 }
 
 export default function POSPage() {
@@ -24,45 +23,28 @@ export default function POSPage() {
   const [productoPesaje, setProductoPesaje] = useState<ProductoBase | null>(null)
   const [pesoInput, setPesoInput] = useState('')
   const [productos, setProductos] = useState<ProductoBase[]>([])
-  const [cliente, setCliente] = useState('Cliente Universal')
 
   useEffect(() => {
-    fetch('/api/products' + (typeof window !== 'undefined' && window.location.search.includes('demo=fjmillan39') ? '?demo=true' : '')).then(r => r.json()).then(d => {
-       console.log('Productos recibidos:', d.data?.length)
-      if (d.success && d.data && d.data.length > 0) {
+    fetch('/api/products').then(r => r.json()).then(d => {
+      if (d.success && d.data.length > 0) {
         setProductos(d.data.map((p: any) => {
           let cat = (p.categoria || p.category || 'General')
-          // Normalizar categorías
-          const catMap: Record<string, string> = {
-            'Panadería': 'Panadería', 'Panaderia': 'Panadería',
-            'Pastelería': 'Pastelería', 'Pasteleria': 'Pastelería',
-            'Bebidas': 'Bebidas',
-            'Lácteos': 'Lácteos', 'Lacteos': 'Lácteos',
-            'Tienda': 'Tienda',
-            'Restaurante': 'Restaurante',
-            'Ferretería': 'Ferretería', 'Ferreteria': 'Ferretería',
-            'Carnicería': 'Carnicería', 'Carniceria': 'Carnicería',
-            'Verduras': 'Verduras'
-          }
+          if (cat.includes('Panader')) cat = 'Panaderia'
+          else if (cat.includes('Pastel')) cat = 'Pasteleria'
+          else if (cat.includes('Bebida') || cat.includes('Cafeter')) cat = 'Bebidas'
+          else if (cat.includes('Lact')) cat = 'Lacteos'
+          else if (cat.includes('Verdu')) cat = 'Verduras'
           return {
-            id: p.id, 
-            nombre: p.nombre || p.name, 
-            icono: p.icono || p.icon || '📦',
-            precio: p.precio || p.price || 0, 
-            precioPorKg: p.precioPorKg || 0,
-            stock: p.stock || 0, 
-            cat: catMap[cat] || cat,
-            esPeso: p.esPeso || p.es_peso || false,
-            unidad: p.unidad || 'unidad'
+            id: p.id, nombre: p.nombre || p.name, icono: p.icono || 'ðŸ“¦',
+            precio: p.precio || p.price || 0, precioPorKg: p.precioPorKg,
+            stock: p.stock || 0, cat: cat, esPeso: p.esPeso || false
           }
         }))
       }
-    }).catch((e) => console.error('Error cargando productos:', e))
+    }).catch(() => {})
   }, [])
 
-  // Obtener todas las categorías únicas
-  const allCats = ['Todo', ...new Set(productos.map(p => p.cat))].filter(Boolean)
-  
+  const cats = ['Todo', 'Panaderia', 'Pasteleria', 'Bebidas', 'Lacteos', 'Verduras']
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos
   const filtered = catFilter === 'Todo' ? searchFiltered : searchFiltered.filter(p => p.cat === catFilter)
   const totalItems = cart.reduce((s, i) => s + i.cantidad, 0)
@@ -73,7 +55,7 @@ export default function POSPage() {
     setCart(prev => {
       const exist = prev.find(i => i.id === p.id)
       if (exist) return prev.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario || 0) * (i.cantidad + 1) } : i)
-      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0, unidad: p.unidad }]
+      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0 }]
     })
   }
 
@@ -81,20 +63,12 @@ export default function POSPage() {
     if (!productoPesaje || !pesoInput) return
     const gramos = Number(pesoInput)
     const precioFinal = Math.round((gramos / 1000) * (productoPesaje.precioPorKg || 0))
-    setCart(prev => [...prev, { 
-      id: productoPesaje!.id + '-' + Date.now(), 
-      nombre: productoPesaje!.nombre + ' (' + gramos + 'g)', 
-      icono: productoPesaje!.icono, 
-      cantidad: 1, 
-      precioUnitario: precioFinal, 
-      subtotal: precioFinal,
-      unidad: 'g'
-    }])
+    setCart(prev => [...prev, { id: productoPesaje!.id + '-' + Date.now(), nombre: productoPesaje!.nombre + ' (' + gramos + 'g)', icono: productoPesaje!.icono, cantidad: 1, precioUnitario: precioFinal, subtotal: precioFinal }])
     setProductoPesaje(null); setPesoInput('')
   }
 
   function pay(m: string) {
-    setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m + ' - Cliente: ' + cliente)
+    setMsg('âœ… Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
     setCart([]); setShowPay(false); setShowCart(false)
     setTimeout(() => setMsg(''), 3000)
   }
@@ -103,127 +77,98 @@ export default function POSPage() {
     <div className="min-h-screen bg-stone-100 flex flex-col">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1>
-          <input 
-            type="text" 
-            value={cliente} 
-            onChange={(e) => setCliente(e.target.value)}
-            className="text-xs text-stone-500 bg-transparent border-b border-stone-300 w-full max-w-[200px] focus:border-emerald-500 outline-none"
-            placeholder="Cliente"
-          />
-        </div>
-        <button onClick={() => setShowCart(true)} className="bg-emerald-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 relative">
-          <ShoppingCart className="w-5 h-5" />
-          <span className="font-bold">{totalItems}</span>
-          {totalItems > 0 && <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center font-bold">${Math.round(totalPrecio/1000)}k</span>}
+        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
+        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">
+          <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} Â· ${totalPrecio.toLocaleString()}
         </button>
       </header>
 
-      {msg && <div className="bg-emerald-100 text-emerald-800 p-3 text-center font-bold animate-pulse">{msg}</div>}
+      {msg && <div className="px-4 py-2 text-sm font-medium bg-emerald-100 text-emerald-800">{msg}</div>}
 
-      <div className="flex-1 p-3 overflow-y-auto">
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
-          <div className="relative flex-1 min-w-[120px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar..." className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 text-sm" />
-          </div>
-          <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white">
-            {allCats.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+      <div className="px-3 pt-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar producto..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-stone-400 outline-none" />
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      <div className="flex gap-1 p-2 overflow-x-auto bg-white border-b shrink-0">
+        {cats.map(c => <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${catFilter === c ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-600'}`}>{c}</button>)}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-2">
+        <div className="grid grid-cols-2 gap-2">
           {filtered.map(p => (
-            <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition border border-stone-200 text-left">
-              <div className="text-2xl">{p.icono}</div>
-              <div className="text-xs font-bold text-stone-800 truncate">{p.nombre}</div>
-              <div className="text-[10px] text-stone-400">{p.cat}</div>
-              <div className="flex justify-between items-center mt-1">
-                <span className="text-sm font-bold text-emerald-600">${p.precio?.toLocaleString()}</span>
-                <span className="text-[9px] text-stone-400">{p.unidad}</span>
-              </div>
-              {p.stock !== undefined && p.stock < 5 && <div className="text-[9px] text-amber-500">⚠️ Stock: {p.stock}</div>}
+            <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 active:scale-95 transition text-left hover:shadow-md">
+              <span className="text-3xl block text-center mb-2">{p.icono || 'ðŸ“¦'}</span>
+              <h3 className="font-medium text-stone-800 text-xs leading-tight">{p.nombre}</h3>
+              <p className="text-emerald-600 font-bold text-sm mt-1">{p.esPeso ? '$' + (p.precioPorKg || 0).toLocaleString() + '/kg' : '$' + (p.precio || 0).toLocaleString()}</p>
+              {p.esPeso && <span className="text-[10px] text-amber-500 flex items-center gap-0.5 mt-0.5"><Scale className="w-2.5 h-2.5" />Por peso</span>}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Modal Carrito */}
-      {showCart && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-stone-800">🛒 Carrito</h2>
-              <button onClick={() => setShowCart(false)} className="text-stone-400"><X className="w-6 h-6" /></button>
-            </div>
-            <div className="text-xs text-stone-400 mb-2">Cliente: {cliente}</div>
-            {cart.length === 0 ? <p className="text-center text-stone-400 py-8">Carrito vacío</p> : (
-              <div className="space-y-2">
-                {cart.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center border-b py-2">
-                    <div className="flex-1">
-                      <span className="text-sm font-medium text-stone-800">{item.nombre}</span>
-                      <span className="text-xs text-stone-400 ml-1">{item.unidad || ''}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => {
-                        setCart(prev => prev.filter((_, i) => i !== idx))
-                      }} className="text-red-400"><Minus className="w-4 h-4" /></button>
-                      <span className="text-sm font-bold w-6 text-center">{item.cantidad}</span>
-                      <button onClick={() => {
-                        setCart(prev => prev.map((i, index) => index === idx ? { ...i, cantidad: i.cantidad + 1, subtotal: i.precioUnitario * (i.cantidad + 1) } : i))
-                      }} className="text-emerald-500"><Plus className="w-4 h-4" /></button>
-                      <span className="text-sm font-bold text-stone-800 w-16 text-right">${item.subtotal.toLocaleString()}</span>
-                    </div>
-                  </div>
-                ))}
-                <div className="flex justify-between pt-4 border-t font-bold text-lg">
-                  <span>Total</span>
-                  <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span>
-                </div>
-                <button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold mt-4">
-                  Cobrar
-                </button>
+      {cart.length > 0 && (
+        <div className="bg-white border-t p-3 shrink-0">
+          <button onClick={() => setShowPay(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg hover:bg-emerald-600 transition shadow-lg">Cobrar ${totalPrecio.toLocaleString()}</button>
+        </div>
+      )}
+
+      {productoPesaje && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setProductoPesaje(null)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-xl mb-1 text-stone-900">{productoPesaje.icono} {productoPesaje.nombre}</h3>
+            <p className="text-stone-700 mb-4 font-medium">${(productoPesaje.precioPorKg || 0).toLocaleString()} / kilogramo</p>
+            <input type="number" value={pesoInput} onChange={e => setPesoInput(e.target.value)} placeholder="0" className="w-full p-5 text-5xl text-center font-bold bg-stone-50 rounded-2xl mb-4 border-4 border-amber-400 outline-none text-stone-800" autoFocus />
+            <p className="text-center text-stone-400 text-sm mb-4">Ingresa los gramos</p>
+            {pesoInput && Number(pesoInput) > 0 && (
+              <div className="bg-emerald-50 rounded-2xl p-4 text-center mb-4">
+                <p className="text-sm text-emerald-600">Precio calculado</p>
+                <p className="text-4xl font-bold text-emerald-700">${Math.round((Number(pesoInput) / 1000) * (productoPesaje.precioPorKg || 0)).toLocaleString()}</p>
               </div>
             )}
+            <div className="flex gap-3"><button onClick={() => setProductoPesaje(null)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700 text-lg">Cancelar</button><button onClick={confirmarPeso} disabled={!pesoInput || Number(pesoInput) <= 0} className="flex-1 bg-amber-500 text-white py-3 rounded-xl font-bold text-lg disabled:opacity-30">Agregar</button></div>
           </div>
         </div>
       )}
 
-      {/* Modal Pago */}
+      {showCart && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center md:justify-center" onClick={() => setShowCart(false)}>
+          <div className="bg-white w-full md:max-w-lg md:rounded-3xl rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4"><h2 className="font-bold text-xl text-stone-900">Carrito ({totalItems} items)</h2><button onClick={() => setShowCart(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-800" /></button></div>
+            {cart.map(i => (
+              <div key={i.id} className="flex items-center justify-between py-3 border-b border-stone-100 gap-2">
+                <span className="text-sm flex-1 font-medium text-stone-900 truncate">{i.icono} {i.nombre}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: Math.max(1, x.cantidad - 1), subtotal: x.precioUnitario * Math.max(1, x.cantidad - 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Minus className="w-4 h-4 text-stone-800" /></button>
+                  <span className="w-7 text-center font-bold text-stone-900">{i.cantidad}</span>
+                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: x.cantidad + 1, subtotal: x.precioUnitario * (x.cantidad + 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Plus className="w-4 h-4 text-stone-800" /></button>
+                  <button onClick={() => setCart(prev => prev.filter(x => x.id !== i.id))} className="p-1.5 text-red-500 ml-1"><Trash2 className="w-4 h-4" /></button>
+                </div>
+                <span className="w-24 text-right font-bold text-emerald-600 text-base shrink-0">${i.subtotal.toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="mt-4 pt-4 border-t-2 border-stone-200"><p className="text-right text-2xl font-bold text-stone-900">Total: <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span></p><button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg mt-3">Cobrar</button></div>
+          </div>
+        </div>
+      )}
+
       {showPay && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6">
-            <h2 className="text-xl font-bold text-center mb-2">💰 Cobrar</h2>
-            <p className="text-3xl font-bold text-center text-emerald-600 mb-4">${totalPrecio.toLocaleString()}</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white py-3 rounded-xl font-bold">Efectivo</button>
-              <button onClick={() => pay('Tarjeta Débito')} className="bg-blue-500 text-white py-3 rounded-xl font-bold">Débito</button>
-              <button onClick={() => pay('Tarjeta Crédito')} className="bg-purple-500 text-white py-3 rounded-xl font-bold">Crédito</button>
-              <button onClick={() => pay('Transferencia')} className="bg-amber-500 text-white py-3 rounded-xl font-bold">Transferencia</button>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center md:justify-center" onClick={() => setShowPay(false)}>
+          <div className="bg-white w-full md:max-w-sm md:rounded-3xl rounded-t-3xl p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="font-bold text-xl mb-3 text-stone-900">Metodo de pago</h2>
+            <p className="text-stone-700 mb-4 font-medium">Total: <span className="text-emerald-600 font-bold text-2xl">${totalPrecio.toLocaleString()}</span></p>
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-emerald-600">Efectivo</button>
+              <button onClick={() => pay('Nequi')} className="bg-purple-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-purple-600">Nequi</button>
+              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-red-600">Daviplata</button><button onClick={() => pay('Bancolombia')} className='bg-yellow-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-yellow-600'>Bancolombia</button>
             </div>
-            <button onClick={() => setShowPay(false)} className="w-full mt-3 text-stone-400 py-2">Cancelar</button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Pesaje */}
-      {productoPesaje && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6">
-            <h2 className="text-xl font-bold text-center mb-2">⚖️ Pesar {productoPesaje.nombre}</h2>
-            <p className="text-center text-stone-400 text-sm">Precio por kg: ${productoPesaje.precioPorKg?.toLocaleString()}</p>
-            <input type="number" value={pesoInput} onChange={e => setPesoInput(e.target.value)} placeholder="Peso en gramos" className="w-full p-3 border rounded-xl text-center text-xl my-4" autoFocus />
-            <div className="flex gap-3">
-              <button onClick={confirmarPeso} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Agregar</button>
-              <button onClick={() => { setProductoPesaje(null); setPesoInput('') }} className="px-4 py-3 border rounded-xl">Cancelar</button>
-            </div>
+            <button onClick={() => setShowPay(false)} className="w-full py-3 text-stone-500 font-medium">Cancelar</button>
           </div>
         </div>
       )}
     </div>
   )
 }
-
 

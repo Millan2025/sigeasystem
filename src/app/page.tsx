@@ -6,28 +6,8 @@ import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp,
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [isDemo, setIsDemo] = useState(false)
-  const [cajaAbierta, setCajaAbierta] = useState(true)
-  const [ventasHoy, setVentasHoy] = useState(0)
+  const [cajaAbierta, setCajaAbierta] = useState(true); const [ventasHoy, setVentasHoy] = useState(450000); const [pedidosPendientes, setPedidosPendientes] = useState(0); useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) setVentasHoy(d.totales.total || 0) }).catch(() => {}) }, [])
   const [showShare, setShowShare] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-    // Detectar demo desde la URL
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      setIsDemo(params.get('demo') === 'fjmillan39')
-    }
-
-    // Cargar ventas
-    fetch('/api/sales')
-      .then(r => r.json())
-      .then(d => {
-        if (d.success && d.totales) setVentasHoy(d.totales.total || 0)
-      })
-      .catch(() => {})
-  }, [])
 
   const shareLinks = [
     { label: 'POS Vendedor', url: '/pos', icon: '💰', color: 'bg-emerald-600' },
@@ -44,27 +24,14 @@ export default function DashboardPage() {
     window.open('https://wa.me/?text=' + encodeURIComponent('Accede a ' + label + ': https://sigea-system.vercel.app' + url), '_blank')
   }
 
-  // Mostrar loading en el servidor para evitar hidratación
-  if (!isClient) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-          <p className="text-stone-500 mt-4">Cargando...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
-      {!isDemo && <a href="/login" className="fixed top-4 left-4 z-50 bg-red-500 text-white px-3 py-1.5 rounded-full shadow-lg text-xs font-bold no-underline hover:bg-red-600">Salir</a>}
-
+      <a href="/login" className="fixed top-4 left-4 z-50 bg-red-500 text-white px-3 py-1.5 rounded-full shadow-lg text-xs font-bold no-underline hover:bg-red-600">Salir</a>
+      
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
         <div className="flex justify-between items-center">
           <div>
-            <img src="/favicon.ico" alt="SIGEA" className="h-8 object-contain mb-1" />
-            <h1 className="text-2xl font-bold">{isDemo ? 'Cliente Universal' : 'Mi Negocio'}</h1>
+            <img src="/favicon.ico" alt="SIGEA" className="h-8 object-contain mb-1" /><h1 className="text-2xl font-bold">Panaderia Doña Rosa v2</h1>
             <p className="text-stone-300 text-sm">{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
           <div className="flex gap-2">
@@ -153,3 +120,13 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
