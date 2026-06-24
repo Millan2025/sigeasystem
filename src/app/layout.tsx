@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SIGEA System - Gestion Empresarial",
-  description: "Sistema Integral de Gestion Empresarial Adaptativa",
+  title: "SIGEA System",
+  description: "Sistema Integral de Gestion Empresarial",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
