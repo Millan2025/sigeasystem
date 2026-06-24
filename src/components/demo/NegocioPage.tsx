@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, ChefHat } from "lucide-react";
 import Link from "next/link";
+import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, ChefHat, ArrowLeft } from "lucide-react";
 
 interface Producto {
   id: string;
@@ -15,15 +15,15 @@ interface Producto {
   unidad: string;
 }
 
-export function NegocioPage({ 
-  titulo, 
-  icono, 
-  categoria, 
-  tenantId = "7e045520-5e36-4e3f-a39f-10ea7d6dce76" 
-}: { 
-  titulo: string; 
-  icono: string; 
-  categoria: string; 
+export function NegocioPage({
+  titulo,
+  icono,
+  categoria,
+  tenantId = "7e045520-5e36-4e3f-a39f-10ea7d6dce76"
+}: {
+  titulo: string;
+  icono: string;
+  categoria: string;
   tenantId?: string;
 }) {
   const router = useRouter();
@@ -65,18 +65,18 @@ export function NegocioPage({
       <a href="/login" className="fixed top-4 left-4 z-50 bg-red-500 text-white px-3 py-1.5 rounded-full shadow-lg text-xs font-bold no-underline hover:bg-red-600">Salir</a>
 
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex justify-between items-center">
-          <div>
-            <img src="/logoBlanco-sigea.png" alt="SIGEA" className="h-8 object-contain mb-1" />
+        <div className="flex items-center gap-3 mb-4">
+          <Link href="/demo" className="p-2 hover:bg-white/10 rounded-xl transition">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">{titulo}</h1>
-            <p className="text-stone-300 text-sm">{icono} Demo interactiva · {productos.length} productos</p>
+            <p className="text-stone-300 text-sm">{icono} Demo · {productos.length} productos</p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => setShowShare(!showShare)} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition">
-              <Share2 className="w-5 h-5" />
-            </button>
-            <span className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500">Caja Abierta</span>
-          </div>
+          <button onClick={() => setShowShare(!showShare)} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition">
+            <Share2 className="w-5 h-5" />
+          </button>
+          <span className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500">Caja Abierta</span>
         </div>
       </header>
 
@@ -93,7 +93,10 @@ export function NegocioPage({
           {loading ? (
             <div className="text-center py-8 text-stone-400">Cargando productos...</div>
           ) : productos.length === 0 ? (
-            <div className="text-center py-8 text-stone-400">No hay productos disponibles para este negocio</div>
+            <div className="text-center py-8 text-stone-400">
+              No hay productos disponibles para este negocio
+              <div className="text-xs text-stone-300 mt-2">Categoría: {categoria}</div>
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {productos.slice(0, 12).map((p) => (
