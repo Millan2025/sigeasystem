@@ -2,24 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Search, Eye } from "lucide-react";
+import { ArrowLeft, Download, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-interface Venta {
-  id: string;
-  producto_nombre: string;
-  cantidad: number;
-  precio_unitario: number;
-  subtotal: number;
-  metodo_pago: string;
-  cliente: string;
-  fecha: string;
-}
-
 export default function VentasPage() {
-  const { isDemo, demoTenantId } = useDemoMode()
   const supabase = createClient();
-  const [ventas, setVentas] = useState<Venta[]>([]);
+  const [ventas, setVentas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [totalVentas, setTotalVentas] = useState(0);
@@ -32,7 +20,10 @@ export default function VentasPage() {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data: userData } = await supabase
         .from("usuarios")
@@ -40,7 +31,10 @@ export default function VentasPage() {
         .eq("id", user.id)
         .single();
 
-      if (!userData) return;
+      if (!userData) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("ventas")
@@ -63,13 +57,13 @@ export default function VentasPage() {
   };
 
   const ventasFiltradas = ventas.filter(v =>
-    v.producto_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.cliente.toLowerCase().includes(searchTerm.toLowerCase())
+    v.producto_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.cliente?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const exportarExcel = () => {
     if (ventas.length === 0) return;
-    const headers = ["Producto;Cantidad;Precio Unitario;Subtotal;Método Pago;Cliente;Fecha"];
+    const headers = ["Producto;Cantidad;Precio;Subtotal;Método;Cliente;Fecha"];
     const rows = ventas.map(v => 
       [v.producto_nombre, v.cantidad, v.precio_unitario, v.subtotal, v.metodo_pago, v.cliente, new Date(v.fecha).toLocaleString()].join(";")
     );
@@ -140,8 +134,8 @@ export default function VentasPage() {
                     <tr key={v.id} className="border-b border-stone-100 hover:bg-stone-50/50 transition">
                       <td className="px-4 py-3 text-sm text-stone-800">{v.producto_nombre}</td>
                       <td className="px-4 py-3 text-sm text-stone-600">{v.cantidad}</td>
-                      <td className="px-4 py-3 text-sm text-stone-600">${v.precio_unitario.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm font-bold text-emerald-600">${v.subtotal.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm text-stone-600">${v.precio_unitario?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-emerald-600">${v.subtotal?.toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           v.metodo_pago === "Efectivo" ? "bg-emerald-100 text-emerald-700" :
@@ -162,4 +156,3 @@ export default function VentasPage() {
     </div>
   );
 }
-
