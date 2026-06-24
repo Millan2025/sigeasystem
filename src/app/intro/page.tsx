@@ -89,8 +89,8 @@ export default function IntroPage() {
 
         {/* BOTONES ACCIÓN */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-          <a href="/?demo=fjmillan39" className="bg-amber-600 hover:bg-amber-700 text-white px-10 py-4 rounded-2xl font-bold text-lg transition shadow-lg text-center">
-            🌐 Conoce el Modelo Universal de Negocio
+          <a href="/demo" className="bg-amber-600 hover:bg-amber-700 text-white px-10 py-4 rounded-2xl font-bold text-lg transition shadow-lg text-center">
+            🚀 Conoce más aquí
           </a>
           <a href="/login" className="bg-stone-900 hover:bg-stone-800 text-white px-10 py-4 rounded-2xl font-medium transition shadow-lg hover:shadow-xl text-center">
             Iniciar Sesión
@@ -105,6 +105,7 @@ export default function IntroPage() {
     </div>
   );
 }
+
 
 
 
