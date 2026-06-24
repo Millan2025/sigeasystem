@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
-import { getApiUrl, isDemoMode } from '@/lib/demo-utils'
+
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
 
@@ -27,8 +27,8 @@ export default function POSPage() {
   const [cliente, setCliente] = useState('Cliente Universal')
 
   useEffect(() => {
-    fetch(getApiUrl('/api/products')).then(r => r.json()).then(d => {
-      console.log('Modo demo:', isDemoMode()); console.log('Productos recibidos:', d.data?.length)
+    fetch('/api/products' + (typeof window !== 'undefined' && window.location.search.includes('demo=fjmillan39') ? '?demo=true' : '')).then(r => r.json()).then(d => {
+       console.log('Productos recibidos:', d.data?.length)
       if (d.success && d.data && d.data.length > 0) {
         setProductos(d.data.map((p: any) => {
           let cat = (p.categoria || p.category || 'General')
