@@ -30,7 +30,6 @@ export default function ModuloNegocioPage() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Manejar el caso en que pathname sea null
   if (!pathname) {
     return <div className="p-8 text-center text-stone-500">Cargando...</div>;
   }
@@ -39,8 +38,9 @@ export default function ModuloNegocioPage() {
   const negocioSlug = pathParts[2] || '';
   const moduloName = pathParts[3] || '';
 
-  const negocio = NEGOCIOS[negocioSlug];
-  const titulo = TITULOS[moduloName] || "Modulo";
+  // Usar type assertion para acceder a los objetos
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const titulo = TITULOS[moduloName as keyof typeof TITULOS] || "Modulo";
 
   useEffect(() => {
     if (negocio) {
