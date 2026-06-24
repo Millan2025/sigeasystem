@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { getApiUrl } from '@/lib/demo-utils'
 import Link from 'next/link'
 import { ArrowLeft, Download, Search, Plus, Star, AlertTriangle, Package, X, Scale } from 'lucide-react'
 
@@ -23,7 +24,7 @@ export default function InventarioPage() {
   const [productos, setProductos] = useState<ProductoInv[]>(inventarioDemo)
 
   useEffect(() => {
-    fetch('/api/inventory').then(r => r.json()).then(d => {
+    fetch(getApiUrl('/api/inventory')).then(r => r.json()).then(d => {
       if (d.success && d.data.length > 0) {
         setProductos(d.data.map((p: any) => ({
           id: p.id, nombre: p.name || p.nombre, icono: '📦',
@@ -96,3 +97,4 @@ export default function InventarioPage() {
     </div>
   )
 }
+

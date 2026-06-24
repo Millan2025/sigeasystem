@@ -19,6 +19,32 @@ export default function VentasPage() {
   const cargarVentas = async () => {
     setLoading(true);
     try {
+      let tenantId = null;
+
+      // Si es modo demo, usar tenant fijo
+      if (isDemoMode()) {
+        tenantId = getDemoTenant();
+      } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+
+        const { data: userData } = await supabase
+          .from("usuarios")
+          .select("tenant_id")
+          .eq("id", user.id)
+          .single();
+        tenantId = userData?.tenant_id;
+      }
+
+      if (!tenantId) {
+        setLoading(false);
+        return;
+      }
+    setLoading(true);
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
@@ -156,3 +182,4 @@ export default function VentasPage() {
     </div>
   );
 }
+
