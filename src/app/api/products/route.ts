@@ -11,24 +11,8 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const isDemo = url.searchParams.get('demo') === 'true'
 
-    let tenantId = null
-
-    if (isDemo) {
-      tenantId = '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
-    } else {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        return NextResponse.json({ success: true, data: [], source: 'no-auth' })
-      }
-
-      const { data: userData } = await supabase
-        .from('usuarios')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-      tenantId = userData?.tenant_id
-    }
+    // 🔥 Siempre usar el tenant_id de demo para dev
+    const tenantId = '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
 
     if (!tenantId) {
       return NextResponse.json({ success: true, data: [], source: 'no-tenant' })
