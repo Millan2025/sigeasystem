@@ -30,6 +30,11 @@ export default function ModuloNegocioPage() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Manejar el caso en que pathname sea null
+  if (!pathname) {
+    return <div className="p-8 text-center text-stone-500">Cargando...</div>;
+  }
+
   const pathParts = pathname.split('/');
   const negocioSlug = pathParts[2] || '';
   const moduloName = pathParts[3] || '';
