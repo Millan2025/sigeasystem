@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isDemoMode, getDemoTenant } from "@/lib/demo-utils";
 
 export default function VentasPage() {
   const supabase = createClient();
@@ -36,6 +37,7 @@ export default function VentasPage() {
           .select("tenant_id")
           .eq("id", user.id)
           .single();
+
         tenantId = userData?.tenant_id;
       }
 
@@ -43,29 +45,11 @@ export default function VentasPage() {
         setLoading(false);
         return;
       }
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      const { data: userData } = await supabase
-        .from("usuarios")
-        .select("tenant_id")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData) {
-        setLoading(false);
-        return;
-      }
 
       const { data, error } = await supabase
         .from("ventas")
         .select("*")
-        .eq("tenant_id", userData.tenant_id)
+        .eq("tenant_id", tenantId)
         .order("fecha", { ascending: false });
 
       if (error) {
@@ -90,7 +74,7 @@ export default function VentasPage() {
   const exportarExcel = () => {
     if (ventas.length === 0) return;
     const headers = ["Producto;Cantidad;Precio;Subtotal;Método;Cliente;Fecha"];
-    const rows = ventas.map(v => 
+    const rows = ventas.map(v =>
       [v.producto_nombre, v.cantidad, v.precio_unitario, v.subtotal, v.metodo_pago, v.cliente, new Date(v.fecha).toLocaleString()].join(";")
     );
     const csv = "\uFEFF" + headers.join("\n") + "\n" + rows.join("\n");
@@ -182,4 +166,3 @@ export default function VentasPage() {
     </div>
   );
 }
-
