@@ -1,20 +1,19 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, Share2, ChefHat } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isDemo = searchParams.get('demo') === 'fjmillan39'
+  
   const [cajaAbierta, setCajaAbierta] = useState(true)
   const [ventasHoy, setVentasHoy] = useState(450000)
   const [showShare, setShowShare] = useState(false)
-  const [isDemo, setIsDemo] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.search.includes('demo=fjmillan39')) {
-      setIsDemo(true)
-    }
     fetch('/api/sales').then(r => r.json()).then(d => {
       if (d.success && d.totales) setVentasHoy(d.totales.total || 0)
     }).catch(() => {})
