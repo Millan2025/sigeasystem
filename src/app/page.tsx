@@ -10,8 +10,10 @@ export default function DashboardPage() {
   const [cajaAbierta, setCajaAbierta] = useState(true)
   const [ventasHoy, setVentasHoy] = useState(0)
   const [showShare, setShowShare] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
     // Detectar demo desde la URL
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
@@ -40,6 +42,18 @@ export default function DashboardPage() {
 
   function compartirWhatsApp(url: string, label: string) {
     window.open('https://wa.me/?text=' + encodeURIComponent('Accede a ' + label + ': https://sigea-system.vercel.app' + url), '_blank')
+  }
+
+  // Mostrar loading en el servidor para evitar hidratación
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+          <p className="text-stone-500 mt-4">Cargando...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
