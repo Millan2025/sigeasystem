@@ -30,7 +30,21 @@ export default function IntroPage() {
         </div>
 
         {/* GALERÍA */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
+            <img src="/surtimax.jpeg" alt="Surtimax" className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent p-4">
+              <p className="text-white text-sm font-medium tracking-wide">Surtimax</p>
+            </div>
+          </div>
+<div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
+            <img src="/surtimax.jpeg" alt="Surtimax" className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent p-4">
+              <p className="text-white text-sm font-medium tracking-wide">Surtimax</p>
+            </div>
+          </div>
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {['Tienda', 'Panaderia', 'Restaurante', 'Ferreteria'].map((name) => (
             <div key={name} className="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
               <img src={`/${name}-opt.jpg`} alt={name} className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
@@ -105,6 +119,8 @@ export default function IntroPage() {
     </div>
   );
 }
+
+
 
 
 
