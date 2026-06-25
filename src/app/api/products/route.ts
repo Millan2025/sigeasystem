@@ -11,61 +11,48 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const categoria = url.searchParams.get('categoria')
     const tenantIdParam = url.searchParams.get('tenant')
-
-    // 🔥 Usar el tenant_id de demo para dev
     const tenantId = tenantIdParam || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
 
-    console.log('=== API PRODUCTOS DEBUG ===')
-    console.log('Tenant ID recibido:', tenantIdParam)
-    console.log('Tenant ID usado:', tenantId)
-    console.log('Categoría:', categoria)
-
-    // 🔥 Consulta SIN filtro de categoría primero
+    // 🔥 Primero, obtener todos los productos del tenant (sin filtro)
     const { data: allData, error: allError } = await supabase
       .from('productos')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order('nombre')
 
-    console.log('Total productos del tenant:', allData?.length || 0)
+    if (allError) {
+      return NextResponse.json({ 
+        success: false, 
+        error: allError.message,
+        debug: { tenantId }
+      })
+    }
 
-    // 🔥 Consulta CON filtro de categoría
+    // 🔥 Luego, filtrar por categoría si se proporciona
     let query = supabase
       .from('productos')
       .select('*')
       .eq('tenant_id', tenantId)
 
-    if (categoria && categoria !== 'null' && categoria !== 'undefined' && categoria !== '') {
+    if (categoria && categoria !== 'null' && categoria !== 'undefined') {
       query = query.eq('categoria', categoria)
-      console.log('Filtrando por categoría:', categoria)
     }
 
     const { data, error } = await query.order('nombre')
 
-    if (error) {
-      console.error('Error en la consulta:', error)
-      return NextResponse.json({ 
-        success: false, 
-        data: [], 
-        error: error.message,
-        debug: { tenantId, categoria }
-      })
-    }
-
-    console.log('Productos filtrados:', data?.length || 0)
-
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: data || [],
-      count: data?.length || 0,
       totalTenant: allData?.length || 0,
-      debug: { tenantId, categoria }
+      tenantId: tenantId,
+      categoria: categoria || 'todas',
+      debug: {
+        allDataCount: allData?.length || 0,
+        filteredCount: data?.length || 0
+      }
     })
   } catch (error: any) {
-    console.error('Error en API:', error)
     return NextResponse.json({ 
       success: false, 
-      data: [], 
       error: error.message 
     })
   }
