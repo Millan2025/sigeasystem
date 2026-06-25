@@ -1,55 +1,45 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    // 🔥 Consultar información de las tablas
-    const { data: tables, error: tablesError } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .limit(20)
+    const url = new URL(request.url)
+    const categoria = url.searchParams.get('categoria')
+    const tenantId = url.searchParams.get('tenant')
 
-    if (tablesError) {
+    // Si no hay tenant, usar el de Cliente Universal
+    const tenantIdFinal = tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
+
+    // Consulta directa de productos
+    let query = supabase
+      .from('productos')
+      .select('*')
+      .eq('tenant_id', tenantIdFinal)
+
+    if (categoria && categoria !== 'null' && categoria !== 'undefined') {
+      query = query.eq('categoria', categoria)
+    }
+
+    const { data, error } = await query.order('nombre')
+
+    if (error) {
       return NextResponse.json({ 
         success: false, 
-        error: tablesError.message,
-        details: 'No se pudieron listar las tablas'
+        error: error.message 
       })
     }
 
-    // 🔥 Intentar consultar la tabla 'productos'
-    const { data: productosData, error: productosError } = await supabase
-      .from('productos')
-      .select('*', { count: 'exact', head: false })
-      .limit(5)
-
-    // 🔥 Intentar consultar la tabla 'products'
-    const { data: productsData, error: productsError } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: false })
-      .limit(5)
-
     return NextResponse.json({ 
-      success: true,
-      tables: tables || [],
-      productos: {
-        exists: !productosError,
-        count: productosError ? 0 : productosData?.length || 0,
-        error: productosError ? productosError.message : null,
-        data: productosData || []
-      },
-      products: {
-        exists: !productsError,
-        count: productsError ? 0 : productsData?.length || 0,
-        error: productsError ? productsError.message : null,
-        data: productsData || []
-      }
+      success: true, 
+      data: data || [],
+      count: data?.length || 0,
+      tenant: tenantIdFinal,
+      categoria: categoria || 'todas'
     })
   } catch (error: any) {
     return NextResponse.json({ 
