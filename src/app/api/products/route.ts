@@ -12,17 +12,16 @@ export async function GET(request: Request) {
     const categoria = url.searchParams.get('categoria')
     const tenantId = url.searchParams.get('tenant')
 
-    // Si no hay tenant, usar el de Cliente Universal
     const tenantIdFinal = tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
 
-    // Consulta directa de productos
     let query = supabase
       .from('productos')
       .select('*')
       .eq('tenant_id', tenantIdFinal)
 
+    // 🔥 Usar ilike para evitar problemas de tildes y mayúsculas
     if (categoria && categoria !== 'null' && categoria !== 'undefined') {
-      query = query.eq('categoria', categoria)
+      query = query.ilike('categoria', categoria)
     }
 
     const { data, error } = await query.order('nombre')

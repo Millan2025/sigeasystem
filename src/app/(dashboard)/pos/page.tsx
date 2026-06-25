@@ -14,6 +14,25 @@ interface CartItem {
 }
 
 export default function POSPage() {
+  const [tenantId, setTenantId] = useState('');
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getTenant = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: userData } = await supabase
+          .from('usuarios')
+          .select('tenant_id')
+          .eq('id', user.id)
+          .single();
+        if (userData?.tenant_id) {
+          setTenantId(userData.tenant_id);
+        }
+      }
+    };
+    getTenant();
+  }, []);
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [showPay, setShowPay] = useState(false)
@@ -171,4 +190,5 @@ export default function POSPage() {
     </div>
   )
 }
+
 
