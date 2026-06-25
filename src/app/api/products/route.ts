@@ -14,14 +14,16 @@ export async function GET(request: Request) {
 
     const tenantIdFinal = tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
 
+    // 🔥 Si hay categoría, limpiarla y usar ilike
     let query = supabase
       .from('productos')
       .select('*')
       .eq('tenant_id', tenantIdFinal)
 
-    // Usar eq ahora que las categorías están normalizadas
     if (categoria && categoria !== 'null' && categoria !== 'undefined') {
-      query = query.eq('categoria', categoria)
+      // Eliminar espacios y usar ilike para comparación flexible
+      const categoriaLimpia = categoria.trim()
+      query = query.ilike('categoria', categoriaLimpia)
     }
 
     const { data, error } = await query.order('nombre')
