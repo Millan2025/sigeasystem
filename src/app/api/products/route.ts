@@ -10,42 +10,25 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url)
     const categoria = url.searchParams.get('categoria')
-    const tenantId = url.searchParams.get('tenant')
+    const tenantId = url.searchParams.get('tenant') || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
 
-    const tenantIdFinal = tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
-
-    // 🔥 Si hay categoría, limpiarla y usar ilike
     let query = supabase
       .from('productos')
       .select('*')
-      .eq('tenant_id', tenantIdFinal)
+      .eq('tenant_id', tenantId)
 
-    if (categoria && categoria !== 'null' && categoria !== 'undefined') {
-      // Eliminar espacios y usar ilike para comparación flexible
-      const categoriaLimpia = categoria.trim()
-      query = query.ilike('categoria', categoriaLimpia)
+    if (categoria && categoria !== 'undefined') {
+      query = query.eq('categoria', categoria)
     }
 
     const { data, error } = await query.order('nombre')
 
     if (error) {
-      return NextResponse.json({ 
-        success: false, 
-        error: error.message 
-      })
+      return NextResponse.json({ success: false, data: [], error: error.message })
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      data: data || [],
-      count: data?.length || 0,
-      tenant: tenantIdFinal,
-      categoria: categoria || 'todas'
-    })
-  } catch (error: any) {
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message 
-    })
+    return NextResponse.json({ success: true, data: data || [] })
+  } catch (error) {
+    return NextResponse.json({ success: false, data: [], error: 'Error interno' })
   }
 }
