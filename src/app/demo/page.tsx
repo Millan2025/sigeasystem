@@ -42,7 +42,7 @@ export default function DemoPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex justify-between items-center"><div><h1 className="text-2xl font-bold">Cliente Universal</h1><p className="text-stone-300 text-sm">Demo Interactiva · Todos los modulos</p></div><span className={'px-4 py-2 rounded-full text-sm font-semibold ' + (cajaAbierta ? 'bg-emerald-500' : 'bg-red-500')}>{cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}</span></div>
+        <div className="flex justify-between items-center"><div><h1 className="text-2xl font-bold">Panaderia Doña Rosa</h1><p className="text-stone-300 text-sm">Demo Interactiva · Todos los modulos</p></div><span className={'px-4 py-2 rounded-full text-sm font-semibold ' + (cajaAbierta ? 'bg-emerald-500' : 'bg-red-500')}>{cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}</span></div>
       </header>
       <div className="p-4">
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white mb-4"><p className="text-emerald-100 text-sm">VENTAS DE HOY (DEMO)</p><p className="text-4xl font-bold mt-1">$450,000</p><p className="text-sm text-emerald-100 mt-2">24 transacciones · Efectivo 65% · Nequi 20% · Daviplata 15%</p></div>
@@ -67,7 +67,6 @@ export default function DemoPage() {
     </div>
   )
 }
-
 
 
 
