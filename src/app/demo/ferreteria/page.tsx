@@ -1,5 +1,15 @@
-﻿import { NegocioPage } from "@/components/demo/NegocioPage";
+﻿import { NegocioDashboard } from "@/components/NegocioDashboard";
 
 export default function FerreteriaPage() {
-  return <NegocioPage titulo="Ferretería El Tornillo" icono="🔩" categoria="Ferretería" />;
+  return (
+    <NegocioDashboard 
+      negocio="ferreteria"
+      config={{
+        titulo: "Ferretería El Tornillo",
+        icono: "🔩",
+        categoria: "Ferretería",
+        tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76"
+      }}
+    />
+  );
 }
