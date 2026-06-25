@@ -8,29 +8,45 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    // 🔥 Consulta SIN filtro de tenant (todos los productos)
-    const { data, error } = await supabase
+    // 🔥 Probar la conexión primero
+    const { data: connectionTest, error: connectionError } = await supabase
       .from('productos')
-      .select('*')
-      .limit(20)
+      .select('count', { count: 'exact', head: true })
 
-    if (error) {
-      return NextResponse.json({ 
-        success: false, 
-        error: error.message 
+    if (connectionError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Error de conexión: ' + connectionError.message,
+        details: 'La tabla "productos" podría no existir o no tener permisos'
       })
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    // 🔥 Obtener los primeros 10 productos con todos los campos
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .limit(10)
+
+    if (error) {
+      return NextResponse.json({
+        success: false,
+        error: error.message,
+        details: 'Error al obtener productos'
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      countTotal: connectionTest?.count || 0,
       data: data || [],
-      count: data?.length || 0,
-      message: 'Sin filtro de tenant'
+      muestra: data?.length || 0,
+      message: `La tabla tiene ${connectionTest?.count || 0} productos. Mostrando ${data?.length || 0}.`
     })
   } catch (error: any) {
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message 
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+      details: 'Error en el servidor'
     })
   }
 }
