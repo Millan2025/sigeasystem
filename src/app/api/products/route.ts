@@ -19,9 +19,9 @@ export async function GET(request: Request) {
       .select('*')
       .eq('tenant_id', tenantIdFinal)
 
-    // 🔥 Usar ilike para evitar problemas de tildes y mayúsculas
+    // Usar eq ahora que las categorías están normalizadas
     if (categoria && categoria !== 'null' && categoria !== 'undefined') {
-      query = query.ilike('categoria', categoria)
+      query = query.eq('categoria', categoria)
     }
 
     const { data, error } = await query.order('nombre')
