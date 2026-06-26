@@ -25,29 +25,29 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { cliente, telefono, direccion, valor_total, tenant_id, responsable, observaciones } = body
+    const { responsable, telefono, direccion, monto, tenant_id } = body
 
-    if (!cliente || !valor_total || !tenant_id) {
+    if (!responsable || !monto || !tenant_id) {
       return NextResponse.json(
-        { success: false, error: 'Faltan: cliente, valor_total, tenant_id' },
+        { success: false, error: 'Faltan: responsable, monto, tenant_id' },
         { status: 400 }
       )
     }
 
+    // Construir observaciones con teléfono y dirección
+    const observaciones = `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
+
     const { data, error } = await supabase
       .from('creditos')
       .insert({
-        cliente,
-        responsable: responsable || 'POS',
-        valor_total,
+        tenant_id,
+        responsable,
+        valor_total: monto,
         valor_pagado: 0,
-        saldo_pendiente: valor_total,
+        saldo_pendiente: monto,
         fecha_inicio: new Date().toISOString().split('T')[0],
         estado: 'pendiente',
-        observaciones: observaciones || `Tel: ${telefono || ''} Dir: ${direccion || ''}`,
-        tenant_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        observaciones: observaciones.trim()
       })
       .select()
       .single()
@@ -71,6 +71,7 @@ export async function PUT(request: Request) {
       )
     }
 
+    // Obtener crédito actual
     const { data: credito, error: getErr } = await supabase
       .from('creditos')
       .select('saldo_pendiente, valor_pagado')
@@ -82,7 +83,6 @@ export async function PUT(request: Request) {
     const nuevoSaldo = credito.saldo_pendiente - monto_abono
     const nuevoPagado = credito.valor_pagado + monto_abono
     const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
-    const fechaFin = nuevoSaldo <= 0 ? new Date().toISOString().split('T')[0] : null
 
     const { data, error } = await supabase
       .from('creditos')
@@ -90,7 +90,6 @@ export async function PUT(request: Request) {
         saldo_pendiente: nuevoSaldo,
         valor_pagado: nuevoPagado,
         estado,
-        fecha_fin: fechaFin,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)

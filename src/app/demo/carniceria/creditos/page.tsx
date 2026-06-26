@@ -7,14 +7,12 @@ import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
 
 interface Credito {
   id: string;
-  cliente: string;
   responsable: string;
   valor_total: number;
   valor_pagado: number;
   saldo_pendiente: number;
-  fecha_inicio: string;
-  fecha_fin: string | null;
   estado: string;
+  fecha_inicio: string;
   observaciones: string;
   tenant_id: string;
 }
@@ -102,7 +100,6 @@ export default function CreditosPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
-                  <th className="text-left p-2 text-stone-700">Responsable</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
                   <th className="text-left p-2 text-stone-700">Pagado</th>
                   <th className="text-left p-2 text-stone-700">Saldo</th>
@@ -114,8 +111,7 @@ export default function CreditosPage() {
               <tbody>
                 {creditos.map((c) => (
                   <tr key={c.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-800">{c.cliente}</td>
-                    <td className="p-2 text-stone-700">{c.responsable || "-"}</td>
+                    <td className="p-2 text-stone-800">{c.responsable}</td>
                     <td className="p-2 text-stone-800">${c.valor_total.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${c.valor_pagado.toLocaleString()}</td>
                     <td className="p-2 font-medium text-stone-800">${c.saldo_pendiente.toLocaleString()}</td>
@@ -155,7 +151,7 @@ export default function CreditosPage() {
                 ))}
                 {creditos.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-4 text-center text-stone-500">
+                    <td colSpan={7} className="p-4 text-center text-stone-500">
                       No hay créditos
                     </td>
                   </tr>
