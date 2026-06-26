@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, Plus, Search, FileUp, FileDown } from "lucide-react";
+import {
+  ArrowLeft,
+  RefreshCw,
+  Plus,
+  Search,
+  FileUp,
+  FileDown,
+} from "lucide-react";
+import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
   panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
@@ -24,6 +32,7 @@ export default function InventarioPage() {
   const [productos, setProductos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [importando, setImportando] = useState(false);
 
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[2] || "restaurante";
@@ -78,6 +87,107 @@ export default function InventarioPage() {
     }
   };
 
+  // ==============================================
+  // EXPORTAR PLANTILLA EXCEL (VACÍA O CON DATOS)
+  // ==============================================
+  const descargarPlantilla = () => {
+    const columnas = [
+      "nombre",
+      "categoria",
+      "precio",
+      "stock",
+      "unidad",
+      "tipo_unidad",
+      "venta_por_peso",
+      "icono",
+    ];
+    const filaEjemplo = [
+      "Pan de Sal",
+      "Panaderia",
+      2500,
+      100,
+      "unidad",
+      "unidad",
+      false,
+      "🍞",
+    ];
+    const data = [columnas, filaEjemplo];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Productos");
+    // Establecer anchos de columna
+    ws["!cols"] = columnas.map(() => ({ wch: 20 }));
+    XLSX.writeFile(wb, `plantilla_productos_${negocioSlug}.xlsx`);
+  };
+
+  // ==============================================
+  // IMPORTAR PRODUCTOS DESDE EXCEL
+  // ==============================================
+  const importarProductos = async (file: File) => {
+    setImportando(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Saltar encabezado (primera fila)
+        const productosData = rows.slice(1).filter((row) => row[0] && row[0].trim() !== "");
+
+        if (productosData.length === 0) {
+          alert("El archivo no contiene productos para importar.");
+          setImportando(false);
+          return;
+        }
+
+        let importados = 0;
+        let errores = [];
+
+        for (const row of productosData) {
+          const [nombre, categoria, precio, stock, unidad, tipo_unidad, venta_por_peso, icono] = row;
+          try {
+            const res = await fetch("/api/products", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nombre: nombre.trim(),
+                categoria: categoria.trim() || "General",
+                precio: parseFloat(precio) || 0,
+                stock: parseInt(stock) || 0,
+                unidad: unidad?.trim() || "unidad",
+                tipo_unidad: tipo_unidad?.trim() || "unidad",
+                venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "si",
+                icono: icono?.trim() || "📦",
+                tenant_id: tenantId,
+              }),
+            });
+            const result = await res.json();
+            if (result.success) {
+              importados++;
+            } else {
+              errores.push(`${nombre}: ${result.error}`);
+            }
+          } catch (err) {
+            errores.push(`${nombre}: Error de conexión`);
+          }
+        }
+
+        alert(
+          `✅ Productos importados: ${importados}\n` +
+          (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
+        );
+        cargarDatos();
+        setImportando(false);
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (err) {
+      alert("Error al leer el archivo");
+      setImportando(false);
+    }
+  };
+
   const stockFiltrado = stock.filter((p: any) =>
     p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -104,18 +214,30 @@ export default function InventarioPage() {
         >
           <Plus className="w-4 h-4" /> Movimiento
         </button>
-        <button className="p-2 hover:bg-stone-100 rounded-xl relative">
-          <FileUp className="w-5 h-5 text-stone-700" />
+        <button
+          onClick={descargarPlantilla}
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700"
+          title="Descargar plantilla Excel"
+        >
+          <FileDown className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Plantilla</span>
+        </button>
+        <label className="p-2 hover:bg-stone-100 rounded-xl cursor-pointer flex items-center gap-1 text-stone-700">
+          <FileUp className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Importar</span>
           <input
             type="file"
-            accept=".csv,.xlsx"
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            onChange={(e) => alert("Función de carga masiva en desarrollo")}
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                importarProductos(e.target.files[0]);
+              }
+              e.target.value = "";
+            }}
+            disabled={importando}
           />
-        </button>
-        <button className="p-2 hover:bg-stone-100 rounded-xl">
-          <FileDown className="w-5 h-5 text-stone-700" />
-        </button>
+        </label>
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
