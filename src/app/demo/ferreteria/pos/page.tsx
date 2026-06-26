@@ -138,12 +138,7 @@ export default function POSPage() {
       const res = await fetch('/api/ventas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          metodo_pago: metodo,
-          total: totalPrecio,
-          items: items
-        })
+        body: JSON.stringify({ cliente: creditoData.cliente, telefono: creditoData.telefono, direccion: creditoData.direccion, valor_total: totalPrecio, tenant_id: tenantId })
       });
 
       const data = await res.json();
@@ -170,13 +165,7 @@ export default function POSPage() {
       const res = await fetch('/api/creditos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cliente: creditoData.cliente,
-          telefono: creditoData.telefono,
-          direccion: creditoData.direccion,
-          monto: totalPrecio,
-          tenant_id: tenantId
-        })
+        body: JSON.stringify({ cliente: creditoData.cliente, telefono: creditoData.telefono, direccion: creditoData.direccion, valor_total: totalPrecio, tenant_id: tenantId })
       });
       const data = await res.json();
       if (data.success) {
@@ -338,3 +327,4 @@ export default function POSPage() {
     </div>
   );
 }
+

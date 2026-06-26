@@ -8,12 +8,14 @@ import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
 interface Credito {
   id: string;
   cliente: string;
-  telefono: string;
-  direccion: string;
-  monto: number;
-  saldo: number;
+  responsable: string;
+  valor_total: number;
+  valor_pagado: number;
+  saldo_pendiente: number;
+  fecha_inicio: string;
+  fecha_fin: string | null;
   estado: string;
-  fecha: string;
+  observaciones: string;
   tenant_id: string;
 }
 
@@ -72,7 +74,7 @@ export default function CreditosPage() {
 
   const totalPendiente = creditos
     .filter((c) => c.estado === "pendiente")
-    .reduce((sum, c) => sum + c.saldo, 0);
+    .reduce((sum, c) => sum + c.saldo_pendiente, 0);
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -100,8 +102,9 @@ export default function CreditosPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
-                  <th className="text-left p-2 text-stone-700">Teléfono</th>
-                  <th className="text-left p-2 text-stone-700">Monto</th>
+                  <th className="text-left p-2 text-stone-700">Responsable</th>
+                  <th className="text-left p-2 text-stone-700">Total</th>
+                  <th className="text-left p-2 text-stone-700">Pagado</th>
                   <th className="text-left p-2 text-stone-700">Saldo</th>
                   <th className="text-left p-2 text-stone-700">Estado</th>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
@@ -112,9 +115,10 @@ export default function CreditosPage() {
                 {creditos.map((c) => (
                   <tr key={c.id} className="border-b border-stone-100">
                     <td className="p-2 text-stone-800">{c.cliente}</td>
-                    <td className="p-2 text-stone-700">{c.telefono || "-"}</td>
-                    <td className="p-2 text-stone-800">${c.monto.toLocaleString()}</td>
-                    <td className="p-2 font-medium text-stone-800">${c.saldo.toLocaleString()}</td>
+                    <td className="p-2 text-stone-700">{c.responsable || "-"}</td>
+                    <td className="p-2 text-stone-800">${c.valor_total.toLocaleString()}</td>
+                    <td className="p-2 text-stone-800">${c.valor_pagado.toLocaleString()}</td>
+                    <td className="p-2 font-medium text-stone-800">${c.saldo_pendiente.toLocaleString()}</td>
                     <td className="p-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -126,7 +130,7 @@ export default function CreditosPage() {
                         {c.estado}
                       </span>
                     </td>
-                    <td className="p-2 text-stone-600">{new Date(c.fecha).toLocaleDateString()}</td>
+                    <td className="p-2 text-stone-600">{new Date(c.fecha_inicio).toLocaleDateString()}</td>
                     <td className="p-2">
                       {c.estado === "pendiente" && (
                         <div className="flex items-center gap-2">
@@ -151,7 +155,7 @@ export default function CreditosPage() {
                 ))}
                 {creditos.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-4 text-center text-stone-500">
+                    <td colSpan={8} className="p-4 text-center text-stone-500">
                       No hay créditos
                     </td>
                   </tr>
