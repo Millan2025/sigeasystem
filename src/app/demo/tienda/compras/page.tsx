@@ -37,13 +37,13 @@ export default function ComprasPage() {
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
   const [stockMap, setStockMap] = useState<Record<string, number>>({});
 
-  // Modal CRUD
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState({
     nombre: "",
     categoria: "",
     precio: 0,
+    precio_compra: 0,
     stock: 0,
     stock_minimo: 0,
     proveedor: "",
@@ -55,13 +55,11 @@ export default function ComprasPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
-    // 1. Productos filtrados por categoría del negocio
     const url = `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`;
     const resProd = await fetch(url);
     const dataProd = await resProd.json();
     if (dataProd.success) setProductos(dataProd.data || []);
 
-    // 2. Stock actual (movimientos)
     const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
     const dataStock = await resStock.json();
     if (dataStock.success) {
@@ -78,10 +76,8 @@ export default function ComprasPage() {
     cargarDatos();
   }, [tenantId, categoriaNegocio]);
 
-  // Proveedores únicos de los productos filtrados
   const proveedores = [...new Set(productos.map((p) => p.proveedor).filter(Boolean))];
 
-  // Productos críticos (stock actual < mínimo)
   const productosCriticos = productos.filter((p) => {
     const stockActual = stockMap[p.id] ?? 0;
     const minimo = p.stock_minimo || 0;
@@ -111,11 +107,11 @@ export default function ComprasPage() {
       const stockActual = stockMap[p.id] ?? 0;
       return {
         Producto: p.nombre,
-        Categoría: p.categoria,
         "Stock Actual": stockActual,
         "Mínimo Requerido": p.stock_minimo || 0,
         "Cantidad a Comprar": Math.max((p.stock_minimo || 0) - stockActual, 0),
         Proveedor: p.proveedor || "",
+        "Precio Compra": p.precio_compra || 0,
         Observaciones: p.observaciones || "",
       };
     }).filter(Boolean);
@@ -131,12 +127,12 @@ export default function ComprasPage() {
   const descargarInventarioCompleto = () => {
     const data = productos.map((p) => ({
       Nombre: p.nombre,
-      Categoría: p.categoria,
       "Stock Actual": stockMap[p.id] ?? 0,
       "Stock Mínimo": p.stock_minimo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
-      "Precio Unitario": p.precio || 0,
+      "Precio Venta": p.precio || 0,
+      "Precio Compra": p.precio_compra || 0,
       Observaciones: p.observaciones || "",
     }));
 
@@ -146,7 +142,6 @@ export default function ComprasPage() {
     XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
   };
 
-  // CRUD
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
@@ -163,7 +158,7 @@ export default function ComprasPage() {
     if (data.success) {
       setShowModal(false);
       setEditando(null);
-      setForm({ nombre: "", categoria: "", precio: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
+      setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -187,6 +182,7 @@ export default function ComprasPage() {
       nombre: p.nombre,
       categoria: p.categoria,
       precio: p.precio || 0,
+      precio_compra: p.precio_compra || 0,
       stock: p.stock || 0,
       stock_minimo: p.stock_minimo || 0,
       proveedor: p.proveedor || "",
@@ -226,7 +222,7 @@ export default function ComprasPage() {
         <button
           onClick={() => {
             setEditando(null);
-            setForm({ nombre: "", categoria: "", precio: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
+            setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
             setShowModal(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -236,7 +232,6 @@ export default function ComprasPage() {
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Alerta crítica */}
         <div
           className={`rounded-2xl p-4 mb-6 ${
             productosCriticos.length > 0
@@ -251,7 +246,6 @@ export default function ComprasPage() {
           </p>
         </div>
 
-        {/* Filtro por proveedor */}
         <div className="flex flex-wrap gap-2 mb-4">
           <select
             value={filtroProveedor}
@@ -267,17 +261,17 @@ export default function ComprasPage() {
           </select>
         </div>
 
-        {/* Tabla de productos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-stone-50">
               <tr>
                 <th className="p-2 text-left text-stone-700">Seleccionar</th>
                 <th className="p-2 text-left text-stone-700">Nombre</th>
-                <th className="p-2 text-left text-stone-700">Categoría</th>
                 <th className="p-2 text-left text-stone-700">Stock actual</th>
                 <th className="p-2 text-left text-stone-700">Mínimo</th>
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
+                <th className="p-2 text-left text-stone-700">Precio Venta</th>
+                <th className="p-2 text-left text-stone-700">Precio Compra</th>
                 <th className="p-2 text-left text-stone-700">Observaciones</th>
                 <th className="p-2 text-left text-stone-700">Estado</th>
                 <th className="p-2 text-left text-stone-700">Acciones</th>
@@ -298,10 +292,11 @@ export default function ComprasPage() {
                       />
                     </td>
                     <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
-                    <td className="p-2 text-stone-600">{p.categoria}</td>
                     <td className="p-2 font-medium text-stone-800">{stockActual}</td>
                     <td className="p-2 text-stone-600">{p.stock_minimo || 0}</td>
                     <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
+                    <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
+                    <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-600">{p.observaciones || ""}</td>
                     <td className="p-2">
                       {esCritico ? (
@@ -327,7 +322,7 @@ export default function ComprasPage() {
               })}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="p-4 text-center text-stone-500">
+                  <td colSpan={10} className="p-4 text-center text-stone-500">
                     No hay productos para este negocio
                   </td>
                 </tr>
@@ -337,7 +332,6 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD con etiquetas claras */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -364,7 +358,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Precio</label>
+                <label className="block text-sm font-medium text-stone-700">Precio Venta</label>
                 <input
                   type="number"
                   step="0.01"
@@ -374,13 +368,24 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock</label>
+                <label className="block text-sm font-medium text-stone-700">Precio Compra</label>
                 <input
                   type="number"
-                  value={form.stock}
-                  onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })}
+                  step="0.01"
+                  value={form.precio_compra}
+                  onChange={(e) => setForm({ ...form, precio_compra: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Stock actual</label>
+                <input
+                  type="text"
+                  value={stockMap[editando?.id] ?? 0}
+                  disabled
+                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
+                />
+                <p className="text-xs text-stone-400 mt-1">El stock se calcula automáticamente con los movimientos</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
@@ -407,7 +412,6 @@ export default function ComprasPage() {
                   value={form.observaciones}
                   onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. Compra semanal, proveedor habitual..."
                 />
               </div>
               <div>
@@ -417,7 +421,6 @@ export default function ComprasPage() {
                   value={form.unidad}
                   onChange={(e) => setForm({ ...form, unidad: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="kg, L, unidad, etc."
                 />
               </div>
               <div>

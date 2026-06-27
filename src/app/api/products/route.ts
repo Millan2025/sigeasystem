@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { nombre, categoria, precio, stock, unidad, tipo_unidad, venta_por_peso, icono, tenant_id, proveedor, stock_minimo } = body
+    const { nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad, venta_por_peso, icono, tenant_id, proveedor, stock_minimo, observaciones } = body
 
     if (!nombre || !categoria || !tenant_id) {
       return NextResponse.json(
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
         nombre,
         categoria,
         precio: precio || 0,
+        precio_compra: precio_compra || 0,
         stock: stock || 0,
         unidad: unidad || 'unidad',
         tipo_unidad: tipo_unidad || 'unidad',
@@ -74,7 +75,8 @@ export async function POST(request: Request) {
         icono: icono || '📦',
         tenant_id,
         proveedor: proveedor || '',
-        stock_minimo: stock_minimo || 5,
+        stock_minimo: stock_minimo || 0,
+        observaciones: observaciones || '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -92,7 +94,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
-    const { id, nombre, categoria, precio, stock, unidad, tipo_unidad, venta_por_peso, icono, proveedor, stock_minimo } = body
+    const { id, nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad, venta_por_peso, icono, proveedor, stock_minimo, observaciones } = body
 
     if (!id) {
       return NextResponse.json(
@@ -107,13 +109,15 @@ export async function PUT(request: Request) {
         nombre,
         categoria,
         precio,
+        precio_compra,
         stock,
         unidad,
         tipo_unidad,
         venta_por_peso,
         icono,
-        proveedor: proveedor || '',
-        stock_minimo: stock_minimo || 5,
+        proveedor,
+        stock_minimo,
+        observaciones,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
