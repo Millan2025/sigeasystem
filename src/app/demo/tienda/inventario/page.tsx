@@ -16,12 +16,12 @@ import {
 import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda Surtimax", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda Surtimax", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
 export default function InventarioPage() {
@@ -37,7 +37,6 @@ export default function InventarioPage() {
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [importando, setImportando] = useState(false);
 
-  // Estado para el modal de producto (crear/editar)
   const [editandoProducto, setEditandoProducto] = useState<any>(null);
   const [formProducto, setFormProducto] = useState({
     nombre: "",
@@ -132,7 +131,6 @@ export default function InventarioPage() {
       setEditandoProducto(null);
       setFormProducto({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
       cargarDatos();
-      // Recargar lista de productos para el selector
       fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
         .then((r) => r.json())
         .then((d) => {
@@ -149,7 +147,6 @@ export default function InventarioPage() {
     const data = await res.json();
     if (data.success) {
       cargarDatos();
-      // Recargar lista de productos
       fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
         .then((r) => r.json())
         .then((d) => {
@@ -295,7 +292,6 @@ export default function InventarioPage() {
           (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
         );
         cargarDatos();
-        // Recargar lista de productos
         fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
           .then((r) => r.json())
           .then((d) => {
@@ -320,7 +316,6 @@ export default function InventarioPage() {
     return m.tipo === filtroTipo;
   });
 
-  // Mapa de stock para el modal de edición
   const stockMap = stock.reduce((acc: any, s: any) => {
     acc[s.id] = s.stock_actual;
     return acc;
@@ -388,7 +383,7 @@ export default function InventarioPage() {
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Tabla de stock actual */}
+        {/* Stock actual */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="font-semibold text-stone-800">Stock Actual</h2>
@@ -443,7 +438,7 @@ export default function InventarioPage() {
           </div>
         </div>
 
-        {/* Historial de movimientos */}
+        {/* Movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-stone-800">Últimos Movimientos</h2>
@@ -504,7 +499,7 @@ export default function InventarioPage() {
         </div>
       </div>
 
-      {/* Modal para registrar movimiento */}
+      {/* Modal Movimiento */}
       {showMovimientoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -578,7 +573,7 @@ export default function InventarioPage() {
         </div>
       )}
 
-      {/* Modal para crear/editar producto */}
+      {/* Modal Producto */}
       {showProductoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
