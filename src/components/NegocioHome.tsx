@@ -120,6 +120,19 @@ const beneficiosPorModulo: Record<string, { titulo: string; icono: string; benef
     ],
     color: "bg-orange-500",
   },
+  compras: {
+    titulo: "Gestión de Compras",
+    icono: "🛍️",
+    beneficios: [
+      "Recomendación automática de compra según stock mínimo",
+      "Lista de productos por proveedor",
+      "Generación de órdenes de compra en Excel",
+      "Historial de compras",
+      "Control de presupuesto para compras",
+      "Conexión con inventario para actualizar stock automáticamente",
+    ],
+    color: "bg-indigo-500",
+  },
 };
 
 // Configuración de cada negocio
@@ -176,15 +189,16 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
 
   // Los módulos con sus íconos y colores (igual que en demo)
   const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600" },
-    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600" },
-    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600" },
-    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600" },
-    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600" },
-    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600" },
-    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600" },
-    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600" },
-  ];
+  { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600" },
+  { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600" },
+  { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600" },
+  { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600" },
+  { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600" },
+  { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600" },
+  { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600" },
+  { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600" },
+  { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600" },
+];
 
   // Datos de ejemplo para el resumen (fijos para demo)
   const ventasHoy = {
@@ -296,3 +310,4 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
     </div>
   );
 }
+
