@@ -15,12 +15,12 @@ import {
 import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda Surtimax", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda Surtimax", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
 export default function ComprasPage() {
@@ -29,6 +29,7 @@ export default function ComprasPage() {
   const negocioSlug = pathParts[2] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const categoriaNegocio = negocio?.categoria || "";
 
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,8 +55,9 @@ export default function ComprasPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
-    // 1. Productos
-    const resProd = await fetch(`/api/products?tenant=${tenantId}`);
+    // 1. Productos filtrados por categoría del negocio
+    const url = `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`;
+    const resProd = await fetch(url);
     const dataProd = await resProd.json();
     if (dataProd.success) setProductos(dataProd.data || []);
 
@@ -74,12 +76,12 @@ export default function ComprasPage() {
 
   useEffect(() => {
     cargarDatos();
-  }, [tenantId]);
+  }, [tenantId, categoriaNegocio]);
 
-  // Proveedores únicos
+  // Proveedores únicos de los productos filtrados
   const proveedores = [...new Set(productos.map((p) => p.proveedor).filter(Boolean))];
 
-  // Productos con stock por debajo del mínimo (usando stockMap)
+  // Productos críticos (stock actual < mínimo)
   const productosCriticos = productos.filter((p) => {
     const stockActual = stockMap[p.id] ?? 0;
     const minimo = p.stock_minimo || 0;
@@ -103,7 +105,6 @@ export default function ComprasPage() {
       return;
     }
 
-    // Crear Excel con los productos seleccionados
     const data = seleccionados.map((id) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
@@ -124,9 +125,7 @@ export default function ComprasPage() {
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
     XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
 
-    // También mostrar resumen
-    const totalItems = data.length;
-    alert(`📦 Orden de compra generada con ${totalItems} productos.\nSe descargó el archivo Excel.`);
+    alert(`📦 Orden de compra generada con ${data.length} productos.`);
   };
 
   const descargarInventarioCompleto = () => {
@@ -237,7 +236,7 @@ export default function ComprasPage() {
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Alerta crítica (AHORA REAL) */}
+        {/* Alerta crítica */}
         <div
           className={`rounded-2xl p-4 mb-6 ${
             productosCriticos.length > 0
@@ -252,7 +251,7 @@ export default function ComprasPage() {
           </p>
         </div>
 
-        {/* Filtros */}
+        {/* Filtro por proveedor */}
         <div className="flex flex-wrap gap-2 mb-4">
           <select
             value={filtroProveedor}
@@ -329,7 +328,7 @@ export default function ComprasPage() {
               {productosFiltrados.length === 0 && (
                 <tr>
                   <td colSpan={9} className="p-4 text-center text-stone-500">
-                    No hay productos
+                    No hay productos para este negocio
                   </td>
                 </tr>
               )}
@@ -338,90 +337,114 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD */}
+      {/* Modal CRUD con etiquetas claras */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-stone-800 mb-4">
-              {editando ? "Editar Producto" : "Nuevo Producto"}
+              {editando ? `Editar producto: ${editando.nombre}` : "Nuevo Producto"}
             </h3>
             <div className="space-y-3">
-              <input
-                type="text"
-                placeholder="Nombre *"
-                value={form.nombre}
-                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="text"
-                placeholder="Categoría *"
-                value={form.categoria}
-                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="number"
-                placeholder="Precio"
-                value={form.precio}
-                onChange={(e) => setForm({ ...form, precio: parseFloat(e.target.value) || 0 })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="number"
-                placeholder="Stock"
-                value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="number"
-                placeholder="Stock mínimo"
-                value={form.stock_minimo}
-                onChange={(e) => setForm({ ...form, stock_minimo: parseInt(e.target.value) || 0 })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="text"
-                placeholder="Proveedor"
-                value={form.proveedor}
-                onChange={(e) => setForm({ ...form, proveedor: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="text"
-                placeholder="Observaciones"
-                value={form.observaciones}
-                onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <input
-                type="text"
-                placeholder="Unidad (ej. kg, L, unidad)"
-                value={form.unidad}
-                onChange={(e) => setForm({ ...form, unidad: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              />
-              <select
-                value={form.tipo_unidad}
-                onChange={(e) => setForm({ ...form, tipo_unidad: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-              >
-                <option value="unidad">Unidad</option>
-                <option value="kilogramo">Kilogramo</option>
-                <option value="gramo">Gramo</option>
-                <option value="libra">Libra</option>
-                <option value="litro">Litro</option>
-                <option value="mililitro">Mililitro</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Icono (emoji)"
-                value={form.icono}
-                onChange={(e) => setForm({ ...form, icono: e.target.value })}
-                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                maxLength={2}
-              />
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Nombre *</label>
+                <input
+                  type="text"
+                  value={form.nombre}
+                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
+                <input
+                  type="text"
+                  value={form.categoria}
+                  onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Precio</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.precio}
+                  onChange={(e) => setForm({ ...form, precio: parseFloat(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Stock</label>
+                <input
+                  type="number"
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
+                <input
+                  type="number"
+                  value={form.stock_minimo}
+                  onChange={(e) => setForm({ ...form, stock_minimo: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Proveedor</label>
+                <input
+                  type="text"
+                  value={form.proveedor}
+                  onChange={(e) => setForm({ ...form, proveedor: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Observaciones</label>
+                <input
+                  type="text"
+                  value={form.observaciones}
+                  onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  placeholder="Ej. Compra semanal, proveedor habitual..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Unidad</label>
+                <input
+                  type="text"
+                  value={form.unidad}
+                  onChange={(e) => setForm({ ...form, unidad: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  placeholder="kg, L, unidad, etc."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Tipo de unidad</label>
+                <select
+                  value={form.tipo_unidad}
+                  onChange={(e) => setForm({ ...form, tipo_unidad: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                >
+                  <option value="unidad">Unidad</option>
+                  <option value="kilogramo">Kilogramo</option>
+                  <option value="gramo">Gramo</option>
+                  <option value="libra">Libra</option>
+                  <option value="litro">Litro</option>
+                  <option value="mililitro">Mililitro</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Icono (emoji)</label>
+                <input
+                  type="text"
+                  value={form.icono}
+                  onChange={(e) => setForm({ ...form, icono: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  maxLength={2}
+                />
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
