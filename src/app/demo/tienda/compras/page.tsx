@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, ShoppingCart, CheckCircle } from "lucide-react";
+import { ArrowLeft, RefreshCw, ShoppingBag, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
   panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
@@ -16,23 +17,35 @@ const NEGOCIOS = {
 
 export default function ComprasPage() {
   const pathname = usePathname();
-  const [productos, setProductos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [seleccionados, setSeleccionados] = useState<string[]>([]);
-  const [filtroProveedor, setFiltroProveedor] = useState("");
-
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[2] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
+  const [productos, setProductos] = useState<any[]>([]);
+  const [stock, setStock] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filtroProveedor, setFiltroProveedor] = useState("");
+  const [seleccionados, setSeleccionados] = useState<string[]>([]);
+
   const cargarDatos = () => {
     setLoading(true);
+    // Obtener productos con stock y proveedor
     fetch(`/api/products?tenant=${tenantId}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.success) setProductos(d.data || []);
-        setLoading(false);
+        if (d.success) {
+          setProductos(d.data || []);
+          // También cargamos stock actualizado
+          fetch(`/api/inventory?tenant=${tenantId}&stock=true`)
+            .then((r) => r.json())
+            .then((res) => {
+              if (res.success) setStock(res.data || []);
+              setLoading(false);
+            });
+        } else {
+          setLoading(false);
+        }
       });
   };
 
@@ -40,20 +53,19 @@ export default function ComprasPage() {
     cargarDatos();
   }, [tenantId]);
 
-  // Productos que necesitan compra (stock <= stock_minimo)
-  const productosRecomendados = productos.filter((p: any) => {
-    const stockActual = p.stock || 0;
-    const minimo = p.stock_minimo || 5;
-    return stockActual <= minimo;
+  // Obtener lista única de proveedores
+  const proveedores = [...new Set(productos.map((p) => p.proveedor).filter(Boolean))];
+
+  // Productos con stock por debajo del mínimo
+  const productosCriticos = stock.filter((s: any) => {
+    const prod = productos.find((p) => p.id === s.id);
+    const minimo = prod?.stock_minimo || 0;
+    return s.stock_actual < minimo;
   });
 
-  // Proveedores únicos de los productos recomendados
-  const proveedores = [...new Set(productosRecomendados.map((p: any) => p.proveedor || "Sin proveedor"))];
-
-  // Filtrar por proveedor
-  const filtrados = productosRecomendados.filter((p: any) => {
-    const prov = p.proveedor || "Sin proveedor";
-    return filtroProveedor ? prov === filtroProveedor : true;
+  const productosFiltrados = productos.filter((p) => {
+    if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
+    return true;
   });
 
   const toggleSeleccion = (id: string) => {
@@ -64,22 +76,49 @@ export default function ComprasPage() {
 
   const generarOrdenCompra = () => {
     if (seleccionados.length === 0) {
-      alert("Seleccione al menos un producto");
+      alert("Selecciona al menos un producto para generar la orden.");
       return;
     }
-    const items = seleccionados.map((id) => {
-      const p = productos.find((prod: any) => prod.id === id);
-      return `${p.nombre} (Stock: ${p.stock}, Mínimo: ${p.stock_minimo})`;
-    });
+    const items = seleccionados
+      .map((id) => {
+        const p = productos.find((prod) => prod.id === id);
+        if (!p) return null;
+        return `• ${p.nombre} (Stock actual: ${
+          stock.find((s) => s.id === id)?.stock_actual || 0
+        }, Mínimo: ${p.stock_minimo || 0})`;
+      })
+      .filter(Boolean);
+
     alert(
-      `📦 Orden de compra generada para:\n\n${items.join("\n")}\n\n` +
-      `Total productos: ${seleccionados.length}\n` +
-      `Proveedores: ${[...new Set(seleccionados.map(id => {
-        const p = productos.find((prod: any) => prod.id === id);
-        return p.proveedor || "Sin proveedor";
-      }))].join(", ")}`
+      `📦 Orden de compra sugerida:\n\n${items.join("\n")}\n\n` +
+        `📌 Proveedores involucrados: ${seleccionados
+          .map((id) => {
+            const p = productos.find((prod) => prod.id === id);
+            return p?.proveedor || "Sin proveedor";
+          })
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .join(", ")}`
     );
-    // Aquí se podría guardar en una tabla "ordenes_compra"
+  };
+
+  const descargarInventarioCompleto = () => {
+    const data = stock.map((s: any) => {
+      const p = productos.find((prod) => prod.id === s.id);
+      return {
+        Nombre: p?.nombre || "",
+        Categoría: p?.categoria || "",
+        "Stock Actual": s.stock_actual,
+        "Stock Mínimo": p?.stock_minimo || 0,
+        Unidad: p?.unidad || "",
+        Proveedor: p?.proveedor || "",
+        Precio: p?.precio || 0,
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+    XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
   };
 
   return (
@@ -88,84 +127,113 @@ export default function ComprasPage() {
         <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
           <ArrowLeft className="w-5 h-5 text-stone-700" />
         </Link>
-        <h1 className="text-xl font-bold text-stone-800">Compras - {negocio?.titulo || "Negocio"}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Compras - {negocio?.titulo}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
         </button>
         <button
+          onClick={descargarInventarioCompleto}
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700"
+          title="Descargar inventario completo"
+        >
+          <Download className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Exportar</span>
+        </button>
+        <button
           onClick={generarOrdenCompra}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
         >
-          <ShoppingCart className="w-4 h-4" /> Generar Orden
+          <ShoppingBag className="w-4 h-4" /> Generar Orden
         </button>
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-stone-800">
-              Recomendaciones de Compra ({productosRecomendados.length})
-            </h2>
-            <select
-              value={filtroProveedor}
-              onChange={(e) => setFiltroProveedor(e.target.value)}
-              className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800"
-            >
-              <option value="">Todos los proveedores</option>
-              {proveedores.map((prov) => (
-                <option key={prov} value={prov}>
-                  {prov}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Resumen crítico */}
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+          <p className="text-red-700 font-medium">
+            ⚠️ {productosCriticos.length} productos con stock por debajo del mínimo
+          </p>
+        </div>
 
-          {loading ? (
-            <p className="text-center text-stone-500 py-8">Cargando...</p>
-          ) : filtrados.length === 0 ? (
-            <p className="text-center text-stone-500 py-8">
-              ✅ No hay productos que necesiten compra. ¡Inventario saludable!
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-stone-50">
-                  <tr>
-                    <th className="text-left p-2 text-stone-700">Seleccionar</th>
-                    <th className="text-left p-2 text-stone-700">Producto</th>
-                    <th className="text-left p-2 text-stone-700">Categoría</th>
-                    <th className="text-left p-2 text-stone-700">Stock Actual</th>
-                    <th className="text-left p-2 text-stone-700">Stock Mínimo</th>
-                    <th className="text-left p-2 text-stone-700">Faltante</th>
-                    <th className="text-left p-2 text-stone-700">Proveedor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtrados.map((p: any) => (
+        {/* Filtros */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <select
+            value={filtroProveedor}
+            onChange={(e) => setFiltroProveedor(e.target.value)}
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800"
+          >
+            <option value="">Todos los proveedores</option>
+            {proveedores.map((prov) => (
+              <option key={prov} value={prov}>
+                {prov}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tabla de productos */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+          <h3 className="font-semibold text-stone-800 mb-3">Productos</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-stone-50">
+                <tr>
+                  <th className="p-2 text-left text-stone-700">Seleccionar</th>
+                  <th className="p-2 text-left text-stone-700">Nombre</th>
+                  <th className="p-2 text-left text-stone-700">Categoría</th>
+                  <th className="p-2 text-left text-stone-700">Stock actual</th>
+                  <th className="p-2 text-left text-stone-700">Mínimo</th>
+                  <th className="p-2 text-left text-stone-700">Proveedor</th>
+                  <th className="p-2 text-left text-stone-700">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productosFiltrados.map((p) => {
+                  const stockActual =
+                    stock.find((s) => s.id === p.id)?.stock_actual || 0;
+                  const esCritico = stockActual < (p.stock_minimo || 0);
+                  return (
                     <tr key={p.id} className="border-b border-stone-100">
                       <td className="p-2">
                         <input
                           type="checkbox"
                           checked={seleccionados.includes(p.id)}
                           onChange={() => toggleSeleccion(p.id)}
-                          className="w-4 h-4 accent-emerald-500"
+                          className="w-4 h-4"
                         />
                       </td>
                       <td className="p-2 text-stone-800">{p.nombre}</td>
                       <td className="p-2 text-stone-600">{p.categoria}</td>
-                      <td className="p-2 font-medium text-red-600">{p.stock}</td>
-                      <td className="p-2 text-stone-600">{p.stock_minimo || 5}</td>
-                      <td className="p-2 font-bold text-orange-600">
-                        {(p.stock_minimo || 5) - (p.stock || 0)}
+                      <td className="p-2 font-medium text-stone-800">
+                        {stockActual}
                       </td>
-                      <td className="p-2 text-stone-600">{p.proveedor || "Sin proveedor"}</td>
+                      <td className="p-2 text-stone-600">{p.stock_minimo || 0}</td>
+                      <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
+                      <td className="p-2">
+                        {esCritico ? (
+                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                            Por debajo
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                            OK
+                          </span>
+                        )}
+                      </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  );
+                })}
+                {productosFiltrados.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="p-4 text-center text-stone-500">
+                      No hay productos
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
