@@ -32,6 +32,7 @@ export default function InventarioPage() {
   const [productos, setProductos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [filtroProveedor, setFiltroProveedor] = useState("");
   const [importando, setImportando] = useState(false);
 
   const pathParts = pathname?.split("/") || [];
@@ -87,9 +88,40 @@ export default function InventarioPage() {
     }
   };
 
-  // ==============================================
-  // EXPORTAR PLANTILLA EXCEL (VACÍA O CON DATOS)
-  // ==============================================
+  // ====================================================
+  // EXPORTAR INVENTARIO COMPLETO
+  // ====================================================
+  const exportarInventario = () => {
+    if (stock.length === 0) {
+      alert("No hay datos para exportar");
+      return;
+    }
+
+    const data = stock.map((p: any) => ({
+      "Producto": p.nombre,
+      "Categoría": p.categoria || "",
+      "Stock Actual": p.stock_actual,
+      "Unidad": p.unidad || "unidad",
+      "Proveedor": p.proveedor || "",
+      "Stock Mínimo": p.stock_minimo || 5,
+      "Precio": p.precio || 0,
+    }));
+
+    // Aplicar filtro de proveedor si está definido
+    const filteredData = filtroProveedor
+      ? data.filter((row) => row.Proveedor.toLowerCase().includes(filtroProveedor.toLowerCase()))
+      : data;
+
+    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+    ws["!cols"] = Object.keys(filteredData[0]).map(() => ({ wch: 20 }));
+    XLSX.writeFile(wb, `inventario_${negocioSlug}_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  // ====================================================
+  // EXPORTAR PLANTILLA (VACÍA) PARA IMPORTAR PRODUCTOS
+  // ====================================================
   const descargarPlantilla = () => {
     const columnas = [
       "nombre",
@@ -100,6 +132,8 @@ export default function InventarioPage() {
       "tipo_unidad",
       "venta_por_peso",
       "icono",
+      "proveedor",
+      "stock_minimo",
     ];
     const filaEjemplo = [
       "Pan de Sal",
@@ -110,19 +144,20 @@ export default function InventarioPage() {
       "unidad",
       false,
       "🍞",
+      "Proveedor XYZ",
+      10,
     ];
     const data = [columnas, filaEjemplo];
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "Productos");
-    // Establecer anchos de columna
     ws["!cols"] = columnas.map(() => ({ wch: 20 }));
     XLSX.writeFile(wb, `plantilla_productos_${negocioSlug}.xlsx`);
   };
 
-  // ==============================================
+  // ====================================================
   // IMPORTAR PRODUCTOS DESDE EXCEL
-  // ==============================================
+  // ====================================================
   const importarProductos = async (file: File) => {
     setImportando(true);
     try {
@@ -133,7 +168,6 @@ export default function InventarioPage() {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-        // Saltar encabezado (primera fila)
         const productosData = rows.slice(1).filter((row) => row[0] && row[0].trim() !== "");
 
         if (productosData.length === 0) {
@@ -146,7 +180,7 @@ export default function InventarioPage() {
         let errores = [];
 
         for (const row of productosData) {
-          const [nombre, categoria, precio, stock, unidad, tipo_unidad, venta_por_peso, icono] = row;
+          const [nombre, categoria, precio, stock, unidad, tipo_unidad, venta_por_peso, icono, proveedor, stock_minimo] = row;
           try {
             const res = await fetch("/api/products", {
               method: "POST",
@@ -160,6 +194,8 @@ export default function InventarioPage() {
                 tipo_unidad: tipo_unidad?.trim() || "unidad",
                 venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "si",
                 icono: icono?.trim() || "📦",
+                proveedor: proveedor?.trim() || "",
+                stock_minimo: parseInt(stock_minimo) || 5,
                 tenant_id: tenantId,
               }),
             });
@@ -188,9 +224,14 @@ export default function InventarioPage() {
     }
   };
 
-  const stockFiltrado = stock.filter((p: any) =>
-    p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtros de stock
+  const stockFiltrado = stock.filter((p: any) => {
+    const matchNombre = p.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchProveedor = filtroProveedor
+      ? (p.proveedor || "").toLowerCase().includes(filtroProveedor.toLowerCase())
+      : true;
+    return matchNombre && matchProveedor;
+  });
 
   const movimientosFiltrados = movimientos.filter((m: any) => {
     if (filtroTipo === "todos") return true;
@@ -217,10 +258,18 @@ export default function InventarioPage() {
         <button
           onClick={descargarPlantilla}
           className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700"
-          title="Descargar plantilla Excel"
+          title="Descargar plantilla Excel para importar productos"
         >
           <FileDown className="w-5 h-5" />
           <span className="text-xs hidden sm:inline">Plantilla</span>
+        </button>
+        <button
+          onClick={exportarInventario}
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
+          title="Exportar inventario actual"
+        >
+          <FileDown className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Exportar Inv.</span>
         </button>
         <label className="p-2 hover:bg-stone-100 rounded-xl cursor-pointer flex items-center gap-1 text-stone-700">
           <FileUp className="w-5 h-5" />
@@ -243,16 +292,25 @@ export default function InventarioPage() {
       <div className="p-4 max-w-7xl mx-auto">
         {/* Stock actual con buscador */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="font-semibold text-stone-800">Stock Actual</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+            <div className="flex flex-wrap gap-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+                <input
+                  type="text"
+                  placeholder="Buscar producto..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
+                />
+              </div>
               <input
                 type="text"
-                placeholder="Buscar producto..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
+                placeholder="Filtrar por proveedor"
+                value={filtroProveedor}
+                onChange={(e) => setFiltroProveedor(e.target.value)}
+                className="px-3 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
               />
             </div>
           </div>
@@ -263,6 +321,8 @@ export default function InventarioPage() {
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
                   <th className="text-left p-2 text-stone-700">Unidad</th>
+                  <th className="text-left p-2 text-stone-700">Proveedor</th>
+                  <th className="text-left p-2 text-stone-700">Stock Mínimo</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,11 +331,13 @@ export default function InventarioPage() {
                     <td className="p-2 text-stone-800">{p.nombre}</td>
                     <td className="p-2 font-semibold text-stone-800">{p.stock_actual}</td>
                     <td className="p-2 text-stone-600">{p.unidad || "unidad"}</td>
+                    <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
+                    <td className="p-2 text-stone-600">{p.stock_minimo || 5}</td>
                   </tr>
                 ))}
                 {stockFiltrado.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="p-4 text-center text-stone-500">
+                    <td colSpan={5} className="p-4 text-center text-stone-500">
                       No hay productos
                     </td>
                   </tr>
@@ -285,7 +347,7 @@ export default function InventarioPage() {
           </div>
         </div>
 
-        {/* Historial de movimientos con filtro */}
+        {/* Historial de movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-stone-800">Últimos Movimientos</h2>
