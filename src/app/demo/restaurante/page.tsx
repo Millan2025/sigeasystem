@@ -1,4 +1,4 @@
-﻿import { NegocioDashboard } from "@/components/NegocioDashboard";
+﻿import NegocioDashboard from "@/components/NegocioDashboard";
 
 export default function RestaurantePage() {
   return (
@@ -13,3 +13,4 @@ export default function RestaurantePage() {
     />
   );
 }
+
