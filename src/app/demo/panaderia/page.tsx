@@ -1,5 +1,5 @@
-﻿import NegocioDashboard from "@/components/NegocioDashboard";
+﻿import NegocioHome from "@/components/NegocioHome";
 
 export default function panaderiaPage() {
-  return <NegocioDashboard negocioSlug="panaderia" />;
+  return <NegocioHome negocioSlug="panaderia" />;
 }

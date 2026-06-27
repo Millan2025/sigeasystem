@@ -1,5 +1,5 @@
-﻿import NegocioDashboard from "@/components/NegocioDashboard";
+﻿import NegocioHome from "@/components/NegocioHome";
 
 export default function carniceriaPage() {
-  return <NegocioDashboard negocioSlug="carniceria" />;
+  return <NegocioHome negocioSlug="carniceria" />;
 }

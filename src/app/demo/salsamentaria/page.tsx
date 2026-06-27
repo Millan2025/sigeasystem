@@ -1,5 +1,5 @@
-﻿import NegocioDashboard from "@/components/NegocioDashboard";
+﻿import NegocioHome from "@/components/NegocioHome";
 
 export default function salsamentariaPage() {
-  return <NegocioDashboard negocioSlug="salsamentaria" />;
+  return <NegocioHome negocioSlug="salsamentaria" />;
 }
