@@ -38,7 +38,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad, venta_por_peso, icono, tenant_id, proveedor, stock_minimo, observaciones } = body
+    const {
+      nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
+      venta_por_peso, icono, tenant_id, proveedor, stock_minimo, stock_maximo,
+      observaciones, sku, descripcion, fecha_caducidad, ubicacion
+    } = body
 
     if (!nombre || !categoria || !tenant_id) {
       return NextResponse.json(
@@ -47,18 +51,20 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: existing } = await supabase
-      .from('productos')
-      .select('id')
-      .eq('nombre', nombre)
-      .eq('tenant_id', tenant_id)
-      .maybeSingle()
-
-    if (existing) {
-      return NextResponse.json(
-        { success: false, error: 'Ya existe un producto con ese nombre' },
-        { status: 409 }
-      )
+    // Verificar SKU duplicado (si se proporciona)
+    if (sku) {
+      const { data: existingSku } = await supabase
+        .from('productos')
+        .select('id')
+        .eq('sku', sku)
+        .eq('tenant_id', tenant_id)
+        .maybeSingle()
+      if (existingSku) {
+        return NextResponse.json(
+          { success: false, error: 'Ya existe un producto con ese SKU' },
+          { status: 409 }
+        )
+      }
     }
 
     const { data, error } = await supabase
@@ -69,14 +75,19 @@ export async function POST(request: Request) {
         precio: precio || 0,
         precio_compra: precio_compra || 0,
         stock: stock || 0,
+        stock_minimo: stock_minimo || 0,
+        stock_maximo: stock_maximo || 0,
         unidad: unidad || 'unidad',
         tipo_unidad: tipo_unidad || 'unidad',
         venta_por_peso: venta_por_peso || false,
         icono: icono || '📦',
-        tenant_id,
         proveedor: proveedor || '',
-        stock_minimo: stock_minimo || 0,
         observaciones: observaciones || '',
+        sku: sku || null,
+        descripcion: descripcion || '',
+        fecha_caducidad: fecha_caducidad || null,
+        ubicacion: ubicacion || '',
+        tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -94,13 +105,34 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
-    const { id, nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad, venta_por_peso, icono, proveedor, stock_minimo, observaciones } = body
+    const {
+      id, nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
+      venta_por_peso, icono, proveedor, stock_minimo, stock_maximo,
+      observaciones, sku, descripcion, fecha_caducidad, ubicacion
+    } = body
 
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Se requiere el ID del producto' },
         { status: 400 }
       )
+    }
+
+    // Si se actualiza SKU, verificar duplicado (excluyendo el mismo producto)
+    if (sku) {
+      const { data: existingSku } = await supabase
+        .from('productos')
+        .select('id')
+        .eq('sku', sku)
+        .eq('tenant_id', (await supabase.from('productos').select('tenant_id').eq('id', id).single()).data?.tenant_id)
+        .neq('id', id)
+        .maybeSingle()
+      if (existingSku) {
+        return NextResponse.json(
+          { success: false, error: 'Ya existe otro producto con ese SKU' },
+          { status: 409 }
+        )
+      }
     }
 
     const { data, error } = await supabase
@@ -111,13 +143,18 @@ export async function PUT(request: Request) {
         precio,
         precio_compra,
         stock,
+        stock_minimo,
+        stock_maximo,
         unidad,
         tipo_unidad,
         venta_por_peso,
         icono,
         proveedor,
-        stock_minimo,
         observaciones,
+        sku: sku || null,
+        descripcion: descripcion || '',
+        fecha_caducidad: fecha_caducidad || null,
+        ubicacion: ubicacion || '',
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
