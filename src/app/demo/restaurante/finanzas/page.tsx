@@ -26,6 +26,13 @@ const NEGOCIOS = {
   tienda: { titulo: "Tienda Surtimax", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
+// ✅ Función para formatear fecha sin conversión de zona horaria
+const formatDate = (fechaStr: string) => {
+  if (!fechaStr) return "-";
+  const partes = fechaStr.split("-");
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+};
+
 export default function FinanzasPage() {
   const pathname = usePathname();
   const [transacciones, setTransacciones] = useState([]);
@@ -101,7 +108,15 @@ export default function FinanzasPage() {
     if (data.success) {
       setShowModalTransaccion(false);
       setEditando(null);
-      setFormTransaccion({ tipo: "ingreso", monto: 0, categoria_contable_id: "", descripcion: "", fecha: new Date().toLocaleDateString("en-CA"), impuesto: 0, retencion: 0 });
+      setFormTransaccion({
+        tipo: "ingreso",
+        monto: 0,
+        categoria_contable_id: "",
+        descripcion: "",
+        fecha: new Date().toLocaleDateString("en-CA"),
+        impuesto: 0,
+        retencion: 0,
+      });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -139,7 +154,7 @@ export default function FinanzasPage() {
       return;
     }
     const data = transacciones.map((t: any) => ({
-      Fecha: new Date(t.fecha).toLocaleDateString(),
+      Fecha: formatDate(t.fecha),
       Tipo: t.tipo,
       Categoría: t.categorias_contables?.nombre || "",
       Descripción: t.descripcion || "",
@@ -187,7 +202,6 @@ export default function FinanzasPage() {
     }
   };
 
-  // Generar períodos automáticos (bimestres, trimestres, etc.)
   const generarPeriodosAutomaticos = (tipo: string) => {
     const year = new Date().getFullYear();
     let periodos = [];
@@ -235,7 +249,6 @@ export default function FinanzasPage() {
         tipo: "anual",
       });
     }
-    // Insertar cada período
     periodos.forEach(async (p) => {
       await fetch("/api/periodos-fiscales", {
         method: "POST",
@@ -261,7 +274,15 @@ export default function FinanzasPage() {
         <button
           onClick={() => {
             setEditando(null);
-            setFormTransaccion({ tipo: "ingreso", monto: 0, categoria_contable_id: "", descripcion: "", fecha: new Date().toLocaleDateString("en-CA"), impuesto: 0, retencion: 0 });
+            setFormTransaccion({
+              tipo: "ingreso",
+              monto: 0,
+              categoria_contable_id: "",
+              descripcion: "",
+              fecha: new Date().toLocaleDateString("en-CA"),
+              impuesto: 0,
+              retencion: 0,
+            });
             setShowModalTransaccion(true);
           }}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -272,21 +293,21 @@ export default function FinanzasPage() {
         <button
           onClick={() => setShowModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Gestionar el plan de cuentas (categorías contables) para clasificar transacciones"
+          title="Gestionar el plan de cuentas (categorías contables)"
         >
           <BookOpen className="w-4 h-4" /> Categorías
         </button>
         <button
           onClick={() => setShowModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Seleccionar o crear períodos fiscales (bimestres, trimestres, etc.) para filtrar movimientos"
+          title="Seleccionar o crear períodos fiscales (bimestres, trimestres, etc.)"
         >
           <Calendar className="w-4 h-4" /> Períodos
         </button>
         <button
           onClick={exportarExcel}
           className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
-          title="Exportar los movimientos financieros a Excel para el contador"
+          title="Exportar los movimientos a Excel para el contador"
         >
           <Download className="w-5 h-5" />
           <span className="text-xs hidden sm:inline">Exportar</span>
@@ -362,7 +383,7 @@ export default function FinanzasPage() {
               <tbody>
                 {transacciones.map((t: any) => (
                   <tr key={t.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-800">{new Date(t.fecha).toLocaleDateString()}</td>
+                    <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
                     <td className="p-2"><span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{t.tipo}</span></td>
                     <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
                     <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
@@ -410,12 +431,12 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* Modal Categorías (con texto legible y funcionalidad) */}
+      {/* Modal Categorías */}
       {showModalCategoria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">Plan de Cuentas (Categorías)</h3>
+              <h3 className="text-lg font-bold text-stone-800">Plan de Cuentas</h3>
               <button onClick={() => setShowModalCategoria(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -425,7 +446,7 @@ export default function FinanzasPage() {
                   <span className="text-xs text-stone-400">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorías. Agrega una.</p>}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorías</p>}
             </div>
             <div className="mt-4 border-t pt-4">
               <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
@@ -444,7 +465,7 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* Modal Períodos (con selección de tipo y creación automática) */}
+      {/* Modal Períodos */}
       {showModalPeriodo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -456,7 +477,7 @@ export default function FinanzasPage() {
               {periodos.map((p: any) => (
                 <div key={p.id} className="flex justify-between border-b py-1 text-sm">
                   <span className="text-stone-800">{p.nombre}</span>
-                  <span className="text-stone-500">{new Date(p.fecha_inicio).toLocaleDateString()} - {new Date(p.fecha_fin).toLocaleDateString()}</span>
+                  <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
               {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay períodos.</p>}
@@ -487,4 +508,3 @@ export default function FinanzasPage() {
     </div>
   );
 }
-
