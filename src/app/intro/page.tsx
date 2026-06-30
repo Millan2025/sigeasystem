@@ -32,9 +32,9 @@ export default function IntroPage() {
         {/* GALERÍA DE IMÁGENES - UN SOLO GRID CON 5 IMÁGENES */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
-            <img src="/surtimax.jpeg" alt="Surtimax" className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+            <img src="/La Esquina De Calidad.jpeg" alt="La Esquina De Calidad" className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-stone-900/80 via-stone-900/30 to-transparent p-4">
-              <p className="text-white text-sm font-medium tracking-wide">Surtimax</p>
+              <p className="text-white text-sm font-medium tracking-wide">La Esquina De Calidad</p>
             </div>
           </div>
           {['Tienda', 'Panaderia', 'Restaurante', 'Ferreteria'].map((name) => (

@@ -173,7 +173,7 @@ const NEGOCIOS_CONFIG: Record<string, { titulo: string; icono: string; telefono:
     tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76",
   },
   tienda: {
-    titulo: "Tienda Surtimax",
+    titulo: "Tienda La Esquina De Calidad",
     icono: "🏪",
     telefono: "301-6111412",
     direccion: "Calle 50 # 20-15",
