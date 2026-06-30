@@ -43,7 +43,7 @@ export default function FinanzasPage() {
     monto: 0,
     categoria_contable_id: "",
     descripcion: "",
-    fecha: "",
+    fecha: new Date().toLocaleDateString("en-CA"),
     impuesto: 0,
     retencion: 0,
   });
@@ -101,7 +101,7 @@ export default function FinanzasPage() {
     if (data.success) {
       setShowModalTransaccion(false);
       setEditando(null);
-      setFormTransaccion({ tipo: "ingreso", monto: 0, categoria_contable_id: "", descripcion: "", fecha: "", impuesto: 0, retencion: 0 });
+      setFormTransaccion({ tipo: "ingreso", monto: 0, categoria_contable_id: "", descripcion: "", fecha: new Date().toLocaleDateString("en-CA"), impuesto: 0, retencion: 0 });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -261,7 +261,7 @@ export default function FinanzasPage() {
         <button
           onClick={() => {
             setEditando(null);
-            setFormTransaccion({ tipo: "ingreso", monto: 0, categoria_contable_id: "", descripcion: "", fecha: "", impuesto: 0, retencion: 0 });
+            setFormTransaccion({ tipo: "ingreso", monto: 0, categoria_contable_id: "", descripcion: "", fecha: new Date().toLocaleDateString("en-CA"), impuesto: 0, retencion: 0 });
             setShowModalTransaccion(true);
           }}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -487,3 +487,4 @@ export default function FinanzasPage() {
     </div>
   );
 }
+

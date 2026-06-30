@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
     const { data, error } = await supabase
       .from('categorias_contables')
-      .insert({ codigo, nombre, tipo, nivel, padre_id, tenant_id })
+      .insert({ codigo, nombre, tipo, nivel, padre_id: padre_id || null, tenant_id })
       .select()
       .single()
     if (error) throw error
@@ -48,7 +48,7 @@ export async function PUT(request: Request) {
     if (!id) return NextResponse.json({ success: false, error: 'ID requerido' }, { status: 400 })
     const { data, error } = await supabase
       .from('categorias_contables')
-      .update({ codigo, nombre, tipo, nivel, padre_id, updated_at: new Date().toISOString() })
+      .update({ codigo, nombre, tipo, nivel, padre_id: padre_id || null })
       .eq('id', id)
       .select()
       .single()
