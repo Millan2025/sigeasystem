@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
 
 interface ProductoBase {
@@ -36,6 +36,7 @@ export default function POSPage() {
   const [showCart, setShowCart] = useState(false);
   const [showPay, setShowPay] = useState(false);
   const [showCreditoModal, setShowCreditoModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [creditoData, setCreditoData] = useState({ cliente: '', telefono: '', direccion: '' });
   const [msg, setMsg] = useState('');
   const [catFilter, setCatFilter] = useState('Todo');
@@ -44,7 +45,6 @@ export default function POSPage() {
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
   useEffect(() => {
-    // 🔥 FILTRO POR CATEGORÍA DEL NEGOCIO
     const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
@@ -118,7 +118,6 @@ export default function POSPage() {
   const pay = async (metodo: string) => {
     if (cart.length === 0) return;
 
-    // Si es crédito, abrir modal
     if (metodo === 'Crédito') {
       setShowCreditoModal(true);
       return;
@@ -138,7 +137,12 @@ export default function POSPage() {
       const res = await fetch('/api/ventas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cliente: creditoData.cliente, telefono: creditoData.telefono, direccion: creditoData.direccion, valor_total: totalPrecio, tenant_id: tenantId })
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          metodo_pago: metodo,
+          total: totalPrecio,
+          items: items
+        })
       });
 
       const data = await res.json();
@@ -165,7 +169,13 @@ export default function POSPage() {
       const res = await fetch('/api/creditos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cliente: creditoData.cliente, telefono: creditoData.telefono, direccion: creditoData.direccion, valor_total: totalPrecio, tenant_id: tenantId })
+        body: JSON.stringify({
+          cliente: creditoData.cliente,
+          telefono: creditoData.telefono,
+          direccion: creditoData.direccion,
+          monto: totalPrecio,
+          tenant_id: tenantId
+        })
       });
       const data = await res.json();
       if (data.success) {
@@ -189,6 +199,9 @@ export default function POSPage() {
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-700" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta - {titulo}</h1></div>
+        <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
+          <Share2 className="w-5 h-5" />
+        </button>
         <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2">
           <ShoppingCart className="w-4 h-4" />
           {totalItems > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{totalItems}</span>}
@@ -324,7 +337,46 @@ export default function POSPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Compartir Accesos */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Compartir Accesos</h3>
+              <button onClick={() => setShowShareModal(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            <p className="text-sm text-stone-600 mb-4">Comparte estos enlaces con tu equipo y clientes</p>
+            <div className="space-y-3">
+              <a
+                href={`https://wa.me/?text=POS%20Vendedor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/pos`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition"
+              >
+                <span className="text-xl">💰</span> POS Vendedor
+              </a>
+              <a
+                href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition"
+              >
+                <span className="text-xl">🛒</span> Tienda Clientes
+              </a>
+              <a
+                href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition"
+              >
+                <span className="text-xl">🛵</span> App Repartidor
+              </a>
+            </div>
+            <button onClick={() => setShowShareModal(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
