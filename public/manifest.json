@@ -1,13 +1,21 @@
 ﻿{
   "name": "SIGEA System",
   "short_name": "SIGEA",
-  "description": "Sistema Integral de Gestión Empresarial Adaptativa",
+  "description": "Sistema de gestión para negocios",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1c1917",
-  "theme_color": "#059669",
-  "orientation": "portrait-primary",
+  "background_color": "#f5f5f0",
+  "theme_color": "#10B981",
   "icons": [
-    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }

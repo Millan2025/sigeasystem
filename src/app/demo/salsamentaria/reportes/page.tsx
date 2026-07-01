@@ -3,97 +3,183 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+  panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
-const TITULOS = {
-  pos: "Punto de Venta",
-  inventario: "Inventario",
-  produccion: "Producción",
-  finanzas: "Finanzas",
-  pedidos: "Pedidos",
-  personal: "Personal",
-  reportes: "Reportes",
-  tienda: "Tienda"
-};
-
-export default function ModuloNegocioPage() {
+export default function ReportesPage() {
   const pathname = usePathname();
-  const [productos, setProductos] = useState([]);
+  const [ventas, setVentas] = useState([]);
+  const [compras, setCompras] = useState([]);
+  const [finanzas, setFinanzas] = useState([]);
+  const [stock, setStock] = useState([]);
+  const [creditos, setCreditos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtroFecha, setFiltroFecha] = useState("hoy");
 
-  if (!pathname) {
-    return <div className="p-8 text-center text-stone-500">Cargando...</div>;
-  }
-
-  const pathParts = pathname.split('/');
-  const negocioSlug = pathParts[2] || '';
-  const moduloName = pathParts[3] || '';
-
-  // Usar type assertion para acceder a los objetos
+  const pathParts = pathname?.split("/") || [];
+  const negocioSlug = pathParts[2] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const titulo = TITULOS[moduloName as keyof typeof TITULOS] || "Modulo";
+  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+
+  const cargarDatos = async () => {
+    setLoading(true);
+    // Obtener ventas
+    const resVentas = await fetch(`/api/ventas?tenant=${tenantId}`);
+    const dataVentas = await resVentas.json();
+    if (dataVentas.success) setVentas(dataVentas.data || []);
+
+    // Obtener compras (si existe)
+    try {
+      const resCompras = await fetch(`/api/compras?tenant=${tenantId}`);
+      const dataCompras = await resCompras.json();
+      if (dataCompras.success) setCompras(dataCompras.data || []);
+    } catch (e) { setCompras([]); }
+
+    // Obtener finanzas
+    const resFinanzas = await fetch(`/api/finanzas?tenant=${tenantId}`);
+    const dataFinanzas = await resFinanzas.json();
+    if (dataFinanzas.success) setFinanzas(dataFinanzas.data || []);
+
+    // Obtener stock
+    const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
+    const dataStock = await resStock.json();
+    if (dataStock.success) setStock(dataStock.data || []);
+
+    // Obtener créditos
+    const resCreditos = await fetch(`/api/creditos?tenant=${tenantId}`);
+    const dataCreditos = await resCreditos.json();
+    if (dataCreditos.success) setCreditos(dataCreditos.data || []);
+
+    setLoading(false);
+  };
 
   useEffect(() => {
-    if (negocio) {
-      fetch(`/api/products?categoria=${encodeURIComponent(negocio.categoria)}&tenant=${negocio.tenantId}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.success) setProductos(d.data || []);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
-  }, [negocio]);
+    cargarDatos();
+  }, [tenantId]);
 
-  if (!negocio) {
-    return <div className="p-8 text-center text-stone-500">Negocio no encontrado</div>;
-  }
+  const totalVentas = ventas.reduce((sum, v) => sum + v.total, 0);
+  const totalCompras = compras.reduce((sum, c) => sum + c.total, 0);
+  const totalIngresos = finanzas.filter(f => f.tipo === "ingreso").reduce((sum, f) => sum + f.monto, 0);
+  const totalEgresos = finanzas.filter(f => f.tipo === "egreso").reduce((sum, f) => sum + f.monto, 0);
+  const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + c.saldo_pendiente, 0);
+
+  const exportarExcel = () => {
+    const data = [
+      { Concepto: "Total Ventas", Monto: totalVentas },
+      { Concepto: "Total Compras", Monto: totalCompras },
+      { Concepto: "Ingresos Financieros", Monto: totalIngresos },
+      { Concepto: "Egresos Financieros", Monto: totalEgresos },
+      { Concepto: "Créditos Pendientes", Monto: totalCreditoPendiente },
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+    XLSX.writeFile(wb, `reporte_${negocioSlug}.xlsx`);
+  };
+
+  const chartData = {
+    labels: ["Ventas", "Compras", "Ingresos", "Egresos", "Créditos"],
+    datasets: [
+      {
+        label: "Montos",
+        data: [totalVentas, totalCompras, totalIngresos, totalEgresos, totalCreditoPendiente],
+        backgroundColor: ["#10B981", "#EF4444", "#3B82F6", "#F59E0B", "#8B5CF6"],
+      },
+    ],
+  };
 
   return (
-    <div className="min-h-screen bg-stone-50 md:max-w-2xl lg:max-w-4xl mx-auto">
-      <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
-        <div className="flex items-center gap-3">
-          <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-white/10 rounded-xl transition">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold">{titulo} - {negocio.titulo}</h1>
-            <p className="text-stone-600 text-sm">Demo · {productos.length} productos</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-stone-50">
+      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
+        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
+          <ArrowLeft className="w-5 h-5 text-stone-700" />
+        </Link>
+        <h1 className="text-xl font-bold text-stone-800">Reportes - {negocio?.titulo}</h1>
+        <div className="flex-1"></div>
+        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
+          <RefreshCw className="w-5 h-5 text-stone-700" />
+        </button>
+        <button
+          onClick={exportarExcel}
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+        >
+          <Download className="w-4 h-4" /> Exportar Excel
+        </button>
       </header>
 
-      <div className="p-4">
-        <div className="bg-white rounded-2xl p-6 border border-stone-200">
-          <h2 className="font-semibold text-stone-800 mb-4">Productos</h2>
-          {loading ? (
-            <div className="text-center py-8 text-stone-600">Cargando productos...</div>
-          ) : productos.length === 0 ? (
-            <div className="text-center py-8 text-stone-600">No hay productos disponibles</div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {productos.slice(0, 12).map((p: any) => (
-                <div key={p.id} className="bg-stone-50 rounded-xl p-3 border border-stone-200">
-                  <div className="text-2xl">{p.icono || "📦"}</div>
-                  <div className="text-sm font-semibold text-stone-800 truncate">{p.nombre}</div>
-                  <div className="text-xs text-stone-600">{p.unidad || "unidad"}</div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm font-bold text-emerald-600">${p.precio?.toLocaleString()}</span>
-                    <span className="text-xs text-stone-600">Stock: {p.stock}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      <div className="p-4 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Ventas Totales</p>
+            <p className="text-2xl font-bold text-emerald-600">${totalVentas.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Compras Totales</p>
+            <p className="text-2xl font-bold text-red-600">${totalCompras.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Ingresos (Finanzas)</p>
+            <p className="text-2xl font-bold text-blue-600">${totalIngresos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Egresos (Finanzas)</p>
+            <p className="text-2xl font-bold text-orange-600">${totalEgresos.toLocaleString()}</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
+          <h3 className="font-semibold text-stone-800 mb-2">Resumen Gráfico</h3>
+          <div className="h-64">
+            <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+          <h3 className="font-semibold text-stone-800 mb-3">Detalle de Ventas</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-stone-50">
+                <tr>
+                  <th className="text-left p-2 text-stone-700">Fecha</th>
+                  <th className="text-left p-2 text-stone-700">Producto</th>
+                  <th className="text-left p-2 text-stone-700">Cantidad</th>
+                  <th className="text-left p-2 text-stone-700">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ventas.slice(0, 10).map((v: any) => (
+                  <tr key={v.id} className="border-b border-stone-100">
+                    <td className="p-2 text-stone-800">{new Date(v.fecha).toLocaleDateString()}</td>
+                    <td className="p-2 text-stone-600">{v.producto_nombre || "Producto"}</td>
+                    <td className="p-2 text-stone-600">{v.cantidad}</td>
+                    <td className="p-2 text-stone-800 font-medium">${v.total?.toLocaleString() || v.subtotal?.toLocaleString()}</td>
+                  </tr>
+                ))}
+                {ventas.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-stone-500">No hay ventas</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
