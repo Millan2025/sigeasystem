@@ -417,7 +417,7 @@ export default function FinanzasPage() {
             <Filter className="w-4 h-4 text-stone-500" />
             <span className="text-sm font-medium text-stone-700">Filtros:</span>
             <input type="date" value={filtros.start} onChange={(e) => setFiltros({ ...filtros, start: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
-            <span className="text-stone-400">-</span>
+            <span className="text-stone-600">-</span>
             <input type="date" value={filtros.end} onChange={(e) => setFiltros({ ...filtros, end: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
             <select value={filtros.tipo} onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
               <option value="">Todos los tipos</option>
@@ -555,7 +555,7 @@ export default function FinanzasPage() {
               {categorias.map((c: any) => (
                 <div key={c.id} className="flex justify-between items-center border-b py-1">
                   <span className="text-stone-800"><span className="font-mono text-xs text-stone-500">{c.codigo}</span> {c.nombre}</span>
-                  <span className="text-xs text-stone-400">{c.tipo}</span>
+                  <span className="text-xs text-stone-600">{c.tipo}</span>
                 </div>
               ))}
               {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorías</p>}

@@ -484,7 +484,7 @@ export default function ComprasPage() {
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-400 mt-1">El stock se calcula automáticamente</p>
+                <p className="text-xs text-stone-600 mt-1">El stock se calcula automáticamente</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>

@@ -484,7 +484,7 @@ export default function InventarioPage() {
                     <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
                     <td className="p-2 text-stone-800 font-medium">
                       <div>{p.nombre}</div>
-                      <div className="text-xs text-stone-400 truncate max-w-xs">{p.descripcion || ""}</div>
+                      <div className="text-xs text-stone-600 truncate max-w-xs">{p.descripcion || ""}</div>
                     </td>
                     <td className="p-2 font-semibold text-stone-800">{p.stock_actual}</td>
                     <td className="p-2 text-stone-600">{p.unidad || "unidad"}</td>
@@ -723,7 +723,7 @@ export default function InventarioPage() {
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-400 mt-1">El stock se calcula automáticamente</p>
+                <p className="text-xs text-stone-600 mt-1">El stock se calcula automáticamente</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
