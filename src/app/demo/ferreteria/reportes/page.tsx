@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, RefreshCw, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
   Chart as ChartJS,
@@ -27,15 +27,51 @@ const NEGOCIOS = {
   tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
+// Interfaces para tipado
+interface Venta {
+  id: string;
+  producto_nombre: string;
+  cantidad: number;
+  precio_unitario: number;
+  subtotal: number;
+  fecha: string;
+  metodo_pago?: string;
+}
+
+interface Compra {
+  id: string;
+  total: number;
+  fecha: string;
+  proveedor?: string;
+}
+
+interface Finanza {
+  id: string;
+  tipo: string;
+  monto: number;
+  fecha: string;
+}
+
+interface Stock {
+  id: string;
+  nombre: string;
+  stock_actual: number;
+}
+
+interface Credito {
+  id: string;
+  saldo_pendiente: number;
+  estado: string;
+}
+
 export default function ReportesPage() {
   const pathname = usePathname();
-  const [ventas, setVentas] = useState([]);
-  const [compras, setCompras] = useState([]);
-  const [finanzas, setFinanzas] = useState([]);
-  const [stock, setStock] = useState([]);
-  const [creditos, setCreditos] = useState([]);
+  const [ventas, setVentas] = useState<Venta[]>([]);
+  const [compras, setCompras] = useState<Compra[]>([]);
+  const [finanzas, setFinanzas] = useState<Finanza[]>([]);
+  const [stock, setStock] = useState<Stock[]>([]);
+  const [creditos, setCreditos] = useState<Credito[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroFecha, setFiltroFecha] = useState("hoy");
 
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[2] || "restaurante";
@@ -44,29 +80,29 @@ export default function ReportesPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
-    // Obtener ventas
+    // Ventas
     const resVentas = await fetch(`/api/ventas?tenant=${tenantId}`);
     const dataVentas = await resVentas.json();
     if (dataVentas.success) setVentas(dataVentas.data || []);
 
-    // Obtener compras (si existe)
+    // Compras (si existe)
     try {
       const resCompras = await fetch(`/api/compras?tenant=${tenantId}`);
       const dataCompras = await resCompras.json();
       if (dataCompras.success) setCompras(dataCompras.data || []);
     } catch (e) { setCompras([]); }
 
-    // Obtener finanzas
+    // Finanzas
     const resFinanzas = await fetch(`/api/finanzas?tenant=${tenantId}`);
     const dataFinanzas = await resFinanzas.json();
     if (dataFinanzas.success) setFinanzas(dataFinanzas.data || []);
 
-    // Obtener stock
+    // Stock
     const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
     const dataStock = await resStock.json();
     if (dataStock.success) setStock(dataStock.data || []);
 
-    // Obtener créditos
+    // Créditos
     const resCreditos = await fetch(`/api/creditos?tenant=${tenantId}`);
     const dataCreditos = await resCreditos.json();
     if (dataCreditos.success) setCreditos(dataCreditos.data || []);
@@ -78,11 +114,12 @@ export default function ReportesPage() {
     cargarDatos();
   }, [tenantId]);
 
-  const totalVentas = ventas.reduce((sum, v) => sum + v.total, 0);
-  const totalCompras = compras.reduce((sum, c) => sum + c.total, 0);
+  // Sumar subtotales de ventas (cada venta es un producto)
+  const totalVentas = ventas.reduce((sum, v) => sum + (v.subtotal || 0), 0);
+  const totalCompras = compras.reduce((sum, c) => sum + (c.total || 0), 0);
   const totalIngresos = finanzas.filter(f => f.tipo === "ingreso").reduce((sum, f) => sum + f.monto, 0);
   const totalEgresos = finanzas.filter(f => f.tipo === "egreso").reduce((sum, f) => sum + f.monto, 0);
-  const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + c.saldo_pendiente, 0);
+  const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + (c.saldo_pendiente || 0), 0);
 
   const exportarExcel = () => {
     const data = [
@@ -95,7 +132,7 @@ export default function ReportesPage() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "Reporte");
-    XLSX.writeFile(wb, `reporte_${negocioSlug}.xlsx`);
+    XLSX.writeFile(wb, `reporte_${negocioSlug}_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
   const chartData = {
@@ -168,12 +205,12 @@ export default function ReportesPage() {
                 </tr>
               </thead>
               <tbody>
-                {ventas.slice(0, 10).map((v: any) => (
+                {ventas.slice(0, 10).map((v) => (
                   <tr key={v.id} className="border-b border-stone-100">
                     <td className="p-2 text-stone-800">{new Date(v.fecha).toLocaleDateString()}</td>
                     <td className="p-2 text-stone-600">{v.producto_nombre || "Producto"}</td>
                     <td className="p-2 text-stone-600">{v.cantidad}</td>
-                    <td className="p-2 text-stone-800 font-medium">${v.total?.toLocaleString() || v.subtotal?.toLocaleString()}</td>
+                    <td className="p-2 text-stone-800 font-medium">${(v.subtotal || 0).toLocaleString()}</td>
                   </tr>
                 ))}
                 {ventas.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-stone-500">No hay ventas</td></tr>}
