@@ -26,7 +26,7 @@ const NEGOCIOS = {
   tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
-// ✅ Función para formatear fecha sin conversión de zona horaria
+// Formateador de fecha manual (sin conversión UTC)
 const formatDate = (fechaStr: string) => {
   if (!fechaStr) return "-";
   const partes = fechaStr.split("-");
@@ -35,11 +35,20 @@ const formatDate = (fechaStr: string) => {
 
 export default function FinanzasPage() {
   const pathname = usePathname();
-  const [transacciones, setTransacciones] = useState([]);
-  const [resumen, setResumen] = useState({ ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0 });
+  const [transacciones, setTransacciones] = useState<any[]>([]);
+  const [resumen, setResumen] = useState({
+    ingresos: 0,
+    egresos: 0,
+    saldo: 0,
+    impuestos: 0,
+    retenciones: 0,
+    desglosePagos: {} as Record<string, number>,
+  });
+  const [cuentasPorCobrar, setCuentasPorCobrar] = useState(0);
+  const [cuentasPorPagar, setCuentasPorPagar] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [categorias, setCategorias] = useState([]);
-  const [periodos, setPeriodos] = useState([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [periodos, setPeriodos] = useState<any[]>([]);
   const [showModalTransaccion, setShowModalTransaccion] = useState(false);
   const [showModalCategoria, setShowModalCategoria] = useState(false);
   const [showModalPeriodo, setShowModalPeriodo] = useState(false);
@@ -53,6 +62,7 @@ export default function FinanzasPage() {
     fecha: new Date().toLocaleDateString("en-CA"),
     impuesto: 0,
     retencion: 0,
+    metodo_pago: "",
   });
   const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
   const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
@@ -64,6 +74,7 @@ export default function FinanzasPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
+    // 1. Transacciones y resumen
     let url = `/api/finanzas?tenant=${tenantId}`;
     if (filtros.start) url += `&start=${filtros.start}`;
     if (filtros.end) url += `&end=${filtros.end}`;
@@ -75,9 +86,36 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0 });
+      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
     }
 
+    // 2. Cuentas por Cobrar (saldos pendientes de créditos)
+    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
+    const creditosData = await creditosRes.json();
+    if (creditosData.success) {
+      const pendientes = creditosData.data
+        .filter((c: any) => c.estado === "pendiente")
+        .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
+      setCuentasPorCobrar(pendientes);
+    }
+
+    // 3. Cuentas por Pagar (pendiente de implementar compras a crédito)
+    // Por ahora, consultamos si existe la tabla compras y sumamos las que estén pendientes
+    try {
+      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+      const comprasData = await comprasRes.json();
+      if (comprasData.success) {
+        const pendientes = comprasData.data
+          .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
+          .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+        setCuentasPorPagar(pendientes);
+      }
+    } catch (e) {
+      // Si la API de compras no existe, dejamos en 0
+      setCuentasPorPagar(0);
+    }
+
+    // 4. Categorías y períodos
     const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
@@ -93,6 +131,7 @@ export default function FinanzasPage() {
     cargarDatos();
   }, [tenantId, filtros]);
 
+  // CRUD transacciones
   const guardarTransaccion = async () => {
     const method = editando ? "PUT" : "POST";
     const body = editando
@@ -116,6 +155,7 @@ export default function FinanzasPage() {
         fecha: new Date().toLocaleDateString("en-CA"),
         impuesto: 0,
         retencion: 0,
+        metodo_pago: "",
       });
       cargarDatos();
     } else {
@@ -144,13 +184,14 @@ export default function FinanzasPage() {
       fecha: t.fecha,
       impuesto: t.impuesto || 0,
       retencion: t.retencion || 0,
+      metodo_pago: t.metodo_pago || "",
     });
     setShowModalTransaccion(true);
   };
 
   const exportarExcel = () => {
     if (transacciones.length === 0) {
-      alert("No hay datos para exportar. Registra transacciones primero.");
+      alert("No hay datos para exportar.");
       return;
     }
     const data = transacciones.map((t: any) => ({
@@ -158,6 +199,7 @@ export default function FinanzasPage() {
       Tipo: t.tipo,
       Categoría: t.categorias_contables?.nombre || "",
       Descripción: t.descripcion || "",
+      "Método de Pago": t.metodo_pago || "",
       Monto: t.monto,
       Impuesto: t.impuesto || 0,
       Retención: t.retencion || 0,
@@ -282,32 +324,33 @@ export default function FinanzasPage() {
               fecha: new Date().toLocaleDateString("en-CA"),
               impuesto: 0,
               retencion: 0,
+              metodo_pago: "",
             });
             setShowModalTransaccion(true);
           }}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Registrar un nuevo movimiento financiero (ingreso/egreso)"
+          title="Registrar nuevo movimiento"
         >
           <Plus className="w-4 h-4" /> Nueva Transacción
         </button>
         <button
           onClick={() => setShowModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Gestionar el plan de cuentas (categorías contables)"
+          title="Plan de cuentas"
         >
           <BookOpen className="w-4 h-4" /> Categorías
         </button>
         <button
           onClick={() => setShowModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Seleccionar o crear períodos fiscales (bimestres, trimestres, etc.)"
+          title="Períodos fiscales"
         >
           <Calendar className="w-4 h-4" /> Períodos
         </button>
         <button
           onClick={exportarExcel}
           className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
-          title="Exportar los movimientos a Excel para el contador"
+          title="Exportar a Excel"
         >
           <Download className="w-5 h-5" />
           <span className="text-xs hidden sm:inline">Exportar</span>
@@ -315,6 +358,7 @@ export default function FinanzasPage() {
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
+        {/* Resumen principal */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
             <p className="text-sm text-stone-500">Ingresos</p>
@@ -340,6 +384,34 @@ export default function FinanzasPage() {
           </div>
         </div>
 
+        {/* Cuentas por Cobrar / Pagar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-2xl p-4 shadow-sm border border-blue-200 text-center">
+            <p className="text-sm text-blue-700">Cuentas por Cobrar</p>
+            <p className="text-2xl font-bold text-blue-600">${cuentasPorCobrar.toLocaleString()}</p>
+          </div>
+          <div className="bg-orange-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
+            <p className="text-sm text-orange-700">Cuentas por Pagar</p>
+            <p className="text-2xl font-bold text-orange-600">${cuentasPorPagar.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Desglose por método de pago */}
+        {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose por Método de Pago</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
+                <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
+                  <p className="text-xs text-stone-500">{metodo}</p>
+                  <p className="text-sm font-bold text-stone-800">${monto.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Filtros */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
           <div className="flex flex-wrap gap-3 items-center">
             <Filter className="w-4 h-4 text-stone-500" />
@@ -363,6 +435,7 @@ export default function FinanzasPage() {
           </div>
         </div>
 
+        {/* Tabla de movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
           <div className="overflow-x-auto">
@@ -373,6 +446,7 @@ export default function FinanzasPage() {
                   <th className="text-left p-2 text-stone-700">Tipo</th>
                   <th className="text-left p-2 text-stone-700">Categoría</th>
                   <th className="text-left p-2 text-stone-700">Descripción</th>
+                  <th className="text-left p-2 text-stone-700">Método de Pago</th>
                   <th className="text-left p-2 text-stone-700">Monto</th>
                   <th className="text-left p-2 text-stone-700">Impuesto</th>
                   <th className="text-left p-2 text-stone-700">Retención</th>
@@ -384,9 +458,14 @@ export default function FinanzasPage() {
                 {transacciones.map((t: any) => (
                   <tr key={t.id} className="border-b border-stone-100">
                     <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
-                    <td className="p-2"><span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{t.tipo}</span></td>
+                    <td className="p-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                        {t.tipo}
+                      </span>
+                    </td>
                     <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
                     <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
+                    <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
                     <td className="p-2 text-stone-800 font-medium">${t.monto.toLocaleString()}</td>
                     <td className="p-2 text-stone-600">${(t.impuesto || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
@@ -397,7 +476,7 @@ export default function FinanzasPage() {
                     </td>
                   </tr>
                 ))}
-                {transacciones.length === 0 && <tr><td colSpan={9} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
+                {transacciones.length === 0 && <tr><td colSpan={10} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
               </tbody>
             </table>
           </div>
@@ -410,18 +489,51 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar Transacción" : "Nueva Transacción"}</h3>
             <div className="space-y-3">
-              <div><label className="block text-sm font-medium text-stone-700">Tipo</label><select value={formTransaccion.tipo} onChange={(e) => setFormTransaccion({ ...formTransaccion, tipo: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div>
-              <div><label className="block text-sm font-medium text-stone-700">Monto</label><input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" /></div>
-              <div><label className="block text-sm font-medium text-stone-700">Categoría contable</label>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Tipo</label>
+                <select value={formTransaccion.tipo} onChange={(e) => setFormTransaccion({ ...formTransaccion, tipo: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Monto</label>
+                <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Categoría contable</label>
                 <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">Seleccionar...</option>
                   {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
                 </select>
               </div>
-              <div><label className="block text-sm font-medium text-stone-700">Descripción</label><input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" /></div>
-              <div><label className="block text-sm font-medium text-stone-700">Fecha</label><input type="date" value={formTransaccion.fecha} onChange={(e) => setFormTransaccion({ ...formTransaccion, fecha: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" /></div>
-              <div><label className="block text-sm font-medium text-stone-700">Impuesto</label><input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" /></div>
-              <div><label className="block text-sm font-medium text-stone-700">Retención</label><input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" /></div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Descripción</label>
+                <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Fecha</label>
+                <input type="date" value={formTransaccion.fecha} onChange={(e) => setFormTransaccion({ ...formTransaccion, fecha: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Impuesto</label>
+                <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Retención</label>
+                <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Método de pago</label>
+                <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="">No aplica</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Nequi">Nequi</option>
+                  <option value="Bancolombia">Bancolombia</option>
+                  <option value="Daviplata">Daviplata</option>
+                  <option value="Crédito">Crédito</option>
+                </select>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
