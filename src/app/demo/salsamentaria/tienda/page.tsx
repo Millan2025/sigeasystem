@@ -3,16 +3,15 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ShoppingCart, Plus, Minus, X } from "lucide-react";
-import * as XLSX from "xlsx";
+import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
 
 const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
 interface Producto {
@@ -33,6 +32,7 @@ export default function TiendaPage() {
   const [catFilter, setCatFilter] = useState("Todo");
   const [mensaje, setMensaje] = useState("");
   const [checkoutData, setCheckoutData] = useState({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
+  const [loading, setLoading] = useState(true);
 
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[2] || "restaurante";
@@ -40,13 +40,20 @@ export default function TiendaPage() {
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoriaNegocio = negocio?.categoria || "";
 
-  useEffect(() => {
+  const cargarProductos = () => {
+    setLoading(true);
     fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
       .then(r => r.json())
       .then(d => {
         if (d.success) setProductos(d.data || []);
-      });
-  }, [tenantId]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    cargarProductos();
+  }, [tenantId, categoriaNegocio]);
 
   // Cargar carrito desde localStorage
   useEffect(() => {
@@ -98,8 +105,8 @@ export default function TiendaPage() {
       alert("Carrito vacío");
       return;
     }
-    // Simular pedido (puedes conectar con /api/orders o /api/customer_orders)
-    alert("Pedido realizado con éxito. Pronto recibirás confirmación.");
+    // Aquí se integrará con /api/orders en el futuro
+    alert("✅ Pedido realizado con éxito. Pronto recibirás confirmación.");
     setCarrito([]);
     setShowCart(false);
   };
@@ -112,6 +119,9 @@ export default function TiendaPage() {
         </Link>
         <h1 className="text-xl font-bold text-stone-800">Tienda - {negocio?.titulo}</h1>
         <div className="flex-1"></div>
+        <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
+          <RefreshCw className="w-5 h-5 text-stone-700" />
+        </button>
         <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2">
           <ShoppingCart className="w-4 h-4" />
           {carrito.length > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{carrito.reduce((s, i) => s + i.cantidad, 0)}</span>}
@@ -132,17 +142,21 @@ export default function TiendaPage() {
           <input type="text" placeholder="Buscar productos..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-4 pr-4 py-2 rounded-xl border border-stone-300 bg-white text-stone-800" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map(p => (
-            <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-              <div className="text-4xl text-center">{p.icono || "📦"}</div>
-              <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
-              <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
-              <p className="text-xs text-stone-400 text-center">Stock: {p.stock}</p>
-              <button onClick={() => agregarAlCarrito(p)} className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600">Agregar</button>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-8 text-stone-500">Cargando productos...</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filtered.map(p => (
+              <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+                <div className="text-4xl text-center">{p.icono || "📦"}</div>
+                <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
+                <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
+                <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
+                <button onClick={() => agregarAlCarrito(p)} className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600">Agregar</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modal Carrito */}
@@ -165,22 +179,22 @@ export default function TiendaPage() {
                       <p className="text-sm text-stone-600">${item.precio.toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => actualizarCantidad(item.id, -1)} className="p-1 hover:bg-stone-100 rounded"><Minus className="w-4 h-4" /></button>
-                      <span className="w-6 text-center">{item.cantidad}</span>
-                      <button onClick={() => actualizarCantidad(item.id, 1)} className="p-1 hover:bg-stone-100 rounded"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => actualizarCantidad(item.id, -1)} className="p-1 hover:bg-stone-100 rounded"><Minus className="w-4 h-4 text-stone-700" /></button>
+                      <span className="w-6 text-center text-stone-800">{item.cantidad}</span>
+                      <button onClick={() => actualizarCantidad(item.id, 1)} className="p-1 hover:bg-stone-100 rounded"><Plus className="w-4 h-4 text-stone-700" /></button>
                     </div>
                     <button onClick={() => quitarDelCarrito(item.id)} className="text-red-500"><X className="w-4 h-4" /></button>
                   </div>
                 ))}
-                <div className="flex justify-between font-bold text-lg mt-4">
+                <div className="flex justify-between font-bold text-lg mt-4 text-stone-800">
                   <span>Total</span>
                   <span>${totalCarrito.toLocaleString()}</span>
                 </div>
                 <div className="mt-4 space-y-2">
-                  <input type="text" placeholder="Nombre" value={checkoutData.nombre} onChange={e => setCheckoutData({...checkoutData, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm" />
-                  <input type="text" placeholder="Dirección" value={checkoutData.direccion} onChange={e => setCheckoutData({...checkoutData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm" />
-                  <input type="text" placeholder="Teléfono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm" />
-                  <select value={checkoutData.metodo_pago} onChange={e => setCheckoutData({...checkoutData, metodo_pago: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm">
+                  <input type="text" placeholder="Nombre" value={checkoutData.nombre} onChange={e => setCheckoutData({...checkoutData, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <input type="text" placeholder="Dirección" value={checkoutData.direccion} onChange={e => setCheckoutData({...checkoutData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <input type="text" placeholder="Teléfono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <select value={checkoutData.metodo_pago} onChange={e => setCheckoutData({...checkoutData, metodo_pago: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800">
                     <option value="Efectivo">Efectivo</option>
                     <option value="Nequi">Nequi</option>
                     <option value="Bancolombia">Bancolombia</option>
