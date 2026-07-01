@@ -36,7 +36,11 @@ export default function ComprasPage() {
   const [filtroProveedor, setFiltroProveedor] = useState("");
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
   const [stockMap, setStockMap] = useState<Record<string, number>>({});
+  const [proveedor, setProveedor] = useState("");
+  const [metodoPago, setMetodoPago] = useState("contado");
+  const [mensaje, setMensaje] = useState("");
 
+  // Modal CRUD
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState({
@@ -70,6 +74,7 @@ export default function ComprasPage() {
       setStockMap(map);
     }
     setLoading(false);
+    setMensaje("");
   };
 
   useEffect(() => {
@@ -95,6 +100,65 @@ export default function ComprasPage() {
     );
   };
 
+  // ============================================
+  // FUNCIÓN PARA REGISTRAR LA COMPRA
+  // ============================================
+  const registrarCompra = async () => {
+    if (seleccionados.length === 0) {
+      alert("Selecciona al menos un producto.");
+      return;
+    }
+
+    // Construir el array de items con cantidades y precios de compra
+    // Para simplificar, usaremos las cantidades sugeridas (stock mínimo - stock actual)
+    const items = seleccionados.map((id) => {
+      const p = productos.find((prod) => prod.id === id);
+      if (!p) return null;
+      const stockActual = stockMap[p.id] ?? 0;
+      const cantidad = Math.max((p.stock_minimo || 0) - stockActual, 0);
+      if (cantidad === 0) return null;
+      return {
+        producto_id: p.id,
+        cantidad: cantidad,
+        precio_compra: p.precio_compra || 0,
+      };
+    }).filter(Boolean);
+
+    if (items.length === 0) {
+      alert("No hay productos con cantidad a comprar (stock ya es suficiente).");
+      return;
+    }
+
+    const body = {
+      tenant_id: tenantId,
+      proveedor: proveedor || "Proveedor general",
+      metodo_pago: metodoPago,
+      fecha: new Date().toISOString().split("T")[0],
+      items: items,
+    };
+
+    try {
+      const res = await fetch("/api/compras", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente.`);
+        setSeleccionados([]);
+        cargarDatos();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (error) {
+      alert("Error de conexión");
+    }
+  };
+
+  // ============================================
+  // GENERAR ORDEN DE COMPRA (EXCEL) - ya existente
+  // ============================================
   const generarOrdenCompra = () => {
     if (seleccionados.length === 0) {
       alert("Selecciona al menos un producto.");
@@ -120,10 +184,12 @@ export default function ComprasPage() {
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
     XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
-
     alert(`📦 Orden de compra generada con ${data.length} productos.`);
   };
 
+  // ============================================
+  // EXPORTAR INVENTARIO (Excel)
+  // ============================================
   const descargarInventarioCompleto = () => {
     const data = productos.map((p) => ({
       Nombre: p.nombre,
@@ -142,6 +208,9 @@ export default function ComprasPage() {
     XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
   };
 
+  // ============================================
+  // CRUD DE PRODUCTOS (ya existente)
+  // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
@@ -211,13 +280,20 @@ export default function ComprasPage() {
           title="Descargar inventario completo"
         >
           <Download className="w-5 h-5" />
-          <span className="text-xs hidden sm:inline">Exportar</span>
+          <span className="text-xs hidden sm:inline">Exportar Inv.</span>
         </button>
         <button
           onClick={generarOrdenCompra}
-          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
         >
           <ShoppingBag className="w-4 h-4" /> Generar Orden
+        </button>
+        <button
+          onClick={registrarCompra}
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="Registrar compra y actualizar inventario"
+        >
+          <Plus className="w-4 h-4" /> Registrar Compra
         </button>
         <button
           onClick={() => {
@@ -225,13 +301,19 @@ export default function ComprasPage() {
             setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
             setShowModal(true);
           }}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
         >
           <Plus className="w-4 h-4" /> Nuevo Producto
         </button>
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
+        {mensaje && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-4 text-emerald-700 font-medium">
+            {mensaje}
+          </div>
+        )}
+
         <div
           className={`rounded-2xl p-4 mb-6 ${
             productosCriticos.length > 0
@@ -246,7 +328,7 @@ export default function ComprasPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-3 items-center mb-4">
           <select
             value={filtroProveedor}
             onChange={(e) => setFiltroProveedor(e.target.value)}
@@ -258,6 +340,22 @@ export default function ComprasPage() {
                 {prov}
               </option>
             ))}
+          </select>
+
+          <input
+            type="text"
+            placeholder="Proveedor de esta compra"
+            value={proveedor}
+            onChange={(e) => setProveedor(e.target.value)}
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800 flex-1 min-w-[150px]"
+          />
+          <select
+            value={metodoPago}
+            onChange={(e) => setMetodoPago(e.target.value)}
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800"
+          >
+            <option value="contado">Contado</option>
+            <option value="credito">Crédito</option>
           </select>
         </div>
 
@@ -332,6 +430,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
+      {/* Modal CRUD de producto (sin cambios) */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -385,7 +484,7 @@ export default function ComprasPage() {
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-400 mt-1">El stock se calcula automáticamente con los movimientos</p>
+                <p className="text-xs text-stone-400 mt-1">El stock se calcula automáticamente</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
