@@ -15,6 +15,10 @@ const nextConfig = {
       },
     ],
   },
+  // 🔥 Forzar raíz del proyecto para turbopack
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 module.exports = withPWA(nextConfig);

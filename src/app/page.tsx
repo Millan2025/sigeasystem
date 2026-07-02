@@ -1,10 +1,18 @@
-﻿import Link from "next/link";
+﻿"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/demo/restaurante");
+  }, [router]);
+
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>Bienvenido a Sigea System</h1>
-      <p>Ir a la demo de <Link href="/demo/restaurante/pos">Restaurante</Link></p>
+    <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <p className="text-stone-600">Redirigiendo...</p>
     </div>
   );
 }
