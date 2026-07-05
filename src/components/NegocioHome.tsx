@@ -15,6 +15,7 @@ import {
   X,
   ArrowRight,
   ShoppingBag,
+  Receipt,
 } from "lucide-react";
 
 const beneficiosPorModulo: Record<string, { titulo: string; icono: string; beneficios: string[]; color: string }> = {
@@ -134,6 +135,19 @@ const beneficiosPorModulo: Record<string, { titulo: string; icono: string; benef
     ],
     color: "bg-indigo-500",
   },
+  creditos: {
+    titulo: "Gestión de Créditos",
+    icono: "📋",
+    beneficios: [
+      "Registro de ventas a crédito",
+      "Control de saldos pendientes",
+      "Abonos y liquidación de créditos",
+      "Historial de créditos por cliente",
+      "Vinculación automática con finanzas (Cuentas por Cobrar)",
+      "Reporte de cartera",
+    ],
+    color: "bg-pink-500",
+  },
 };
 
 const NEGOCIOS_CONFIG: Record<string, { titulo: string; icono: string; telefono: string; direccion: string; tenantId: string }> = {
@@ -197,6 +211,7 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
     { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600" },
     { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600" },
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600" },
+    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-pink-200 text-pink-600" },
   ];
 
   const ventasHoy = {
