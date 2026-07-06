@@ -33,13 +33,14 @@ export async function POST(request: Request) {
 
     if (ventaErr) throw ventaErr
 
-    // 2. Insertar items de venta
+    // 2. Insertar items de venta (CON tenant_id)
     const saleItems = items.map((item: any) => ({
       sale_id: venta.id,
       product_id: item.producto_id,
       quantity: item.cantidad,
       price_at_sale: item.precio_unitario,
-      subtotal: item.subtotal
+      subtotal: item.subtotal,
+      tenant_id: tenant_id // 🔥 AGREGADO
     }))
 
     const { error: itemsErr } = await supabase
@@ -83,7 +84,6 @@ export async function POST(request: Request) {
     }
 
     // 4. 🔥 REGISTRAR INGRESO EN FINANZAS CON METODO_PAGO
-    // Determinar categoría contable según método de pago
     const categoriaId = metodo_pago === 'credito'
       ? (await supabase.from('categorias_contables').select('id').eq('codigo', '1-01-01').eq('tenant_id', tenant_id).single()).data?.id
       : (await supabase.from('categorias_contables').select('id').eq('codigo', '4-01-01').eq('tenant_id', tenant_id).single()).data?.id
