@@ -5,519 +5,561 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
+  ShoppingCart,
+  Package,
+  Calendar,
+  Clock,
+  CheckCircle,
+  Truck,
+  Bell,
   RefreshCw,
   Plus,
-  Edit,
-  Trash2,
-  CheckCircle,
-  Clock,
-  Package,
-  User,
-  Calendar,
-  Bell,
-  PlayCircle,
-  Check,
-  X,
+  Users,
+  Store,
+  ClipboardList,
 } from "lucide-react";
 
+// ============================================
+// CONFIGURACIÓN DE NEGOCIOS
+// ============================================
 const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
-// Estados posibles con colores
+// ============================================
+// TIPOS DE ORDEN Y ESTADOS
+// ============================================
+const TIPOS_ORDEN = {
+  pedido_tienda: { label: "Pedido Tienda", icon: Store, color: "bg-blue-100 text-blue-700 border-blue-300" },
+  pedido_pos: { label: "Pedido POS", icon: ShoppingCart, color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
+  surtir_vitrina: { label: "Surtir Vitrina", icon: Package, color: "bg-amber-100 text-amber-700 border-amber-300" },
+  produccion_planificada: { label: "Producción Planificada", icon: Calendar, color: "bg-purple-100 text-purple-700 border-purple-300" },
+};
+
 const ESTADOS = {
-  pendiente: { label: "Pendiente", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  recibido: { label: "Recibido", color: "bg-blue-100 text-blue-800 border-blue-300" },
-  en_produccion: { label: "En Producción", color: "bg-purple-100 text-purple-800 border-purple-300" },
-  finalizado: { label: "Finalizado", color: "bg-green-100 text-green-800 border-green-300" },
-  entregado: { label: "Entregado", color: "bg-gray-100 text-gray-800 border-gray-300" },
+  pendiente: { label: "Pendiente", icon: Clock, color: "bg-yellow-100 text-yellow-700" },
+  en_produccion: { label: "En Producción", icon: RefreshCw, color: "bg-blue-100 text-blue-700" },
+  finalizado: { label: "Finalizado", icon: CheckCircle, color: "bg-emerald-100 text-emerald-700" },
+  entregado: { label: "Entregado", icon: Truck, color: "bg-stone-100 text-stone-600" },
 };
 
-// Tipos de orden
-const TIPOS = {
-  pedido_tienda: { label: "Pedido Tienda", icon: ShoppingCart },
-  pedido_pos: { label: "Pedido POS", icon: ShoppingCart },
-  surtir_vitrina: { label: "Surtir Vitrina", icon: Package },
-  produccion_planificada: { label: "Producción Planificada", icon: Calendar },
-};
+const ESTADOS_ORDEN = ["pendiente", "en_produccion", "finalizado", "entregado"];
 
+// ============================================
+// INTERFACES
+// ============================================
+interface Orden {
+  id: string;
+  tipo: keyof typeof TIPOS_ORDEN;
+  estado: keyof typeof ESTADOS;
+  productos: { nombre: string; cantidad: number; unidad: string }[];
+  nota: string;
+  creado_por: string;
+  creado_en: string;
+  actualizado_en: string;
+  producido_por?: string;
+  numero_orden: number;
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
 export default function ProduccionPage() {
   const pathname = usePathname();
-  const [ordenes, setOrdenes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editando, setEditando] = useState(null);
-  const [productos, setProductos] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
-  const [notificacion, setNotificacion] = useState(null);
-  const [filtroEstado, setFiltroEstado] = useState("todos");
-  const audioRef = useRef(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Datos del negocio
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[2] || "restaurante";
-  const negocio = NEGOCIOS[negocioSlug];
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
-  // Formulario para nueva orden
-  const [form, setForm] = useState({
-    tipo: "produccion_planificada",
-    descripcion: "",
-    fecha_entrega: "",
-    prioridad: 0,
-    productor_asignado: "",
-    productos: [],
-    observaciones: "",
+  // Estado
+  const [ordenes, setOrdenes] = useState<Orden[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [nuevaOrden, setNuevaOrden] = useState<Partial<Orden>>({
+    tipo: "pedido_pos",
+    productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
+    nota: "",
   });
+  const [filtroEstado, setFiltroEstado] = useState<string>("todos");
+  const [vista, setVista] = useState<"admin" | "productor">("admin");
+  const [notificacion, setNotificacion] = useState<string | null>(null);
+  const [contadorNuevas, setContadorNuevas] = useState(0);
 
-  // Cargar datos iniciales
-  const cargarDatos = async () => {
+  // Referencia para sonido
+  useEffect(() => {
+    audioRef.current = new Audio("/notification.mp3");
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Cargar órdenes desde localStorage (simulación)
+  const cargarOrdenes = () => {
     setLoading(true);
     try {
-      // Obtener órdenes
-      const resOrdenes = await fetch(`/api/ordenes-produccion?tenant=${tenantId}`);
-      const dataOrdenes = await resOrdenes.json();
-      if (dataOrdenes.success) setOrdenes(dataOrdenes.data || []);
-
-      // Obtener productos para el selector
-      const resProductos = await fetch(`/api/products?tenant=${tenantId}`);
-      const dataProductos = await resProductos.json();
-      if (dataProductos.success) setProductos(dataProductos.data || []);
-
-      // Obtener usuarios (productores potenciales)
-      const resUsuarios = await fetch(`/api/usuarios?tenant=${tenantId}`);
-      const dataUsuarios = await resUsuarios.json();
-      if (dataUsuarios.success) setUsuarios(dataUsuarios.data || []);
-    } catch (error) {
-      console.error("Error cargando datos:", error);
+      const stored = localStorage.getItem(`ordenes_${tenantId}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setOrdenes(parsed);
+        // Contar nuevas (pendientes recientes)
+        const nuevas = parsed.filter(
+          (o: Orden) => o.estado === "pendiente" && new Date(o.creado_en) > new Date(Date.now() - 60000)
+        ).length;
+        setContadorNuevas(nuevas);
+      } else {
+        // Datos de ejemplo
+        const ejemplos: Orden[] = [
+          {
+            id: "ORD-001",
+            tipo: "pedido_pos",
+            estado: "pendiente",
+            productos: [{ nombre: "Pan de Sal", cantidad: 10, unidad: "unidad" }],
+            nota: "Para el desayuno",
+            creado_por: "Admin",
+            creado_en: new Date().toISOString(),
+            actualizado_en: new Date().toISOString(),
+            numero_orden: 1,
+          },
+          {
+            id: "ORD-002",
+            tipo: "pedido_tienda",
+            estado: "en_produccion",
+            productos: [{ nombre: "Croissant", cantidad: 5, unidad: "unidad" }],
+            nota: "Pedido especial",
+            creado_por: "Admin",
+            creado_en: new Date(Date.now() - 3600000).toISOString(),
+            actualizado_en: new Date(Date.now() - 1800000).toISOString(),
+            numero_orden: 2,
+          },
+        ];
+        setOrdenes(ejemplos);
+        localStorage.setItem(`ordenes_${tenantId}`, JSON.stringify(ejemplos));
+      }
+    } catch (e) {
+      setOrdenes([]);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    cargarDatos();
-    // Reproducir sonido de notificación si hay nuevas órdenes
-    const interval = setInterval(() => {
-      // Podrías hacer polling cada 30s para detectar nuevas órdenes
-      // Por ahora, solo al cargar
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    cargarOrdenes();
+  }, [tenantId]);
 
-  // Reproducir sonido de notificación
-  const playNotificationSound = () => {
+  // Guardar órdenes en localStorage
+  const guardarOrdenes = (nuevasOrdenes: Orden[]) => {
+    setOrdenes(nuevasOrdenes);
+    localStorage.setItem(`ordenes_${tenantId}`, JSON.stringify(nuevasOrdenes));
+  };
+
+  // ============================================
+  // CREAR NUEVA ORDEN
+  // ============================================
+  const crearOrden = () => {
+    if (!nuevaOrden.productos || nuevaOrden.productos.length === 0) {
+      alert("Agrega al menos un producto.");
+      return;
+    }
+
+    const orden: Orden = {
+      id: `ORD-${String(ordenes.length + 1).padStart(3, "0")}`,
+      tipo: nuevaOrden.tipo as keyof typeof TIPOS_ORDEN,
+      estado: "pendiente",
+      productos: nuevaOrden.productos.map((p) => ({
+        nombre: p.nombre || "Producto",
+        cantidad: p.cantidad || 1,
+        unidad: p.unidad || "unidad",
+      })),
+      nota: nuevaOrden.nota || "",
+      creado_por: "Admin",
+      creado_en: new Date().toISOString(),
+      actualizado_en: new Date().toISOString(),
+      numero_orden: ordenes.length + 1,
+    };
+
+    const nuevas = [...ordenes, orden];
+    guardarOrdenes(nuevas);
+
+    // Notificación sonora
     if (audioRef.current) {
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {});
     }
-  };
+    setContadorNuevas((prev) => prev + 1);
+    setNotificacion(`📢 Nueva orden #${orden.numero_orden}`);
+    setTimeout(() => setNotificacion(null), 5000);
 
-  // Crear orden
-  const crearOrden = async () => {
-    const res = await fetch("/api/ordenes-produccion", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, tenant_id: tenantId }),
+    setShowModal(false);
+    setNuevaOrden({
+      tipo: "pedido_pos",
+      productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
+      nota: "",
     });
-    const data = await res.json();
-    if (data.success) {
-      setShowModal(false);
-      setForm({
-        tipo: "produccion_planificada",
-        descripcion: "",
-        fecha_entrega: "",
-        prioridad: 0,
-        productor_asignado: "",
-        productos: [],
-        observaciones: "",
-      });
-      cargarDatos();
-      playNotificationSound();
-      setNotificacion("✅ Orden creada exitosamente");
-      setTimeout(() => setNotificacion(null), 3000);
-    } else {
-      alert("Error: " + data.error);
-    }
   };
 
-  // Actualizar estado de una orden
-  const actualizarEstado = async (id: string, nuevoEstado: string) => {
-    const res = await fetch(`/api/ordenes-produccion/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ estado: nuevoEstado }),
+  // ============================================
+  // ACTUALIZAR ESTADO DE ORDEN
+  // ============================================
+  const cambiarEstado = (id: string, nuevoEstado: keyof typeof ESTADOS) => {
+    const orden = ordenes.find((o) => o.id === id);
+    if (!orden) return;
+
+    // Solo puede pasar al siguiente estado
+    const idxActual = ESTADOS_ORDEN.indexOf(orden.estado);
+    const idxNuevo = ESTADOS_ORDEN.indexOf(nuevoEstado);
+    if (idxNuevo <= idxActual) return;
+
+    const actualizadas = ordenes.map((o) => {
+      if (o.id === id) {
+        return {
+          ...o,
+          estado: nuevoEstado,
+          actualizado_en: new Date().toISOString(),
+          producido_por: nuevoEstado === "entregado" ? "Productor" : o.producido_por,
+        };
+      }
+      return o;
     });
-    const data = await res.json();
-    if (data.success) {
-      cargarDatos();
-      playNotificationSound();
-      setNotificacion(`✅ Estado actualizado a "${ESTADOS[nuevoEstado].label}"`);
-      setTimeout(() => setNotificacion(null), 3000);
-    } else {
-      alert("Error: " + data.error);
-    }
+    guardarOrdenes(actualizadas);
   };
 
-  // Eliminar orden (solo si está pendiente)
-  const eliminarOrden = async (id: string) => {
-    if (!confirm("¿Eliminar esta orden?")) return;
-    const res = await fetch(`/api/ordenes-produccion/${id}`, { method: "DELETE" });
-    const data = await res.json();
-    if (data.success) {
-      cargarDatos();
-      setNotificacion("🗑️ Orden eliminada");
-      setTimeout(() => setNotificacion(null), 3000);
-    } else {
-      alert("Error: " + data.error);
-    }
+  // ============================================
+  // AGREGAR PRODUCTO AL MODAL
+  // ============================================
+  const agregarProducto = () => {
+    setNuevaOrden({
+      ...nuevaOrden,
+      productos: [...(nuevaOrden.productos || []), { nombre: "", cantidad: 1, unidad: "unidad" }],
+    });
   };
 
-  // Filtrar órdenes
-  const ordenesFiltradas = ordenes.filter((o: any) => {
+  const eliminarProducto = (index: number) => {
+    const productos = nuevaOrden.productos || [];
+    if (productos.length <= 1) return;
+    setNuevaOrden({
+      ...nuevaOrden,
+      productos: productos.filter((_, i) => i !== index),
+    });
+  };
+
+  const actualizarProducto = (index: number, campo: string, valor: any) => {
+    const productos = nuevaOrden.productos || [];
+    productos[index] = { ...productos[index], [campo]: valor };
+    setNuevaOrden({ ...nuevaOrden, productos });
+  };
+
+  // ============================================
+  // FILTRADO
+  // ============================================
+  const ordenesFiltradas = ordenes.filter((o) => {
     if (filtroEstado === "todos") return true;
     return o.estado === filtroEstado;
   });
 
-  // Contar órdenes pendientes para badge
-  const pendientes = ordenes.filter((o: any) => o.estado === "pendiente" || o.estado === "recibido").length;
+  // ============================================
+  // NOTIFICACIONES BADGE
+  // ============================================
+  const badgeColor =
+    contadorNuevas > 0
+      ? "bg-red-500 text-white animate-pulse"
+      : "bg-stone-200 text-stone-600";
 
+  // ============================================
+  // RENDER
+  // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Sonido de notificación (se ejecuta al recibir nueva orden) */}
-      <audio ref={audioRef} src="/notification.mp3" preload="auto" />
-
       {/* Cabecera */}
-      <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-4 flex items-center gap-3 sticky top-0 z-10 shadow-lg">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-white/10 rounded-xl transition">
-          <ArrowLeft className="w-5 h-5" />
+      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-20">
+        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
+          <ArrowLeft className="w-5 h-5 text-stone-700" />
         </Link>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold">Producción - {negocio?.titulo}</h1>
-          <p className="text-stone-300 text-sm">{ordenes.length} órdenes totales</p>
-        </div>
-        <div className="relative">
-          <button onClick={cargarDatos} className="p-2 hover:bg-white/10 rounded-xl transition">
-            <RefreshCw className="w-5 h-5" />
+        <h1 className="text-xl font-bold text-stone-800 flex-1">
+          Producción - {negocio?.titulo}
+        </h1>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-stone-500">Vista:</span>
+          <button
+            onClick={() => setVista("admin")}
+            className={`px-3 py-1 rounded-xl text-sm font-medium ${
+              vista === "admin"
+                ? "bg-emerald-500 text-white"
+                : "bg-stone-200 text-stone-700 hover:bg-stone-300"
+            }`}
+          >
+            Admin
+          </button>
+          <button
+            onClick={() => setVista("productor")}
+            className={`px-3 py-1 rounded-xl text-sm font-medium ${
+              vista === "productor"
+                ? "bg-blue-500 text-white"
+                : "bg-stone-200 text-stone-700 hover:bg-stone-300"
+            }`}
+          >
+            Productor
           </button>
         </div>
+
+        <button
+          onClick={cargarOrdenes}
+          className="p-2 hover:bg-stone-100 rounded-xl"
+          title="Recargar"
+        >
+          <RefreshCw className="w-5 h-5 text-stone-700" />
+        </button>
+
         <button
           onClick={() => setShowModal(true)}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition shadow-md"
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
         >
           <Plus className="w-4 h-4" /> Nueva Orden
         </button>
-        {/* Badge de notificaciones */}
-        {pendientes > 0 && (
-          <div className="relative">
-            <Bell className="w-5 h-5 text-yellow-300 animate-pulse" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {pendientes}
+
+        <div className="relative">
+          <Bell className={`w-6 h-6 ${contadorNuevas > 0 ? "text-red-500" : "text-stone-400"}`} />
+          {contadorNuevas > 0 && (
+            <span className={`absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center ${badgeColor}`}>
+              {contadorNuevas}
             </span>
-          </div>
-        )}
+          )}
+        </div>
       </header>
 
-      {/* Notificación temporal */}
+      {/* Notificación */}
       {notificacion && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-xl px-6 py-3 z-50 border border-emerald-200 flex items-center gap-2 animate-fade-in">
-          <span className="text-emerald-500">{notificacion}</span>
+        <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium animate-pulse">
+          {notificacion}
         </div>
       )}
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Filtro de estado */}
+        {/* Filtros */}
         <div className="flex flex-wrap gap-2 mb-4">
           <button
             onClick={() => setFiltroEstado("todos")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
-              filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white text-stone-700 hover:bg-stone-100"
+            className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+              filtroEstado === "todos"
+                ? "bg-stone-800 text-white"
+                : "bg-white text-stone-700 border border-stone-300"
             }`}
           >
             Todos
           </button>
-          {Object.entries(ESTADOS).map(([key, val]) => (
-            <button
-              key={key}
-              onClick={() => setFiltroEstado(key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
-                filtroEstado === key ? "bg-stone-800 text-white" : "bg-white text-stone-700 hover:bg-stone-100"
-              }`}
-            >
-              {val.label}
-            </button>
-          ))}
+          {ESTADOS_ORDEN.map((estado) => {
+            const info = ESTADOS[estado as keyof typeof ESTADOS];
+            return (
+              <button
+                key={estado}
+                onClick={() => setFiltroEstado(estado)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  filtroEstado === estado
+                    ? `${info.color} border-2 border-current`
+                    : "bg-white text-stone-700 border border-stone-300"
+                }`}
+              >
+                {info.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Lista de órdenes */}
+        {/* Tabla de órdenes */}
         {loading ? (
           <div className="text-center py-12 text-stone-500">Cargando órdenes...</div>
         ) : ordenesFiltradas.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-stone-200">
-            <Package className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-            <p className="text-stone-500">No hay órdenes {filtroEstado !== "todos" && `con estado "${ESTADOS[filtroEstado]?.label}"`}</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="mt-4 bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-emerald-600 transition"
-            >
-              Crear primera orden
-            </button>
+          <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
+            <ClipboardList className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+            <p className="text-stone-500">No hay órdenes en este estado.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ordenesFiltradas.map((orden: any) => {
-              const estadoInfo = ESTADOS[orden.estado] || ESTADOS.pendiente;
-              const tipoInfo = TIPOS[orden.tipo] || { label: orden.tipo };
-              const IconoTipo = tipoInfo.icon || Package;
-              return (
-                <div
-                  key={orden.id}
-                  className="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 hover:shadow-lg transition"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      <IconoTipo className="w-5 h-5 text-stone-600" />
-                      <span className="text-sm font-medium text-stone-600">{tipoInfo.label}</span>
+          <div className="overflow-x-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {ordenesFiltradas.map((orden) => {
+                const TipoIcon = TIPOS_ORDEN[orden.tipo].icon;
+                const EstadoIcon = ESTADOS[orden.estado].icon;
+                const estadoInfo = ESTADOS[orden.estado];
+                const tipoInfo = TIPOS_ORDEN[orden.tipo];
+
+                return (
+                  <div
+                    key={orden.id}
+                    className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className="font-bold text-stone-800">#{orden.numero_orden}</span>
+                        <span className="text-xs text-stone-400 ml-2">{orden.id}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${tipoInfo.color}`}>
+                        <TipoIcon className="w-3 h-3 inline mr-1" />
+                        {tipoInfo.label}
+                      </span>
                     </div>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${estadoInfo.color}`}
-                    >
-                      {estadoInfo.label}
-                    </span>
+
+                    <div className="space-y-1 mb-2">
+                      {orden.productos.map((p, i) => (
+                        <div key={i} className="text-sm text-stone-700">
+                          {p.cantidad} × {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
+                        </div>
+                      ))}
+                    </div>
+
+                    {orden.nota && (
+                      <p className="text-xs text-stone-500 mb-2">📝 {orden.nota}</p>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs text-stone-400">
+                      <span>📅 {new Date(orden.creado_en).toLocaleString()}</span>
+                      <span className={`px-2 py-0.5 rounded-full ${estadoInfo.color}`}>
+                        <EstadoIcon className="w-3 h-3 inline mr-1" />
+                        {estadoInfo.label}
+                      </span>
+                    </div>
+
+                    {/* Acciones para productor */}
+                    {vista === "productor" && orden.estado !== "entregado" && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {ESTADOS_ORDEN.map((estado) => {
+                          const idxActual = ESTADOS_ORDEN.indexOf(orden.estado);
+                          const idxNuevo = ESTADOS_ORDEN.indexOf(estado);
+                          if (idxNuevo <= idxActual) return null;
+                          const info = ESTADOS[estado as keyof typeof ESTADOS];
+                          return (
+                            <button
+                              key={estado}
+                              onClick={() => cambiarEstado(orden.id, estado as keyof typeof ESTADOS)}
+                              className={`text-xs px-2 py-1 rounded-full ${info.color} hover:opacity-80 transition`}
+                            >
+                              {info.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Información para admin */}
+                    {vista === "admin" && (
+                      <div className="mt-3 text-xs text-stone-400">
+                        {orden.producido_por && <span>👤 {orden.producido_por}</span>}
+                      </div>
+                    )}
                   </div>
-                  <h3 className="font-semibold text-stone-800 text-lg truncate">{orden.descripcion || "Orden sin descripción"}</h3>
-                  <div className="mt-2 space-y-1 text-sm text-stone-600">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Entrega: {orden.fecha_entrega ? new Date(orden.fecha_entrega).toLocaleDateString() : "No definida"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      <span>Productor: {orden.productor_asignado ? "Asignado" : "Sin asignar"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4" />
-                      <span>{orden.productos?.length || 0} productos</span>
-                    </div>
-                    {orden.observaciones && (
-                      <p className="text-stone-400 text-xs italic">{orden.observaciones}</p>
-                    )}
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {/* Botones según estado */}
-                    {orden.estado === "pendiente" && (
-                      <>
-                        <button
-                          onClick={() => actualizarEstado(orden.id, "recibido")}
-                          className="bg-blue-500 text-white px-3 py-1 rounded-xl text-xs hover:bg-blue-600 transition flex items-center gap-1"
-                        >
-                          <Check className="w-3 h-3" /> Recibir
-                        </button>
-                        <button
-                          onClick={() => eliminarOrden(orden.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded-xl text-xs hover:bg-red-600 transition flex items-center gap-1"
-                        >
-                          <Trash2 className="w-3 h-3" /> Eliminar
-                        </button>
-                      </>
-                    )}
-                    {orden.estado === "recibido" && (
-                      <button
-                        onClick={() => actualizarEstado(orden.id, "en_produccion")}
-                        className="bg-purple-500 text-white px-3 py-1 rounded-xl text-xs hover:bg-purple-600 transition flex items-center gap-1"
-                      >
-                        <PlayCircle className="w-3 h-3" /> Iniciar
-                      </button>
-                    )}
-                    {orden.estado === "en_produccion" && (
-                      <button
-                        onClick={() => actualizarEstado(orden.id, "finalizado")}
-                        className="bg-green-500 text-white px-3 py-1 rounded-xl text-xs hover:bg-green-600 transition flex items-center gap-1"
-                      >
-                        <CheckCircle className="w-3 h-3" /> Finalizar
-                      </button>
-                    )}
-                    {orden.estado === "finalizado" && (
-                      <button
-                        onClick={() => actualizarEstado(orden.id, "entregado")}
-                        className="bg-stone-500 text-white px-3 py-1 rounded-xl text-xs hover:bg-stone-600 transition flex items-center gap-1"
-                      >
-                        <Check className="w-3 h-3" /> Entregar
-                      </button>
-                    )}
-                    {/* Botón de editar siempre visible */}
-                    <button
-                      onClick={() => {
-                        setEditando(orden);
-                        setForm({
-                          tipo: orden.tipo,
-                          descripcion: orden.descripcion,
-                          fecha_entrega: orden.fecha_entrega || "",
-                          prioridad: orden.prioridad || 0,
-                          productor_asignado: orden.productor_asignado || "",
-                          productos: orden.productos || [],
-                          observaciones: orden.observaciones || "",
-                        });
-                        setShowModal(true);
-                      }}
-                      className="bg-stone-200 text-stone-700 px-3 py-1 rounded-xl text-xs hover:bg-stone-300 transition flex items-center gap-1"
-                    >
-                      <Edit className="w-3 h-3" /> Editar
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Modal para crear/editar orden */}
+      {/* Modal Nueva Orden */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">
-                {editando ? "Editar Orden" : "Nueva Orden"}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditando(null);
-                  setForm({
-                    tipo: "produccion_planificada",
-                    descripcion: "",
-                    fecha_entrega: "",
-                    prioridad: 0,
-                    productor_asignado: "",
-                    productos: [],
-                    observaciones: "",
-                  });
-                }}
-                className="p-2 hover:bg-stone-100 rounded-xl"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">Nueva Orden de Producción</h3>
+
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">Tipo</label>
+                <label className="block text-sm font-medium text-stone-700">Tipo de orden</label>
                 <select
-                  value={form.tipo}
-                  onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                  value={nuevaOrden.tipo}
+                  onChange={(e) =>
+                    setNuevaOrden({ ...nuevaOrden, tipo: e.target.value as keyof typeof TIPOS_ORDEN })
+                  }
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 >
-                  <option value="pedido_tienda">Pedido Tienda</option>
-                  <option value="pedido_pos">Pedido POS</option>
-                  <option value="surtir_vitrina">Surtir Vitrina</option>
-                  <option value="produccion_planificada">Producción Planificada</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Descripción</label>
-                <input
-                  type="text"
-                  value={form.descripcion}
-                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. Pedido #123 - 5 baguettes"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Fecha de entrega</label>
-                <input
-                  type="date"
-                  value={form.fecha_entrega}
-                  onChange={(e) => setForm({ ...form, fecha_entrega: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Prioridad</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  value={form.prioridad}
-                  onChange={(e) => setForm({ ...form, prioridad: parseInt(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Productor asignado</label>
-                <select
-                  value={form.productor_asignado}
-                  onChange={(e) => setForm({ ...form, productor_asignado: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                >
-                  <option value="">Sin asignar</option>
-                  {usuarios.map((u: any) => (
-                    <option key={u.id} value={u.id}>{u.nombre || u.email}</option>
+                  {Object.entries(TIPOS_ORDEN).map(([key, { label }]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-stone-700">Productos (JSON)</label>
-                <textarea
-                  value={JSON.stringify(form.productos, null, 2)}
-                  onChange={(e) => {
-                    try {
-                      const parsed = JSON.parse(e.target.value);
-                      setForm({ ...form, productos: parsed });
-                    } catch {
-                      // Si no es JSON válido, no actualizar
-                    }
-                  }}
-                  rows={3}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 font-mono text-sm"
-                  placeholder='[{"nombre":"Pan de Sal","cantidad":10}]'
-                />
-                <p className="text-xs text-stone-500 mt-1">Ingresa un array de objetos con "nombre" y "cantidad"</p>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Productos</label>
+                {(nuevaOrden.productos || []).map((p, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Nombre"
+                      value={p.nombre}
+                      onChange={(e) => actualizarProducto(idx, "nombre", e.target.value)}
+                      className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Cant."
+                      value={p.cantidad}
+                      onChange={(e) =>
+                        actualizarProducto(idx, "cantidad", parseInt(e.target.value) || 1)
+                      }
+                      className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Unidad"
+                      value={p.unidad}
+                      onChange={(e) => actualizarProducto(idx, "unidad", e.target.value)}
+                      className="w-20 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                    />
+                    <button
+                      onClick={() => eliminarProducto(idx)}
+                      className="text-red-500 hover:bg-red-50 rounded-xl p-2"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={agregarProducto}
+                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  + Agregar producto
+                </button>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-stone-700">Observaciones</label>
-                <input
-                  type="text"
-                  value={form.observaciones}
-                  onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
+                <label className="block text-sm font-medium text-stone-700">Nota</label>
+                <textarea
+                  value={nuevaOrden.nota}
+                  onChange={(e) => setNuevaOrden({ ...nuevaOrden, nota: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  rows={2}
+                  placeholder="Instrucciones adicionales..."
                 />
               </div>
             </div>
+
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditando(null);
-                }}
+                onClick={() => setShowModal(false)}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
               >
                 Cancelar
               </button>
               <button
                 onClick={crearOrden}
-                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition"
+                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
               >
-                {editando ? "Actualizar" : "Crear"}
+                Crear Orden
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Estilos adicionales */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-      `}</style>
+      {/* Audio de notificación (se crea un elemento HTML) */}
+      <audio ref={audioRef} src="/notification.mp3" />
     </div>
   );
 }
