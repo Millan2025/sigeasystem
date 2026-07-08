@@ -67,6 +67,7 @@ export async function POST(request: Request) {
       }
     }
 
+    // Insertar producto
     const { data, error } = await supabase
       .from('productos')
       .insert({
@@ -95,6 +96,20 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
+
+    // 🔥 Si se crea con stock > 0, registrar movimiento de entrada
+    if (stock > 0) {
+      await supabase
+        .from('movimientos_inventario')
+        .insert({
+          producto_id: data.id,
+          tipo: 'entrada',
+          cantidad: stock,
+          motivo: 'Stock inicial al crear producto',
+          tenant_id,
+          created_at: new Date().toISOString()
+        })
+    }
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
