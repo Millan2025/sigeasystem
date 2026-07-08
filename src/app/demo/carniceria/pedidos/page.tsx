@@ -26,29 +26,23 @@ const NEGOCIOS = {
   tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
-interface Producto {
-  id: string;
-  nombre: string;
-  precio: number;
-  stock: number;
-}
-
 interface PedidoItem {
-  producto_id: string;
-  nombre: string;
-  cantidad: number;
-  precio_unitario: number;
+  product_id: string;
+  quantity: number;
+  price: number;
+  productos?: { id: string; nombre: string; precio: number };
 }
 
 interface Pedido {
   id: string;
-  cliente: string;
-  fecha: string;
+  customer_id: string;
+  status: string;
+  subtotal: number;
   total: number;
-  estado: "pendiente" | "confirmado" | "preparando" | "en_camino" | "entregado";
   metodo_pago: string;
-  items: PedidoItem[];
-  direccion?: string;
+  direccion_entrega: string;
+  created_at: string;
+  order_items: PedidoItem[];
 }
 
 const ESTADOS = {
@@ -69,20 +63,26 @@ export default function PedidosPage() {
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [productos, setProductos] = useState<Producto[]>([]);
+  const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState<Pedido | null>(null);
-  const [form, setForm] = useState<Partial<Pedido>>({
-    cliente: "",
+  const [form, setForm] = useState<{
+    customer_name: string;
+    metodo_pago: string;
+    direccion_entrega: string;
+    items: { product_id: string; quantity: number }[];
+  }>({
+    customer_name: "",
     metodo_pago: "Efectivo",
+    direccion_entrega: "",
     items: [],
-    direccion: "",
   });
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [detallePedido, setDetallePedido] = useState<Pedido | null>(null);
+  const [mensaje, setMensaje] = useState("");
 
-  // Cargar productos desde API
+  // Cargar productos para el modal
   const cargarProductos = async () => {
     try {
       const res = await fetch(`/api/products?tenant=${tenantId}`);
@@ -93,39 +93,16 @@ export default function PedidosPage() {
     }
   };
 
-  // Cargar pedidos desde localStorage
-  const cargarPedidos = () => {
+  // Cargar pedidos desde Supabase
+  const cargarPedidos = async () => {
     setLoading(true);
     try {
-      const stored = localStorage.getItem(`pedidos_${tenantId}`);
-      if (stored) {
-        setPedidos(JSON.parse(stored));
+      const res = await fetch(`/api/orders?tenant=${tenantId}`);
+      const data = await res.json();
+      if (data.success) {
+        setPedidos(data.data || []);
       } else {
-        // Datos de ejemplo
-        const ejemplos: Pedido[] = [
-          {
-            id: "PED-001",
-            cliente: "Carlos López",
-            fecha: new Date().toISOString(),
-            total: 45000,
-            estado: "pendiente",
-            metodo_pago: "Efectivo",
-            items: [{ producto_id: "prod1", nombre: "Pan de Sal", cantidad: 5, precio_unitario: 2500 }],
-            direccion: "Calle 123",
-          },
-          {
-            id: "PED-002",
-            cliente: "Ana Martínez",
-            fecha: new Date(Date.now() - 3600000).toISOString(),
-            total: 72000,
-            estado: "confirmado",
-            metodo_pago: "Nequi",
-            items: [{ producto_id: "prod2", nombre: "Croissant", cantidad: 4, precio_unitario: 1800 }],
-            direccion: "Carrera 8",
-          },
-        ];
-        setPedidos(ejemplos);
-        localStorage.setItem(`pedidos_${tenantId}`, JSON.stringify(ejemplos));
+        setPedidos([]);
       }
     } catch (e) {
       setPedidos([]);
@@ -138,85 +115,141 @@ export default function PedidosPage() {
     cargarPedidos();
   }, [tenantId]);
 
-  const guardarPedidos = (nuevos: Pedido[]) => {
-    setPedidos(nuevos);
-    localStorage.setItem(`pedidos_${tenantId}`, JSON.stringify(nuevos));
+  // Cambiar estado del pedido y, si es confirmado, crear orden de producción
+  const cambiarEstado = async (id: string, nuevoEstado: string) => {
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido) return;
+
+    const idxActual = LISTA_ESTADOS.indexOf(pedido.status);
+    const idxNuevo = LISTA_ESTADOS.indexOf(nuevoEstado);
+    if (idxNuevo <= idxActual) return;
+
+    try {
+      // 1. Actualizar estado en customer_orders
+      const resUpdate = await fetch("/api/orders", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: nuevoEstado }),
+      });
+      const dataUpdate = await resUpdate.json();
+      if (!dataUpdate.success) {
+        alert("Error al actualizar estado: " + dataUpdate.error);
+        return;
+      }
+
+      // 2. Si el nuevo estado es "confirmado" o "preparando", crear orden de producción
+      if (nuevoEstado === "confirmado" || nuevoEstado === "preparando") {
+        // Mapear items del pedido a productos con nombre y unidad (por defecto 'unidad')
+        const productosOrden = pedido.order_items.map((item) => ({
+          nombre: item.productos?.nombre || "Producto",
+          cantidad: item.quantity,
+          unidad: "unidad", // Podríamos obtenerlo de productos si existe
+        }));
+
+        const resProd = await fetch("/api/ordenes-produccion", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pedido_id: pedido.id,
+            tenant_id: tenantId,
+            tipo: "pedido_tienda",
+            productos: productosOrden,
+            nota: `Pedido de ${pedido.customer_name || "Cliente"}`,
+            creado_por: "Sistema (Pedidos)",
+          }),
+        });
+        const dataProd = await resProd.json();
+        if (dataProd.success) {
+          setMensaje(`✅ Orden de producción creada para pedido #${pedido.id.slice(0, 6)}`);
+          setTimeout(() => setMensaje(""), 5000);
+        } else {
+          alert("Error al crear orden de producción: " + dataProd.error);
+        }
+      }
+
+      // Recargar pedidos
+      cargarPedidos();
+    } catch (error) {
+      alert("Error de conexión");
+    }
   };
 
-  // CRUD Pedidos
-  const guardarPedido = () => {
-    if (!form.cliente || !form.items || form.items.length === 0) {
+  // Guardar pedido (POST a /api/orders)
+  const guardarPedido = async () => {
+    if (!form.customer_name || form.items.length === 0) {
       alert("Cliente y al menos un producto son obligatorios");
       return;
     }
-    const total = form.items.reduce((sum, item) => sum + (item.cantidad * item.precio_unitario), 0);
-    const nuevo: Pedido = {
-      id: editando ? editando.id : `PED-${String(pedidos.length + 1).padStart(3, "0")}`,
-      cliente: form.cliente!,
-      fecha: new Date().toISOString(),
-      total: total,
-      estado: "pendiente",
-      metodo_pago: form.metodo_pago || "Efectivo",
-      items: form.items.map((item) => ({
-        ...item,
-        producto_id: item.producto_id,
-        nombre: item.nombre || "Producto",
-        cantidad: item.cantidad,
-        precio_unitario: item.precio_unitario,
-      })),
-      direccion: form.direccion || "",
+
+    // Preparar items
+    const items = form.items.map((item) => ({
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: productos.find((p) => p.id === item.product_id)?.precio || 0,
+    }));
+
+    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    const body = {
+      customer_id: null, // Podríamos crear o buscar cliente
+      tenant_id: tenantId,
+      items,
+      direccion_entrega: form.direccion_entrega || "Pendiente",
+      metodo_pago: form.metodo_pago,
+      total,
     };
-    let nuevos: Pedido[];
-    if (editando) {
-      nuevos = pedidos.map((p) => (p.id === editando.id ? nuevo : p));
-    } else {
-      nuevos = [...pedidos, nuevo];
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje(`✅ Pedido #${data.data.id.slice(0, 6)} creado`);
+        setTimeout(() => setMensaje(""), 5000);
+        setShowModal(false);
+        setForm({ customer_name: "", metodo_pago: "Efectivo", direccion_entrega: "", items: [] });
+        cargarPedidos();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
     }
-    guardarPedidos(nuevos);
-    setShowModal(false);
-    setEditando(null);
-    setForm({ cliente: "", metodo_pago: "Efectivo", items: [], direccion: "" });
   };
 
-  const eliminarPedido = (id: string) => {
+  // Eliminar pedido (solo si está pendiente)
+  const eliminarPedido = async (id: string) => {
     if (!confirm("¿Eliminar este pedido?")) return;
-    guardarPedidos(pedidos.filter((p) => p.id !== id));
+    // No implementamos DELETE en API, pero se puede agregar
+    alert("Eliminación no implementada en API.");
   };
 
-  const cambiarEstado = (id: string, nuevoEstado: Pedido["estado"]) => {
-    const pedido = pedidos.find((p) => p.id === id);
-    if (!pedido) return;
-    const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
-    const idxNuevo = LISTA_ESTADOS.indexOf(nuevoEstado);
-    if (idxNuevo <= idxActual) return;
-    const actualizados = pedidos.map((p) =>
-      p.id === id ? { ...p, estado: nuevoEstado } : p
-    );
-    guardarPedidos(actualizados);
-  };
-
+  // Agregar item al formulario
   const agregarItem = () => {
     setForm({
       ...form,
-      items: [...(form.items || []), { producto_id: "", nombre: "", cantidad: 1, precio_unitario: 0 }],
+      items: [...form.items, { product_id: "", quantity: 1 }],
     });
   };
 
   const actualizarItem = (idx: number, campo: string, valor: any) => {
-    const items = form.items || [];
+    const items = [...form.items];
     items[idx] = { ...items[idx], [campo]: valor };
     setForm({ ...form, items });
   };
 
   const eliminarItem = (idx: number) => {
-    const items = form.items || [];
-    if (items.length <= 1) return;
-    setForm({ ...form, items: items.filter((_, i) => i !== idx) });
+    if (form.items.length <= 1) return;
+    setForm({ ...form, items: form.items.filter((_, i) => i !== idx) });
   };
 
+  // Filtrar pedidos
   const pedidosFiltrados = pedidos.filter((p) => {
     if (filtroEstado === "todos") return true;
-    return p.estado === filtroEstado;
+    return p.status === filtroEstado;
   });
 
   return (
@@ -233,7 +266,7 @@ export default function PedidosPage() {
           <button
             onClick={() => {
               setEditando(null);
-              setForm({ cliente: "", metodo_pago: "Efectivo", items: [], direccion: "" });
+              setForm({ customer_name: "", metodo_pago: "Efectivo", direccion_entrega: "", items: [] });
               setShowModal(true);
             }}
             className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -242,6 +275,12 @@ export default function PedidosPage() {
           </button>
         </div>
       </header>
+
+      {mensaje && (
+        <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium">
+          {mensaje}
+        </div>
+      )}
 
       <div className="p-4 max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-2 mb-4">
@@ -253,7 +292,7 @@ export default function PedidosPage() {
           </button>
           {LISTA_ESTADOS.map((estado) => {
             const info = ESTADOS[estado as keyof typeof ESTADOS];
-            const count = pedidos.filter((p) => p.estado === estado).length;
+            const count = pedidos.filter((p) => p.status === estado).length;
             return (
               <button
                 key={estado}
@@ -276,23 +315,23 @@ export default function PedidosPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pedidosFiltrados.map((pedido) => {
-              const estadoInfo = ESTADOS[pedido.estado];
+              const estadoInfo = ESTADOS[pedido.status as keyof typeof ESTADOS] || ESTADOS.pendiente;
               return (
                 <div key={pedido.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <span className="font-bold text-stone-800">#{pedido.id}</span>
-                      <span className="text-xs text-stone-400 ml-2">{new Date(pedido.fecha).toLocaleString()}</span>
+                      <span className="font-bold text-stone-800">#{pedido.id.slice(0, 6)}</span>
+                      <span className="text-xs text-stone-400 ml-2">{new Date(pedido.created_at).toLocaleString()}</span>
                     </div>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${estadoInfo.color}`}>
                       {estadoInfo.label}
                     </span>
                   </div>
-                  <p className="text-sm text-stone-700 font-medium">{pedido.cliente}</p>
-                  <p className="text-sm text-stone-500">📦 {pedido.items.length} productos</p>
-                  <p className="text-sm text-stone-500">💰 ${pedido.total.toLocaleString()}</p>
+                  <p className="text-sm text-stone-700 font-medium">{pedido.customer_name || "Cliente"}</p>
+                  <p className="text-sm text-stone-500">📦 {pedido.order_items?.length || 0} productos</p>
+                  <p className="text-sm text-stone-500">💰 ${pedido.total?.toLocaleString()}</p>
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
-                  {pedido.direccion && <p className="text-xs text-stone-400">📍 {pedido.direccion}</p>}
+                  {pedido.direccion_entrega && <p className="text-xs text-stone-400">📍 {pedido.direccion_entrega}</p>}
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
@@ -302,26 +341,28 @@ export default function PedidosPage() {
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
                     </button>
                     {LISTA_ESTADOS.map((estado) => {
-                      const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
+                      const idxActual = LISTA_ESTADOS.indexOf(pedido.status);
                       const idxNuevo = LISTA_ESTADOS.indexOf(estado);
                       if (idxNuevo <= idxActual) return null;
                       const info = ESTADOS[estado as keyof typeof ESTADOS];
                       return (
                         <button
                           key={estado}
-                          onClick={() => cambiarEstado(pedido.id, estado as Pedido["estado"])}
+                          onClick={() => cambiarEstado(pedido.id, estado)}
                           className={`text-xs px-2 py-1 rounded-full ${info.color} hover:opacity-80 transition`}
                         >
                           {info.label}
                         </button>
                       );
                     })}
-                    <button
-                      onClick={() => eliminarPedido(pedido.id)}
-                      className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full hover:bg-red-200"
-                    >
-                      <Trash2 className="w-3 h-3 inline mr-1" />
-                    </button>
+                    {pedido.status === "pendiente" && (
+                      <button
+                        onClick={() => eliminarPedido(pedido.id)}
+                        className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full hover:bg-red-200"
+                      >
+                        <Trash2 className="w-3 h-3 inline mr-1" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -330,25 +371,25 @@ export default function PedidosPage() {
         )}
       </div>
 
-      {/* Modal Nuevo/Editar Pedido */}
+      {/* Modal Nuevo Pedido */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar Pedido" : "Nuevo Pedido"}</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">Nuevo Pedido</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">Cliente *</label>
+                <label className="block text-sm font-medium text-stone-700">Cliente</label>
                 <input
                   type="text"
-                  value={form.cliente || ""}
-                  onChange={(e) => setForm({ ...form, cliente: e.target.value })}
+                  value={form.customer_name}
+                  onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Método de Pago</label>
                 <select
-                  value={form.metodo_pago || "Efectivo"}
+                  value={form.metodo_pago}
                   onChange={(e) => setForm({ ...form, metodo_pago: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 >
@@ -363,23 +404,20 @@ export default function PedidosPage() {
                 <label className="block text-sm font-medium text-stone-700">Dirección (opcional)</label>
                 <input
                   type="text"
-                  value={form.direccion || ""}
-                  onChange={(e) => setForm({ ...form, direccion: e.target.value })}
+                  value={form.direccion_entrega}
+                  onChange={(e) => setForm({ ...form, direccion_entrega: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Productos</label>
-                {(form.items || []).map((item, idx) => (
+                {form.items.map((item, idx) => (
                   <div key={idx} className="flex gap-2 mb-2">
                     <select
-                      value={item.producto_id}
+                      value={item.product_id}
                       onChange={(e) => {
                         const prodId = e.target.value;
-                        const prod = productos.find((p) => p.id === prodId);
-                        actualizarItem(idx, "producto_id", prodId);
-                        actualizarItem(idx, "nombre", prod?.nombre || "");
-                        actualizarItem(idx, "precio_unitario", prod?.precio || 0);
+                        actualizarItem(idx, "product_id", prodId);
                       }}
                       className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
                     >
@@ -391,8 +429,8 @@ export default function PedidosPage() {
                     <input
                       type="number"
                       min="1"
-                      value={item.cantidad}
-                      onChange={(e) => actualizarItem(idx, "cantidad", parseInt(e.target.value) || 1)}
+                      value={item.quantity}
+                      onChange={(e) => actualizarItem(idx, "quantity", parseInt(e.target.value) || 1)}
                       className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
                     />
                     <button onClick={() => eliminarItem(idx)} className="text-red-500 hover:bg-red-50 rounded-xl p-2">
@@ -417,32 +455,32 @@ export default function PedidosPage() {
         </div>
       )}
 
-      {/* Modal Detalle Pedido */}
+      {/* Modal Detalle */}
       {detallePedido && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">Detalle Pedido #{detallePedido.id}</h3>
+              <h3 className="text-lg font-bold text-stone-800">Detalle Pedido #{detallePedido.id.slice(0, 6)}</h3>
               <button onClick={() => setDetallePedido(null)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
-            <p className="text-sm text-stone-600">Cliente: {detallePedido.cliente}</p>
-            <p className="text-sm text-stone-600">Fecha: {new Date(detallePedido.fecha).toLocaleString()}</p>
-            <p className="text-sm text-stone-600">Método Pago: {detallePedido.metodo_pago}</p>
-            <p className="text-sm text-stone-600">Estado: {ESTADOS[detallePedido.estado].label}</p>
-            {detallePedido.direccion && <p className="text-sm text-stone-600">Dirección: {detallePedido.direccion}</p>}
+            <p className="text-sm text-stone-600">Cliente: {detallePedido.customer_name || "Cliente"}</p>
+            <p className="text-sm text-stone-600">Fecha: {new Date(detallePedido.created_at).toLocaleString()}</p>
+            <p className="text-sm text-stone-600">Pago: {detallePedido.metodo_pago}</p>
+            <p className="text-sm text-stone-600">Estado: {ESTADOS[detallePedido.status as keyof typeof ESTADOS]?.label || detallePedido.status}</p>
+            {detallePedido.direccion_entrega && <p className="text-sm text-stone-600">Dirección: {detallePedido.direccion_entrega}</p>}
             <div className="mt-3 border-t pt-3">
               <h4 className="font-semibold text-stone-700">Productos</h4>
               <ul className="space-y-1 mt-1">
-                {detallePedido.items.map((item, i) => (
+                {detallePedido.order_items?.map((item, i) => (
                   <li key={i} className="text-sm text-stone-700 flex justify-between">
-                    <span>{item.cantidad} × {item.nombre}</span>
-                    <span>${(item.cantidad * item.precio_unitario).toLocaleString()}</span>
+                    <span>{item.quantity} × {item.productos?.nombre || "Producto"}</span>
+                    <span>${(item.quantity * item.price).toLocaleString()}</span>
                   </li>
                 ))}
               </ul>
               <div className="flex justify-between font-bold mt-2 text-stone-800">
                 <span>Total</span>
-                <span>${detallePedido.total.toLocaleString()}</span>
+                <span>${detallePedido.total?.toLocaleString()}</span>
               </div>
             </div>
             <button onClick={() => setDetallePedido(null)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">
