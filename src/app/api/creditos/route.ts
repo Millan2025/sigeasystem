@@ -34,7 +34,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Construir observaciones con teléfono y dirección
     const observaciones = `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
 
     const { data, error } = await supabase
@@ -71,10 +70,10 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Obtener crédito actual
+    // Obtener crédito actual (incluyendo tenant_id para finanzas)
     const { data: credito, error: getErr } = await supabase
       .from('creditos')
-      .select('saldo_pendiente, valor_pagado')
+      .select('saldo_pendiente, valor_pagado, tenant_id')
       .eq('id', id)
       .single()
 
@@ -84,6 +83,7 @@ export async function PUT(request: Request) {
     const nuevoPagado = credito.valor_pagado + monto_abono
     const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
 
+    // Actualizar crédito
     const { data, error } = await supabase
       .from('creditos')
       .update({
@@ -97,6 +97,41 @@ export async function PUT(request: Request) {
       .single()
 
     if (error) throw error
+
+    // 🔥 REGISTRAR INGRESO EN FINANZAS POR EL ABONO
+    try {
+      // Obtener ID de la categoría "Cuentas por Cobrar" (código 1-01-01)
+      const { data: categoria, error: catErr } = await supabase
+        .from('categorias_contables')
+        .select('id')
+        .eq('codigo', '1-01-01')
+        .eq('tenant_id', credito.tenant_id)
+        .single()
+
+      if (!catErr && categoria) {
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/finanzas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipo: 'ingreso',
+            monto: monto_abono,
+            categoria_contable_id: categoria.id,
+            descripcion: `Abono a crédito #${id}`,
+            fecha: new Date().toISOString().split('T')[0],
+            impuesto: 0,
+            retencion: 0,
+            metodo_pago: 'Abono',
+            tenant_id: credito.tenant_id,
+            referencia_id: id,
+            referencia_tipo: 'credito'
+          })
+        })
+      }
+    } catch (finErr) {
+      // Si falla el registro en finanzas, no bloqueamos la operación, pero lo registramos en consola
+      console.error('Error al registrar abono en finanzas:', finErr)
+    }
+
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
