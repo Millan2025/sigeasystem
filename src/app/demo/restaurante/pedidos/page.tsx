@@ -36,6 +36,7 @@ interface PedidoItem {
 interface Pedido {
   id: string;
   customer_id: string;
+  customer_name?: string;
   status: string;
   subtotal: number;
   total: number;
@@ -79,7 +80,7 @@ export default function PedidosPage() {
     items: [],
   });
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
-  const [detallePedido, setDetallePedido] = useState<Pedido | null>(null);
+  const [detallePedido, setdetallePedido] = useState<Pedido | null>(null);
   const [mensaje, setMensaje] = useState("");
 
   // Cargar productos para el modal
@@ -335,7 +336,7 @@ export default function PedidosPage() {
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
-                      onClick={() => setDetallePedido(pedido)}
+                      onClick={() => setdetallePedido(pedido)}
                       className="text-xs bg-stone-200 text-stone-700 px-2 py-1 rounded-full hover:bg-stone-300"
                     >
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
@@ -461,7 +462,7 @@ export default function PedidosPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Detalle Pedido #{detallePedido.id.slice(0, 6)}</h3>
-              <button onClick={() => setDetallePedido(null)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setdetallePedido(null)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <p className="text-sm text-stone-600">Cliente: {detallePedido.customer_name || "Cliente"}</p>
             <p className="text-sm text-stone-600">Fecha: {new Date(detallePedido.created_at).toLocaleString()}</p>
@@ -483,7 +484,7 @@ export default function PedidosPage() {
                 <span>${detallePedido.total?.toLocaleString()}</span>
               </div>
             </div>
-            <button onClick={() => setDetallePedido(null)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">
+            <button onClick={() => setdetallePedido(null)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">
               Cerrar
             </button>
           </div>
@@ -492,3 +493,7 @@ export default function PedidosPage() {
     </div>
   );
 }
+
+
+
+
