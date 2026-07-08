@@ -33,7 +33,7 @@ const NEGOCIOS = {
 };
 
 // ============================================
-// ÓRDENES DE TRABAJO – CONFIGURACIÓN
+// TIPOS Y ESTADOS
 // ============================================
 const TIPOS_ORDEN = {
   pedido_tienda: { label: "Pedido Tienda", icon: Store, color: "bg-blue-100 text-blue-700 border-blue-300" },
@@ -53,6 +53,7 @@ const ESTADOS_ORDEN = ["pendiente", "en_produccion", "finalizado", "entregado"];
 
 interface Orden {
   id: string;
+  pedido_id?: string;
   tipo: keyof typeof TIPOS_ORDEN;
   estado: keyof typeof ESTADOS;
   productos: { nombre: string; cantidad: number; unidad: string }[];
@@ -61,7 +62,6 @@ interface Orden {
   creado_en: string;
   actualizado_en: string;
   producido_por?: string;
-  numero_orden: number;
 }
 
 // ============================================
@@ -92,7 +92,7 @@ export default function ProduccionPage() {
   const [notificacion, setNotificacion] = useState<string | null>(null);
   const [contadorNuevas, setContadorNuevas] = useState(0);
 
-  // ========== ESTADO DE JORNADA (solo restaurante) ==========
+  // ========== JORNADA (localStorage) ==========
   const [jornada, setJornada] = useState<any[]>([]);
   const [loadingJornada, setLoadingJornada] = useState(true);
   const [fechaJornada, setFechaJornada] = useState(new Date().toISOString().split("T")[0]);
@@ -101,50 +101,22 @@ export default function ProduccionPage() {
   const [productos, setProductos] = useState<any[]>([]);
   const [resumenJornada, setResumenJornada] = useState({ planificado: 0, vendido: 0, restante: 0 });
 
-  // ========== PESTAÑA ACTIVA ==========
   const [tab, setTab] = useState<"ordenes" | "jornada">("ordenes");
 
   // ============================================
-  // CARGA DE ÓRDENES (localStorage)
+  // CARGA DE ÓRDENES (desde Supabase)
   // ============================================
-  const cargarOrdenes = () => {
+  const cargarOrdenes = async () => {
     setLoadingOrdenes(true);
     try {
-      const stored = localStorage.getItem(`ordenes_${tenantId}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setOrdenes(parsed);
-        const nuevas = parsed.filter(
+      const res = await fetch(`/api/ordenes-produccion?tenant=${tenantId}`);
+      const data = await res.json();
+      if (data.success) {
+        setOrdenes(data.data || []);
+        const nuevas = data.data.filter(
           (o: Orden) => o.estado === "pendiente" && new Date(o.creado_en) > new Date(Date.now() - 60000)
         ).length;
         setContadorNuevas(nuevas);
-      } else {
-        const ejemplos: Orden[] = [
-          {
-            id: "ORD-001",
-            tipo: "pedido_pos",
-            estado: "pendiente",
-            productos: [{ nombre: "Pan de Sal", cantidad: 10, unidad: "unidad" }],
-            nota: "Para el desayuno",
-            creado_por: "Admin",
-            creado_en: new Date().toISOString(),
-            actualizado_en: new Date().toISOString(),
-            numero_orden: 1,
-          },
-          {
-            id: "ORD-002",
-            tipo: "pedido_tienda",
-            estado: "en_produccion",
-            productos: [{ nombre: "Croissant", cantidad: 5, unidad: "unidad" }],
-            nota: "Pedido especial",
-            creado_por: "Admin",
-            creado_en: new Date(Date.now() - 3600000).toISOString(),
-            actualizado_en: new Date(Date.now() - 1800000).toISOString(),
-            numero_orden: 2,
-          },
-        ];
-        setOrdenes(ejemplos);
-        localStorage.setItem(`ordenes_${tenantId}`, JSON.stringify(ejemplos));
       }
     } catch (e) {
       setOrdenes([]);
@@ -177,9 +149,6 @@ export default function ProduccionPage() {
     setLoadingJornada(false);
   };
 
-  // ============================================
-  // OBTENER PRODUCTOS (para jornada)
-  // ============================================
   const cargarProductos = async () => {
     const res = await fetch(`/api/products?tenant=${tenantId}`);
     const data = await res.json();
@@ -187,7 +156,7 @@ export default function ProduccionPage() {
   };
 
   // ============================================
-  // EFECTOS INICIALES
+  // EFECTOS
   // ============================================
   useEffect(() => {
     audioRef.current = new Audio("/notification.mp3");
@@ -209,15 +178,90 @@ export default function ProduccionPage() {
   }, [fechaJornada]);
 
   // ============================================
-  // GUARDAR ÓRDENES
+  // CREAR ORDEN (POST a Supabase)
   // ============================================
-  const guardarOrdenes = (nuevasOrdenes: Orden[]) => {
-    setOrdenes(nuevasOrdenes);
-    localStorage.setItem(`ordenes_${tenantId}`, JSON.stringify(nuevasOrdenes));
+  const crearOrden = async () => {
+    if (!nuevaOrden.productos || nuevaOrden.productos.length === 0) {
+      alert("Agrega al menos un producto.");
+      return;
+    }
+
+    const body = {
+      tenant_id: tenantId,
+      tipo: nuevaOrden.tipo || "pedido_pos",
+      productos: nuevaOrden.productos.map((p) => ({
+        nombre: p.nombre || "Producto",
+        cantidad: p.cantidad || 1,
+        unidad: p.unidad || "unidad",
+      })),
+      nota: nuevaOrden.nota || "",
+      creado_por: "Admin",
+    };
+
+    try {
+      const res = await fetch("/api/ordenes-produccion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (audioRef.current) {
+          audioRef.current.play().catch(() => {});
+        }
+        setContadorNuevas((prev) => prev + 1);
+        setNotificacion(`📢 Nueva orden #${data.data.id.slice(0, 6)}`);
+        setTimeout(() => setNotificacion(null), 5000);
+        setShowModalOrden(false);
+        setNuevaOrden({
+          tipo: "pedido_pos",
+          productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
+          nota: "",
+        });
+        cargarOrdenes();
+      } else {
+        alert("Error al crear orden: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
   };
 
   // ============================================
-  // GUARDAR JORNADA
+  // CAMBIAR ESTADO (PUT a Supabase)
+  // ============================================
+  const cambiarEstado = async (id: string, nuevoEstado: keyof typeof ESTADOS) => {
+    const orden = ordenes.find((o) => o.id === id);
+    if (!orden) return;
+
+    const idxActual = ESTADOS_ORDEN.indexOf(orden.estado);
+    const idxNuevo = ESTADOS_ORDEN.indexOf(nuevoEstado);
+    if (idxNuevo <= idxActual) return;
+
+    try {
+      const res = await fetch("/api/ordenes-produccion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          estado: nuevoEstado,
+          producido_por: nuevoEstado === "entregado" ? "Productor" : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        cargarOrdenes();
+        // Si la orden llega a finalizado o entregado, se podría actualizar el pedido relacionado (opcional)
+      } else {
+        alert("Error al actualizar estado: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+  };
+
+  // ============================================
+  // JORNADA (sin cambios)
   // ============================================
   const guardarJornada = (nuevaJornada: any[]) => {
     const key = `jornada_${tenantId}_${fechaJornada}`;
@@ -228,74 +272,6 @@ export default function ProduccionPage() {
     setResumenJornada({ planificado, vendido, restante: planificado - vendido });
   };
 
-  // ============================================
-  // CRUD ÓRDENES
-  // ============================================
-  const crearOrden = () => {
-    if (!nuevaOrden.productos || nuevaOrden.productos.length === 0) {
-      alert("Agrega al menos un producto.");
-      return;
-    }
-
-    const orden: Orden = {
-      id: `ORD-${String(ordenes.length + 1).padStart(3, "0")}`,
-      tipo: nuevaOrden.tipo as keyof typeof TIPOS_ORDEN,
-      estado: "pendiente",
-      productos: nuevaOrden.productos.map((p) => ({
-        nombre: p.nombre || "Producto",
-        cantidad: p.cantidad || 1,
-        unidad: p.unidad || "unidad",
-      })),
-      nota: nuevaOrden.nota || "",
-      creado_por: "Admin",
-      creado_en: new Date().toISOString(),
-      actualizado_en: new Date().toISOString(),
-      numero_orden: ordenes.length + 1,
-    };
-
-    const nuevas = [...ordenes, orden];
-    guardarOrdenes(nuevas);
-
-    if (audioRef.current) {
-      audioRef.current.play().catch(() => {});
-    }
-    setContadorNuevas((prev) => prev + 1);
-    setNotificacion(`📢 Nueva orden #${orden.numero_orden}`);
-    setTimeout(() => setNotificacion(null), 5000);
-
-    setShowModalOrden(false);
-    setNuevaOrden({
-      tipo: "pedido_pos",
-      productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
-      nota: "",
-    });
-  };
-
-  const cambiarEstado = (id: string, nuevoEstado: keyof typeof ESTADOS) => {
-    const orden = ordenes.find((o) => o.id === id);
-    if (!orden) return;
-
-    const idxActual = ESTADOS_ORDEN.indexOf(orden.estado);
-    const idxNuevo = ESTADOS_ORDEN.indexOf(nuevoEstado);
-    if (idxNuevo <= idxActual) return;
-
-    const actualizadas = ordenes.map((o) => {
-      if (o.id === id) {
-        return {
-          ...o,
-          estado: nuevoEstado,
-          actualizado_en: new Date().toISOString(),
-          producido_por: nuevoEstado === "entregado" ? "Productor" : o.producido_por,
-        };
-      }
-      return o;
-    });
-    guardarOrdenes(actualizadas);
-  };
-
-  // ============================================
-  // CRUD JORNADA
-  // ============================================
   const agregarProductoJornada = () => {
     setFormJornada([...formJornada, { producto_id: "", cantidad: 1 }]);
   };
@@ -312,21 +288,18 @@ export default function ProduccionPage() {
 
   const guardarPlanificacion = () => {
     if (formJornada.length === 0) return;
-    // Si ya existía jornada para hoy, la reemplazamos
     const nuevaJornada = formJornada.map((f) => ({
       producto_id: f.producto_id,
       cantidad_planificada: f.cantidad,
       cantidad_vendida: 0,
     }));
-    // También podemos agregar productos que ya estaban y no se modificaron
-    // Por simplicidad, reemplazamos todo
     guardarJornada(nuevaJornada);
     setShowModalJornada(false);
     setFormJornada([]);
   };
 
   // ============================================
-  // FILTROS ÓRDENES
+  // FILTROS
   // ============================================
   const ordenesFiltradas = ordenes.filter((o) => {
     if (filtroEstado === "todos") return true;
@@ -334,7 +307,7 @@ export default function ProduccionPage() {
   });
 
   // ============================================
-  // RENDER
+  // RENDER (igual que antes, solo cambia origen de datos)
   // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
@@ -347,7 +320,6 @@ export default function ProduccionPage() {
           Producción - {negocio?.titulo}
         </h1>
 
-        {/* Pestañas */}
         <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1">
           <button
             onClick={() => setTab("ordenes")}
@@ -369,7 +341,6 @@ export default function ProduccionPage() {
           )}
         </div>
 
-        {/* Botones según pestaña */}
         {tab === "ordenes" && (
           <>
             <div className="flex items-center gap-2">
@@ -391,11 +362,7 @@ export default function ProduccionPage() {
                 Productor
               </button>
             </div>
-            <button
-              onClick={cargarOrdenes}
-              className="p-2 hover:bg-stone-100 rounded-xl"
-              title="Recargar órdenes"
-            >
+            <button onClick={() => cargarOrdenes()} className="p-2 hover:bg-stone-100 rounded-xl">
               <RefreshCw className="w-5 h-5 text-stone-700" />
             </button>
             <button
@@ -436,7 +403,6 @@ export default function ProduccionPage() {
         )}
       </header>
 
-      {/* Notificación */}
       {notificacion && (
         <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium animate-pulse">
           {notificacion}
@@ -446,14 +412,11 @@ export default function ProduccionPage() {
       <div className="p-4 max-w-7xl mx-auto">
         {tab === "ordenes" && (
           <>
-            {/* Filtros de órdenes */}
             <div className="flex flex-wrap gap-2 mb-4">
               <button
                 onClick={() => setFiltroEstado("todos")}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                  filtroEstado === "todos"
-                    ? "bg-stone-800 text-white"
-                    : "bg-white text-stone-700 border border-stone-300"
+                  filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white text-stone-700 border border-stone-300"
                 }`}
               >
                 Todos
@@ -476,7 +439,6 @@ export default function ProduccionPage() {
               })}
             </div>
 
-            {/* Tabla de órdenes */}
             {loadingOrdenes ? (
               <div className="text-center py-12 text-stone-500">Cargando órdenes...</div>
             ) : ordenesFiltradas.length === 0 ? (
@@ -499,8 +461,10 @@ export default function ProduccionPage() {
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <span className="font-bold text-stone-800">#{orden.numero_orden}</span>
-                          <span className="text-xs text-stone-400 ml-2">{orden.id}</span>
+                          <span className="font-bold text-stone-800">#{orden.id.slice(0, 6)}</span>
+                          {orden.pedido_id && (
+                            <span className="text-xs text-stone-400 ml-2">Pedido: {orden.pedido_id.slice(0, 6)}</span>
+                          )}
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${tipoInfo.color}`}>
                           <TipoIcon className="w-3 h-3 inline mr-1" />
@@ -563,7 +527,6 @@ export default function ProduccionPage() {
 
         {tab === "jornada" && esRestaurante && (
           <>
-            {/* Resumen */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
                 <p className="text-sm text-stone-500">Planificado</p>
@@ -580,8 +543,6 @@ export default function ProduccionPage() {
                 </p>
               </div>
             </div>
-
-            {/* Detalle de jornada */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
               <h3 className="font-semibold text-stone-800 mb-3">Detalle de Jornada</h3>
               {loadingJornada ? (
@@ -757,7 +718,7 @@ export default function ProduccionPage() {
         </div>
       )}
 
-      {/* Modal Planificar Jornada */}
+      {/* Modal Jornada */}
       {showModalJornada && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -798,16 +759,10 @@ export default function ProduccionPage() {
               </button>
             </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowModalJornada(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
-              >
+              <button onClick={() => setShowModalJornada(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">
                 Cancelar
               </button>
-              <button
-                onClick={guardarPlanificacion}
-                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
-              >
+              <button onClick={guardarPlanificacion} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">
                 Guardar Jornada
               </button>
             </div>
