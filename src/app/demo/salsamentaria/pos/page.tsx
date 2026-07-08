@@ -44,7 +44,8 @@ export default function POSPage() {
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  useEffect(() => {
+  // 🔥 Función para cargar productos (reutilizable)
+  const cargarProductos = () => {
     const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
@@ -64,6 +65,11 @@ export default function POSPage() {
         }
       })
       .catch(() => {});
+  };
+
+  // Cargar productos al montar el componente y cuando cambie tenant o categoría
+  useEffect(() => {
+    cargarProductos();
   }, [tenantId, categoria]);
 
   const cats = ['Todo', ...Array.from(new Set(productos.map(p => p.cat)))];
@@ -151,6 +157,8 @@ export default function POSPage() {
         setCart([]);
         setShowPay(false);
         setShowCart(false);
+        // 🔥 Recargar productos para actualizar stock
+        cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
         alert('Error al registrar venta: ' + data.error);
@@ -185,6 +193,8 @@ export default function POSPage() {
         setShowCart(false);
         setShowCreditoModal(false);
         setCreditoData({ cliente: '', telefono: '', direccion: '' });
+        // 🔥 Recargar productos para actualizar stock
+        cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
         alert('Error: ' + data.error);
