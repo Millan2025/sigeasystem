@@ -6,6 +6,39 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// GET: listar compras con sus items
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url)
+    const tenantId = url.searchParams.get('tenant') || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
+    const startDate = url.searchParams.get('start')
+    const endDate = url.searchParams.get('end')
+
+    let query = supabase
+      .from('compras')
+      .select(`
+        *,
+        compra_items (
+          *,
+          productos (id, nombre, precio_compra)
+        )
+      `)
+      .eq('tenant_id', tenantId)
+      .order('fecha', { ascending: false })
+
+    if (startDate) query = query.gte('fecha', startDate)
+    if (endDate) query = query.lte('fecha', endDate)
+
+    const { data, error } = await query
+    if (error) throw error
+
+    return NextResponse.json({ success: true, data: data || [] })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
+
+// POST: crear compra (ya existente)
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -18,10 +51,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // 1. Calcular total
     const total = items.reduce((sum: number, item: any) => sum + (item.cantidad * item.precio_compra), 0)
 
-    // 2. Insertar cabecera de compra
     const { data: compra, error: compraErr } = await supabase
       .from('compras')
       .insert({
@@ -38,7 +69,6 @@ export async function POST(request: Request) {
 
     if (compraErr) throw compraErr
 
-    // 3. Insertar items de compra
     const compraItems = items.map((item: any) => ({
       compra_id: compra.id,
       producto_id: item.producto_id,
@@ -53,9 +83,7 @@ export async function POST(request: Request) {
 
     if (itemsErr) throw itemsErr
 
-    // 4. Actualizar stock (entradas)
     for (const item of items) {
-      // Registrar movimiento de entrada
       await supabase
         .from('movimientos_inventario')
         .insert({
@@ -67,7 +95,6 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString()
         })
 
-      // Recalcular stock
       const { data: movs, error: movsErr } = await supabase
         .from('movimientos_inventario')
         .select('tipo, cantidad')
@@ -88,8 +115,6 @@ export async function POST(request: Request) {
         .eq('tenant_id', tenant_id)
     }
 
-    // 5. 🔥 REGISTRAR EGRESO EN FINANZAS
-    // Determinar categoría según método de pago
     const categoriaId = metodo_pago === 'credito'
       ? (await supabase.from('categorias_contables').select('id').eq('codigo', '2-01-01').eq('tenant_id', tenant_id).single()).data?.id
       : (await supabase.from('categorias_contables').select('id').eq('codigo', '5-01-01').eq('tenant_id', tenant_id).single()).data?.id
