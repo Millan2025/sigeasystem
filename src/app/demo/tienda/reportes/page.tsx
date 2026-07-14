@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, Download, Filter, Calendar, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
 import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
@@ -82,7 +82,6 @@ export default function ReportesPage() {
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Hoja Resumen
     const resumenData = [
       ["Concepto", "Monto"],
       ["Ventas Totales", totalVentas],
@@ -96,7 +95,6 @@ export default function ReportesPage() {
     wsResumen["!cols"] = [{ wch: 30 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
 
-    // Hoja Ventas
     const ventasRows: any[][] = [["Fecha", "Método Pago", "Total", "Productos"]];
     ventas.forEach(v => {
       const productos = (v.sale_items || []).map((i: any) => `${i.quantity} ${i.productos?.nombre || "Producto"}`).join(", ");
@@ -106,7 +104,6 @@ export default function ReportesPage() {
     wsVentas["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsVentas, "Ventas");
 
-    // Hoja Compras
     const comprasRows: any[][] = [["Fecha", "Proveedor", "Método Pago", "Total", "Productos"]];
     compras.forEach(c => {
       const productos = (c.compra_items || []).map((i: any) => `${i.cantidad} ${i.productos?.nombre || "Producto"}`).join(", ");
@@ -116,7 +113,6 @@ export default function ReportesPage() {
     wsCompras["!cols"] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsCompras, "Compras");
 
-    // Hoja Top Productos (corregida)
     const productosVendidos: Record<string, { nombre: string; cantidad: number; total: number }> = {};
     ventas.forEach(v => {
       (v.sale_items || []).forEach((item: any) => {
@@ -142,26 +138,6 @@ export default function ReportesPage() {
     XLSX.writeFile(wb, `reporte_${negocioSlug}_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
 
-  // Exportar CSV con punto y coma
-  const exportarCSV = () => {
-    const rows = [
-      ["Concepto", "Monto"],
-      ["Ventas Totales", totalVentas],
-      ["Compras Totales", totalCompras],
-      ["Ingresos Financieros", totalIngresos],
-      ["Egresos Financieros", totalEgresos],
-      ["Créditos Pendientes", totalCreditoPendiente],
-      ["Stock Crítico", stockCritico],
-    ];
-    const csvContent = rows.map(row => row.join(";")).join("\n");
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `reporte_${negocioSlug}_${new Date().toISOString().slice(0,10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
@@ -174,10 +150,7 @@ export default function ReportesPage() {
           <RefreshCw className="w-5 h-5 text-stone-700" />
         </button>
         <button onClick={exportarExcel} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
-          <Download className="w-4 h-4" /> Excel
-        </button>
-        <button onClick={exportarCSV} className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
-          <FileSpreadsheet className="w-4 h-4" /> CSV
+          <Download className="w-4 h-4" /> Exportar Excel
         </button>
       </header>
 
@@ -207,7 +180,6 @@ export default function ReportesPage() {
           </div>
         </div>
 
-        {/* Tarjetas resumen */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
             <p className="text-sm text-stone-500">Ventas</p>
@@ -235,7 +207,6 @@ export default function ReportesPage() {
           </div>
         </div>
 
-        {/* Tabla de Ventas */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Últimas Ventas</h3>
           <div className="overflow-x-auto">
