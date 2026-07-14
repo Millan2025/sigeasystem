@@ -13,7 +13,12 @@ export async function GET() {
       .select('*')
       .order('created_at', { ascending: false })
     if (error) throw error
-    return NextResponse.json({ success: true, data: data || [] })
+    // Mapear id como tenant_id para compatibilidad con frontend
+    const mapped = data.map(row => ({
+      ...row,
+      tenant_id: row.id
+    }))
+    return NextResponse.json({ success: true, data: mapped })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
@@ -22,7 +27,6 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    console.log('Body recibido en API:', body);
     const {
       nombre_negocio,
       tipo,
@@ -41,19 +45,18 @@ export async function POST(request: Request) {
     } = body
 
     if (!nombre_negocio || !tipo || !correo_contacto) {
-      console.error('Validación fallida:', { nombre_negocio, tipo, correo_contacto });
       return NextResponse.json(
         { success: false, error: 'Faltan campos obligatorios: nombre_negocio, tipo, correo_contacto' },
         { status: 400 }
       )
     }
 
-    const tenant_id = crypto.randomUUID()
+    const id = crypto.randomUUID()  // Este es el tenant_id
 
     const { data, error } = await supabase
       .from('business_config')
       .insert({
-        tenant_id,
+        id,  // Usar id en lugar de tenant_id
         nombre_negocio,
         tipo_negocio: tipo,
         gerente: gerente || null,
@@ -74,9 +77,10 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
-    return NextResponse.json({ success: true, data })
+
+    // Devolver también tenant_id para consistencia
+    return NextResponse.json({ success: true, data: { ...data, tenant_id: data.id } })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
