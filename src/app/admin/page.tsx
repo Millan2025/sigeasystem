@@ -590,6 +590,7 @@ export default function AdminMasterPage() {
                   bancolombia: formData.get("bancolombia") || null,
                   daviplata: formData.get("daviplata") || null,
                 };
+                  console.log('Enviando body:', body);
                 const res = await fetch("/api/admin/tenants", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -845,3 +846,4 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
