@@ -78,11 +78,11 @@ export default function ReportesPage() {
   const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + (c.saldo_pendiente || 0), 0);
   const stockCritico = stock.filter(s => s.stock_actual < (s.stock_minimo || 0)).length;
 
-  // Exportar Excel mejorado
+  // Exportar Excel
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Hoja Resumen (tabla)
+    // Hoja Resumen
     const resumenData = [
       ["Concepto", "Monto"],
       ["Ventas Totales", totalVentas],
@@ -96,8 +96,8 @@ export default function ReportesPage() {
     wsResumen["!cols"] = [{ wch: 30 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
 
-    // Hoja Ventas detallada
-    const ventasRows = [["Fecha", "Método Pago", "Total", "Productos"]];
+    // Hoja Ventas
+    const ventasRows: any[][] = [["Fecha", "Método Pago", "Total", "Productos"]];
     ventas.forEach(v => {
       const productos = (v.sale_items || []).map((i: any) => `${i.quantity} ${i.productos?.nombre || "Producto"}`).join(", ");
       ventasRows.push([v.fecha, v.metodo_pago, v.total, productos]);
@@ -106,8 +106,8 @@ export default function ReportesPage() {
     wsVentas["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsVentas, "Ventas");
 
-    // Hoja Compras detallada
-    const comprasRows = [["Fecha", "Proveedor", "Método Pago", "Total", "Productos"]];
+    // Hoja Compras
+    const comprasRows: any[][] = [["Fecha", "Proveedor", "Método Pago", "Total", "Productos"]];
     compras.forEach(c => {
       const productos = (c.compra_items || []).map((i: any) => `${i.cantidad} ${i.productos?.nombre || "Producto"}`).join(", ");
       comprasRows.push([c.fecha, c.proveedor, c.metodo_pago, c.total, productos]);
@@ -116,7 +116,7 @@ export default function ReportesPage() {
     wsCompras["!cols"] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsCompras, "Compras");
 
-    // Hoja Top Productos
+    // Hoja Top Productos (corregida)
     const productosVendidos: Record<string, { nombre: string; cantidad: number; total: number }> = {};
     ventas.forEach(v => {
       (v.sale_items || []).forEach((item: any) => {
@@ -128,10 +128,13 @@ export default function ReportesPage() {
         productosVendidos[id].total += item.subtotal || 0;
       });
     });
-    const topRows = [["Producto", "Cantidad", "Total"]];
-    Object.values(productosVendidos).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10).forEach(p => {
-      topRows.push([p.nombre, p.cantidad, p.total]);
-    });
+    const topRows: any[][] = [["Producto", "Cantidad", "Total"]];
+    Object.values(productosVendidos)
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .slice(0, 10)
+      .forEach(p => {
+        topRows.push([p.nombre, p.cantidad, p.total]);
+      });
     const wsTop = XLSX.utils.aoa_to_sheet(topRows);
     wsTop["!cols"] = [{ wch: 30 }, { wch: 15 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsTop, "Top Productos");
@@ -151,7 +154,7 @@ export default function ReportesPage() {
       ["Stock Crítico", stockCritico],
     ];
     const csvContent = rows.map(row => row.join(";")).join("\n");
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" }); // BOM para UTF-8
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `reporte_${negocioSlug}_${new Date().toISOString().slice(0,10)}.csv`;
