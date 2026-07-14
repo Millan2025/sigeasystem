@@ -3,21 +3,8 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
+import { ArrowLeft, RefreshCw, Download, Filter, Calendar, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
-import { Bar, Pie } from "react-chartjs-2";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const NEGOCIOS = {
   panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
@@ -35,7 +22,6 @@ export default function ReportesPage() {
   const [finanzas, setFinanzas] = useState<any[]>([]);
   const [stock, setStock] = useState<any[]>([]);
   const [creditos, setCreditos] = useState<any[]>([]);
-  const [produccion, setProduccion] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroFecha, setFiltroFecha] = useState({ start: "", end: "" });
   const [filtroMetodoPago, setFiltroMetodoPago] = useState("todos");
@@ -48,7 +34,6 @@ export default function ReportesPage() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      // Ventas
       let urlVentas = `/api/ventas?tenant=${tenantId}`;
       if (filtroFecha.start) urlVentas += `&start=${filtroFecha.start}`;
       if (filtroFecha.end) urlVentas += `&end=${filtroFecha.end}`;
@@ -57,7 +42,6 @@ export default function ReportesPage() {
       const dataVentas = await resVentas.json();
       if (dataVentas.success) setVentas(dataVentas.data || []);
 
-      // Compras
       let urlCompras = `/api/compras?tenant=${tenantId}`;
       if (filtroFecha.start) urlCompras += `&start=${filtroFecha.start}`;
       if (filtroFecha.end) urlCompras += `&end=${filtroFecha.end}`;
@@ -65,25 +49,17 @@ export default function ReportesPage() {
       const dataCompras = await resCompras.json();
       if (dataCompras.success) setCompras(dataCompras.data || []);
 
-      // Finanzas
       const resFinanzas = await fetch(`/api/finanzas?tenant=${tenantId}`);
       const dataFinanzas = await resFinanzas.json();
       if (dataFinanzas.success) setFinanzas(dataFinanzas.data || []);
 
-      // Stock
       const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
       const dataStock = await resStock.json();
       if (dataStock.success) setStock(dataStock.data || []);
 
-      // Créditos
       const resCreditos = await fetch(`/api/creditos?tenant=${tenantId}`);
       const dataCreditos = await resCreditos.json();
       if (dataCreditos.success) setCreditos(dataCreditos.data || []);
-
-      // Producción
-      const resProduccion = await fetch(`/api/ordenes-produccion?tenant=${tenantId}`);
-      const dataProduccion = await resProduccion.json();
-      if (dataProduccion.success) setProduccion(dataProduccion.data || []);
     } catch (e) {
       console.error(e);
     }
@@ -102,49 +78,12 @@ export default function ReportesPage() {
   const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + (c.saldo_pendiente || 0), 0);
   const stockCritico = stock.filter(s => s.stock_actual < (s.stock_minimo || 0)).length;
 
-  // Ventas por método de pago
-  const pagosMap: Record<string, number> = {};
-  ventas.forEach(v => {
-    const metodo = v.metodo_pago || "Otro";
-    pagosMap[metodo] = (pagosMap[metodo] || 0) + (v.total || 0);
-  });
-  const pagosLabels = Object.keys(pagosMap);
-  const pagosData = Object.values(pagosMap);
-
-  // Productos más vendidos (desde items)
-  const productosVendidos: Record<string, { nombre: string; cantidad: number; total: number }> = {};
-  ventas.forEach(v => {
-    (v.sale_items || []).forEach((item: any) => {
-      const id = item.product_id;
-      if (!productosVendidos[id]) {
-        productosVendidos[id] = { nombre: item.productos?.nombre || "Producto", cantidad: 0, total: 0 };
-      }
-      productosVendidos[id].cantidad += item.quantity || 0;
-      productosVendidos[id].total += item.subtotal || 0;
-    });
-  });
-  const topProductos = Object.values(productosVendidos).sort((a, b) => b.cantidad - a.cantidad).slice(0, 5);
-
-  const chartVentas = {
-    labels: pagosLabels,
-    datasets: [{ label: "Monto", data: pagosData, backgroundColor: ["#10B981", "#3B82F6", "#F59E0B", "#8B5CF6", "#EF4444"] }],
-  };
-
-  const chartComparativo = {
-    labels: ["Ventas", "Compras", "Ingresos", "Egresos"],
-    datasets: [
-      {
-        label: "Montos",
-        data: [totalVentas, totalCompras, totalIngresos, totalEgresos],
-        backgroundColor: ["#10B981", "#EF4444", "#3B82F6", "#F59E0B"],
-      },
-    ],
-  };
-
+  // Exportar Excel mejorado
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
-    // Hoja resumen
-    const resumen = [
+
+    // Hoja Resumen (tabla)
+    const resumenData = [
       ["Concepto", "Monto"],
       ["Ventas Totales", totalVentas],
       ["Compras Totales", totalCompras],
@@ -153,31 +92,71 @@ export default function ReportesPage() {
       ["Créditos Pendientes", totalCreditoPendiente],
       ["Stock Crítico", stockCritico],
     ];
-    const wsResumen = XLSX.utils.aoa_to_sheet(resumen);
+    const wsResumen = XLSX.utils.aoa_to_sheet(resumenData);
+    wsResumen["!cols"] = [{ wch: 30 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen");
 
-    // Hoja ventas detalladas
-    const ventasData = ventas.map(v => ({
-      Fecha: v.fecha,
-      "Método Pago": v.metodo_pago,
-      Total: v.total,
-      Items: (v.sale_items || []).map((i: any) => `${i.productos?.nombre || "Producto"} x${i.quantity}`).join(", "),
-    }));
-    const wsVentas = XLSX.utils.json_to_sheet(ventasData);
+    // Hoja Ventas detallada
+    const ventasRows = [["Fecha", "Método Pago", "Total", "Productos"]];
+    ventas.forEach(v => {
+      const productos = (v.sale_items || []).map((i: any) => `${i.quantity} ${i.productos?.nombre || "Producto"}`).join(", ");
+      ventasRows.push([v.fecha, v.metodo_pago, v.total, productos]);
+    });
+    const wsVentas = XLSX.utils.aoa_to_sheet(ventasRows);
+    wsVentas["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsVentas, "Ventas");
 
-    // Hoja compras
-    const comprasData = compras.map(c => ({
-      Fecha: c.fecha,
-      Proveedor: c.proveedor,
-      Total: c.total,
-      "Método Pago": c.metodo_pago,
-      Items: (c.compra_items || []).map((i: any) => `${i.productos?.nombre || "Producto"} x${i.cantidad}`).join(", "),
-    }));
-    const wsCompras = XLSX.utils.json_to_sheet(comprasData);
+    // Hoja Compras detallada
+    const comprasRows = [["Fecha", "Proveedor", "Método Pago", "Total", "Productos"]];
+    compras.forEach(c => {
+      const productos = (c.compra_items || []).map((i: any) => `${i.cantidad} ${i.productos?.nombre || "Producto"}`).join(", ");
+      comprasRows.push([c.fecha, c.proveedor, c.metodo_pago, c.total, productos]);
+    });
+    const wsCompras = XLSX.utils.aoa_to_sheet(comprasRows);
+    wsCompras["!cols"] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsCompras, "Compras");
 
+    // Hoja Top Productos
+    const productosVendidos: Record<string, { nombre: string; cantidad: number; total: number }> = {};
+    ventas.forEach(v => {
+      (v.sale_items || []).forEach((item: any) => {
+        const id = item.product_id;
+        if (!productosVendidos[id]) {
+          productosVendidos[id] = { nombre: item.productos?.nombre || "Producto", cantidad: 0, total: 0 };
+        }
+        productosVendidos[id].cantidad += item.quantity || 0;
+        productosVendidos[id].total += item.subtotal || 0;
+      });
+    });
+    const topRows = [["Producto", "Cantidad", "Total"]];
+    Object.values(productosVendidos).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10).forEach(p => {
+      topRows.push([p.nombre, p.cantidad, p.total]);
+    });
+    const wsTop = XLSX.utils.aoa_to_sheet(topRows);
+    wsTop["!cols"] = [{ wch: 30 }, { wch: 15 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsTop, "Top Productos");
+
     XLSX.writeFile(wb, `reporte_${negocioSlug}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  // Exportar CSV con punto y coma
+  const exportarCSV = () => {
+    const rows = [
+      ["Concepto", "Monto"],
+      ["Ventas Totales", totalVentas],
+      ["Compras Totales", totalCompras],
+      ["Ingresos Financieros", totalIngresos],
+      ["Egresos Financieros", totalEgresos],
+      ["Créditos Pendientes", totalCreditoPendiente],
+      ["Stock Crítico", stockCritico],
+    ];
+    const csvContent = rows.map(row => row.join(";")).join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" }); // BOM para UTF-8
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `reporte_${negocioSlug}_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   return (
@@ -192,7 +171,10 @@ export default function ReportesPage() {
           <RefreshCw className="w-5 h-5 text-stone-700" />
         </button>
         <button onClick={exportarExcel} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
-          <Download className="w-4 h-4" /> Exportar Excel
+          <Download className="w-4 h-4" /> Excel
+        </button>
+        <button onClick={exportarCSV} className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
+          <FileSpreadsheet className="w-4 h-4" /> CSV
         </button>
       </header>
 
@@ -249,49 +231,6 @@ export default function ReportesPage() {
             <p className={`text-2xl font-bold ${stockCritico > 0 ? "text-red-600" : "text-emerald-600"}`}>{stockCritico}</p>
           </div>
         </div>
-
-        {/* Gráficos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-            <h3 className="font-semibold text-stone-800 mb-2">Ventas por Método de Pago</h3>
-            <div className="h-48">
-              <Pie data={chartVentas} options={{ responsive: true, maintainAspectRatio: false }} />
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-            <h3 className="font-semibold text-stone-800 mb-2">Comparativo Ventas vs Compras vs Finanzas</h3>
-            <div className="h-48">
-              <Bar data={chartComparativo} options={{ responsive: true, maintainAspectRatio: false }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Top productos */}
-        {topProductos.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-            <h3 className="font-semibold text-stone-800 mb-2">Top 5 Productos más Vendidos</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-stone-50">
-                  <tr>
-                    <th className="text-left p-2 text-stone-700">Producto</th>
-                    <th className="text-left p-2 text-stone-700">Cantidad</th>
-                    <th className="text-left p-2 text-stone-700">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topProductos.map((p, i) => (
-                    <tr key={i} className="border-b border-stone-100">
-                      <td className="p-2 text-stone-800">{p.nombre}</td>
-                      <td className="p-2 text-stone-800">{p.cantidad}</td>
-                      <td className="p-2 text-stone-800 font-medium">${p.total.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
 
         {/* Tabla de Ventas */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
