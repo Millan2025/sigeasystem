@@ -26,20 +26,27 @@ import {
 } from "lucide-react";
 
 // ============================================
-// INTERFACES
+// INTERFACES (AJUSTADAS A LA ESTRUCTURA REAL)
 // ============================================
 interface Cliente {
   id: string;
   tenant_id: string;
-  nombre: string;
+  nombre_negocio: string;
   tipo_negocio: string;
   estado: string;
   created_at: string;
   plan: string;
   gerente: string;
-  email: string;
+  correo_contacto: string;
   telefono: string;
   direccion: string;
+  logo_url: string | null;
+  whatsapp: string | null;
+  nequi: string | null;
+  bancolombia: string | null;
+  daviplata: string | null;
+  color_principal: string;
+  color_secundario: string;
 }
 
 interface Usuario {
@@ -80,12 +87,10 @@ export default function AdminMasterPage() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      // Clientes
       const resTenants = await fetch("/api/admin/tenants");
       const dataTenants = await resTenants.json();
       if (dataTenants.success) setClientes(dataTenants.data || []);
 
-      // Usuarios
       const resUsers = await fetch("/api/admin/users");
       const dataUsers = await resUsers.json();
       if (dataUsers.success) setUsuarios(dataUsers.data || []);
@@ -118,9 +123,7 @@ export default function AdminMasterPage() {
     setClienteDetalle(c);
   }
 
-  // Suspender/Activar cliente (simulado, actualiza estado local)
   async function suspenderCliente(tenant_id: string) {
-    // Aquí iría un PUT a /api/admin/tenants para actualizar estado
     setClientes((prev) =>
       prev.map((c) =>
         c.tenant_id === tenant_id
@@ -133,7 +136,6 @@ export default function AdminMasterPage() {
   async function eliminarCliente(tenant_id: string) {
     if (!confirm("¿Eliminar este cliente? (Esto eliminará todos sus datos)")) return;
     setClientes((prev) => prev.filter((c) => c.tenant_id !== tenant_id));
-    // Aquí iría DELETE a /api/admin/tenants
   }
 
   async function cambiarRolUsuario(id: string, nuevoRol: string) {
@@ -181,7 +183,6 @@ export default function AdminMasterPage() {
   // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* HEADER */}
       <header className="bg-gradient-to-r from-stone-900 to-stone-800 text-white p-5">
         <div className="flex items-center gap-3 mb-2">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl">
@@ -212,7 +213,6 @@ export default function AdminMasterPage() {
             <RefreshCw className="w-3 h-3" /> Recargar
           </button>
         </div>
-        {/* PESTAÑAS */}
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
           {[
             { id: "clientes" as const, label: "Clientes", icon: Users },
@@ -237,14 +237,12 @@ export default function AdminMasterPage() {
         </div>
       </header>
 
-      {/* MENSAJE */}
       {mensaje && (
         <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium">
           {mensaje}
         </div>
       )}
 
-      {/* CONTENIDO */}
       <div className="p-4">
         {tab === "clientes" && (
           <div className="space-y-4">
@@ -306,16 +304,16 @@ export default function AdminMasterPage() {
             </div>
             {loading ? (
               <div className="text-center py-8 text-stone-500">Cargando clientes...</div>
-            ) : clientes.filter((c) => c.nombre?.toLowerCase().includes(busqueda.toLowerCase())).length === 0 ? (
+            ) : clientes.filter((c) => c.nombre_negocio?.toLowerCase().includes(busqueda.toLowerCase())).length === 0 ? (
               <div className="text-center py-8 text-stone-500">No hay clientes registrados</div>
             ) : (
               clientes
-                .filter((c) => c.nombre?.toLowerCase().includes(busqueda.toLowerCase()))
+                .filter((c) => c.nombre_negocio?.toLowerCase().includes(busqueda.toLowerCase()))
                 .map((c) => (
                   <div key={c.tenant_id} className="bg-white rounded-2xl border border-stone-200 p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-bold text-stone-900">{c.nombre}</h3>
+                        <h3 className="font-bold text-stone-900">{c.nombre_negocio}</h3>
                         <p className="text-xs text-stone-600">
                           {c.tipo_negocio} · {c.plan} · {c.gerente}
                         </p>
@@ -358,7 +356,6 @@ export default function AdminMasterPage() {
           </div>
         )}
 
-        {/* PESTAÑA USUARIOS */}
         {tab === "usuarios" && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -451,7 +448,6 @@ export default function AdminMasterPage() {
           </div>
         )}
 
-        {/* PESTAÑA TRAZABILIDAD */}
         {tab === "trazabilidad" && (
           <div className="space-y-2">
             <h2 className="font-bold text-stone-800 mb-3">Registro de Actividad</h2>
@@ -477,7 +473,6 @@ export default function AdminMasterPage() {
           </div>
         )}
 
-        {/* PESTAÑA SUSCRIPCIONES */}
         {tab === "suscripciones" && (
           <div className="space-y-4">
             <h2 className="font-bold text-stone-800">Planes y suscripciones</h2>
@@ -502,7 +497,6 @@ export default function AdminMasterPage() {
           </div>
         )}
 
-        {/* PESTAÑA CONFIG */}
         {tab === "config" && (
           <div className="space-y-3">
             <h2 className="font-bold text-stone-800">Configuración Global</h2>
@@ -532,7 +526,7 @@ export default function AdminMasterPage() {
       MODALES
       ============================================ */}
 
-      {/* Modal Ver Cliente */}
+      {/* Modal Ver Cliente (actualizado) */}
       {clienteDetalle && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -543,7 +537,7 @@ export default function AdminMasterPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-xl text-stone-900">{clienteDetalle.nombre}</h2>
+              <h2 className="font-bold text-xl text-stone-900">{clienteDetalle.nombre_negocio}</h2>
               <button onClick={() => setClienteDetalle(null)} className="p-2 hover:bg-stone-100 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
@@ -551,16 +545,23 @@ export default function AdminMasterPage() {
             <div className="space-y-3 text-sm">
               <p className="text-stone-700"><span className="font-bold text-stone-500">Tipo:</span> {clienteDetalle.tipo_negocio}</p>
               <p className="text-stone-700"><span className="font-bold text-stone-500">Gerente:</span> {clienteDetalle.gerente}</p>
-              <p className="text-stone-700"><span className="font-bold text-stone-500">Email:</span> {clienteDetalle.email}</p>
+              <p className="text-stone-700"><span className="font-bold text-stone-500">Email:</span> {clienteDetalle.correo_contacto}</p>
               <p className="text-stone-700"><span className="font-bold text-stone-500">Teléfono:</span> {clienteDetalle.telefono}</p>
               <p className="text-stone-700"><span className="font-bold text-stone-500">Plan:</span> <span className="text-emerald-600 font-bold">{clienteDetalle.plan}</span></p>
+              {clienteDetalle.logo_url && (
+                <p className="text-stone-700"><span className="font-bold text-stone-500">Logo:</span> <a href={clienteDetalle.logo_url} target="_blank" rel="noopener" className="text-blue-600 underline">Ver logo</a></p>
+              )}
+              {clienteDetalle.whatsapp && <p className="text-stone-700"><span className="font-bold text-stone-500">WhatsApp:</span> {clienteDetalle.whatsapp}</p>}
+              {clienteDetalle.nequi && <p className="text-stone-700"><span className="font-bold text-stone-500">Nequi:</span> {clienteDetalle.nequi}</p>}
+              {clienteDetalle.bancolombia && <p className="text-stone-700"><span className="font-bold text-stone-500">Bancolombia:</span> {clienteDetalle.bancolombia}</p>}
+              {clienteDetalle.daviplata && <p className="text-stone-700"><span className="font-bold text-stone-500">Daviplata:</span> {clienteDetalle.daviplata}</p>}
               <p className="text-stone-700"><span className="font-bold text-stone-500">Creado:</span> {new Date(clienteDetalle.created_at).toLocaleDateString()}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Nuevo Cliente */}
+      {/* Modal Nuevo Cliente (CORREGIDO) */}
       {showNuevoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -576,13 +577,18 @@ export default function AdminMasterPage() {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
                 const body = {
-                  nombre: formData.get("nombre"),
+                  nombre_negocio: formData.get("nombre_negocio"),
                   tipo: formData.get("tipo"),
                   gerente: formData.get("gerente"),
-                  email: formData.get("email"),
+                  correo_contacto: formData.get("correo_contacto"),
                   telefono: formData.get("telefono"),
                   direccion: formData.get("direccion"),
                   plan: formData.get("plan"),
+                  logo_url: formData.get("logo_url") || null,
+                  whatsapp: formData.get("whatsapp") || null,
+                  nequi: formData.get("nequi") || null,
+                  bancolombia: formData.get("bancolombia") || null,
+                  daviplata: formData.get("daviplata") || null,
                 };
                 const res = await fetch("/api/admin/tenants", {
                   method: "POST",
@@ -602,16 +608,16 @@ export default function AdminMasterPage() {
             >
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio</label>
-                  <input name="nombre" placeholder="Ej: Panadería Doña Rosa" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio *</label>
+                  <input name="nombre_negocio" placeholder="Ej: La Casa del Pan" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Gerente</label>
-                    <input name="gerente" placeholder="Nombre completo" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
+                    <input name="gerente" placeholder="Nombre completo" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Tipo Negocio</label>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Tipo Negocio *</label>
                     <select name="tipo" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">
                       <option>panaderia</option>
                       <option>restaurante</option>
@@ -623,8 +629,8 @@ export default function AdminMasterPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Email</label>
-                    <input name="email" type="email" placeholder="correo@email.com" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Email de Contacto *</label>
+                    <input name="correo_contacto" type="email" placeholder="correo@email.com" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Teléfono</label>
@@ -635,13 +641,39 @@ export default function AdminMasterPage() {
                   <label className="block text-xs font-bold text-stone-700 mb-1">Dirección</label>
                   <input name="direccion" placeholder="Calle 123 #45-67" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Plan</label>
-                  <select name="plan" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">
-                    <option>Free</option>
-                    <option>Pro</option>
-                    <option>Enterprise</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Plan</label>
+                    <select name="plan" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">
+                      <option>Free</option>
+                      <option>Pro</option>
+                      <option>Enterprise</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Logo URL</label>
+                    <input name="logo_url" placeholder="https://ejemplo.com/logo.png" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp</label>
+                    <input name="whatsapp" placeholder="301-6111412" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Nequi</label>
+                    <input name="nequi" placeholder="3123456789" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Bancolombia</label>
+                    <input name="bancolombia" placeholder="123456789" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Daviplata</label>
+                    <input name="daviplata" placeholder="987654321" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 mt-4">
@@ -653,7 +685,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Producto */}
+      {/* Modal Producto (sin cambios) */}
       {showProducto && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -669,7 +701,7 @@ export default function AdminMasterPage() {
                 <label className="block text-xs font-bold text-stone-700 mb-1">Cliente</label>
                 <select className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">
                   {clientes.map((c) => (
-                    <option key={c.tenant_id} value={c.tenant_id}>{c.nombre}</option>
+                    <option key={c.tenant_id} value={c.tenant_id}>{c.nombre_negocio}</option>
                   ))}
                 </select>
               </div>
@@ -735,7 +767,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Cargar Plantilla */}
+      {/* Modal Cargar Plantilla (sin cambios) */}
       {showCargar && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -759,7 +791,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Editar Usuario */}
+      {/* Modal Editar Usuario (sin cambios) */}
       {showModalEditarUsuario && editandoUsuario && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -813,5 +845,3 @@ export default function AdminMasterPage() {
     </div>
   );
 }
-
-
