@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 
 // ============================================
-// INTERFACES (CON NIT Y CEDULA)
+// INTERFACES
 // ============================================
 interface Cliente {
   id: string;
@@ -179,7 +179,6 @@ export default function AdminMasterPage() {
       body.password = password;
     }
 
-    // 1. Actualizar cliente
     const res = await fetch("/api/admin/tenants", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -191,7 +190,6 @@ export default function AdminMasterPage() {
       return;
     }
 
-    // 2. Si se proporcionó contraseña, actualizar usuario
     if (password && password.length >= 6) {
       const userRes = await fetch("/api/admin/users");
       const usersData = await userRes.json();
@@ -241,21 +239,13 @@ export default function AdminMasterPage() {
     }
   }
 
+  // 🔥 ELIMINACIÓN TOTAL (AUTH + PUBLIC)
   async function eliminarUsuario(id: string) {
-  if (!confirm("¿Eliminar este usuario de forma permanente? Se eliminará de auth.users y de la tabla public. Esta acción no se puede deshacer.")) return;
-  const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
-  const data = await res.json();
-  if (data.success) {
-    setMensaje("✅ Usuario eliminado completamente (auth + public)");
-    setTimeout(() => setMensaje(""), 3000);
-    cargarDatos();
-  } else {
-    alert("Error: " + data.error);
-  }
-}`, { method: "DELETE" });
+    if (!confirm("¿Eliminar este usuario de forma permanente? Se eliminará de auth.users y de la tabla public. Esta acción no se puede deshacer.")) return;
+    const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
-      setMensaje("✅ Usuario eliminado de la tabla public");
+      setMensaje("✅ Usuario eliminado completamente (auth + public)");
       setTimeout(() => setMensaje(""), 3000);
       cargarDatos();
     } else {
@@ -350,7 +340,7 @@ export default function AdminMasterPage() {
             {copied ? "Copiado" : <><Copy className="w-3 h-3" /> Copiar</>}
           </button>
           <button onClick={cargarDatos} className="bg-stone-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-stone-700 inline-flex items-center gap-1">
-            <RefreshCw className="w-3 h-3" /> Recargar
+            <RefreshCw className="w-5 h-5" /> Recargar
           </button>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
@@ -822,7 +812,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Credenciales */}
       {credenciales && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -1140,4 +1129,3 @@ export default function AdminMasterPage() {
     </div>
   );
 }
-
