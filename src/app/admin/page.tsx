@@ -85,6 +85,8 @@ export default function AdminMasterPage() {
   const [mensaje, setMensaje] = useState("");
   const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
   const [showModalEditarCliente, setShowModalEditarCliente] = useState(false);
+  // 🔥 Para mostrar credenciales al crear cliente
+  const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
   // ============================================
   // CARGAR DATOS
@@ -254,6 +256,49 @@ export default function AdminMasterPage() {
     if (file) {
       setUploadMsg("Plantilla cargada: " + file.name);
       setTimeout(() => setUploadMsg(""), 3000);
+    }
+  }
+
+  // 🔥 Función para crear cliente (con creación de usuario)
+  async function crearCliente(e: React.FormEvent) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const body: any = {
+      nombre_negocio: formData.get("nombre_negocio"),
+      tipo: formData.get("tipo"),
+      gerente: formData.get("gerente"),
+      correo_contacto: formData.get("correo_contacto"),
+      telefono: formData.get("telefono"),
+      direccion: formData.get("direccion"),
+      plan: formData.get("plan"),
+      logo_url: formData.get("logo_url") || null,
+      whatsapp: formData.get("whatsapp") || null,
+      nequi: formData.get("nequi") || null,
+      bancolombia: formData.get("bancolombia") || null,
+      daviplata: formData.get("daviplata") || null,
+    };
+    const password = formData.get("password") as string;
+    if (password && password.length >= 6) {
+      body.password = password;
+    }
+
+    const res = await fetch("/api/admin/tenants", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Mostrar credenciales
+      if (data.data.credentials) {
+        setCredenciales(data.data.credentials);
+      }
+      setMensaje("✅ Cliente creado exitosamente");
+      setTimeout(() => setMensaje(""), 3000);
+      setShowNuevoCliente(false);
+      cargarDatos();
+    } else {
+      alert("Error: " + data.error);
     }
   }
 
@@ -647,6 +692,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
+      {/* 🔥 Modal Nuevo Cliente (con campo de contraseña y función crearCliente) */}
       {showNuevoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -657,41 +703,7 @@ export default function AdminMasterPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="font-bold text-xl text-stone-900 mb-4">Nuevo Cliente</h2>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const body = {
-                  nombre_negocio: formData.get("nombre_negocio"),
-                  tipo: formData.get("tipo"),
-                  gerente: formData.get("gerente"),
-                  correo_contacto: formData.get("correo_contacto"),
-                  telefono: formData.get("telefono"),
-                  direccion: formData.get("direccion"),
-                  plan: formData.get("plan"),
-                  logo_url: formData.get("logo_url") || null,
-                  whatsapp: formData.get("whatsapp") || null,
-                  nequi: formData.get("nequi") || null,
-                  bancolombia: formData.get("bancolombia") || null,
-                  daviplata: formData.get("daviplata") || null,
-                };
-                console.log("Enviando body:", body);
-                const res = await fetch("/api/admin/tenants", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(body),
-                });
-                const data = await res.json();
-                if (data.success) {
-                  setMensaje("✅ Cliente creado exitosamente");
-                  setTimeout(() => setMensaje(""), 3000);
-                  setShowNuevoCliente(false);
-                  cargarDatos();
-                } else {
-                  alert("Error: " + data.error);
-                }
-              }}
-            >
+            <form onSubmit={crearCliente}>
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio *</label>
@@ -761,12 +773,52 @@ export default function AdminMasterPage() {
                     <input name="daviplata" placeholder="987654321" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
                 </div>
+                {/* 🔥 CAMPO CONTRASEÑA (opcional) */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Contraseña (opcional)</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Dejar vacío para generar automática"
+                    className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"
+                  />
+                  <p className="text-xs text-stone-400 mt-1">Si se deja vacío, se generará una automática</p>
+                </div>
               </div>
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setShowNuevoCliente(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
                 <button type="submit" className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 Modal mostrar credenciales */}
+      {credenciales && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setCredenciales(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-xl text-stone-900">✅ Cliente creado</h2>
+              <button onClick={() => setCredenciales(null)} className="p-2 hover:bg-stone-100 rounded-xl">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+            <p className="text-sm text-stone-600 mb-2">Credenciales del usuario:</p>
+            <div className="bg-stone-50 p-4 rounded-xl space-y-2">
+              <p className="text-sm text-stone-800"><span className="font-bold">Email:</span> {credenciales.email}</p>
+              <p className="text-sm text-stone-800"><span className="font-bold">Contraseña:</span> {credenciales.password}</p>
+            </div>
+            <p className="text-xs text-stone-500 mt-4">Guarda estas credenciales y entrégaselas al cliente.</p>
+            <button onClick={() => setCredenciales(null)} className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold mt-4">
+              Aceptar
+            </button>
           </div>
         </div>
       )}
@@ -875,7 +927,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Editar Cliente */}
       {showModalEditarCliente && editandoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
