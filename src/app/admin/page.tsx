@@ -83,7 +83,6 @@ export default function AdminMasterPage() {
   const [editandoUsuario, setEditandoUsuario] = useState<Usuario | null>(null);
   const [showModalEditarUsuario, setShowModalEditarUsuario] = useState(false);
   const [mensaje, setMensaje] = useState("");
-  // 🔥 NUEVOS ESTADOS PARA EDITAR CLIENTE
   const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
   const [showModalEditarCliente, setShowModalEditarCliente] = useState(false);
 
@@ -129,7 +128,6 @@ export default function AdminMasterPage() {
     setClienteDetalle(c);
   }
 
-  // 🔥 SUSPENDER/ACTIVAR (local, se puede extender)
   async function suspenderCliente(tenant_id: string) {
     setClientes((prev) =>
       prev.map((c) =>
@@ -140,7 +138,6 @@ export default function AdminMasterPage() {
     );
   }
 
-  // 🔥 ELIMINAR CLIENTE (AHORA REAL)
   async function eliminarClienteReal(id: string) {
     if (!confirm("¿Eliminar este cliente? (Esto eliminará todos sus datos)")) return;
     const res = await fetch(`/api/admin/tenants?id=${id}`, { method: "DELETE" });
@@ -154,8 +151,7 @@ export default function AdminMasterPage() {
     }
   }
 
-  // 🔥 EDITAR CLIENTE (PUT)
-    async function editarCliente(e: React.FormEvent) {
+  async function editarCliente(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const body: any = {
@@ -192,7 +188,6 @@ export default function AdminMasterPage() {
 
     // 2. Si se proporcionó contraseña, actualizar usuario
     if (password && password.length >= 6) {
-      // Buscar usuario por correo_contacto (que coincide con el email del usuario)
       const userRes = await fetch("/api/admin/users");
       const usersData = await userRes.json();
       if (usersData.success) {
@@ -218,25 +213,6 @@ export default function AdminMasterPage() {
     setTimeout(() => setMensaje(""), 3000);
     setShowModalEditarCliente(false);
     cargarDatos();
-  };
-  const password = formData.get("password") as string;
-  if (password && password.length >= 6) {
-    body.password = password;
-  }
-    const res = await fetch("/api/admin/tenants", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setMensaje("✅ Cliente actualizado");
-      setTimeout(() => setMensaje(""), 3000);
-      setShowModalEditarCliente(false);
-      cargarDatos();
-    } else {
-      alert("Error: " + data.error);
-    }
   }
 
   async function cambiarRolUsuario(id: string, nuevoRol: string, password?: string) {
@@ -284,7 +260,7 @@ export default function AdminMasterPage() {
   const totalActivos = clientes.filter((c) => c.estado === "activo").length;
 
   // ============================================
-  // RENDER (MAYORMENTE IGUAL, SOLO AGREGAMOS BOTÓN EDITAR Y MODAL)
+  // RENDER
   // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
@@ -418,11 +394,11 @@ export default function AdminMasterPage() {
                   <div key={c.tenant_id} className="bg-white rounded-2xl border border-stone-200 p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-  <h3 className="font-bold text-stone-900">{c.nombre_negocio}</h3>
-  <p className="text-xs text-stone-600">{c.tipo_negocio} · {c.plan} · {c.gerente}</p>
-  <p className="text-xs text-stone-500 mt-1">📧 {c.correo_contacto}</p>
-  <p className="text-xs text-stone-500">📞 {c.telefono || 'Sin teléfono'}</p>
-</div>
+                        <h3 className="font-bold text-stone-900">{c.nombre_negocio}</h3>
+                        <p className="text-xs text-stone-600">{c.tipo_negocio} · {c.plan} · {c.gerente}</p>
+                        <p className="text-xs text-stone-500 mt-1">📧 {c.correo_contacto}</p>
+                        <p className="text-xs text-stone-500">📞 {c.telefono || "Sin teléfono"}</p>
+                      </div>
                       <span
                         className={
                           "px-3 py-1 rounded-full text-xs font-bold " +
@@ -454,7 +430,6 @@ export default function AdminMasterPage() {
                       >
                         <Trash2 className="w-3 h-3" /> Eliminar
                       </button>
-                      {/* 🔥 NUEVO BOTÓN EDITAR */}
                       <button
                         onClick={() => { setEditandoCliente(c); setShowModalEditarCliente(true); }}
                         className="flex-1 bg-blue-50 hover:bg-blue-100 py-2 rounded-lg text-xs font-medium text-blue-600 flex items-center justify-center gap-1"
@@ -638,7 +613,6 @@ export default function AdminMasterPage() {
       MODALES
       ============================================ */}
 
-      {/* Modal Ver Cliente (sin cambios) */}
       {clienteDetalle && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -673,7 +647,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Nuevo Cliente (sin cambios) */}
       {showNuevoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -702,7 +675,7 @@ export default function AdminMasterPage() {
                   bancolombia: formData.get("bancolombia") || null,
                   daviplata: formData.get("daviplata") || null,
                 };
-                console.log('Enviando body:', body);
+                console.log("Enviando body:", body);
                 const res = await fetch("/api/admin/tenants", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -798,7 +771,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Producto (sin cambios) */}
       {showProducto && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -880,7 +852,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Cargar Plantilla (sin cambios) */}
       {showCargar && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -904,7 +875,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* 🔥 Modal Editar Cliente (NUEVO) */}
+      {/* Modal Editar Cliente */}
       {showModalEditarCliente && editandoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -961,28 +932,50 @@ export default function AdminMasterPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Logo URL</label>
-                    <input name="logo_url" defaultValue={editandoCliente.logo_url || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Nueva Contraseña (opcional)</label>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Dejar vacío para no cambiar"
+                      className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"
+                    />
+                    <p className="text-xs text-stone-400 mt-1">Mínimo 6 caracteres</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Logo URL</label>
+                    <input name="logo_url" defaultValue={editandoCliente.logo_url || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp</label>
                     <input name="whatsapp" defaultValue={editandoCliente.whatsapp || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Nequi</label>
                     <input name="nequi" defaultValue={editandoCliente.nequi || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Bancolombia</label>
                     <input name="bancolombia" defaultValue={editandoCliente.bancolombia || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Daviplata</label>
                     <input name="daviplata" defaultValue={editandoCliente.daviplata || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Color Principal</label>
+                    <input name="color_principal" defaultValue={editandoCliente.color_principal || "#10B981"} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Color Secundario</label>
+                    <input name="color_secundario" defaultValue={editandoCliente.color_secundario || "#059669"} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
                 </div>
               </div>
@@ -995,7 +988,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Editar Usuario (con campo de contraseña) */}
       {showModalEditarUsuario && editandoUsuario && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -1033,7 +1025,6 @@ export default function AdminMasterPage() {
                   placeholder="Dejar vacío si no tiene tenant"
                 />
               </div>
-              {/* 🔥 NUEVO CAMPO PARA CONTRASEÑA */}
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1">Nueva Contraseña (opcional)</label>
                 <input
@@ -1060,5 +1051,3 @@ export default function AdminMasterPage() {
     </div>
   );
 }
-
-
