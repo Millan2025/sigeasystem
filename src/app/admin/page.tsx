@@ -89,6 +89,11 @@ export default function AdminMasterPage() {
   const [showModalEditarCliente, setShowModalEditarCliente] = useState(false);
   const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
+  // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
+  const [showImportarProductos, setShowImportarProductos] = useState(false);
+  const [tenantImport, setTenantImport] = useState<string | null>(null);
+  const [importProgress, setImportProgress] = useState<string>("");
+
   // ============================================
   // CARGAR DATOS
   // ============================================
@@ -239,7 +244,6 @@ export default function AdminMasterPage() {
     }
   }
 
-  // 🔥 ELIMINACIÓN TOTAL (AUTH + PUBLIC)
   async function eliminarUsuario(id: string) {
     if (!confirm("¿Eliminar este usuario de forma permanente? Se eliminará de auth.users y de la tabla public. Esta acción no se puede deshacer.")) return;
     const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
@@ -258,6 +262,25 @@ export default function AdminMasterPage() {
     if (file) {
       setUploadMsg("Plantilla cargada: " + file.name);
       setTimeout(() => setUploadMsg(""), 3000);
+    }
+  }
+
+  // 🔥 NUEVA FUNCIÓN PARA IMPORTAR PRODUCTOS DESDE ADMIN
+  async function importarProductos(e: React.FormEvent) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    formData.append("tenant_id", tenantImport || "");
+    const res = await fetch("/api/admin/products/import", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (data.success) {
+      setImportProgress(`✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : ""));
+      setTimeout(() => setImportProgress(""), 5000);
+      setShowImportarProductos(false);
+    } else {
+      alert("Error: " + data.error);
     }
   }
 
@@ -486,6 +509,13 @@ export default function AdminMasterPage() {
                         className="flex-1 bg-blue-50 hover:bg-blue-100 py-2 rounded-lg text-xs font-medium text-blue-600 flex items-center justify-center gap-1"
                       >
                         <Edit className="w-3 h-3" /> Editar
+                      </button>
+                      {/* 🔥 NUEVO BOTÓN CARGAR PRODUCTOS */}
+                      <button
+                        onClick={() => { setTenantImport(c.tenant_id); setShowImportarProductos(true); }}
+                        className="flex-1 bg-green-50 hover:bg-green-100 py-2 rounded-lg text-xs font-medium text-green-600 flex items-center justify-center gap-1"
+                      >
+                        <Upload className="w-3 h-3" /> Cargar Productos
                       </button>
                     </div>
                   </div>
@@ -1123,6 +1153,32 @@ export default function AdminMasterPage() {
                 Guardar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 MODAL IMPORTAR PRODUCTOS (DESDE ADMIN) */}
+      {showImportarProductos && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-xl text-stone-900">Cargar Productos</h2>
+              <button onClick={() => setShowImportarProductos(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+            <form onSubmit={importarProductos} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Archivo Excel</label>
+                <input type="file" name="file" accept=".xlsx,.xls" className="w-full p-2 border rounded-xl text-sm" required />
+                <p className="text-xs text-stone-400 mt-1">Usa la plantilla descargable desde el módulo Inventario del cliente.</p>
+              </div>
+              {importProgress && <p className="text-sm text-emerald-600">{importProgress}</p>}
+              <div className="flex gap-3 mt-4">
+                <button type="button" onClick={() => setShowImportarProductos(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
+                <button type="submit" className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Subir</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
