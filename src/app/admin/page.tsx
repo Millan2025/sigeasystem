@@ -23,10 +23,11 @@ import {
   RefreshCw,
   Download,
   Upload,
+  Edit,
 } from "lucide-react";
 
 // ============================================
-// INTERFACES (AJUSTADAS A LA ESTRUCTURA REAL)
+// INTERFACES
 // ============================================
 interface Cliente {
   id: string;
@@ -80,6 +81,9 @@ export default function AdminMasterPage() {
   const [editandoUsuario, setEditandoUsuario] = useState<Usuario | null>(null);
   const [showModalEditarUsuario, setShowModalEditarUsuario] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  // 🔥 NUEVOS ESTADOS PARA EDITAR CLIENTE
+  const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
+  const [showModalEditarCliente, setShowModalEditarCliente] = useState(false);
 
   // ============================================
   // CARGAR DATOS
@@ -123,6 +127,7 @@ export default function AdminMasterPage() {
     setClienteDetalle(c);
   }
 
+  // 🔥 SUSPENDER/ACTIVAR (local, se puede extender)
   async function suspenderCliente(tenant_id: string) {
     setClientes((prev) =>
       prev.map((c) =>
@@ -133,20 +138,68 @@ export default function AdminMasterPage() {
     );
   }
 
-  async function eliminarCliente(tenant_id: string) {
+  // 🔥 ELIMINAR CLIENTE (AHORA REAL)
+  async function eliminarClienteReal(id: string) {
     if (!confirm("¿Eliminar este cliente? (Esto eliminará todos sus datos)")) return;
-    setClientes((prev) => prev.filter((c) => c.tenant_id !== tenant_id));
+    const res = await fetch(`/api/admin/tenants?id=${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.success) {
+      setMensaje("✅ Cliente eliminado");
+      setTimeout(() => setMensaje(""), 3000);
+      cargarDatos();
+    } else {
+      alert("Error: " + data.error);
+    }
   }
 
-  async function cambiarRolUsuario(id: string, nuevoRol: string) {
-    const res = await fetch("/api/admin/users", {
+  // 🔥 EDITAR CLIENTE (PUT)
+  async function editarCliente(e: React.FormEvent) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const body = {
+      id: editandoCliente?.id,
+      nombre_negocio: formData.get("nombre_negocio"),
+      tipo: formData.get("tipo"),
+      gerente: formData.get("gerente"),
+      correo_contacto: formData.get("correo_contacto"),
+      telefono: formData.get("telefono"),
+      direccion: formData.get("direccion"),
+      plan: formData.get("plan"),
+      logo_url: formData.get("logo_url") || null,
+      whatsapp: formData.get("whatsapp") || null,
+      nequi: formData.get("nequi") || null,
+      bancolombia: formData.get("bancolombia") || null,
+      daviplata: formData.get("daviplata") || null,
+    };
+    const res = await fetch("/api/admin/tenants", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, rol: nuevoRol }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if (data.success) {
-      setMensaje("✅ Rol actualizado");
+      setMensaje("✅ Cliente actualizado");
+      setTimeout(() => setMensaje(""), 3000);
+      setShowModalEditarCliente(false);
+      cargarDatos();
+    } else {
+      alert("Error: " + data.error);
+    }
+  }
+
+  async function cambiarRolUsuario(id: string, nuevoRol: string, password?: string) {
+    const body: any = { id, rol: nuevoRol };
+    if (password && password.length >= 6) {
+      body.password = password;
+    }
+    const res = await fetch("/api/admin/users", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setMensaje("✅ Usuario actualizado");
       setTimeout(() => setMensaje(""), 3000);
       cargarDatos();
       setShowModalEditarUsuario(false);
@@ -179,7 +232,7 @@ export default function AdminMasterPage() {
   const totalActivos = clientes.filter((c) => c.estado === "activo").length;
 
   // ============================================
-  // RENDER
+  // RENDER (MAYORMENTE IGUAL, SOLO AGREGAMOS BOTÓN EDITAR Y MODAL)
   // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
@@ -344,10 +397,17 @@ export default function AdminMasterPage() {
                         {c.estado === "activo" ? "Suspender" : "Activar"}
                       </button>
                       <button
-                        onClick={() => eliminarCliente(c.tenant_id)}
+                        onClick={() => eliminarClienteReal(c.id)}
                         className="flex-1 bg-red-50 hover:bg-red-100 py-2 rounded-lg text-xs font-medium text-red-600 flex items-center justify-center gap-1"
                       >
                         <Trash2 className="w-3 h-3" /> Eliminar
+                      </button>
+                      {/* 🔥 NUEVO BOTÓN EDITAR */}
+                      <button
+                        onClick={() => { setEditandoCliente(c); setShowModalEditarCliente(true); }}
+                        className="flex-1 bg-blue-50 hover:bg-blue-100 py-2 rounded-lg text-xs font-medium text-blue-600 flex items-center justify-center gap-1"
+                      >
+                        <Edit className="w-3 h-3" /> Editar
                       </button>
                     </div>
                   </div>
@@ -526,7 +586,7 @@ export default function AdminMasterPage() {
       MODALES
       ============================================ */}
 
-      {/* Modal Ver Cliente (actualizado) */}
+      {/* Modal Ver Cliente (sin cambios) */}
       {clienteDetalle && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -561,7 +621,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Nuevo Cliente (CORREGIDO) */}
+      {/* Modal Nuevo Cliente (sin cambios) */}
       {showNuevoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -590,7 +650,7 @@ export default function AdminMasterPage() {
                   bancolombia: formData.get("bancolombia") || null,
                   daviplata: formData.get("daviplata") || null,
                 };
-                  console.log('Enviando body:', body);
+                console.log('Enviando body:', body);
                 const res = await fetch("/api/admin/tenants", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -792,7 +852,98 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* Modal Editar Usuario (sin cambios) */}
+      {/* 🔥 Modal Editar Cliente (NUEVO) */}
+      {showModalEditarCliente && editandoCliente && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowModalEditarCliente(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-bold text-xl text-stone-900 mb-4">Editar Cliente</h2>
+            <form onSubmit={editarCliente}>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio *</label>
+                  <input name="nombre_negocio" defaultValue={editandoCliente.nombre_negocio} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Gerente</label>
+                    <input name="gerente" defaultValue={editandoCliente.gerente || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Tipo Negocio *</label>
+                    <select name="tipo" defaultValue={editandoCliente.tipo_negocio} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">
+                      <option>panaderia</option>
+                      <option>restaurante</option>
+                      <option>tienda</option>
+                      <option>carniceria</option>
+                      <option>distribuidora</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Email de Contacto *</label>
+                    <input name="correo_contacto" type="email" defaultValue={editandoCliente.correo_contacto} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Teléfono</label>
+                    <input name="telefono" defaultValue={editandoCliente.telefono || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Dirección</label>
+                  <input name="direccion" defaultValue={editandoCliente.direccion || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Plan</label>
+                    <select name="plan" defaultValue={editandoCliente.plan} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900">
+                      <option>Free</option>
+                      <option>Pro</option>
+                      <option>Enterprise</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Logo URL</label>
+                    <input name="logo_url" defaultValue={editandoCliente.logo_url || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp</label>
+                    <input name="whatsapp" defaultValue={editandoCliente.whatsapp || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Nequi</label>
+                    <input name="nequi" defaultValue={editandoCliente.nequi || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Bancolombia</label>
+                    <input name="bancolombia" defaultValue={editandoCliente.bancolombia || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Daviplata</label>
+                    <input name="daviplata" defaultValue={editandoCliente.daviplata || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button type="button" onClick={() => setShowModalEditarCliente(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
+                <button type="submit" className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Usuario (con campo de contraseña) */}
       {showModalEditarUsuario && editandoUsuario && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -830,11 +981,22 @@ export default function AdminMasterPage() {
                   placeholder="Dejar vacío si no tiene tenant"
                 />
               </div>
+              {/* 🔥 NUEVO CAMPO PARA CONTRASEÑA */}
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Nueva Contraseña (opcional)</label>
+                <input
+                  type="password"
+                  placeholder="Dejar vacío para no cambiar"
+                  className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"
+                  onChange={(e) => setEditandoUsuario({ ...editandoUsuario, password: e.target.value })}
+                />
+                <p className="text-xs text-stone-400 mt-1">Mínimo 6 caracteres</p>
+              </div>
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => setShowModalEditarUsuario(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
               <button
-                onClick={() => cambiarRolUsuario(editandoUsuario.id, editandoUsuario.rol)}
+                onClick={() => cambiarRolUsuario(editandoUsuario.id, editandoUsuario.rol, (editandoUsuario as any).password)}
                 className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold"
               >
                 Guardar
@@ -846,4 +1008,3 @@ export default function AdminMasterPage() {
     </div>
   );
 }
-
