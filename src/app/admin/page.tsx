@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 
 // ============================================
-// INTERFACES
+// INTERFACES (CON NIT Y CEDULA)
 // ============================================
 interface Cliente {
   id: string;
@@ -41,6 +41,8 @@ interface Cliente {
   correo_contacto: string;
   telefono: string;
   direccion: string;
+  nit: string | null;
+  cedula: string | null;
   logo_url: string | null;
   whatsapp: string | null;
   nequi: string | null;
@@ -85,7 +87,6 @@ export default function AdminMasterPage() {
   const [mensaje, setMensaje] = useState("");
   const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
   const [showModalEditarCliente, setShowModalEditarCliente] = useState(false);
-  // 🔥 Para mostrar credenciales al crear cliente
   const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
   // ============================================
@@ -165,6 +166,8 @@ export default function AdminMasterPage() {
       telefono: formData.get("telefono"),
       direccion: formData.get("direccion"),
       plan: formData.get("plan"),
+      nit: formData.get("nit") || null,
+      cedula: formData.get("cedula") || null,
       logo_url: formData.get("logo_url") || null,
       whatsapp: formData.get("whatsapp") || null,
       nequi: formData.get("nequi") || null,
@@ -259,7 +262,6 @@ export default function AdminMasterPage() {
     }
   }
 
-  // 🔥 Función para crear cliente (con creación de usuario)
   async function crearCliente(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget as HTMLFormElement);
@@ -271,6 +273,8 @@ export default function AdminMasterPage() {
       telefono: formData.get("telefono"),
       direccion: formData.get("direccion"),
       plan: formData.get("plan"),
+      nit: formData.get("nit") || null,
+      cedula: formData.get("cedula") || null,
       logo_url: formData.get("logo_url") || null,
       whatsapp: formData.get("whatsapp") || null,
       nequi: formData.get("nequi") || null,
@@ -278,9 +282,11 @@ export default function AdminMasterPage() {
       daviplata: formData.get("daviplata") || null,
     };
     const password = formData.get("password") as string;
-    if (password && password.length >= 6) {
-      body.password = password;
+    if (!password || password.length < 6) {
+      alert("La contraseña es obligatoria y debe tener al menos 6 caracteres.");
+      return;
     }
+    body.password = password;
 
     const res = await fetch("/api/admin/tenants", {
       method: "POST",
@@ -289,7 +295,6 @@ export default function AdminMasterPage() {
     });
     const data = await res.json();
     if (data.success) {
-      // Mostrar credenciales
       if (data.data.credentials) {
         setCredenciales(data.data.credentials);
       }
@@ -443,6 +448,8 @@ export default function AdminMasterPage() {
                         <p className="text-xs text-stone-600">{c.tipo_negocio} · {c.plan} · {c.gerente}</p>
                         <p className="text-xs text-stone-500 mt-1">📧 {c.correo_contacto}</p>
                         <p className="text-xs text-stone-500">📞 {c.telefono || "Sin teléfono"}</p>
+                        {c.nit && <p className="text-xs text-stone-500">NIT: {c.nit}</p>}
+                        {c.cedula && <p className="text-xs text-stone-500">Cédula: {c.cedula}</p>}
                       </div>
                       <span
                         className={
@@ -679,6 +686,8 @@ export default function AdminMasterPage() {
               <p className="text-stone-700"><span className="font-bold text-stone-500">Email:</span> {clienteDetalle.correo_contacto}</p>
               <p className="text-stone-700"><span className="font-bold text-stone-500">Teléfono:</span> {clienteDetalle.telefono}</p>
               <p className="text-stone-700"><span className="font-bold text-stone-500">Plan:</span> <span className="text-emerald-600 font-bold">{clienteDetalle.plan}</span></p>
+              {clienteDetalle.nit && <p className="text-stone-700"><span className="font-bold text-stone-500">NIT:</span> {clienteDetalle.nit}</p>}
+              {clienteDetalle.cedula && <p className="text-stone-700"><span className="font-bold text-stone-500">Cédula:</span> {clienteDetalle.cedula}</p>}
               {clienteDetalle.logo_url && (
                 <p className="text-stone-700"><span className="font-bold text-stone-500">Logo:</span> <a href={clienteDetalle.logo_url} target="_blank" rel="noopener" className="text-blue-600 underline">Ver logo</a></p>
               )}
@@ -692,7 +701,6 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* 🔥 Modal Nuevo Cliente (con campo de contraseña y función crearCliente) */}
       {showNuevoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -755,6 +763,16 @@ export default function AdminMasterPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">NIT (opcional)</label>
+                    <input name="nit" placeholder="900.123.456-7" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Cédula (opcional)</label>
+                    <input name="cedula" placeholder="123456789" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp</label>
                     <input name="whatsapp" placeholder="301-6111412" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
@@ -773,16 +791,17 @@ export default function AdminMasterPage() {
                     <input name="daviplata" placeholder="987654321" className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
                 </div>
-                {/* 🔥 CAMPO CONTRASEÑA (opcional) */}
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Contraseña (opcional)</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Contraseña *</label>
                   <input
                     type="password"
                     name="password"
-                    placeholder="Dejar vacío para generar automática"
+                    placeholder="Mínimo 6 caracteres"
                     className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900"
+                    required
+                    minLength={6}
                   />
-                  <p className="text-xs text-stone-400 mt-1">Si se deja vacío, se generará una automática</p>
+                  <p className="text-xs text-stone-400 mt-1">Esta contraseña será entregada al cliente.</p>
                 </div>
               </div>
               <div className="flex gap-3 mt-4">
@@ -794,7 +813,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* 🔥 Modal mostrar credenciales */}
+      {/* Modal Credenciales */}
       {credenciales && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
@@ -805,17 +824,17 @@ export default function AdminMasterPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-xl text-stone-900">✅ Cliente creado</h2>
+              <h2 className="font-bold text-xl text-stone-900">✅ Cliente creado con éxito</h2>
               <button onClick={() => setCredenciales(null)} className="p-2 hover:bg-stone-100 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
             </div>
-            <p className="text-sm text-stone-600 mb-2">Credenciales del usuario:</p>
+            <p className="text-sm text-stone-600 mb-2">Credenciales para entregar al cliente:</p>
             <div className="bg-stone-50 p-4 rounded-xl space-y-2">
               <p className="text-sm text-stone-800"><span className="font-bold">Email:</span> {credenciales.email}</p>
               <p className="text-sm text-stone-800"><span className="font-bold">Contraseña:</span> {credenciales.password}</p>
             </div>
-            <p className="text-xs text-stone-500 mt-4">Guarda estas credenciales y entrégaselas al cliente.</p>
+            <p className="text-xs text-stone-500 mt-4">El cliente podrá cambiar su contraseña después del primer inicio de sesión.</p>
             <button onClick={() => setCredenciales(null)} className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold mt-4">
               Aceptar
             </button>
@@ -1001,6 +1020,16 @@ export default function AdminMasterPage() {
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp</label>
                     <input name="whatsapp" defaultValue={editandoCliente.whatsapp || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">NIT</label>
+                    <input name="nit" defaultValue={editandoCliente.nit || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Cédula</label>
+                    <input name="cedula" defaultValue={editandoCliente.cedula || ""} className="w-full p-3 bg-stone-50 border rounded-xl text-sm text-stone-900" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">

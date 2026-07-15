@@ -7,20 +7,9 @@ const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 const supabase = createClient(supabaseUrl, serviceKey || anonKey)
 
-// Función para generar contraseña aleatoria
-function generarPassword() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
-  let password = '';
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-}
-
-// Función para buscar usuario por email en auth.users (sin filtros en la llamada)
+// Función para buscar usuario por email en auth.users
 async function findUserByEmail(email: string) {
   try {
-    // Obtener todos los usuarios y filtrar en JavaScript
     const { data, error } = await supabase.auth.admin.listUsers()
     if (error) throw error
     return data.users?.find((u: any) => u.email === email) || null
@@ -61,12 +50,14 @@ export async function POST(request: Request) {
       daviplata,
       color_principal,
       color_secundario,
+      nit,
+      cedula,
       password
     } = body
 
-    if (!nombre_negocio || !tipo || !correo_contacto) {
+    if (!nombre_negocio || !tipo || !correo_contacto || !password || password.length < 6) {
       return NextResponse.json(
-        { success: false, error: 'Faltan campos obligatorios: nombre_negocio, tipo, correo_contacto' },
+        { success: false, error: 'Faltan campos obligatorios: nombre_negocio, tipo, correo_contacto, password (mínimo 6 caracteres)' },
         { status: 400 }
       )
     }
@@ -74,30 +65,36 @@ export async function POST(request: Request) {
     const tenant_id = crypto.randomUUID()
     const existingUser = await findUserByEmail(correo_contacto)
     let authUserId: string
+    let userPassword = password
 
     if (existingUser) {
-      authUserId = existingUser.id
-    } else {
-      const userPassword = password && password.length >= 6 ? password : generarPassword()
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email: correo_contacto,
-        password: userPassword,
-        email_confirm: true,
-        user_metadata: {
-          nombre: gerente || 'Administrador',
-          tenant_id: tenant_id
-        }
-      })
-      if (authError) {
-        return NextResponse.json(
-          { success: false, error: 'Error al crear usuario: ' + authError.message },
-          { status: 500 }
-        )
-      }
-      authUserId = authUser.user.id
+      // Si el usuario ya existe, no podemos cambiar la contraseña aquí (se actualiza en el PUT)
+      // Pero para la creación, asumimos que no existe.
+      return NextResponse.json(
+        { success: false, error: 'El correo ya está registrado. Usa otro correo o edita el usuario existente.' },
+        { status: 409 }
+      )
     }
 
-    // Insertar o actualizar en public.usuarios (usando upsert para evitar duplicados)
+    // Crear usuario en auth.users con la contraseña proporcionada
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email: correo_contacto,
+      password: userPassword,
+      email_confirm: true,
+      user_metadata: {
+        nombre: gerente || 'Administrador',
+        tenant_id: tenant_id
+      }
+    })
+    if (authError) {
+      return NextResponse.json(
+        { success: false, error: 'Error al crear usuario: ' + authError.message },
+        { status: 500 }
+      )
+    }
+    authUserId = authUser.user.id
+
+    // Insertar en public.usuarios
     const { error: userError } = await supabase
       .from('usuarios')
       .upsert({
@@ -111,8 +108,10 @@ export async function POST(request: Request) {
       }, { onConflict: 'id' })
 
     if (userError) {
+      // Rollback: eliminar usuario de auth
+      await supabase.auth.admin.deleteUser(authUserId)
       return NextResponse.json(
-        { success: false, error: 'Error al actualizar usuario en tabla public: ' + userError.message },
+        { success: false, error: 'Error al guardar usuario en tabla public: ' + userError.message },
         { status: 500 }
       )
     }
@@ -129,6 +128,8 @@ export async function POST(request: Request) {
         telefono: telefono || null,
         direccion: direccion || null,
         plan: plan || 'Free',
+        nit: nit || null,
+        cedula: cedula || null,
         logo_url: logo_url || null,
         whatsapp: whatsapp || null,
         nequi: nequi || null,
@@ -142,26 +143,26 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
+      // Rollback: eliminar usuario de auth y public
+      await supabase.auth.admin.deleteUser(authUserId)
+      await supabase.from('usuarios').delete().eq('id', authUserId)
       return NextResponse.json(
         { success: false, error: 'Error al crear tenant: ' + error.message },
         { status: 500 }
       )
     }
 
-    const credenciales = {
-      email: correo_contacto,
-      password: existingUser ? ' (usuario ya existente, conserva su contraseña actual)' : (password && password.length >= 6 ? password : 'contraseña generada automáticamente, revisa el log'),
-      message: existingUser
-        ? `El usuario ${correo_contacto} ya estaba registrado. Se asignó al tenant.`
-        : `Usuario ${correo_contacto} creado con ${password && password.length >= 6 ? 'la contraseña proporcionada' : 'una contraseña generada automáticamente'}.`
-    }
-
+    // Devolver datos del tenant + credenciales
     return NextResponse.json({
       success: true,
       data: {
         ...data,
         tenant_id: data.id,
-        credentials: credenciales
+        credentials: {
+          email: correo_contacto,
+          password: userPassword,
+          message: `Cliente creado con éxito. Credenciales: Email: ${correo_contacto}, Contraseña: ${userPassword}`
+        }
       }
     })
   } catch (error: any) {
@@ -188,6 +189,8 @@ export async function PUT(request: Request) {
       daviplata,
       color_principal,
       color_secundario,
+      nit,
+      cedula,
       password
     } = body
 
@@ -209,6 +212,8 @@ export async function PUT(request: Request) {
         telefono,
         direccion,
         plan,
+        nit,
+        cedula,
         logo_url,
         whatsapp,
         nequi,
