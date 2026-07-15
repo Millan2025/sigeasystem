@@ -48,6 +48,7 @@ interface Cliente {
   daviplata: string | null;
   color_principal: string;
   color_secundario: string;
+  password?: string;
 }
 
 interface Usuario {
@@ -154,10 +155,10 @@ export default function AdminMasterPage() {
   }
 
   // 🔥 EDITAR CLIENTE (PUT)
-  async function editarCliente(e: React.FormEvent) {
+    async function editarCliente(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    const body = {
+    const body: any = {
       id: editandoCliente?.id,
       nombre_negocio: formData.get("nombre_negocio"),
       tipo: formData.get("tipo"),
@@ -172,6 +173,56 @@ export default function AdminMasterPage() {
       bancolombia: formData.get("bancolombia") || null,
       daviplata: formData.get("daviplata") || null,
     };
+    const password = formData.get("password") as string;
+    if (password && password.length >= 6) {
+      body.password = password;
+    }
+
+    // 1. Actualizar cliente
+    const res = await fetch("/api/admin/tenants", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert("Error al actualizar cliente: " + data.error);
+      return;
+    }
+
+    // 2. Si se proporcionó contraseña, actualizar usuario
+    if (password && password.length >= 6) {
+      // Buscar usuario por correo_contacto (que coincide con el email del usuario)
+      const userRes = await fetch("/api/admin/users");
+      const usersData = await userRes.json();
+      if (usersData.success) {
+        const user = usersData.data.find((u: any) => u.email === body.correo_contacto);
+        if (user) {
+          const updateRes = await fetch("/api/admin/users", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id, password: password }),
+          });
+          const updateData = await updateRes.json();
+          if (!updateData.success) {
+            alert("Error al actualizar contraseña: " + updateData.error);
+            return;
+          }
+        } else {
+          alert("No se encontró usuario con ese correo. La contraseña no se cambió.");
+        }
+      }
+    }
+
+    setMensaje("✅ Cliente actualizado" + (password && password.length >= 6 ? " y contraseña cambiada" : ""));
+    setTimeout(() => setMensaje(""), 3000);
+    setShowModalEditarCliente(false);
+    cargarDatos();
+  };
+  const password = formData.get("password") as string;
+  if (password && password.length >= 6) {
+    body.password = password;
+  }
     const res = await fetch("/api/admin/tenants", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -367,11 +418,11 @@ export default function AdminMasterPage() {
                   <div key={c.tenant_id} className="bg-white rounded-2xl border border-stone-200 p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-bold text-stone-900">{c.nombre_negocio}</h3>
-                        <p className="text-xs text-stone-600">
-                          {c.tipo_negocio} · {c.plan} · {c.gerente}
-                        </p>
-                      </div>
+  <h3 className="font-bold text-stone-900">{c.nombre_negocio}</h3>
+  <p className="text-xs text-stone-600">{c.tipo_negocio} · {c.plan} · {c.gerente}</p>
+  <p className="text-xs text-stone-500 mt-1">📧 {c.correo_contacto}</p>
+  <p className="text-xs text-stone-500">📞 {c.telefono || 'Sin teléfono'}</p>
+</div>
                       <span
                         className={
                           "px-3 py-1 rounded-full text-xs font-bold " +
@@ -1009,4 +1060,5 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
 
