@@ -1,9 +1,14 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// 🔥 Usar clave de servicio (bypass RLS) si existe, si no, usar anónima
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  supabaseUrl,
+  serviceKey || anonKey  // Prioridad a service_key
 )
 
 export async function GET() {
@@ -13,7 +18,7 @@ export async function GET() {
       .select('*')
       .order('created_at', { ascending: false })
     if (error) throw error
-    // Mapear id como tenant_id para compatibilidad con frontend
+    // Mapear id como tenant_id para compatibilidad
     const mapped = data.map(row => ({
       ...row,
       tenant_id: row.id
@@ -51,12 +56,12 @@ export async function POST(request: Request) {
       )
     }
 
-    const id = crypto.randomUUID()  // Este es el tenant_id
+    const id = crypto.randomUUID()
 
     const { data, error } = await supabase
       .from('business_config')
       .insert({
-        id,  // Usar id en lugar de tenant_id
+        id,
         nombre_negocio,
         tipo_negocio: tipo,
         gerente: gerente || null,
@@ -78,7 +83,6 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Devolver también tenant_id para consistencia
     return NextResponse.json({ success: true, data: { ...data, tenant_id: data.id } })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
