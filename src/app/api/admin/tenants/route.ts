@@ -17,6 +17,19 @@ function generarPassword() {
   return password;
 }
 
+// Función para buscar usuario por email en auth.users
+async function findUserByEmail(email: string) {
+  try {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      filters: { email }
+    })
+    if (error) throw error
+    return data.users?.find((u: any) => u.email === email) || null
+  } catch {
+    return null
+  }
+}
+
 export async function GET() {
   try {
     const { data, error } = await supabase
@@ -49,7 +62,7 @@ export async function POST(request: Request) {
       daviplata,
       color_principal,
       color_secundario,
-      password // contraseña proporcionada por el admin (opcional)
+      password
     } = body
 
     if (!nombre_negocio || !tipo || !correo_contacto) {
@@ -59,53 +72,51 @@ export async function POST(request: Request) {
       )
     }
 
-    // Generar tenant_id
     const tenant_id = crypto.randomUUID()
+    const existingUser = await findUserByEmail(correo_contacto)
+    let authUserId: string
 
-    // Generar contraseña (si no se proporciona)
-    const userPassword = password && password.length >= 6 ? password : generarPassword()
-
-    // 1. Crear usuario en auth.users
-    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email: correo_contacto,
-      password: userPassword,
-      email_confirm: true,
-      user_metadata: {
-        nombre: gerente || 'Administrador',
-        tenant_id: tenant_id
+    if (existingUser) {
+      authUserId = existingUser.id
+    } else {
+      const userPassword = password && password.length >= 6 ? password : generarPassword()
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email: correo_contacto,
+        password: userPassword,
+        email_confirm: true,
+        user_metadata: {
+          nombre: gerente || 'Administrador',
+          tenant_id: tenant_id
+        }
+      })
+      if (authError) {
+        return NextResponse.json(
+          { success: false, error: 'Error al crear usuario: ' + authError.message },
+          { status: 500 }
+        )
       }
-    })
-
-    if (authError) {
-      // Si falla, no crear el tenant
-      return NextResponse.json(
-        { success: false, error: 'Error al crear usuario: ' + authError.message },
-        { status: 500 }
-      )
+      authUserId = authUser.user.id
     }
 
-    // 2. Insertar en public.usuarios
     const { error: userError } = await supabase
       .from('usuarios')
-      .insert({
-        id: authUser.user.id,
+      .upsert({
+        id: authUserId,
         email: correo_contacto,
         nombre: gerente || 'Administrador',
         rol: 'admin',
         tenant_id: tenant_id,
-        created_at: new Date().toISOString()
-      })
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' })
 
     if (userError) {
-      // Si falla, eliminar el usuario de auth (opcional, pero mejor hacer rollback)
-      await supabase.auth.admin.deleteUser(authUser.user.id)
       return NextResponse.json(
-        { success: false, error: 'Error al crear usuario en la tabla public: ' + userError.message },
+        { success: false, error: 'Error al actualizar usuario en tabla public: ' + userError.message },
         { status: 500 }
       )
     }
 
-    // 3. Insertar en business_config
     const { data, error } = await supabase
       .from('business_config')
       .insert({
@@ -130,28 +141,139 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      // Rollback: eliminar usuario y registro public
-      await supabase.auth.admin.deleteUser(authUser.user.id)
-      await supabase.from('usuarios').delete().eq('id', authUser.user.id)
       return NextResponse.json(
         { success: false, error: 'Error al crear tenant: ' + error.message },
         { status: 500 }
       )
     }
 
-    // Devolver datos del tenant + credenciales
+    const credenciales = {
+      email: correo_contacto,
+      password: existingUser ? ' (usuario ya existente, conserva su contraseña actual)' : (password && password.length >= 6 ? password : 'contraseña generada automáticamente, revisa el log'),
+      message: existingUser
+        ? `El usuario ${correo_contacto} ya estaba registrado. Se asignó al tenant.`
+        : `Usuario ${correo_contacto} creado con ${password && password.length >= 6 ? 'la contraseña proporcionada' : 'una contraseña generada automáticamente'}.`
+    }
+
     return NextResponse.json({
       success: true,
       data: {
         ...data,
         tenant_id: data.id,
-        credentials: {
-          email: correo_contacto,
-          password: userPassword,
-          message: `Usuario creado con email ${correo_contacto} y contraseña temporal.`
-        }
+        credentials: credenciales
       }
     })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json()
+    const {
+      id,
+      nombre_negocio,
+      tipo,
+      gerente,
+      correo_contacto,
+      telefono,
+      direccion,
+      plan,
+      logo_url,
+      whatsapp,
+      nequi,
+      bancolombia,
+      daviplata,
+      color_principal,
+      color_secundario,
+      password
+    } = body
+
+    if (!id || !nombre_negocio || !tipo || !correo_contacto) {
+      return NextResponse.json(
+        { success: false, error: 'Faltan campos obligatorios' },
+        { status: 400 }
+      )
+    }
+
+    const { data, error } = await supabase
+      .from('business_config')
+      .update({
+        nombre_negocio,
+        tipo_negocio: tipo,
+        gerente,
+        correo_contacto,
+        telefono,
+        direccion,
+        plan,
+        logo_url,
+        whatsapp,
+        nequi,
+        bancolombia,
+        daviplata,
+        color_principal,
+        color_secundario
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: 'Error al actualizar cliente: ' + error.message },
+        { status: 500 }
+      )
+    }
+
+    if (password && password.length >= 6) {
+      const existingUser = await findUserByEmail(correo_contacto)
+      if (existingUser) {
+        const { error: updateAuthError } = await supabase.auth.admin.updateUserById(existingUser.id, { password })
+        if (updateAuthError) {
+          return NextResponse.json(
+            { success: false, error: 'Error al actualizar contraseña: ' + updateAuthError.message },
+            { status: 500 }
+          )
+        }
+      } else {
+        return NextResponse.json(
+          { success: false, error: 'No se encontró usuario con ese correo para actualizar contraseña' },
+          { status: 404 }
+        )
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { ...data, tenant_id: data.id }
+    })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url)
+    const id = url.searchParams.get('id')
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Se requiere ID' }, { status: 400 })
+    }
+
+    const { error: deleteError } = await supabase
+      .from('business_config')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) {
+      return NextResponse.json(
+        { success: false, error: 'Error al eliminar cliente: ' + deleteError.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true, message: 'Cliente eliminado' })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
