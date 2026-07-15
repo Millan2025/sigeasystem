@@ -60,6 +60,7 @@ interface Usuario {
   activo: boolean;
   created_at: string;
   updated_at: string | null;
+  password?: string;
 }
 
 // ============================================
@@ -1008,3 +1009,4 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
