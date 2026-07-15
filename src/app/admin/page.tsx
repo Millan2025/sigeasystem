@@ -242,8 +242,17 @@ export default function AdminMasterPage() {
   }
 
   async function eliminarUsuario(id: string) {
-    if (!confirm("¿Eliminar este usuario de la tabla public? (No se eliminará de auth)")) return;
-    const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
+  if (!confirm("¿Eliminar este usuario de forma permanente? Se eliminará de auth.users y de la tabla public. Esta acción no se puede deshacer.")) return;
+  const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
+  const data = await res.json();
+  if (data.success) {
+    setMensaje("✅ Usuario eliminado completamente (auth + public)");
+    setTimeout(() => setMensaje(""), 3000);
+    cargarDatos();
+  } else {
+    alert("Error: " + data.error);
+  }
+}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
       setMensaje("✅ Usuario eliminado de la tabla public");
@@ -1131,3 +1140,4 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+

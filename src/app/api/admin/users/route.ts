@@ -29,7 +29,6 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: 'Se requiere ID' }, { status: 400 })
     }
 
-    // 1. Actualizar en public.usuarios (rol, activo)
     const updateData: any = {}
     if (rol !== undefined) updateData.rol = rol
     if (activo !== undefined) updateData.activo = activo
@@ -41,12 +40,10 @@ export async function PUT(request: Request) {
         .eq('id', id)
     }
 
-    // 2. Cambiar contraseña en auth.users (si se envió y tiene al menos 6 caracteres)
     if (password && password.length >= 6) {
       await supabase.auth.admin.updateUserById(id, { password })
     }
 
-    // 3. Obtener datos actualizados
     const { data, error } = await supabase
       .from('usuarios')
       .select('*')
@@ -67,12 +64,31 @@ export async function DELETE(request: Request) {
     if (!id) {
       return NextResponse.json({ success: false, error: 'Se requiere ID' }, { status: 400 })
     }
-    const { error } = await supabase
+
+    // 1. Eliminar de auth.users (con service_role)
+    const { error: authError } = await supabase.auth.admin.deleteUser(id)
+    if (authError) {
+      return NextResponse.json(
+        { success: false, error: 'Error al eliminar de auth: ' + authError.message },
+        { status: 500 }
+      )
+    }
+
+    // 2. Eliminar de public.usuarios
+    const { error: publicError } = await supabase
       .from('usuarios')
       .delete()
       .eq('id', id)
-    if (error) throw error
-    return NextResponse.json({ success: true, message: 'Usuario eliminado' })
+
+    if (publicError) {
+      // Si falla public pero auth ya se eliminó, queda inconsistente, pero podemos intentar reintentar o notificar
+      return NextResponse.json(
+        { success: false, error: 'Error al eliminar de public: ' + publicError.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true, message: 'Usuario eliminado completamente (auth + public)' })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
