@@ -17,12 +17,11 @@ function generarPassword() {
   return password;
 }
 
-// Función para buscar usuario por email en auth.users
+// Función para buscar usuario por email en auth.users (sin filtros en la llamada)
 async function findUserByEmail(email: string) {
   try {
-    const { data, error } = await supabase.auth.admin.listUsers({
-      filters: { email }
-    })
+    // Obtener todos los usuarios y filtrar en JavaScript
+    const { data, error } = await supabase.auth.admin.listUsers()
     if (error) throw error
     return data.users?.find((u: any) => u.email === email) || null
   } catch {
@@ -98,6 +97,7 @@ export async function POST(request: Request) {
       authUserId = authUser.user.id
     }
 
+    // Insertar o actualizar en public.usuarios (usando upsert para evitar duplicados)
     const { error: userError } = await supabase
       .from('usuarios')
       .upsert({
@@ -117,6 +117,7 @@ export async function POST(request: Request) {
       )
     }
 
+    // Insertar en business_config
     const { data, error } = await supabase
       .from('business_config')
       .insert({
@@ -197,6 +198,7 @@ export async function PUT(request: Request) {
       )
     }
 
+    // 1. Actualizar cliente
     const { data, error } = await supabase
       .from('business_config')
       .update({
@@ -226,6 +228,7 @@ export async function PUT(request: Request) {
       )
     }
 
+    // 2. Si se proporciona contraseña, actualizar usuario
     if (password && password.length >= 6) {
       const existingUser = await findUserByEmail(correo_contacto)
       if (existingUser) {
