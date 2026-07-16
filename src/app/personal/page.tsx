@@ -16,6 +16,7 @@ interface Colaborador {
   salario: number;
   estado: string;
   observaciones: string;
+  tenant_id: string;
 }
 
 export default function PersonalPage() {
@@ -26,6 +27,7 @@ export default function PersonalPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
   const [showDetail, setShowDetail] = useState<Colaborador | null>(null);
+  const [tenantId, setTenantId] = useState('7e045520-5e36-4e3f-a39f-10ea7d6dce76');
 
   const [form, setForm] = useState({
     nombre: "",
@@ -40,14 +42,18 @@ export default function PersonalPage() {
   });
 
   useEffect(() => {
-    cargarColaboradores();
+    const url = new URL(window.location.href);
+    const tenant = url.searchParams.get('tenant') || '7e045520-5e36-4e3f-a39f-10ea7d6dce76';
+    setTenantId(tenant);
+    cargarColaboradores(tenant);
   }, []);
 
-  const cargarColaboradores = async () => {
+  const cargarColaboradores = async (tenant: string) => {
     setLoading(true);
     const { data, error } = await supabase
       .from("colaboradores")
       .select("*")
+      .eq("tenant_id", tenant)
       .order("nombre");
 
     if (error) {
@@ -62,7 +68,8 @@ export default function PersonalPage() {
   const guardarColaborador = async () => {
     const data = {
       ...form,
-      salario: parseFloat(form.salario) || 0
+      salario: parseFloat(form.salario) || 0,
+      tenant_id: tenantId
     };
 
     if (editing) {
@@ -79,13 +86,13 @@ export default function PersonalPage() {
     }
 
     resetForm();
-    cargarColaboradores();
+    cargarColaboradores(tenantId);
   };
 
   const eliminarColaborador = async (id: string) => {
     if (!confirm("¿Eliminar este colaborador?")) return;
     const { error } = await supabase.from("colaboradores").delete().eq("id", id);
-    if (error) { alert("Error: " + error.message); } else { cargarColaboradores(); }
+    if (error) { alert("Error: " + error.message); } else { cargarColaboradores(tenantId); }
   };
 
   const editarColaborador = (colaborador: Colaborador) => {
@@ -124,8 +131,8 @@ export default function PersonalPage() {
     if (colaboradores.length === 0) { alert("No hay colaboradores"); return; }
 
     const headers = ["Nombre;Apellido;Email;Teléfono;Cargo;Fecha Contratación;Salario;Estado;Observaciones"];
-    const rows = colaboradores.map(c => 
-      [c.nombre, c.apellido, c.email, c.telefono || "", c.cargo || "", 
+    const rows = colaboradores.map(c =>
+      [c.nombre, c.apellido, c.email, c.telefono || "", c.cargo || "",
        c.fecha_contratacion || "", c.salario?.toString() || "0", c.estado || "activo", c.observaciones || ""].join(";")
     );
     const csv = "\uFEFF" + headers.join("\n") + "\n" + rows.join("\n");
