@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File
     const tenant_id = formData.get('tenant_id') as string
 
-    if (!file || !tenant_id) {
+    console.log("📥 Tenant ID recibido:", tenant_id); console.log("📥 File recibido:", file ? "SI" : "NO"); if (!file || !tenant_id) {
       return NextResponse.json(
         { success: false, error: 'Faltan: archivo y tenant_id' },
         { status: 400 }
@@ -121,3 +121,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+

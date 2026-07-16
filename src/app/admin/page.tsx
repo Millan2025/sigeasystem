@@ -269,7 +269,7 @@ export default function AdminMasterPage() {
   async function importarProductos(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    formData.append("tenant_id", tenantImport || "");
+    formData.append("tenant_id", tenantImport || ""); console.log("📤 Enviando tenant_id:", tenantImport);;
     const res = await fetch("/api/admin/products/import", {
       method: "POST",
       body: formData,
@@ -512,7 +512,7 @@ export default function AdminMasterPage() {
                       </button>
                       {/* 🔥 NUEVO BOTÓN CARGAR PRODUCTOS */}
                       <button
-                        onClick={() => { setTenantImport(c.tenant_id); setShowImportarProductos(true); }}
+                        onClick={() => { console.log("🖱️ Cliente seleccionado:", c.tenant_id); console.log("🖱️ Tenant ID:", c.tenant_id); setTenantImport(c.tenant_id); setShowImportarProductos(true); }}
                         className="flex-1 bg-green-50 hover:bg-green-100 py-2 rounded-lg text-xs font-medium text-green-600 flex items-center justify-center gap-1"
                       >
                         <Upload className="w-3 h-3" /> Cargar Productos
@@ -1194,3 +1194,4 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
