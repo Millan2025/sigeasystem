@@ -1,7 +1,10 @@
 ﻿import NegocioHome from "@/components/NegocioHome";
 
-// Next.js 15+: params es una Promise
-export default async function DynamicNegocioPage({ params }: { params: Promise<{ slug: string }> }) {
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function DynamicNegocioPage({ params }: Props) {
   const { slug } = await params;
   return <NegocioHome negocioSlug={slug} />;
 }

@@ -13,49 +13,47 @@ export default function HomePage() {
     const checkUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (!session?.user) {
-          // No autenticado → login
           router.push("/login");
           return;
         }
 
-        // Verificar si es admin_master
-        const { data: userData } = await supabase
+        const { data: userData, error: userError } = await supabase
           .from('usuarios')
           .select('rol, tenant_id')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (userData?.rol === 'admin_master') {
+        if (userError || !userData) {
+          console.error('Error obteniendo datos del usuario:', userError);
+          router.push("/login");
+          return;
+        }
+
+        // Admin Master
+        if (userData.rol === 'admin_master') {
           router.push("/admin");
           return;
         }
 
-        // Si tiene tenant_id, es cliente
-        if (userData?.tenant_id) {
-          // Generar slug desde el nombre del negocio
-const { data: configData } = await supabase
-  .from('business_config')
-  .select('nombre_negocio')
-  .eq('id', userData.tenant_id)
-  .single();
-const slug = configData?.nombre_negocio?.toLowerCase().replace(/\s+/g, '-') || 'restaurante';
-router.push(`/demo/${slug}`);
+        // Cliente con tenant
+        if (userData.tenant_id) {
+          const { data: configData } = await supabase
+            .from('business_config')
+            .select('nombre_negocio')
+            .eq('id', userData.tenant_id)
+            .single();
+
+          const slug = configData?.nombre_negocio?.toLowerCase().replace(/\s+/g, '-') || 'restaurante';
+          router.push(`/demo/${slug}?tenant=${userData.tenant_id}`);
           return;
         }
 
-        // Fallback: si no tiene rol definido, ir a cliente
-        // Generar slug desde el nombre del negocio
-const { data: configData } = await supabase
-  .from('business_config')
-  .select('nombre_negocio')
-  .eq('id', userData.tenant_id)
-  .single();
-const slug = configData?.nombre_negocio?.toLowerCase().replace(/\s+/g, '-') || 'restaurante';
-router.push(`/demo/${slug}`);
+        // Fallback
+        router.push("/login");
       } catch (error) {
-        console.error("Error en redirección:", error);
+        console.error('Error en redirección:', error);
         router.push("/login");
       } finally {
         setLoading(false);
@@ -74,5 +72,3 @@ router.push(`/demo/${slug}`);
     </div>
   );
 }
-
-
