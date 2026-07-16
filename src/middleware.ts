@@ -22,12 +22,14 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Rutas protegidas (requieren login)
-  const rutasProtegidas = ['/pos', '/inventario', '/personal', '/pedidos', '/produccion', '/reportes', '/finanzas', '/admin']
+  const rutasProtegidas = ['/pos', '/inventario', '/personal', '/pedidos', '/produccion', '/reportes', '/finanzas', '/admin', '/cliente']
   const necesitaAuth = rutasProtegidas.some(r => request.nextUrl.pathname.startsWith(r))
 
   if (necesitaAuth && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
+
+  // ✅ ELIMINADA redirección de raíz (page.tsx la maneja)
 
   return response
 }
