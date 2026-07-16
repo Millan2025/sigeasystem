@@ -1157,7 +1157,7 @@ export default function AdminMasterPage() {
         </div>
       )}
 
-      {/* 🔥 MODAL IMPORTAR PRODUCTOS (DESDE ADMIN) */}
+      {/* 🔥 MODAL IMPORTAR PRODUCTOS (DESDE ADMIN) CON BOTÓN DE DESCARGA */}
       {showImportarProductos && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
@@ -1173,6 +1173,15 @@ export default function AdminMasterPage() {
                 <input type="file" name="file" accept=".xlsx,.xls" className="w-full p-2 border rounded-xl text-sm" required />
                 <p className="text-xs text-stone-400 mt-1">Usa la plantilla descargable desde el módulo Inventario del cliente.</p>
               </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.open('/api/admin/products/template', '_blank')}
+                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-1"
+                >
+                  <Download className="w-4 h-4" /> Descargar Plantilla
+                </button>
+              </div>
               {importProgress && <p className="text-sm text-emerald-600">{importProgress}</p>}
               <div className="flex gap-3 mt-4">
                 <button type="button" onClick={() => setShowImportarProductos(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
@@ -1185,4 +1194,3 @@ export default function AdminMasterPage() {
     </div>
   );
 }
-
