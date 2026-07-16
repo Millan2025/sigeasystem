@@ -34,12 +34,26 @@ export default function HomePage() {
 
         // Si tiene tenant_id, es cliente
         if (userData?.tenant_id) {
-          router.push("/cliente");
+          // Generar slug desde el nombre del negocio
+const { data: configData } = await supabase
+  .from('business_config')
+  .select('nombre_negocio')
+  .eq('id', userData.tenant_id)
+  .single();
+const slug = configData?.nombre_negocio?.toLowerCase().replace(/\s+/g, '-') || 'restaurante';
+router.push(`/demo/${slug}`);
           return;
         }
 
         // Fallback: si no tiene rol definido, ir a cliente
-        router.push("/cliente");
+        // Generar slug desde el nombre del negocio
+const { data: configData } = await supabase
+  .from('business_config')
+  .select('nombre_negocio')
+  .eq('id', userData.tenant_id)
+  .single();
+const slug = configData?.nombre_negocio?.toLowerCase().replace(/\s+/g, '-') || 'restaurante';
+router.push(`/demo/${slug}`);
       } catch (error) {
         console.error("Error en redirección:", error);
         router.push("/login");
@@ -60,3 +74,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+

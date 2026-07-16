@@ -1,7 +1,10 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { getTenantId } from "@/lib/tenant";
 import {
   ShoppingCart,
   DollarSign,
@@ -19,228 +22,149 @@ import {
 } from "lucide-react";
 
 const beneficiosPorModulo: Record<string, { titulo: string; icono: string; beneficios: string[]; color: string }> = {
-  pos: {
-    titulo: "Punto de Venta Inteligente",
-    icono: "💰",
-    beneficios: [
-      "Productos por peso: balanza integrada, precio automático",
-      "Cobro: Efectivo, Nequi, Daviplata, Bancolombia",
-      "Búsqueda rápida de productos",
-      "Descuento automático de inventario",
-      "Registro de ventas en tiempo real",
-    ],
-    color: "bg-emerald-500",
-  },
-  produccion: {
-    titulo: "Producción y Recetas",
-    icono: "🏭",
-    beneficios: [
-      "Fichas técnicas con ingredientes y cantidades exactas",
-      "Food cost: costo real vs precio de venta",
-      "Cálculo automático de materia prima según ventas",
-      "Órdenes de producción diarias",
-      "Lista de compras sugerida al proveedor",
-      "Adaptable a panadería, restaurante, cafetería",
-    ],
-    color: "bg-lime-500",
-  },
-  inventario: {
-    titulo: "Inventario Inteligente",
-    icono: "📦",
-    beneficios: [
-      "Control de stock en tiempo real",
-      "Alarmas: urgente, pedir ya, OK",
-      "Ponderación por importancia del producto",
-      "Predicción de agotamiento",
-      "Múltiples unidades: kg, g, L, ml, unidades",
-      "Exportar a Excel para análisis",
-    ],
-    color: "bg-amber-500",
-  },
-  personal: {
-    titulo: "Gestión de Personal",
-    icono: "👥",
-    beneficios: [
-      "Registro de empleados con datos completos",
-      "Control de asistencia y horarios",
-      "Nómina: devengados, deducciones, neto a pagar",
-      "Apropiaciones para mediana empresa",
-      "Desprendible individual por empleado",
-      "Exportar para contador",
-    ],
-    color: "bg-purple-500",
-  },
-  pedidos: {
-    titulo: "Pedidos y Domicilios",
-    icono: "🛵",
-    beneficios: [
-      "Tus clientes compran desde la app",
-      "Recibes notificación de nuevos pedidos",
-      "Asignas repartidor disponible",
-      "Seguimiento en tiempo real",
-      "Confirmación de entrega",
-      "Historial de pedidos por cliente",
-    ],
-    color: "bg-sky-500",
-  },
-  reportes: {
-    titulo: "Reportes y Estadísticas",
-    icono: "📈",
-    beneficios: [
-      "Ventas por hora, día, semana, mes",
-      "Top 10 productos más vendidos",
-      "Márgenes de ganancia por producto",
-      "Métodos de pago: % y montos",
-      "Gráficos interactivos",
-      "Descargar en Excel para análisis",
-    ],
-    color: "bg-rose-500",
-  },
-  finanzas: {
-    titulo: "Finanzas y Contabilidad",
-    icono: "🏦",
-    beneficios: [
-      "Estado de Resultados (P&G)",
-      "Balance General simplificado",
-      "Libro Diario con cuentas contables",
-      "Cierre de caja con cuadre automático",
-      "Exportar para contador",
-      "API de conexión con software DIAN",
-    ],
-    color: "bg-teal-500",
-  },
-  tienda: {
-    titulo: "Tienda Online",
-    icono: "🛒",
-    beneficios: [
-      "Tus clientes ven tu catálogo actualizado",
-      "Búsqueda y filtro por categorías",
-      "Carrito de compras",
-      "Checkout con datos de entrega",
-      "Pago: Efectivo, Nequi, Daviplata, Bancolombia",
-      "Pedido confirmado con notificación",
-    ],
-    color: "bg-orange-500",
-  },
-  compras: {
-    titulo: "Compras a Proveedores",
-    icono: "🛍️",
-    beneficios: [
-      "Recomendación automática de compras según stock mínimo",
-      "Lista de productos por proveedor",
-      "Generación de órdenes de compra en Excel",
-      "Historial de compras",
-      "Control de precios y costos",
-      "Conexión con inventario y finanzas",
-    ],
-    color: "bg-indigo-500",
-  },
-  creditos: {
-    titulo: "Gestión de Créditos",
-    icono: "📋",
-    beneficios: [
-      "Registro de ventas a crédito",
-      "Control de saldos pendientes",
-      "Abonos y liquidación de créditos",
-      "Historial de créditos por cliente",
-      "Vinculación automática con finanzas (Cuentas por Cobrar)",
-      "Reporte de cartera",
-    ],
-    color: "bg-pink-500",
-  },
+  pos: { titulo: "Punto de Venta Inteligente", icono: "💰", beneficios: ["Productos por peso", "Cobro: Efectivo, Nequi, Daviplata", "Búsqueda rápida", "Descuento automático de inventario"], color: "bg-emerald-500" },
+  produccion: { titulo: "Producción y Recetas", icono: "🏭", beneficios: ["Fichas técnicas", "Food cost", "Cálculo automático", "Órdenes de producción"], color: "bg-lime-500" },
+  inventario: { titulo: "Inventario Inteligente", icono: "📦", beneficios: ["Control de stock", "Alarmas", "Predicción de agotamiento", "Múltiples unidades"], color: "bg-amber-500" },
+  personal: { titulo: "Gestión de Personal", icono: "👥", beneficios: ["Registro de empleados", "Control de asistencia", "Nómina", "Desprendible individual"], color: "bg-purple-500" },
+  pedidos: { titulo: "Pedidos y Domicilios", icono: "🛵", beneficios: ["Tus clientes compran desde la app", "Notificaciones", "Asignas repartidor", "Seguimiento"], color: "bg-sky-500" },
+  reportes: { titulo: "Reportes y Estadísticas", icono: "📈", beneficios: ["Ventas por hora", "Top productos", "Márgenes", "Gráficos"], color: "bg-rose-500" },
+  finanzas: { titulo: "Finanzas y Contabilidad", icono: "🏦", beneficios: ["Estado de Resultados", "Balance General", "Libro Diario", "Cierre de caja"], color: "bg-teal-500" },
+  tienda: { titulo: "Tienda Online", icono: "🛒", beneficios: ["Catálogo actualizado", "Búsqueda", "Carrito", "Checkout"], color: "bg-orange-500" },
+  compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
+  creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
 };
 
-const NEGOCIOS_CONFIG: Record<string, { titulo: string; icono: string; telefono: string; direccion: string; tenantId: string }> = {
-  panaderia: {
-    titulo: "Panadería Doña Rosa",
-    icono: "🍞",
-    telefono: "301-6111412",
-    direccion: "Calle 123 # 45-67",
-    tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76",
-  },
-  restaurante: {
-    titulo: "Restaurante Caribe",
-    icono: "🍽️",
-    telefono: "301-6111412",
-    direccion: "Carrera 8 # 12-34",
-    tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76",
-  },
-  carniceria: {
-    titulo: "Carnicería El Buen Sabor",
-    icono: "🥩",
-    telefono: "301-6111412",
-    direccion: "Avenida 5 # 20-10",
-    tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76",
-  },
-  salsamentaria: {
-    titulo: "Salsamentaria La Especial",
-    icono: "🧀",
-    telefono: "301-6111412",
-    direccion: "Calle 10 # 5-30",
-    tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76",
-  },
-  ferreteria: {
-    titulo: "Ferretería El Tornillo",
-    icono: "🔩",
-    telefono: "301-6111412",
-    direccion: "Carrera 12 # 8-50",
-    tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76",
-  },
-  tienda: {
-    titulo: "Tienda La Esquina De Calidad",
-    icono: "🏪",
-    telefono: "301-6111412",
-    direccion: "Calle 50 # 20-15",
-    tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee",
-  },
-};
+interface BusinessConfig {
+  id: string;
+  nombre_negocio: string;
+  gerente: string;
+  correo_contacto: string;
+  telefono: string;
+  direccion: string;
+  logo_url: string | null;
+  color_principal: string;
+  color_secundario: string;
+  plan: string;
+}
 
-export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
-  const negocio = NEGOCIOS_CONFIG[negocioSlug];
-  if (!negocio) return <div>Negocio no encontrado</div>;
-
+export default function NegocioHome({ negocioSlug }: { negocioSlug?: string }) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [config, setConfig] = useState<BusinessConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [ventasHoy, setVentasHoy] = useState({ total: 0, transacciones: 0, efectivo: 0, nequi: 0, daviplata: 0 });
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
 
-  const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600" },
-    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600" },
-    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600" },
-    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600" },
-    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600" },
-    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600" },
-    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600" },
-    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600" },
-    { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600" },
-    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-pink-200 text-pink-600" },
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      const tenant = await getTenantId();
+      setTenantId(tenant);
 
-  const ventasHoy = {
-    total: 450000,
-    transacciones: 24,
-    efectivo: 65,
-    nequi: 20,
-    daviplata: 15,
-  };
+      if (tenant) {
+        // Cargar configuración del negocio
+        const { data: configData } = await supabase
+          .from('business_config')
+          .select('*')
+          .eq('id', tenant)
+          .single();
+        setConfig(configData);
+
+        // Cargar ventas de hoy
+        try {
+          const res = await fetch(`/api/ventas?tenant=${tenant}&start=${new Date().toISOString().split('T')[0]}`);
+          const data = await res.json();
+          if (data.success) {
+            const total = data.data.reduce((sum: number, v: any) => sum + v.total, 0);
+            const transacciones = data.data.length;
+            // Calcular métodos de pago (simplificado)
+            const metodos = { efectivo: 0, nequi: 0, daviplata: 0 };
+            data.data.forEach((v: any) => {
+              if (v.metodo_pago === 'Efectivo') metodos.efectivo++;
+              else if (v.metodo_pago === 'Nequi') metodos.nequi++;
+              else if (v.metodo_pago === 'Daviplata') metodos.daviplata++;
+            });
+            const totalMetodos = transacciones || 1;
+            setVentasHoy({
+              total,
+              transacciones,
+              efectivo: Math.round((metodos.efectivo / totalMetodos) * 100),
+              nequi: Math.round((metodos.nequi / totalMetodos) * 100),
+              daviplata: Math.round((metodos.daviplata / totalMetodos) * 100),
+            });
+          }
+        } catch (e) {
+          // Si falla, usar datos de demostración
+          setVentasHoy({ total: 450000, transacciones: 24, efectivo: 65, nequi: 20, daviplata: 15 });
+        }
+      }
+      setLoading(false);
+    };
+    loadData();
+  }, [supabase]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-stone-500">Cargando...</div>
+      </div>
+    );
+  }
+
+  if (!config) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-stone-800">No se encontró configuración del negocio</h1>
+          <p className="text-stone-500">Contacta al administrador.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const primaryColor = config.color_principal || '#10B981';
+  const secondaryColor = config.color_secundario || '#059669';
+
+  const modulos = [
+    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600", href: `/demo/${negocioSlug || 'restaurante'}/pos?tenant=${tenantId}` },
+    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600", href: `/demo/${negocioSlug || 'restaurante'}/produccion?tenant=${tenantId}` },
+    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/demo/${negocioSlug || 'restaurante'}/inventario?tenant=${tenantId}` },
+    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600", href: `/demo/${negocioSlug || 'restaurante'}/personal?tenant=${tenantId}` },
+    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600", href: `/demo/${negocioSlug || 'restaurante'}/pedidos?tenant=${tenantId}` },
+    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600", href: `/demo/${negocioSlug || 'restaurante'}/reportes?tenant=${tenantId}` },
+    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600", href: `/demo/${negocioSlug || 'restaurante'}/finanzas?tenant=${tenantId}` },
+    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600", href: `/demo/${negocioSlug || 'restaurante'}/tienda?tenant=${tenantId}` },
+    { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600", href: `/demo/${negocioSlug || 'restaurante'}/compras?tenant=${tenantId}` },
+    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-pink-200 text-pink-600", href: `/demo/${negocioSlug || 'restaurante'}/creditos?tenant=${tenantId}` },
+  ];
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="bg-gradient-to-r from-stone-800 to-stone-700 text-white p-5">
+      <header className="p-5 text-white" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">{negocio.titulo}</h1>
-            <p className="text-stone-300 text-sm">{negocio.direccion} · Tel: {negocio.telefono}</p>
+          <div className="flex items-center gap-4">
+            {config.logo_url ? (
+              <img src={config.logo_url} alt={config.nombre_negocio} className="w-12 h-12 rounded-full object-cover border-2 border-white" />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">🏪</div>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold">{config.nombre_negocio}</h1>
+              <p className="text-white/80 text-sm">{config.direccion} · Tel: {config.telefono}</p>
+              <p className="text-white/70 text-xs">Gerente: {config.gerente}</p>
+            </div>
           </div>
-          <span className="px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500">
-            Caja Abierta
+          <span className="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 backdrop-blur-sm">
+            Plan {config.plan}
           </span>
         </div>
       </header>
 
       <div className="p-4">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white mb-4">
-          <p className="text-emerald-100 text-sm">VENTAS DE HOY (DEMO)</p>
+        <div className="rounded-2xl p-6 text-white mb-4" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
+          <p className="text-white/80 text-sm">VENTAS DE HOY</p>
           <p className="text-4xl font-bold mt-1">${ventasHoy.total.toLocaleString()}</p>
-          <p className="text-sm text-emerald-100 mt-2">
+          <p className="text-sm text-white/80 mt-2">
             {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata {ventasHoy.daviplata}%
           </p>
         </div>
@@ -251,7 +175,7 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
           {modulos.map((m) => (
             <Link
               key={m.id}
-              href={`/demo/${negocioSlug}/${m.id}`}
+              href={m.href}
               className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-xl transition transform hover:scale-105 active:scale-95 no-underline block`}
             >
               <m.icon className="w-7 h-7 mb-2" />
@@ -262,28 +186,18 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
         </div>
 
         <a
-          href={`https://wa.me/${negocio.telefono.replace(/-/g, '')}?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System`}
+          href={`https://wa.me/${config.telefono.replace(/-/g, '')}?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System`}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-6 w-full bg-green-500 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-green-600 transition shadow-md"
         >
-          <Phone className="w-5 h-5" /> Escribenos por WhatsApp · {negocio.telefono}
+          <Phone className="w-5 h-5" /> Escribenos por WhatsApp · {config.telefono}
         </a>
-
-        <Link
-          href="/registro"
-          className="mt-3 w-full bg-stone-800 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-stone-900 transition shadow-md"
-        >
-          🚀 Comenzar Gratis <ArrowRight className="w-5 h-5" />
-        </Link>
       </div>
 
       {moduloActivo && beneficiosPorModulo[moduloActivo] && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setModuloActivo(null)}>
-          <div
-            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {(() => {
               const b = beneficiosPorModulo[moduloActivo];
               return (
@@ -305,9 +219,6 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug: string }) {
                       </div>
                     ))}
                   </div>
-                  <Link href="/registro" className="mt-4 w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold flex items-center justify-center gap-2">
-                    🚀 Probar ahora gratis <ArrowRight className="w-5 h-5" />
-                  </Link>
                 </>
               );
             })()}
