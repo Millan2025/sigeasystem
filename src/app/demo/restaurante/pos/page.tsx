@@ -207,7 +207,7 @@ export default function POSPage() {
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-700" /></Link>
+        <BackButton />
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta - {titulo}</h1></div>
         <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
           <Share2 className="w-5 h-5" />
@@ -390,3 +390,4 @@ export default function POSPage() {
     </div>
   );
 }
+

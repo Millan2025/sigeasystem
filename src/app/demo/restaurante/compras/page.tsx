@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -266,9 +266,7 @@ export default function ComprasPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
-          <ArrowLeft className="w-5 h-5 text-stone-700" />
-        </Link>
+        <BackButton />
         <h1 className="text-xl font-bold text-stone-800">Compras - {negocio?.titulo}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
@@ -568,3 +566,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+

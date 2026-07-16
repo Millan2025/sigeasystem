@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -313,9 +313,7 @@ export default function ProduccionPage() {
     <div className="min-h-screen bg-stone-50">
       {/* Cabecera */}
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-20">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
-          <ArrowLeft className="w-5 h-5 text-stone-700" />
-        </Link>
+        <BackButton />
         <h1 className="text-xl font-bold text-stone-800 flex-1">
           Producción - {negocio?.titulo}
         </h1>
@@ -774,3 +772,4 @@ export default function ProduccionPage() {
     </div>
   );
 }
+
