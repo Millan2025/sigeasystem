@@ -126,16 +126,16 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug?: string }) {
   const secondaryColor = config.color_secundario || '#059669';
 
   const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600", href: `/demo/${negocioSlug || 'restaurante'}/pos?tenant=${tenantId}` },
-    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600", href: `/demo/${negocioSlug || 'restaurante'}/produccion?tenant=${tenantId}` },
-    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/demo/${negocioSlug || 'restaurante'}/inventario?tenant=${tenantId}` },
-    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600", href: `/demo/${negocioSlug || 'restaurante'}/personal?tenant=${tenantId}` },
-    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600", href: `/demo/${negocioSlug || 'restaurante'}/pedidos?tenant=${tenantId}` },
-    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600", href: `/demo/${negocioSlug || 'restaurante'}/reportes?tenant=${tenantId}` },
-    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600", href: `/demo/${negocioSlug || 'restaurante'}/finanzas?tenant=${tenantId}` },
-    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600", href: `/demo/${negocioSlug || 'restaurante'}/tienda?tenant=${tenantId}` },
-    { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600", href: `/demo/${negocioSlug || 'restaurante'}/compras?tenant=${tenantId}` },
-    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-pink-200 text-pink-600", href: `/demo/${negocioSlug || 'restaurante'}/creditos?tenant=${tenantId}` },
+    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
+    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600", href: `/${negocioSlug || "restaurante"}/produccion?tenant=${tenantId}` },
+    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/inventario?tenant=${tenantId}` },
+    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600", href: `/${negocioSlug || "restaurante"}/personal?tenant=${tenantId}` },
+    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600", href: `/${negocioSlug || "restaurante"}/pedidos?tenant=${tenantId}` },
+    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600", href: `/${negocioSlug || "restaurante"}/reportes?tenant=${tenantId}` },
+    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
+    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
+    { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600", href: `/${negocioSlug || "restaurante"}/compras?tenant=${tenantId}` },
+    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-pink-200 text-pink-600", href: `/${negocioSlug || "restaurante"}/creditos?tenant=${tenantId}` },
   ];
 
   return (
@@ -228,3 +228,4 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug?: string }) {
     </div>
   );
 }
+

@@ -46,7 +46,7 @@ export default function HomePage() {
             .single();
 
           const slug = configData?.nombre_negocio?.toLowerCase().replace(/\s+/g, '-') || 'restaurante';
-          router.push(`/demo/${slug}?tenant=${userData.tenant_id}`);
+          router.push(`/${slug}?tenant=${userData.tenant_id}`);
           return;
         }
 
@@ -72,3 +72,4 @@ export default function HomePage() {
     </div>
   );
 }
+
