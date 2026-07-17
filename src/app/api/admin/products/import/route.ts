@@ -9,40 +9,31 @@ const supabase = createClient(
 
 export async function POST(request: Request) {
   try {
+    console.log("🚀 Iniciando importación de productos...")
+    
     const formData = await request.formData()
     const file = formData.get('file') as File
     const tenant_id = formData.get('tenant_id') as string
 
-    console.log("📥 === INICIO IMPORTACIÓN ===")
     console.log("📥 Tenant ID recibido:", tenant_id)
-    console.log("📥 File recibido:", file ? `SI - ${file.name} (${file.size} bytes)` : "NO")
-    
+    console.log("📥 File recibido:", file ? `SI (${file.name}, ${file.size} bytes)` : "NO")
+
     if (!file || !tenant_id) {
-      console.log("❌ Error: Faltan archivo o tenant_id")
+      console.log("❌ Faltan: archivo o tenant_id")
       return NextResponse.json(
         { success: false, error: 'Faltan: archivo y tenant_id' },
         { status: 400 }
       )
     }
 
-    // Validar tipo de archivo
-    const validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/i)) {
-      console.log("❌ Error: Tipo de archivo no válido:", file.type)
-      return NextResponse.json(
-        { success: false, error: 'El archivo debe ser Excel (.xlsx o .xls)' },
-        { status: 400 }
-      )
-    }
-
     // Leer el archivo Excel
-    console.log("📖 Leyendo archivo Excel...")
+    console.log("📖 Leyendo archivo...")
     const buffer = await file.arrayBuffer()
     const workbook = XLSX.read(buffer, { type: 'array' })
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 })
 
-    console.log("📊 Filas totales:", rows.length)
+    console.log(`📄 Filas totales: ${rows.length}`)
 
     // Obtener encabezados (primera fila)
     const headers = rows[0] as string[]
@@ -54,7 +45,6 @@ export async function POST(request: Request) {
       const key = h?.toString().trim().toUpperCase()
       if (key) colMap[key] = idx
     })
-    console.log("🗺️ Mapa de columnas:", Object.keys(colMap))
 
     // Función para obtener valor de una fila por nombre de columna
     const getVal = (row: any[], colName: string) => {
@@ -64,7 +54,7 @@ export async function POST(request: Request) {
 
     // Omitir encabezado
     const productosData = rows.slice(1).filter(row => row.length > 1 && row[0] && row[0].toString().trim() !== '')
-    console.log("📦 Productos a procesar:", productosData.length)
+    console.log(`📦 Productos a importar: ${productosData.length}`)
 
     let importados = 0
     let errores = []
@@ -95,8 +85,8 @@ export async function POST(request: Request) {
       }
 
       try {
-        console.log(`🔄 Insertando: ${nombre} (tenant: ${tenant_id})`)
-        const { error } = await supabase
+        console.log(`🔄 Insertando producto: ${nombre} (SKU: ${sku})`)
+        const { data, error } = await supabase
           .from('productos')
           .insert({
             tenant_id,
@@ -122,22 +112,20 @@ export async function POST(request: Request) {
           })
 
         if (error) {
-          console.log(`❌ Error insertando ${nombre}:`, error.message)
+          console.error(`❌ Error al insertar ${nombre}:`, error.message)
           errores.push(`${nombre}: ${error.message}`)
         } else {
-          console.log(`✅ Insertado: ${nombre}`)
+          console.log(`✅ Producto ${nombre} insertado correctamente`)
           importados++
         }
       } catch (err) {
-        console.log(`❌ Error procesando ${nombre}:`, err)
+        console.error(`❌ Error en ${nombre}:`, err)
         errores.push(`${nombre}: Error de procesamiento`)
       }
     }
 
-    console.log(`📊 FINAL: ${importados} importados, ${errores.length} errores`)
-    if (errores.length > 0) {
-      console.log("❌ Errores:", errores)
-    }
+    console.log(`✅ Importación completada: ${importados} productos, ${errores.length} errores`)
+    console.log("📋 Errores:", errores)
 
     return NextResponse.json({
       success: true,
@@ -146,7 +134,11 @@ export async function POST(request: Request) {
     })
 
   } catch (error: any) {
-    console.log("❌ Error general:", error.message)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    console.error("❌ Error general en la importación:", error)
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { status: 500 })
   }
 }
