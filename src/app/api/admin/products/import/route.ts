@@ -2,91 +2,104 @@
 import { createClient } from '@supabase/supabase-js'
 import * as XLSX from 'xlsx'
 
+// Usar SERVICE_ROLE_KEY para bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function POST(request: Request) {
   try {
-    console.log("🚀 Iniciando importación de productos...")
-    
     const formData = await request.formData()
     const file = formData.get('file') as File
     const tenant_id = formData.get('tenant_id') as string
 
-    console.log("📥 Tenant ID recibido:", tenant_id)
-    console.log("📥 File recibido:", file ? `SI (${file.name}, ${file.size} bytes)` : "NO")
-
     if (!file || !tenant_id) {
-      console.log("❌ Faltan: archivo o tenant_id")
       return NextResponse.json(
         { success: false, error: 'Faltan: archivo y tenant_id' },
         { status: 400 }
       )
     }
 
-    // Leer el archivo Excel
-    console.log("📖 Leyendo archivo...")
-    const buffer = await file.arrayBuffer()
-    const workbook = XLSX.read(buffer, { type: 'array' })
-    const sheet = workbook.Sheets[workbook.SheetNames[0]]
-    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 })
-
-    console.log(`📄 Filas totales: ${rows.length}`)
-
-    // Obtener encabezados (primera fila)
-    const headers = rows[0] as string[]
-    console.log("📋 Encabezados:", headers)
-
-    // Mapear nombres de columnas a índices
-    const colMap: { [key: string]: number } = {}
-    headers.forEach((h, idx) => {
-      const key = h?.toString().trim().toUpperCase()
-      if (key) colMap[key] = idx
-    })
-
-    // Función para obtener valor de una fila por nombre de columna
-    const getVal = (row: any[], colName: string) => {
-      const idx = colMap[colName.toUpperCase()]
-      return idx !== undefined ? row[idx] : undefined
+    // Validar tamaño (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { success: false, error: 'El archivo es demasiado grande (máximo 10MB)' },
+        { status: 400 }
+      )
     }
 
-    // Omitir encabezado
-    const productosData = rows.slice(1).filter(row => row.length > 1 && row[0] && row[0].toString().trim() !== '')
-    console.log(`📦 Productos a importar: ${productosData.length}`)
+    // Leer el archivo
+    const buffer = await file.arrayBuffer()
+    let workbook
+    try {
+      workbook = XLSX.read(buffer, { type: 'array', cellDates: true, raw: true })
+    } catch (err: any) {
+      return NextResponse.json(
+        { success: false, error: 'Error al leer el archivo: ' + err.message },
+        { status: 400 }
+      )
+    }
+
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    if (!sheet) {
+      return NextResponse.json(
+        { success: false, error: 'El archivo no contiene hojas de cálculo' },
+        { status: 400 }
+      )
+    }
+
+    let jsonData: any[]
+    try {
+      jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' })
+    } catch (err: any) {
+      return NextResponse.json(
+        { success: false, error: 'Error al procesar el archivo: ' + err.message },
+        { status: 400 }
+      )
+    }
+
+    if (jsonData.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'El archivo está vacío o no tiene datos' },
+        { status: 400 }
+      )
+    }
 
     let importados = 0
-    let errores = []
+    let errores: string[] = []
 
-    for (const row of productosData) {
-      // Extraer valores por nombre de columna
-      const sku = getVal(row, 'SKU')?.toString().trim() || null
-      const nombre = getVal(row, 'NOMBRE')?.toString().trim()
-      const precio = parseFloat(getVal(row, 'PRECIO')) || 0
-      const precio_compra = parseFloat(getVal(row, 'COSTO')) || 0
-      const stock = parseInt(getVal(row, 'STOCK_INICIAL')) || 0
-      const unidad = getVal(row, 'UNIDAD_MEDIDA')?.toString().trim() || 'unidad'
-      const categoria = getVal(row, 'CATEGORIA')?.toString().trim() || 'General'
-      const proveedor = getVal(row, 'PROVEEDOR')?.toString().trim() || ''
-      const descripcion = getVal(row, 'DESCRIPCION')?.toString().trim() || ''
-      const stock_minimo = parseInt(getVal(row, 'STOCK_MINIMO')) || 0
-      const stock_maximo = parseInt(getVal(row, 'STOCK_MAXIMO')) || 0
-      const tipo_unidad = getVal(row, 'TIPO_UNIDAD')?.toString().trim() || 'unidad'
-      const venta_por_peso = getVal(row, 'VENTA_POR_PESO')?.toString().trim() === 'SI' || false
-      const icono = getVal(row, 'ICONO')?.toString().trim() || '📦'
-      const observaciones = getVal(row, 'OBSERVACIONES')?.toString().trim() || ''
-      const fecha_caducidad = getVal(row, 'FECHA_CADUCIDAD')?.toString().trim() || null
-      const ubicacion = getVal(row, 'UBICACION')?.toString().trim() || ''
+    for (let i = 0; i < jsonData.length; i++) {
+      const row = jsonData[i]
+      
+      const seccion = (row.SECCION || '').toString().trim().toUpperCase()
+      if (seccion !== 'PRODUCTO') continue
 
+      const nombre = (row.NOMBRE || '').toString().trim()
       if (!nombre) {
-        errores.push(`Fila sin nombre: ${row.join(',')}`)
+        errores.push(`Fila ${i + 2}: NOMBRE vacío`)
         continue
       }
 
+      const sku = (row.SKU || '').toString().trim() || null
+      const precio = parseFloat(row.PRECIO) || 0
+      const precio_compra = parseFloat(row.COSTO) || 0
+      const stock = parseInt(row.STOCK_INICIAL) || 0
+      const unidad = (row.UNIDAD_MEDIDA || '').toString().trim() || 'unidad'
+      const categoria = (row.CATEGORIA || '').toString().trim() || 'General'
+      const proveedor = (row.PROVEEDOR || '').toString().trim() || ''
+      const descripcion = (row.DESCRIPCION || '').toString().trim() || ''
+      const stock_minimo = parseInt(row.STOCK_MINIMO) || 0
+      const stock_maximo = parseInt(row.STOCK_MAXIMO) || 0
+      const tipo_unidad = (row.TIPO_UNIDAD || '').toString().trim() || 'unidad'
+      const venta_por_peso = (row.VENTA_POR_PESO || '').toString().trim().toUpperCase() === 'SI'
+      const icono = (row.ICONO || '').toString().trim() || '📦'
+      const observaciones = (row.OBSERVACIONES || '').toString().trim() || ''
+      const fecha_caducidad = (row.FECHA_CADUCIDAD || '').toString().trim() || null
+      const ubicacion = (row.UBICACION || '').toString().trim() || ''
+
       try {
-        console.log(`🔄 Insertando producto: ${nombre} (SKU: ${sku})`)
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('productos')
           .insert({
             tenant_id,
@@ -112,20 +125,14 @@ export async function POST(request: Request) {
           })
 
         if (error) {
-          console.error(`❌ Error al insertar ${nombre}:`, error.message)
           errores.push(`${nombre}: ${error.message}`)
         } else {
-          console.log(`✅ Producto ${nombre} insertado correctamente`)
           importados++
         }
-      } catch (err) {
-        console.error(`❌ Error en ${nombre}:`, err)
-        errores.push(`${nombre}: Error de procesamiento`)
+      } catch (err: any) {
+        errores.push(`${nombre}: Error de procesamiento (${err.message})`)
       }
     }
-
-    console.log(`✅ Importación completada: ${importados} productos, ${errores.length} errores`)
-    console.log("📋 Errores:", errores)
 
     return NextResponse.json({
       success: true,
@@ -134,11 +141,9 @@ export async function POST(request: Request) {
     })
 
   } catch (error: any) {
-    console.error("❌ Error general en la importación:", error)
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    }, { status: 500 })
+    return NextResponse.json(
+      { success: false, error: error.message || 'Error interno del servidor' },
+      { status: 500 }
+    )
   }
 }
