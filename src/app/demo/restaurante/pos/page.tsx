@@ -1,9 +1,9 @@
 ﻿"use client";
-import BackButton from "@/components/BackButton";
 
 import { useState, useEffect } from "react";
-import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
-import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { ShoppingCart, Minus, Plus, Trash2, X, Scale, Search, Share2 } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -16,13 +16,11 @@ interface CartItem {
 }
 
 export default function POSPage() {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const pathParts = pathname?.split('/') || [];
-  const negocioSlug = pathParts[2] || 'restaurante';
-  const negocioSlug = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocioSlug?.tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76';
-  const titulo = negocioSlug?.titulo || 'negocioSlug';
-  const categoria = negocioSlug?.categoria || '';
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const titulo = searchParams.get("titulo") || "Negocio";
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -36,9 +34,8 @@ export default function POSPage() {
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  // 🔥 Función para cargar productos (reutilizable)
   const cargarProductos = () => {
-    const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
+    const url = `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
       .then(d => {
@@ -59,10 +56,9 @@ export default function POSPage() {
       .catch(() => {});
   };
 
-  // Cargar productos al montar el componente y cuando cambie tenant o categoría
   useEffect(() => {
     cargarProductos();
-  }, [tenantId, categoria]);
+  }, [tenantId]);
 
   const cats = ['Todo', ...Array.from(new Set(productos.map(p => p.cat)))];
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
@@ -149,7 +145,6 @@ export default function POSPage() {
         setCart([]);
         setShowPay(false);
         setShowCart(false);
-        // 🔥 Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
@@ -185,7 +180,6 @@ export default function POSPage() {
         setShowCart(false);
         setShowCreditoModal(false);
         setCreditoData({ cliente: '', telefono: '', direccion: '' });
-        // 🔥 Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
@@ -200,7 +194,7 @@ export default function POSPage() {
     <div className="min-h-screen bg-stone-100 flex flex-col">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <BackButton />
-        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta - {titulo}</h1></div>
+        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
         <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
           <Share2 className="w-5 h-5" />
         </button>
@@ -382,12 +376,3 @@ export default function POSPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
