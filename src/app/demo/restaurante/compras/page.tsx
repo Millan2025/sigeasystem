@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -19,7 +20,7 @@ export default function ComprasPage() {
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
+  const categoriaNegocio = "";
 
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,21 @@ export default function ComprasPage() {
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
+  const [titulo, setTitulo] = useState('Compras');
+
+  // Obtener título del negocio
+  useEffect(() => {
+    const getTitulo = async () => {
+      try {
+        const res = await fetch(`/api/business-config?tenant=${tenantId}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          setTitulo(data.data.nombre_negocio || 'Compras');
+        }
+      } catch (e) {}
+    };
+    getTitulo();
+  }, [tenantId]);
 
   // Modal CRUD
   const [showModal, setShowModal] = useState(false);
@@ -99,8 +115,6 @@ export default function ComprasPage() {
       return;
     }
 
-    // Construir el array de items con cantidades y precios de compra
-    // Para simplificar, usaremos las cantidades sugeridas (stock mínimo - stock actual)
     const items = seleccionados.map((id) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
@@ -147,7 +161,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // GENERAR ORDEN DE COMPRA (EXCEL) - ya existente
+  // GENERAR ORDEN DE COMPRA (EXCEL)
   // ============================================
   const generarOrdenCompra = () => {
     if (seleccionados.length === 0) {
@@ -199,7 +213,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // CRUD DE PRODUCTOS (ya existente)
+  // CRUD DE PRODUCTOS
   // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
@@ -257,7 +271,7 @@ export default function ComprasPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800">Compras - {negocioSlug?.titulo}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Compras</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -409,7 +423,7 @@ export default function ComprasPage() {
               {productosFiltrados.length === 0 && (
                 <tr>
                   <td colSpan={10} className="p-4 text-center text-stone-500">
-                    No hay productos para este negocioSlug
+                    No hay productos para este negocio
                   </td>
                 </tr>
               )}
@@ -418,7 +432,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD de producto (sin cambios) */}
+      {/* Modal CRUD de producto */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -556,7 +570,3 @@ export default function ComprasPage() {
     </div>
   );
 }
-
-
-
-
