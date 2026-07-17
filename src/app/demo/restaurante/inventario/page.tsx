@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -21,6 +22,7 @@ export default function InventarioPage() {
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = ""; // Sin filtro por categoría
+
   const [movimientos, setMovimientos] = useState([]);
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,8 +53,6 @@ export default function InventarioPage() {
     fecha_caducidad: "",
     ubicacion: "",
   });
-
-  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
 
   // Cargar lista de productos para el selector de movimientos
   useEffect(() => {
@@ -366,7 +366,7 @@ export default function InventarioPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800">Inventario - {negocioSlug?.titulo}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Inventario</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -503,7 +503,7 @@ export default function InventarioPage() {
           </div>
         </div>
 
-        {/* Historial de movimientos (sin cambios) */}
+        {/* Historial de movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-stone-800">Últimos Movimientos</h2>
@@ -564,7 +564,7 @@ export default function InventarioPage() {
         </div>
       </div>
 
-      {/* Modal Movimiento (sin cambios) */}
+      {/* Modal Movimiento */}
       {showMovimientoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -638,7 +638,7 @@ export default function InventarioPage() {
         </div>
       )}
 
-      {/* Modal Producto (con todos los nuevos campos) */}
+      {/* Modal Producto */}
       {showProductoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -828,7 +828,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
-
-
-
