@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -48,11 +49,10 @@ const ESTADOS = {
 const LISTA_ESTADOS = ["pendiente", "confirmado", "preparando", "en_camino", "entregado"];
 
 export default function PedidosPage() {
-  const pathname = usePathname();`n  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = "";
-  const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[2] || "restaurante";
-  const negocioSlug = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocioSlug?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
@@ -131,11 +131,10 @@ export default function PedidosPage() {
 
       // 2. Si el nuevo estado es "confirmado" o "preparando", crear orden de producción
       if (nuevoEstado === "confirmado" || nuevoEstado === "preparando") {
-        // Mapear items del pedido a productos con nombre y unidad (por defecto 'unidad')
         const productosOrden = pedido.order_items.map((item) => ({
           nombre: item.productos?.nombre || "Producto",
           cantidad: item.quantity,
-          unidad: "unidad", // Podríamos obtenerlo de productos si existe
+          unidad: "unidad",
         }));
 
         const resProd = await fetch("/api/ordenes-produccion", {
@@ -159,7 +158,6 @@ export default function PedidosPage() {
         }
       }
 
-      // Recargar pedidos
       cargarPedidos();
     } catch (error) {
       alert("Error de conexión");
@@ -173,7 +171,6 @@ export default function PedidosPage() {
       return;
     }
 
-    // Preparar items
     const items = form.items.map((item) => ({
       product_id: item.product_id,
       quantity: item.quantity,
@@ -183,7 +180,7 @@ export default function PedidosPage() {
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const body = {
-      customer_id: null, // Podríamos crear o buscar cliente
+      customer_id: null,
       tenant_id: tenantId,
       items,
       direccion_entrega: form.direccion_entrega || "Pendiente",
@@ -212,14 +209,11 @@ export default function PedidosPage() {
     }
   };
 
-  // Eliminar pedido (solo si está pendiente)
   const eliminarPedido = async (id: string) => {
     if (!confirm("¿Eliminar este pedido?")) return;
-    // No implementamos DELETE en API, pero se puede agregar
     alert("Eliminación no implementada en API.");
   };
 
-  // Agregar item al formulario
   const agregarItem = () => {
     setForm({
       ...form,
@@ -238,7 +232,6 @@ export default function PedidosPage() {
     setForm({ ...form, items: form.items.filter((_, i) => i !== idx) });
   };
 
-  // Filtrar pedidos
   const pedidosFiltrados = pedidos.filter((p) => {
     if (filtroEstado === "todos") return true;
     return p.status === filtroEstado;
@@ -248,7 +241,7 @@ export default function PedidosPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos - {negocioSlug}</h1>
+        <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos</h1>
         <div className="flex items-center gap-2">
           <button onClick={cargarPedidos} className="p-2 hover:bg-stone-100 rounded-xl">
             <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -482,11 +475,3 @@ export default function PedidosPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
