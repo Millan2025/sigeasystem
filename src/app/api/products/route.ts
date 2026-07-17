@@ -1,9 +1,10 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// Usar SERVICE_ROLE_KEY para bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function GET(request: Request) {
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verificar SKU duplicado (si se proporciona)
+    // Verificar SKU duplicado
     if (sku) {
       const { data: existingSku } = await supabase
         .from('productos')
@@ -67,7 +68,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Insertar producto
     const { data, error } = await supabase
       .from('productos')
       .insert({
@@ -97,7 +97,6 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // 🔥 Si se crea con stock > 0, registrar movimiento de entrada
     if (stock > 0) {
       await supabase
         .from('movimientos_inventario')
@@ -133,7 +132,6 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Si se actualiza SKU, verificar duplicado (excluyendo el mismo producto)
     if (sku) {
       const { data: existingSku } = await supabase
         .from('productos')

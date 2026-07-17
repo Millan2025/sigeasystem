@@ -1,13 +1,14 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// Usar SERVICE_ROLE_KEY para bypass RLS
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
 export async function GET(request: Request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
     const url = new URL(request.url)
     const tenantId = url.searchParams.get('tenant') || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
     const productoId = url.searchParams.get('producto')
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
 
       const { data: allProducts, error: allErr } = await supabase
         .from('productos')
-        .select('id, nombre, stock, unidad')
+        .select('id, nombre, stock, unidad, sku, descripcion, categoria, stock_minimo, stock_maximo, ubicacion, fecha_caducidad, proveedor, observaciones')
         .eq('tenant_id', tenantId)
         .order('nombre')
 
@@ -86,11 +87,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
     const body = await request.json()
     const { producto_id, tipo, cantidad, motivo, tenant_id } = body
 
@@ -144,7 +140,6 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Recalcular stock actualizado y guardar en la tabla productos
     const { data: movsAll, error: movErr2 } = await supabase
       .from('movimientos_inventario')
       .select('tipo, cantidad')
