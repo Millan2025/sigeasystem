@@ -25,7 +25,10 @@ export default function TiendaPage() {
   const [checkoutData, setCheckoutData] = useState({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
   const [loading, setLoading] = useState(true);
 
-  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
 
   const cargarProductos = () => {
     setLoading(true);
@@ -196,6 +199,7 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 
 

@@ -7,7 +7,11 @@ import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
 import * as XLSX from "xlsx";
 
 export default function ReportesPage() {
-  const pathname = usePathname();`n  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = "";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = "";
   const [ventas, setVentas] = useState<any[]>([]);
   const [compras, setCompras] = useState<any[]>([]);
   const [finanzas, setFinanzas] = useState<any[]>([]);
@@ -17,10 +21,7 @@ export default function ReportesPage() {
   const [filtroFecha, setFiltroFecha] = useState({ start: "", end: "" });
   const [filtroMetodoPago, setFiltroMetodoPago] = useState("todos");
 
-  const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[2] || "restaurante";
-  const negocioSlug = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocioSlug?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -228,6 +229,7 @@ export default function ReportesPage() {
     </div>
   );
 }
+
 
 
 

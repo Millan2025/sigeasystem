@@ -6,7 +6,11 @@ import Link from "next/link";
 import { ArrowLeft, Plus, Edit, Trash2, RefreshCw } from "lucide-react";
 
 export default function ProductosAdminPage() {
-  const pathname = usePathname();`n  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = "";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = "";
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -193,6 +197,7 @@ export default function ProductosAdminPage() {
     </div>
   );
 }
+
 
 
 

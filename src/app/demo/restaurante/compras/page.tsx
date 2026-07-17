@@ -16,7 +16,10 @@ import * as XLSX from "xlsx";
 
 export default function ComprasPage() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
 
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -553,6 +556,7 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
 
 

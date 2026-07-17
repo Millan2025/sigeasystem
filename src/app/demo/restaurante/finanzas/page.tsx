@@ -25,7 +25,11 @@ const formatDate = (fechaStr: string) => {
 };
 
 export default function FinanzasPage() {
-  const pathname = usePathname();`n  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = "";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = "";
   const [transacciones, setTransacciones] = useState<any[]>([]);
   const [resumen, setResumen] = useState({
     ingresos: 0,
@@ -58,10 +62,7 @@ export default function FinanzasPage() {
   const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
   const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
 
-  const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[2] || "restaurante";
-  const negocioSlug = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocioSlug?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -609,6 +610,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
