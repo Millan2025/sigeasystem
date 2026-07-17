@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
 
@@ -16,6 +17,11 @@ interface Producto {
 
 export default function TiendaPage() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = "";
+
   const [productos, setProductos] = useState<Producto[]>([]);
   const [carrito, setCarrito] = useState<any[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -24,11 +30,6 @@ export default function TiendaPage() {
   const [mensaje, setMensaje] = useState("");
   const [checkoutData, setCheckoutData] = useState({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
   const [loading, setLoading] = useState(true);
-
-  const searchParams = useSearchParams();
-  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
-  const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
 
   const cargarProductos = () => {
     setLoading(true);
@@ -45,13 +46,11 @@ export default function TiendaPage() {
     cargarProductos();
   }, [tenantId, categoriaNegocio]);
 
-  // Cargar carrito desde localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`carrito_${negocioSlug}`);
     if (saved) setCarrito(JSON.parse(saved));
   }, []);
 
-  // Guardar carrito en localStorage
   useEffect(() => {
     localStorage.setItem(`carrito_${negocioSlug}`, JSON.stringify(carrito));
   }, [carrito]);
@@ -95,7 +94,6 @@ export default function TiendaPage() {
       alert("Carrito vacío");
       return;
     }
-    // Aquí se integrará con /api/orders en el futuro
     alert("✅ Pedido realizado con éxito. Pronto recibirás confirmación.");
     setCarrito([]);
     setShowCart(false);
@@ -105,7 +103,7 @@ export default function TiendaPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800">Tienda - {negocioSlug?.titulo}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Tienda</h1>
         <div className="flex-1"></div>
         <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -199,11 +197,3 @@ export default function TiendaPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
