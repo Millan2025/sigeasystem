@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,22 +14,9 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
-
 export default function ComprasPage() {
   const pathname = usePathname();
-  const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[2] || "restaurante";
-  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
-  const categoriaNegocio = negocio?.categoria || "";
+  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = ""; // Sin filtro por categoría, mostramos todos los productos del tenant
 
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -267,7 +254,7 @@ export default function ComprasPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800">Compras - {negocio?.titulo}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Compras - {negocioSlug?.titulo}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -419,7 +406,7 @@ export default function ComprasPage() {
               {productosFiltrados.length === 0 && (
                 <tr>
                   <td colSpan={10} className="p-4 text-center text-stone-500">
-                    No hay productos para este negocio
+                    No hay productos para este negocioSlug
                   </td>
                 </tr>
               )}
@@ -566,4 +553,6 @@ export default function ComprasPage() {
     </div>
   );
 }
+
+
 

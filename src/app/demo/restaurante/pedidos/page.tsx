@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -16,15 +16,6 @@ import {
   ShoppingBag,
   X,
 } from "lucide-react";
-
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
 
 interface PedidoItem {
   product_id: string;
@@ -57,11 +48,11 @@ const ESTADOS = {
 const LISTA_ESTADOS = ["pendiente", "confirmado", "preparando", "en_camino", "entregado"];
 
 export default function PedidosPage() {
-  const pathname = usePathname();
+  const pathname = usePathname();`n  const searchParams = useSearchParams();`n  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";`n  const negocioSlug = searchParams.get("slug") || "restaurante";`n  const categoriaNegocio = "";
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[2] || "restaurante";
-  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const tenantId = negocioSlug?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
@@ -257,7 +248,7 @@ export default function PedidosPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos - {negocio?.titulo}</h1>
+        <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos - {negocioSlug}</h1>
         <div className="flex items-center gap-2">
           <button onClick={cargarPedidos} className="p-2 hover:bg-stone-100 rounded-xl">
             <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -491,6 +482,9 @@ export default function PedidosPage() {
     </div>
   );
 }
+
+
+
 
 
 
