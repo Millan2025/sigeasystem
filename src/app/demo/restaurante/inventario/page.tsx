@@ -134,7 +134,7 @@ export default function InventarioPage() {
   };
 
   // CRUD Productos (con preservación de valores)
-    const guardarProducto = async () => {
+  const guardarProducto = async () => {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
     
@@ -169,69 +169,6 @@ export default function InventarioPage() {
     } else {
       // Nuevo producto: usar los valores del formulario
       bodyData = { ...formProducto };
-    }
-
-    const body = editandoProducto
-      ? { ...bodyData, id: editandoProducto.id, tenant_id: tenantId }
-      : { ...bodyData, tenant_id: tenantId };
-
-    console.log("📦 Guardando producto:", body);
-
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setShowProductoModal(false);
-      setEditandoProducto(null);
-      setFormProducto({
-        nombre: "",
-        categoria: "",
-        precio: 0,
-        precio_compra: 0,
-        stock: 0,
-        stock_minimo: 0,
-        stock_maximo: 0,
-        proveedor: "",
-        observaciones: "",
-        unidad: "unidad",
-        tipo_unidad: "unidad",
-        icono: "📦",
-        sku: "",
-        descripcion: "",
-        fecha_caducidad: "",
-        ubicacion: "",
-        imagen_url: "",
-      });
-      cargarDatos();
-      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success) setProductos(d.data || []);
-        });
-    } else {
-      alert(data.error || "Error al guardar producto");
-    }
-  };;
-    if (editandoProducto) {
-      const campos = [
-        "nombre", "categoria", "precio", "precio_compra", "stock",
-        "stock_minimo", "stock_maximo", "proveedor", "observaciones",
-        "unidad", "tipo_unidad", "icono", "sku", "descripcion",
-        "fecha_caducidad", "ubicacion", "imagen_url"
-      ];
-      campos.forEach((campo: string) => {
-        const valor = (formProducto as any)[campo];
-        const original = (editandoProducto as any)[campo];
-        if (typeof valor === "string" && valor.trim() === "" && original !== undefined) {
-          bodyData[campo] = original;
-        }
-        if (typeof valor === "number" && valor === 0 && original !== undefined && original !== 0) {
-          bodyData[campo] = original;
-        }
-      });
     }
 
     const body = editandoProducto
@@ -998,4 +935,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
