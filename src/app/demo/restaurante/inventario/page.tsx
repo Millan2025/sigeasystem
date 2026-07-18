@@ -138,8 +138,91 @@ export default function InventarioPage() {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
     
-    // Construir body con todos los campos, preservando valores originales
+    // Construir body
     let bodyData: any = {};
+    
+    if (editandoProducto) {
+      // Partir de los valores originales
+      bodyData = { ...editandoProducto };
+      // Campos que vienen del formulario (todas las propiedades)
+      const campos = [
+        "nombre", "categoria", "precio", "precio_compra", "stock",
+        "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+        "unidad", "tipo_unidad", "icono", "sku", "descripcion",
+        "fecha_caducidad", "ubicacion", "imagen_url"
+      ];
+      campos.forEach((campo) => {
+        const valorForm = (formProducto as any)[campo];
+        // Para imagen_url, solo actualizar si se subió una nueva imagen (imageFile no es null)
+        if (campo === "imagen_url") {
+          // Si se subió una imagen, usar la nueva URL, de lo contrario mantener la original
+          if (imageFile !== null) {
+            bodyData[campo] = valorForm; // valorForm es la nueva URL (ya actualizada en formProducto)
+          }
+          // Si no se subió imagen, no hacemos nada, se mantiene la original
+        } else {
+          // Para otros campos, si el valor del formulario es válido (no vacío para strings, o distinto de 0 para números), actualizar
+          if (typeof valorForm === "string" && valorForm.trim() !== "") {
+            bodyData[campo] = valorForm;
+          } else if (typeof valorForm === "number" && valorForm !== 0) {
+            bodyData[campo] = valorForm;
+          } else if (typeof valorForm === "number" && valorForm === 0 && (editandoProducto as any)[campo] === 0) {
+            bodyData[campo] = 0;
+          }
+          // Si está vacío, se mantiene el original (ya copiado)
+        }
+      });
+    } else {
+      // Nuevo producto: usar los valores del formulario
+      bodyData = { ...formProducto };
+    }
+
+    const body = editandoProducto
+      ? { ...bodyData, id: editandoProducto.id, tenant_id: tenantId }
+      : { ...bodyData, tenant_id: tenantId };
+
+    console.log('📦 Body enviado a /api/products:', body);
+    console.log('📸 imageFile:', imageFile);
+    console.log('🖼️ imagen_url en formProducto:', formProducto.imagen_url);
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowProductoModal(false);
+      setEditandoProducto(null);
+      setFormProducto({
+        nombre: "",
+        categoria: "",
+        precio: 0,
+        precio_compra: 0,
+        stock: 0,
+        stock_minimo: 0,
+        stock_maximo: 0,
+        proveedor: "",
+        observaciones: "",
+        unidad: "unidad",
+        tipo_unidad: "unidad",
+        icono: "📦",
+        sku: "",
+        descripcion: "",
+        fecha_caducidad: "",
+        ubicacion: "",
+        imagen_url: "",
+      });
+      cargarDatos();
+      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success) setProductos(d.data || []);
+        });
+    } else {
+      alert(data.error || "Error al guardar producto");
+    }
+  };;
     
     if (editandoProducto) {
       // Si estamos editando, usar los valores originales por defecto
@@ -936,5 +1019,6 @@ export default function InventarioPage() {
     </div>
   );
 }
+
 
 
