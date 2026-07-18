@@ -133,13 +133,13 @@ export default function InventarioPage() {
     }
   };
 
-  // CRUD Productos (MEJORADO: solo actualiza campos modificados)
+  // CRUD Productos (MEJORADO: envía siempre imagen_url)
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
 
-    // Si es nuevo producto, enviar todo el formulario
     if (!editandoProducto) {
+      // Nuevo producto
       const body = { ...formProducto, tenant_id: tenantId };
       const res = await fetch(url, {
         method: "POST",
@@ -158,37 +158,34 @@ export default function InventarioPage() {
       return;
     }
 
-    // Edición: solo enviar campos que cambiaron
-    const cambios: any = { id: editandoProducto.id, tenant_id: tenantId };
-    let hayCambios = false;
-
-    // Lista de campos a comparar
-    const campos = [
-      "nombre", "categoria", "precio", "precio_compra", "stock",
-      "stock_minimo", "stock_maximo", "proveedor", "observaciones",
-      "unidad", "tipo_unidad", "icono", "sku", "descripcion",
-      "fecha_caducidad", "ubicacion", "imagen_url"
-    ];
-
-    campos.forEach((campo) => {
-      const valorOriginal = (editandoProducto as any)[campo] ?? "";
-      const valorForm = (formProducto as any)[campo] ?? "";
-      // Si son diferentes, agregar al objeto de cambios
-      if (String(valorOriginal) !== String(valorForm)) {
-        cambios[campo] = valorForm;
-        hayCambios = true;
-      }
-    });
-
-    if (!hayCambios) {
-      alert("No se detectaron cambios.");
-      return;
-    }
+    // Edición: enviar todos los campos (con el valor actual de cada uno)
+    // Esto asegura que imagen_url no se pierda
+    const body = {
+      id: editandoProducto.id,
+      tenant_id: tenantId,
+      nombre: formProducto.nombre,
+      categoria: formProducto.categoria,
+      precio: formProducto.precio,
+      precio_compra: formProducto.precio_compra,
+      stock: formProducto.stock,
+      stock_minimo: formProducto.stock_minimo,
+      stock_maximo: formProducto.stock_maximo,
+      proveedor: formProducto.proveedor,
+      observaciones: formProducto.observaciones,
+      unidad: formProducto.unidad,
+      tipo_unidad: formProducto.tipo_unidad,
+      icono: formProducto.icono,
+      sku: formProducto.sku,
+      descripcion: formProducto.descripcion,
+      fecha_caducidad: formProducto.fecha_caducidad,
+      ubicacion: formProducto.ubicacion,
+      imagen_url: formProducto.imagen_url, // Siempre se envía, incluso si no cambió
+    };
 
     const res = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cambios),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if (data.success) {
@@ -459,25 +456,7 @@ export default function InventarioPage() {
         <button
           onClick={() => {
             setEditandoProducto(null);
-            setFormProducto({
-              nombre: "",
-              categoria: "",
-              precio: 0,
-              precio_compra: 0,
-              stock: 0,
-              stock_minimo: 0,
-              stock_maximo: 0,
-              proveedor: "",
-              observaciones: "",
-              unidad: "unidad",
-              tipo_unidad: "unidad",
-              icono: "📦",
-              sku: "",
-              descripcion: "",
-              fecha_caducidad: "",
-              ubicacion: "",
-              imagen_url: "",
-            });
+            resetFormulario();
             setShowProductoModal(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -947,4 +926,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
