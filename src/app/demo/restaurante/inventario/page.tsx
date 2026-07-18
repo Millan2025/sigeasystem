@@ -21,7 +21,7 @@ export default function InventarioPage() {
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoriaNegocio = ""; // Sin filtro por categoría
+  const categoriaNegocio = "";
 
   const [movimientos, setMovimientos] = useState([]);
   const [stock, setStock] = useState([]);
@@ -34,7 +34,9 @@ export default function InventarioPage() {
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [importando, setImportando] = useState(false);
 
-  const [editandoProducto, setEditandoProducto] = useState<any>(null); const [uploadingImage, setUploadingImage] = useState(false); const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editandoProducto, setEditandoProducto] = useState<any>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formProducto, setFormProducto] = useState({
     nombre: "",
     categoria: "",
@@ -47,12 +49,39 @@ export default function InventarioPage() {
     observaciones: "",
     unidad: "unidad",
     tipo_unidad: "unidad",
-    icono: "📦",`n    imagen_url: "",
+    icono: "📦",
     sku: "",
     descripcion: "",
     fecha_caducidad: "",
     ubicacion: "",
+    imagen_url: "",
   });
+
+  // Subir imagen
+  const subirImagen = async () => {
+    if (!imageFile) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("tenant_id", tenantId);
+    try {
+      const res = await fetch("/api/upload/product-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFormProducto({ ...formProducto, imagen_url: data.url });
+        setImageFile(null);
+        alert("✅ Imagen subida correctamente");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+    setUploadingImage(false);
+  };
 
   // Cargar lista de productos para el selector de movimientos
   useEffect(() => {
@@ -133,14 +162,14 @@ export default function InventarioPage() {
         observaciones: "",
         unidad: "unidad",
         tipo_unidad: "unidad",
-        icono: "📦",`n    imagen_url: "",
+        icono: "📦",
         sku: "",
         descripcion: "",
         fecha_caducidad: "",
         ubicacion: "",
+        imagen_url: "",
       });
       cargarDatos();
-      // Recargar lista de productos para el selector
       fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
         .then((r) => r.json())
         .then((d) => {
@@ -181,11 +210,12 @@ export default function InventarioPage() {
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "📦",`n      imagen_url: p.imagen_url || "",
+      icono: p.icono || "📦",
       sku: p.sku || "",
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
+      imagen_url: p.imagen_url || "",
     });
     setShowProductoModal(true);
   };
@@ -235,6 +265,7 @@ export default function InventarioPage() {
       "observaciones",
       "fecha_caducidad",
       "ubicacion",
+      "imagen_url",
     ];
     const filaEjemplo = [
       "PAN-001",
@@ -254,6 +285,7 @@ export default function InventarioPage() {
       "Producto estrella",
       "2026-07-15",
       "Estante A1",
+      "",
     ];
     const data = [columnas, filaEjemplo];
     const wb = XLSX.utils.book_new();
@@ -289,7 +321,7 @@ export default function InventarioPage() {
             sku, nombre, descripcion, categoria, precio, precio_compra,
             stock, stock_minimo, stock_maximo, unidad, tipo_unidad,
             venta_por_peso, icono, proveedor, observaciones,
-            fecha_caducidad, ubicacion
+            fecha_caducidad, ubicacion, imagen_url
           ] = row;
           try {
             const res = await fetch("/api/products", {
@@ -313,6 +345,7 @@ export default function InventarioPage() {
                 observaciones: observaciones?.trim() || "",
                 fecha_caducidad: fecha_caducidad?.trim() || null,
                 ubicacion: ubicacion?.trim() || "",
+                imagen_url: imagen_url?.trim() || null,
                 tenant_id: tenantId,
               }),
             });
@@ -392,11 +425,12 @@ export default function InventarioPage() {
               observaciones: "",
               unidad: "unidad",
               tipo_unidad: "unidad",
-              icono: "📦",`n    imagen_url: "",
+              icono: "📦",
               sku: "",
               descripcion: "",
               fecha_caducidad: "",
               ubicacion: "",
+              imagen_url: "",
             });
             setShowProductoModal(true);
           }}
@@ -458,6 +492,7 @@ export default function InventarioPage() {
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
                 <tr>
+                  <th className="text-left p-2 text-stone-700">Imagen</th>
                   <th className="text-left p-2 text-stone-700">SKU</th>
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
@@ -470,6 +505,13 @@ export default function InventarioPage() {
               <tbody>
                 {stockFiltrado.map((p: any) => (
                   <tr key={p.id} className="border-b border-stone-100">
+                    <td className="p-2">
+                      {p.imagen_url ? (
+                        <img src={p.imagen_url} alt={p.nombre} className="w-12 h-12 object-cover rounded-lg" />
+                      ) : (
+                        <span className="text-2xl">{p.icono || "📦"}</span>
+                      )}
+                    </td>
                     <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
                     <td className="p-2 text-stone-800 font-medium">
                       <div>{p.nombre}</div>
@@ -493,7 +535,7 @@ export default function InventarioPage() {
                 ))}
                 {stockFiltrado.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-4 text-center text-stone-500">
+                    <td colSpan={8} className="p-4 text-center text-stone-500">
                       No hay productos
                     </td>
                   </tr>
@@ -646,6 +688,35 @@ export default function InventarioPage() {
               {editandoProducto ? `Editar producto: ${editandoProducto.nombre}` : "Nuevo Producto"}
             </h3>
             <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Imagen del producto</label>
+                {formProducto.imagen_url && (
+                  <div className="mb-2">
+                    <img src={formProducto.imagen_url} alt="Producto" className="w-24 h-24 object-cover rounded-xl" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                />
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={subirImagen}
+                    disabled={uploadingImage}
+                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {uploadingImage ? "Subiendo..." : "Subir imagen"}
+                  </button>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-stone-700">SKU (Código de Barras)</label>
                 <input
@@ -828,5 +899,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
-
