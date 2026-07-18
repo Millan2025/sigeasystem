@@ -171,8 +171,8 @@ export default function InventarioPage() {
     ];
 
     campos.forEach((campo) => {
-      const valorOriginal = editandoProducto[campo] ?? "";
-      const valorForm = formProducto[campo] ?? "";
+      const valorOriginal = (editandoProducto as any)[campo] ?? "";
+      const valorForm = (formProducto as any)[campo] ?? "";
       // Si son diferentes, agregar al objeto de cambios
       if (String(valorOriginal) !== String(valorForm)) {
         cambios[campo] = valorForm;
@@ -947,3 +947,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+
