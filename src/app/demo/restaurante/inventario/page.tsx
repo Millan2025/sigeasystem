@@ -34,7 +34,7 @@ export default function InventarioPage() {
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [importando, setImportando] = useState(false);
 
-  const [editandoProducto, setEditandoProducto] = useState<any>(null);
+  const [editandoProducto, setEditandoProducto] = useState<any>(null); const [uploadingImage, setUploadingImage] = useState(false); const [imageFile, setImageFile] = useState<File | null>(null);
   const [formProducto, setFormProducto] = useState({
     nombre: "",
     categoria: "",
@@ -47,7 +47,7 @@ export default function InventarioPage() {
     observaciones: "",
     unidad: "unidad",
     tipo_unidad: "unidad",
-    icono: "📦",
+    icono: "📦",`n    imagen_url: "",
     sku: "",
     descripcion: "",
     fecha_caducidad: "",
@@ -133,7 +133,7 @@ export default function InventarioPage() {
         observaciones: "",
         unidad: "unidad",
         tipo_unidad: "unidad",
-        icono: "📦",
+        icono: "📦",`n    imagen_url: "",
         sku: "",
         descripcion: "",
         fecha_caducidad: "",
@@ -181,7 +181,7 @@ export default function InventarioPage() {
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "📦",
+      icono: p.icono || "📦",`n      imagen_url: p.imagen_url || "",
       sku: p.sku || "",
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
@@ -392,7 +392,7 @@ export default function InventarioPage() {
               observaciones: "",
               unidad: "unidad",
               tipo_unidad: "unidad",
-              icono: "📦",
+              icono: "📦",`n    imagen_url: "",
               sku: "",
               descripcion: "",
               fecha_caducidad: "",
@@ -828,4 +828,5 @@ export default function InventarioPage() {
     </div>
   );
 }
+
 

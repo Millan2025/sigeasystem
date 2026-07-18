@@ -1,7 +1,6 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Usar SERVICE_ROLE_KEY para bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -20,16 +19,11 @@ export async function GET(request: Request) {
       .eq('tenant_id', tenantId)
       .order('nombre')
 
-    if (categoria && categoria !== 'null') {
-      query = query.ilike('categoria', categoria)
-    }
-    if (search) {
-      query = query.ilike('nombre', `%${search}%`)
-    }
+    if (categoria && categoria !== 'null') query = query.ilike('categoria', categoria)
+    if (search) query = query.ilike('nombre', `%${search}%`)
 
     const { data, error } = await query
     if (error) throw error
-
     return NextResponse.json({ success: true, data: data || [] })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -42,25 +36,25 @@ export async function POST(request: Request) {
     const {
       nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
       venta_por_peso, icono, tenant_id, proveedor, stock_minimo, stock_maximo,
-      observaciones, sku, descripcion, fecha_caducidad, ubicacion
+      observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url
     } = body
 
     if (!nombre || !categoria || !tenant_id) {
       return NextResponse.json(
-        { success: false, error: 'Faltan campos: nombre, categoria, tenant_id' },
+        { success: false, error: 'Faltan campos obligatorios' },
         { status: 400 }
       )
     }
 
-    // Verificar SKU duplicado
+    // Verificar SKU duplicado (solo si se proporciona)
     if (sku) {
-      const { data: existingSku } = await supabase
+      const { data: existing } = await supabase
         .from('productos')
         .select('id')
         .eq('sku', sku)
         .eq('tenant_id', tenant_id)
         .maybeSingle()
-      if (existingSku) {
+      if (existing) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un producto con ese SKU' },
           { status: 409 }
@@ -71,26 +65,11 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from('productos')
       .insert({
-        nombre,
-        categoria,
-        precio: precio || 0,
-        precio_compra: precio_compra || 0,
-        stock: stock || 0,
-        stock_minimo: stock_minimo || 0,
-        stock_maximo: stock_maximo || 0,
-        unidad: unidad || 'unidad',
-        tipo_unidad: tipo_unidad || 'unidad',
-        venta_por_peso: venta_por_peso || false,
-        icono: icono || '📦',
-        proveedor: proveedor || '',
-        observaciones: observaciones || '',
-        sku: sku || null,
-        descripcion: descripcion || '',
-        fecha_caducidad: fecha_caducidad || null,
-        ubicacion: ubicacion || '',
-        tenant_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        nombre, categoria, precio, precio_compra, stock, stock_minimo, stock_maximo,
+        unidad, tipo_unidad, venta_por_peso, icono, proveedor, observaciones,
+        sku: sku || null, descripcion: descripcion || '', fecha_caducidad: fecha_caducidad || null,
+        ubicacion: ubicacion || '', tenant_id, imagen_url: imagen_url || null,
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString()
       })
       .select()
       .single()
@@ -122,7 +101,7 @@ export async function PUT(request: Request) {
     const {
       id, nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
       venta_por_peso, icono, proveedor, stock_minimo, stock_maximo,
-      observaciones, sku, descripcion, fecha_caducidad, ubicacion
+      observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url
     } = body
 
     if (!id) {
@@ -132,15 +111,23 @@ export async function PUT(request: Request) {
       )
     }
 
+    // Obtener tenant_id del producto
+    const { data: existing, error: fetchErr } = await supabase
+      .from('productos')
+      .select('tenant_id')
+      .eq('id', id)
+      .single()
+    if (fetchErr) throw fetchErr
+
     if (sku) {
-      const { data: existingSku } = await supabase
+      const { data: dup } = await supabase
         .from('productos')
         .select('id')
         .eq('sku', sku)
-        .eq('tenant_id', (await supabase.from('productos').select('tenant_id').eq('id', id).single()).data?.tenant_id)
+        .eq('tenant_id', existing.tenant_id)
         .neq('id', id)
         .maybeSingle()
-      if (existingSku) {
+      if (dup) {
         return NextResponse.json(
           { success: false, error: 'Ya existe otro producto con ese SKU' },
           { status: 409 }
@@ -151,23 +138,10 @@ export async function PUT(request: Request) {
     const { data, error } = await supabase
       .from('productos')
       .update({
-        nombre,
-        categoria,
-        precio,
-        precio_compra,
-        stock,
-        stock_minimo,
-        stock_maximo,
-        unidad,
-        tipo_unidad,
-        venta_por_peso,
-        icono,
-        proveedor,
-        observaciones,
-        sku: sku || null,
-        descripcion: descripcion || '',
-        fecha_caducidad: fecha_caducidad || null,
-        ubicacion: ubicacion || '',
+        nombre, categoria, precio, precio_compra, stock, stock_minimo, stock_maximo,
+        unidad, tipo_unidad, venta_por_peso, icono, proveedor, observaciones,
+        sku: sku || null, descripcion: descripcion || '', fecha_caducidad: fecha_caducidad || null,
+        ubicacion: ubicacion || '', imagen_url: imagen_url || null,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -175,7 +149,6 @@ export async function PUT(request: Request) {
       .single()
 
     if (error) throw error
-
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -186,49 +159,42 @@ export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url)
     const id = url.searchParams.get('id')
-
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Se requiere el ID del producto' },
+        { success: false, error: 'Se requiere ID' },
         { status: 400 }
       )
     }
 
-    const { data: movimientos, error: movErr } = await supabase
+    // Verificar movimientos y ventas
+    const { data: movs, error: movErr } = await supabase
       .from('movimientos_inventario')
       .select('id')
       .eq('producto_id', id)
       .limit(1)
-
     if (movErr) throw movErr
-    if (movimientos && movimientos.length > 0) {
+    if (movs && movs.length > 0) {
       return NextResponse.json(
-        { success: false, error: 'No se puede eliminar el producto porque tiene movimientos de inventario asociados' },
+        { success: false, error: 'No se puede eliminar: tiene movimientos de inventario' },
         { status: 409 }
       )
     }
 
-    const { data: ventas, error: ventErr } = await supabase
+    const { data: ventas, error: venErr } = await supabase
       .from('ventas')
       .select('id')
       .eq('producto_id', id)
       .limit(1)
-
-    if (ventErr) throw ventErr
+    if (venErr) throw venErr
     if (ventas && ventas.length > 0) {
       return NextResponse.json(
-        { success: false, error: 'No se puede eliminar el producto porque tiene ventas asociadas' },
+        { success: false, error: 'No se puede eliminar: tiene ventas asociadas' },
         { status: 409 }
       )
     }
 
-    const { error } = await supabase
-      .from('productos')
-      .delete()
-      .eq('id', id)
-
+    const { error } = await supabase.from('productos').delete().eq('id', id)
     if (error) throw error
-
     return NextResponse.json({ success: true, message: 'Producto eliminado' })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
