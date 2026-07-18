@@ -34,8 +34,32 @@ export default function POSPage() {
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  const cargarProductos = () => {
+    const cargarProductos = () => {
     const url = `/api/products?tenant=${tenantId}`;
+    console.log("🔍 POS: Cargando productos con tenant:", tenantId);
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        console.log("📦 POS: Productos recibidos:", d.data?.length || 0);
+        if (d.success && d.data.length > 0) {
+          setProductos(d.data.map((p: any) => ({
+            id: p.id,
+            nombre: p.nombre,
+            icono: p.icono || '📦',
+            imagen_url: p.imagen_url || null,
+            precio: p.precio || 0,
+            stock: p.stock || 0,
+            cat: p.categoria || 'General',
+            esPeso: p.venta_por_peso || false,
+            tipo_unidad: p.tipo_unidad || 'unidad',
+            precioPorKg: p.precioporkg || p.precio || 0,
+          })));
+        } else {
+          console.warn("⚠️ POS: No se recibieron productos o la respuesta no fue exitosa");
+        }
+      })
+      .catch((err) => console.error("❌ POS: Error al cargar productos:", err));
+  };`;
     fetch(url)
       .then(r => r.json())
       .then(d => {
@@ -384,3 +408,4 @@ export default function POSPage() {
     </div>
   );
 }
+
