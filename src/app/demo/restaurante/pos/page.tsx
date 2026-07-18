@@ -4,24 +4,23 @@ import BackButton from "@/components/BackButton";
 import { useState, useEffect } from "react";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
   precio?: number; precioPorKg?: number; tipo_unidad?: string; venta_por_peso?: boolean;
+  imagen_url?: string;
 }
 
 interface CartItem {
   id: string; nombre: string; icono: string; cantidad: number; precioUnitario: number; subtotal: number;
-  esPeso?: boolean; unidad?: string;
+  esPeso?: boolean; unidad?: string; imagen_url?: string;
 }
 
 export default function POSPage() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoria = "";
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -34,25 +33,9 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
-  const [titulo, setTitulo] = useState('Negocio');
 
-  // Obtener título del negocio
-  useEffect(() => {
-    const getTitulo = async () => {
-      try {
-        const res = await fetch(`/api/business-config?tenant=${tenantId}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          setTitulo(data.data.nombre_negocio || 'Negocio');
-        }
-      } catch (e) {}
-    };
-    getTitulo();
-  }, [tenantId]);
-
-  // 🔥 Función para cargar productos (reutilizable)
   const cargarProductos = () => {
-    const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
+    const url = `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
       .then(d => {
@@ -61,6 +44,7 @@ export default function POSPage() {
             id: p.id,
             nombre: p.nombre,
             icono: p.icono || '📦',
+            imagen_url: p.imagen_url || null,
             precio: p.precio || 0,
             stock: p.stock || 0,
             cat: p.categoria || 'General',
@@ -73,10 +57,9 @@ export default function POSPage() {
       .catch(() => {});
   };
 
-  // Cargar productos al montar el componente y cuando cambie tenant o categoría
   useEffect(() => {
     cargarProductos();
-  }, [tenantId, categoria]);
+  }, [tenantId]);
 
   const cats = ['Todo', ...Array.from(new Set(productos.map(p => p.cat)))];
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
@@ -92,7 +75,7 @@ export default function POSPage() {
     setCart(prev => {
       const exist = prev.find(i => i.id === p.id);
       if (exist) return prev.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario) * (i.cantidad + 1) } : i);
-      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0, esPeso: false }];
+      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, imagen_url: p.imagen_url, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0, esPeso: false }];
     });
   };
 
@@ -117,6 +100,7 @@ export default function POSPage() {
       id: producto.id + '-peso',
       nombre: `${producto.nombre} (${cantidad} ${unidad})`,
       icono: producto.icono,
+      imagen_url: producto.imagen_url,
       cantidad: cantidadBase,
       precioUnitario: precioFinal,
       subtotal: precioFinal,
@@ -212,7 +196,7 @@ export default function POSPage() {
     <div className="min-h-screen bg-stone-100 flex flex-col">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
         <BackButton />
-        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta - {titulo}</h1></div>
+        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
         <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
           <Share2 className="w-5 h-5" />
         </button>
@@ -242,7 +226,11 @@ export default function POSPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition" onClick={() => addItem(p)}>
-                <div className="text-3xl">{p.icono}</div>
+                {p.imagen_url ? (
+                  <img src={p.imagen_url} alt={p.nombre} className="w-full h-24 object-cover rounded-lg mb-1" />
+                ) : (
+                  <div className="text-4xl text-center">{p.icono}</div>
+                )}
                 <div className="font-semibold text-stone-800 text-sm truncate">{p.nombre}</div>
                 <div className="text-xs text-stone-600">{p.cat}</div>
                 <div className="flex justify-between items-center mt-1">
@@ -268,7 +256,11 @@ export default function POSPage() {
               <>
                 {cart.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 border-b border-stone-100 py-2">
-                    <span className="text-2xl">{item.icono}</span>
+                    {item.imagen_url ? (
+                      <img src={item.imagen_url} alt={item.nombre} className="w-12 h-12 object-cover rounded-lg" />
+                    ) : (
+                      <span className="text-2xl">{item.icono}</span>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm text-stone-800 truncate">{item.nombre}</div>
                       <div className="text-xs text-stone-600">${item.precioUnitario.toLocaleString()} c/u</div>
@@ -292,7 +284,7 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* Modal Pago */}
+      {/* Modal Pago (sin cambios) */}
       {showPay && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -310,7 +302,7 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* Modal Peso */}
+      {/* Modales Peso, Crédito, Compartir (sin cambios, ya los tienen) */}
       {pesoModal.producto && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -333,7 +325,6 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* Modal Crédito */}
       {showCreditoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -352,7 +343,6 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* Modal Compartir Accesos */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -394,4 +384,3 @@ export default function POSPage() {
     </div>
   );
 }
-

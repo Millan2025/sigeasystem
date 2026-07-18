@@ -13,6 +13,7 @@ interface Producto {
   stock: number;
   icono: string;
   categoria: string;
+  imagen_url?: string;
 }
 
 export default function TiendaPage() {
@@ -134,7 +135,11 @@ export default function TiendaPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-                <div className="text-4xl text-center">{p.icono || "📦"}</div>
+                {p.imagen_url ? (
+                  <img src={p.imagen_url} alt={p.nombre} className="w-full h-32 object-cover rounded-xl mb-2" />
+                ) : (
+                  <div className="text-4xl text-center mb-2">{p.icono || "📦"}</div>
+                )}
                 <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
                 <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
                 <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
@@ -159,7 +164,11 @@ export default function TiendaPage() {
               <>
                 {carrito.map(item => (
                   <div key={item.id} className="flex items-center gap-3 border-b border-stone-100 py-2">
-                    <span className="text-2xl">{item.icono}</span>
+                    {item.imagen_url ? (
+                      <img src={item.imagen_url} alt={item.nombre} className="w-12 h-12 object-cover rounded-lg" />
+                    ) : (
+                      <span className="text-2xl">{item.icono}</span>
+                    )}
                     <div className="flex-1">
                       <p className="font-medium text-stone-800">{item.nombre}</p>
                       <p className="text-sm text-stone-600">${item.precio.toLocaleString()}</p>
