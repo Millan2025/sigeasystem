@@ -174,6 +174,7 @@ export default function InventarioPage() {
     const body = editandoProducto
       ? { ...bodyData, id: editandoProducto.id, tenant_id: tenantId }
       : { ...bodyData, tenant_id: tenantId };
+    console.log('📦 Body enviado a /api/products:', body);
 
     const res = await fetch(url, {
       method,
@@ -923,7 +924,7 @@ export default function InventarioPage() {
                 Cancelar
               </button>
               <button
-                onClick={guardarProducto}
+                onClick={guardarProducto} disabled={uploadingImage}
                 className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
               >
                 Guardar
@@ -935,3 +936,5 @@ export default function InventarioPage() {
     </div>
   );
 }
+
+
