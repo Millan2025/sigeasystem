@@ -134,11 +134,87 @@ export default function InventarioPage() {
   };
 
   // CRUD Productos (con preservación de valores)
-  const guardarProducto = async () => {
+    const guardarProducto = async () => {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
     
-    let bodyData: any = { ...formProducto };
+    // Construir body con todos los campos, preservando valores originales
+    let bodyData: any = {};
+    
+    if (editandoProducto) {
+      // Si estamos editando, usar los valores originales por defecto
+      bodyData = { ...editandoProducto };
+      // Sobrescribir solo los campos que el usuario modificó en el formulario
+      const campos = [
+        "nombre", "categoria", "precio", "precio_compra", "stock",
+        "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+        "unidad", "tipo_unidad", "icono", "sku", "descripcion",
+        "fecha_caducidad", "ubicacion", "imagen_url"
+      ];
+      campos.forEach((campo) => {
+        const valorForm = (formProducto as any)[campo];
+        // Si el campo en el formulario tiene un valor (no vacío), lo usamos
+        // Para strings: si no está vacío, lo actualizamos
+        // Para números: si es distinto de 0 o si el original era 0, lo actualizamos
+        if (typeof valorForm === "string" && valorForm.trim() !== "") {
+          bodyData[campo] = valorForm;
+        } else if (typeof valorForm === "number" && valorForm !== 0) {
+          bodyData[campo] = valorForm;
+        } else if (typeof valorForm === "number" && valorForm === 0 && (editandoProducto as any)[campo] === 0) {
+          // Si el original también es 0, mantenerlo
+          bodyData[campo] = 0;
+        }
+        // Si el campo está vacío, se mantiene el original (ya copiado)
+      });
+    } else {
+      // Nuevo producto: usar los valores del formulario
+      bodyData = { ...formProducto };
+    }
+
+    const body = editandoProducto
+      ? { ...bodyData, id: editandoProducto.id, tenant_id: tenantId }
+      : { ...bodyData, tenant_id: tenantId };
+
+    console.log("📦 Guardando producto:", body);
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowProductoModal(false);
+      setEditandoProducto(null);
+      setFormProducto({
+        nombre: "",
+        categoria: "",
+        precio: 0,
+        precio_compra: 0,
+        stock: 0,
+        stock_minimo: 0,
+        stock_maximo: 0,
+        proveedor: "",
+        observaciones: "",
+        unidad: "unidad",
+        tipo_unidad: "unidad",
+        icono: "📦",
+        sku: "",
+        descripcion: "",
+        fecha_caducidad: "",
+        ubicacion: "",
+        imagen_url: "",
+      });
+      cargarDatos();
+      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success) setProductos(d.data || []);
+        });
+    } else {
+      alert(data.error || "Error al guardar producto");
+    }
+  };;
     if (editandoProducto) {
       const campos = [
         "nombre", "categoria", "precio", "precio_compra", "stock",
@@ -922,3 +998,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+
