@@ -138,7 +138,7 @@ export default function InventarioPage() {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
     
-    let bodyData = { ...formProducto };
+    let bodyData: any = { ...formProducto };
     if (editandoProducto) {
       const campos = [
         "nombre", "categoria", "precio", "precio_compra", "stock",
@@ -146,9 +146,9 @@ export default function InventarioPage() {
         "unidad", "tipo_unidad", "icono", "sku", "descripcion",
         "fecha_caducidad", "ubicacion", "imagen_url"
       ];
-      campos.forEach((campo) => {
-        const valor = formProducto[campo];
-        const original = editandoProducto[campo];
+      campos.forEach((campo: string) => {
+        const valor = (formProducto as any)[campo];
+        const original = (editandoProducto as any)[campo];
         if (typeof valor === "string" && valor.trim() === "" && original !== undefined) {
           bodyData[campo] = original;
         }
