@@ -133,73 +133,34 @@ export default function InventarioPage() {
     }
   };
 
-  // CRUD Productos
-    const guardarProducto = async () => {
+  // CRUD Productos (con preservación de valores)
+  const guardarProducto = async () => {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
     
-    // Si estamos editando, usar los valores actuales para campos vacíos
     let bodyData = { ...formProducto };
     if (editandoProducto) {
-      // Para cada campo, si está vacío, usar el valor del producto original
-      const campos = ['nombre', 'categoria', 'precio', 'precio_compra', 'stock', 'stock_minimo', 'stock_maximo', 'proveedor', 'observaciones', 'unidad', 'tipo_unidad', 'icono', 'sku', 'descripcion', 'fecha_caducidad', 'ubicacion', 'imagen_url'];
-      campos.forEach(campo => {
+      const campos = [
+        "nombre", "categoria", "precio", "precio_compra", "stock",
+        "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+        "unidad", "tipo_unidad", "icono", "sku", "descripcion",
+        "fecha_caducidad", "ubicacion", "imagen_url"
+      ];
+      campos.forEach((campo) => {
         const valor = formProducto[campo];
         const original = editandoProducto[campo];
-        // Si el campo es string y está vacío, usar original
-        if (typeof valor === 'string' && valor.trim() === '' && original !== undefined) {
+        if (typeof valor === "string" && valor.trim() === "" && original !== undefined) {
           bodyData[campo] = original;
         }
-        // Si es número y es 0, usar original (a menos que original también sea 0)
-        if (typeof valor === 'number' && valor === 0 && original !== undefined && original !== 0) {
+        if (typeof valor === "number" && valor === 0 && original !== undefined && original !== 0) {
           bodyData[campo] = original;
         }
       });
     }
-    
+
     const body = editandoProducto
       ? { ...bodyData, id: editandoProducto.id, tenant_id: tenantId }
       : { ...bodyData, tenant_id: tenantId };
-
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setShowProductoModal(false);
-      setEditandoProducto(null);
-      setFormProducto({
-        nombre: "",
-        categoria: "",
-        precio: 0,
-        precio_compra: 0,
-        stock: 0,
-        stock_minimo: 0,
-        stock_maximo: 0,
-        proveedor: "",
-        observaciones: "",
-        unidad: "unidad",
-        tipo_unidad: "unidad",
-        icono: "📦",
-        sku: "",
-        descripcion: "",
-        fecha_caducidad: "",
-        ubicacion: "",
-        imagen_url: "",
-      });
-      cargarDatos();
-      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success) setProductos(d.data || []);
-        });
-    } else {
-      alert(data.error || "Error al guardar producto");
-    }
-  };
-      : { ...formProducto, tenant_id: tenantId };
 
     const res = await fetch(url, {
       method,
@@ -298,6 +259,7 @@ export default function InventarioPage() {
       Ubicación: p.ubicacion || "",
       "Fecha Caducidad": p.fecha_caducidad || "",
       Observaciones: p.observaciones || "",
+      Imagen: p.imagen_url || "",
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -748,6 +710,7 @@ export default function InventarioPage() {
               {editandoProducto ? `Editar producto: ${editandoProducto.nombre}` : "Nuevo Producto"}
             </h3>
             <div className="space-y-3">
+              {/* Imagen */}
               <div>
                 <label className="block text-sm font-medium text-stone-700">Imagen del producto</label>
                 {formProducto.imagen_url && (
@@ -959,5 +922,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
-
