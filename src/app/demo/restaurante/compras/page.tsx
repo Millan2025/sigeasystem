@@ -54,7 +54,6 @@ interface Producto {
   imagen_url?: string;
   categoria?: string;
   stock?: number;
-  // otros campos que pueda tener
 }
 
 export default function ComprasPage() {
@@ -73,6 +72,9 @@ export default function ComprasPage() {
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
+  const [ivaPorcentaje, setIvaPorcentaje] = useState(19);
+  const [retencionPorcentaje, setRetencionPorcentaje] = useState(2.5);
+  const [icaPorcentaje, setIcaPorcentaje] = useState(0.5);
 
   // Modal CRUD
   const [showModal, setShowModal] = useState(false);
@@ -87,27 +89,21 @@ export default function ComprasPage() {
     items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
     proveedor: string;
     metodo_pago: string;
+    subtotal: number;
+    iva: number;
+    retencion: number;
+    ica: number;
     total: number;
   }>({
     items: [],
     proveedor: "",
     metodo_pago: "contado",
+    subtotal: 0,
+    iva: 0,
+    retencion: 0,
+    ica: 0,
     total: 0,
   });
-
-  // Obtener título del negocio
-  useEffect(() => {
-    const getTitulo = async () => {
-      try {
-        const res = await fetch(`/api/business-config?tenant=${tenantId}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          // setTitulo(data.data.nombre_negocio || 'Compras');
-        }
-      } catch (e) {}
-    };
-    getTitulo();
-  }, [tenantId]);
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -181,12 +177,20 @@ export default function ComprasPage() {
       return;
     }
 
-    const total = items.reduce((sum, item) => sum + (item.cantidad * item.precio_compra), 0);
+    const subtotal = items.reduce((sum, item) => sum + (item.cantidad * item.precio_compra), 0);
+    const iva = subtotal * (ivaPorcentaje / 100);
+    const retencion = subtotal * (retencionPorcentaje / 100);
+    const ica = subtotal * (icaPorcentaje / 100);
+    const total = subtotal + iva - retencion - ica;
 
     setConfirmData({
       items,
       proveedor: proveedor || "Proveedor general",
       metodo_pago: metodoPago,
+      subtotal,
+      iva,
+      retencion,
+      ica,
       total,
     });
     setShowConfirmModal(true);
@@ -205,7 +209,6 @@ export default function ComprasPage() {
         producto_id: item.producto_id,
         cantidad: item.cantidad,
         precio_compra: item.precio_compra,
-        // NO enviamos tenant_id porque la tabla compra_items no tiene esa columna
       })),
     };
 
@@ -312,7 +315,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // CRUD DE PRODUCTOS (CON TODOS LOS CAMPOS)
+  // CRUD DE PRODUCTOS
   // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
@@ -441,6 +444,43 @@ export default function ComprasPage() {
               ? `⚠️ ${productosCriticos.length} productos con stock por debajo del mínimo`
               : "✅ Todos los productos tienen stock adecuado"}
           </p>
+        </div>
+
+        {/* Configuración de impuestos */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
+          <h3 className="font-semibold text-stone-800 mb-2">Configuración contable</h3>
+          <div className="flex flex-wrap gap-4">
+            <div>
+              <label className="block text-xs text-stone-600">IVA (%)</label>
+              <input
+                type="number"
+                value={ivaPorcentaje}
+                onChange={(e) => setIvaPorcentaje(parseFloat(e.target.value) || 0)}
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-600">Retención (%)</label>
+              <input
+                type="number"
+                value={retencionPorcentaje}
+                onChange={(e) => setRetencionPorcentaje(parseFloat(e.target.value) || 0)}
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-stone-600">ICA (%)</label>
+              <input
+                type="number"
+                value={icaPorcentaje}
+                onChange={(e) => setIcaPorcentaje(parseFloat(e.target.value) || 0)}
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm"
+                step="0.1"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3 items-center mb-4">
@@ -762,7 +802,7 @@ export default function ComprasPage() {
         </div>
       )}
 
-      {/* Modal de Confirmación de Compra */}
+      {/* Modal de Confirmación de Compra (mejorado con rubros contables) */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -796,32 +836,71 @@ export default function ComprasPage() {
               </div>
 
               <div className="border-t pt-3 mt-3">
-                <h4 className="font-semibold text-stone-700 mb-2">Productos a comprar</h4>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <h4 className="font-semibold text-stone-700 mb-2">Detalle de productos</h4>
+                <div className="space-y-3 max-h-48 overflow-y-auto">
                   {confirmData.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center text-sm border-b border-stone-100 py-1">
-                      <span className="text-stone-800">{item.nombre}</span>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          value={item.cantidad}
-                          onChange={(e) => {
-                            const newItems = [...confirmData.items];
-                            newItems[idx].cantidad = parseInt(e.target.value) || 0;
-                            setConfirmData({ ...confirmData, items: newItems });
-                          }}
-                          className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
-                        />
-                        <span className="text-stone-600">× ${item.precio_compra.toLocaleString()}</span>
-                        <span className="font-bold text-stone-800">${(item.cantidad * item.precio_compra).toLocaleString()}</span>
+                    <div key={idx} className="flex flex-col border-b border-stone-100 py-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-stone-800 font-medium">{item.nombre}</span>
+                        <span className="text-stone-600 text-sm">${item.precio_compra.toLocaleString()} c/u</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-stone-600">Cantidad:</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.cantidad}
+                            onChange={(e) => {
+                              const newItems = [...confirmData.items];
+                              newItems[idx].cantidad = parseInt(e.target.value) || 0;
+                              const subtotal = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                              const iva = subtotal * (ivaPorcentaje / 100);
+                              const retencion = subtotal * (retencionPorcentaje / 100);
+                              const ica = subtotal * (icaPorcentaje / 100);
+                              setConfirmData({
+                                ...confirmData,
+                                items: newItems,
+                                subtotal,
+                                iva,
+                                retencion,
+                                ica,
+                                total: subtotal + iva - retencion - ica,
+                              });
+                            }}
+                            className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+                          />
+                        </div>
+                        <span className="font-bold text-emerald-600">
+                          ${(item.cantidad * item.precio_compra).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
-                  <span>Total</span>
-                  <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
+
+                {/* Resumen contable */}
+                <div className="mt-4 pt-3 border-t space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Subtotal</span>
+                    <span className="font-medium text-stone-800">${confirmData.subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">IVA ({ivaPorcentaje}%)</span>
+                    <span className="font-medium text-blue-600">${confirmData.iva.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Retención ({retencionPorcentaje}%)</span>
+                    <span className="font-medium text-red-600">-${confirmData.retencion.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">ICA ({icaPorcentaje}%)</span>
+                    <span className="font-medium text-orange-600">-${confirmData.ica.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                    <span>Total a pagar</span>
+                    <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -846,4 +925,3 @@ export default function ComprasPage() {
     </div>
   );
 }
-
