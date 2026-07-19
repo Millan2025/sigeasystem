@@ -1,12 +1,13 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// Usar SERVICE_ROLE_KEY para bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET: listar compras con sus items
+// GET: listar compras
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
@@ -34,11 +35,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, data: data || [] })
   } catch (error: any) {
+    console.error('❌ Error GET /api/compras:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// POST: crear compra (ya existente)
+// POST: crear compra
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
 
     const total = items.reduce((sum: number, item: any) => sum + (item.cantidad * item.precio_compra), 0)
 
+    // 1. Insertar cabecera de compra
     const { data: compra, error: compraErr } = await supabase
       .from('compras')
       .insert({
@@ -69,12 +72,14 @@ export async function POST(request: Request) {
 
     if (compraErr) throw compraErr
 
+    // 2. Insertar items de compra
     const compraItems = items.map((item: any) => ({
       compra_id: compra.id,
       producto_id: item.producto_id,
       cantidad: item.cantidad,
       precio_compra: item.precio_compra,
-      subtotal: item.cantidad * item.precio_compra
+      subtotal: item.cantidad * item.precio_compra,
+      tenant_id: tenant_id
     }))
 
     const { error: itemsErr } = await supabase
@@ -83,6 +88,7 @@ export async function POST(request: Request) {
 
     if (itemsErr) throw itemsErr
 
+    // 3. Actualizar stock (movimientos de entrada)
     for (const item of items) {
       await supabase
         .from('movimientos_inventario')
@@ -95,6 +101,7 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString()
         })
 
+      // Recalcular stock
       const { data: movs, error: movsErr } = await supabase
         .from('movimientos_inventario')
         .select('tipo, cantidad')
@@ -115,6 +122,7 @@ export async function POST(request: Request) {
         .eq('tenant_id', tenant_id)
     }
 
+    // 4. Registrar egreso en finanzas
     const categoriaId = metodo_pago === 'credito'
       ? (await supabase.from('categorias_contables').select('id').eq('codigo', '2-01-01').eq('tenant_id', tenant_id).single()).data?.id
       : (await supabase.from('categorias_contables').select('id').eq('codigo', '5-01-01').eq('tenant_id', tenant_id).single()).data?.id
@@ -144,9 +152,7 @@ export async function POST(request: Request) {
     })
 
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    )
+    console.error('❌ Error POST /api/compras:', error)
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
