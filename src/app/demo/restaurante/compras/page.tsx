@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
+// Estado inicial para el formulario (coincide con el de Inventario)
 const estadoInicialForm = {
   nombre: "",
   categoria: "",
@@ -33,6 +34,7 @@ const estadoInicialForm = {
   fecha_caducidad: "",
   ubicacion: "",
   imagen_url: "",
+  // icono eliminado
 };
 
 export default function ComprasPage() {
@@ -58,6 +60,32 @@ export default function ComprasPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [form, setForm] = useState({ ...estadoInicialForm });
+
+  // Subir imagen (igual que en Inventario)
+  const subirImagen = async () => {
+    if (!imageFile) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("tenant_id", tenantId);
+    try {
+      const res = await fetch("/api/upload/product-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({ ...prev, imagen_url: data.url }));
+        setImageFile(null);
+        alert("✅ Imagen subida correctamente");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+    setUploadingImage(false);
+  };
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -91,47 +119,18 @@ export default function ComprasPage() {
     return stockActual < minimo;
   });
 
+  // Búsqueda por nombre o SKU
   const productosFiltrados = productos.filter((p) => {
-    if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
-    const searchLower = searchTerm.toLowerCase();
-    if (searchTerm && !p.nombre.toLowerCase().includes(searchLower) && !(p.sku && p.sku.toLowerCase().includes(searchLower))) {
-      return false;
-    }
-    return true;
+    const matchNombre = p.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSku = p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchProveedor = filtroProveedor ? p.proveedor === filtroProveedor : true;
+    return (matchNombre || matchSku) && matchProveedor;
   });
 
   const toggleSeleccion = (id: string) => {
     setSeleccionados((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
-  };
-
-  // ============================================
-  // SUBIR IMAGEN (igual que en inventario)
-  // ============================================
-  const subirImagen = async () => {
-    if (!imageFile) return;
-    setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", imageFile);
-    formData.append("tenant_id", tenantId);
-    try {
-      const res = await fetch("/api/upload/product-image", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setForm((prev) => ({ ...prev, imagen_url: data.url }));
-        setImageFile(null);
-        alert("✅ Imagen subida correctamente");
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (e) {
-      alert("Error de conexión");
-    }
-    setUploadingImage(false);
   };
 
   // ============================================
@@ -226,6 +225,8 @@ export default function ComprasPage() {
     const data = productos.map((p) => ({
       SKU: p.sku || "",
       Nombre: p.nombre,
+      Descripción: p.descripcion || "",
+      Categoría: p.categoria || "",
       "Stock Actual": stockMap[p.id] ?? 0,
       "Stock Mínimo": p.stock_minimo || 0,
       "Stock Máximo": p.stock_maximo || 0,
@@ -234,8 +235,8 @@ export default function ComprasPage() {
       "Precio Venta": p.precio || 0,
       "Precio Compra": p.precio_compra || 0,
       Observaciones: p.observaciones || "",
-      Ubicación: p.ubicacion || "",
       "Fecha Caducidad": p.fecha_caducidad || "",
+      Ubicación: p.ubicacion || "",
     }));
 
     const wb = XLSX.utils.book_new();
@@ -245,14 +246,18 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // CRUD DE PRODUCTOS (con todos los campos)
+  // CRUD DE PRODUCTOS (con los mismos campos que Inventario)
   // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
+    // Preparar body con todos los campos, manejando fecha_caducidad como null si está vacío
     const body = editando
       ? { ...form, id: editando.id, tenant_id: tenantId }
       : { ...form, tenant_id: tenantId };
+    
+    // Convertir fecha_caducidad vacío a null
+    if (body.fecha_caducidad === "") body.fecha_caducidad = null;
 
     const res = await fetch(url, {
       method,
@@ -368,6 +373,16 @@ export default function ComprasPage() {
         </div>
 
         <div className="flex flex-wrap gap-3 items-center mb-4">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre o SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-stone-800"
+            />
+          </div>
           <select
             value={filtroProveedor}
             onChange={(e) => setFiltroProveedor(e.target.value)}
@@ -380,17 +395,6 @@ export default function ComprasPage() {
               </option>
             ))}
           </select>
-
-          <div className="relative flex-1 min-w-[150px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre o SKU..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
-            />
-          </div>
 
           <input
             type="text"
@@ -414,13 +418,14 @@ export default function ComprasPage() {
             <thead className="bg-stone-50">
               <tr>
                 <th className="p-2 text-left text-stone-700">Seleccionar</th>
-                <th className="p-2 text-left text-stone-700">Nombre</th>
                 <th className="p-2 text-left text-stone-700">SKU</th>
+                <th className="p-2 text-left text-stone-700">Nombre</th>
                 <th className="p-2 text-left text-stone-700">Stock actual</th>
                 <th className="p-2 text-left text-stone-700">Mínimo</th>
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
+                <th className="p-2 text-left text-stone-700">Observaciones</th>
                 <th className="p-2 text-left text-stone-700">Estado</th>
                 <th className="p-2 text-left text-stone-700">Acciones</th>
               </tr>
@@ -439,13 +444,14 @@ export default function ComprasPage() {
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
                     <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
+                    <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
                     <td className="p-2 font-medium text-stone-800">{stockActual}</td>
                     <td className="p-2 text-stone-600">{p.stock_minimo || 0}</td>
                     <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
                     <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">{p.observaciones || ""}</td>
                     <td className="p-2">
                       {esCritico ? (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
@@ -470,7 +476,7 @@ export default function ComprasPage() {
               })}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="p-4 text-center text-stone-500">
+                  <td colSpan={11} className="p-4 text-center text-stone-500">
                     No hay productos para este negocio
                   </td>
                 </tr>
@@ -480,7 +486,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD de producto (con todos los campos, sin Icono) */}
+      {/* Modal CRUD de producto (sincronizado con Inventario) */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -525,7 +531,7 @@ export default function ComprasPage() {
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. PAN-001"
+                  placeholder="Ej. HAR-001"
                 />
               </div>
               <div>
@@ -544,7 +550,7 @@ export default function ComprasPage() {
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. Baguette tradicional 250g"
+                  placeholder="Ej. Harina de trigo 25kg"
                 />
               </div>
               <div>
@@ -669,11 +675,7 @@ export default function ComprasPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditando(null);
-                  setForm({ ...estadoInicialForm });
-                }}
+                onClick={() => setShowModal(false)}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
               >
                 Cancelar
