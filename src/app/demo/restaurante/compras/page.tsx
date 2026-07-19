@@ -72,9 +72,20 @@ export default function ComprasPage() {
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
+  
+  // Configuración contable (visible en la página)
   const [ivaPorcentaje, setIvaPorcentaje] = useState(19);
   const [retencionPorcentaje, setRetencionPorcentaje] = useState(2.5);
   const [icaPorcentaje, setIcaPorcentaje] = useState(0.5);
+
+  // Resumen contable (calculado en la página)
+  const [resumenContable, setResumenContable] = useState({
+    subtotal: 0,
+    iva: 0,
+    retencion: 0,
+    ica: 0,
+    total: 0,
+  });
 
   // Modal CRUD
   const [showModal, setShowModal] = useState(false);
@@ -83,28 +94,54 @@ export default function ComprasPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [form, setForm] = useState({ ...estadoInicialForm });
 
-  // Modal de confirmación de compra
+  // Modal de confirmación de compra (simple: cantidad, precio, total)
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmData, setConfirmData] = useState<{
     items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
     proveedor: string;
     metodo_pago: string;
-    subtotal: number;
-    iva: number;
-    retencion: number;
-    ica: number;
     total: number;
   }>({
     items: [],
     proveedor: "",
     metodo_pago: "contado",
-    subtotal: 0,
-    iva: 0,
-    retencion: 0,
-    ica: 0,
     total: 0,
   });
 
+  // ============================================
+  // ACTUALIZAR RESUMEN CONTABLE
+  // ============================================
+  const actualizarResumenContable = () => {
+    if (seleccionados.length === 0) {
+      setResumenContable({ subtotal: 0, iva: 0, retencion: 0, ica: 0, total: 0 });
+      return;
+    }
+
+    // Calcular subtotal basado en la cantidad de compra (stock_maximo - stock_actual)
+    const subtotal = seleccionados.reduce((sum, id) => {
+      const p = productos.find((prod) => prod.id === id);
+      if (!p) return sum;
+      const stockActual = stockMap[p.id] ?? 0;
+      const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
+      return sum + (cantidad * (p.precio_compra || 0));
+    }, 0);
+
+    const iva = subtotal * (ivaPorcentaje / 100);
+    const retencion = subtotal * (retencionPorcentaje / 100);
+    const ica = subtotal * (icaPorcentaje / 100);
+    const total = subtotal + iva - retencion - ica;
+
+    setResumenContable({ subtotal, iva, retencion, ica, total });
+  };
+
+  // Recalcular cuando cambian seleccionados o porcentajes
+  useEffect(() => {
+    actualizarResumenContable();
+  }, [seleccionados, productos, stockMap, ivaPorcentaje, retencionPorcentaje, icaPorcentaje]);
+
+  // ============================================
+  // FUNCIONES DE CARGA DE DATOS
+  // ============================================
   const cargarDatos = async () => {
     setLoading(true);
     const url = `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`;
@@ -131,12 +168,6 @@ export default function ComprasPage() {
 
   const proveedores = [...new Set(productos.map((p) => p.proveedor).filter(Boolean))];
 
-  const productosCriticos = productos.filter((p) => {
-    const stockActual = stockMap[p.id] ?? 0;
-    const minimo = p.stock_minimo || 0;
-    return stockActual < minimo;
-  });
-
   const productosFiltrados = productos.filter((p) => {
     if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
     if (searchTerm && !p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !(p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))) return false;
@@ -150,7 +181,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // ABRIR MODAL DE CONFIRMACIÓN
+  // ABRIR MODAL DE CONFIRMACIÓN (SIMPLE)
   // ============================================
   const prepararConfirmacion = () => {
     if (seleccionados.length === 0) {
@@ -162,7 +193,8 @@ export default function ComprasPage() {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
       const stockActual = stockMap[p.id] ?? 0;
-      const cantidad = Math.max((p.stock_minimo || 0) - stockActual, 0);
+      // Cantidad de compra = stock_maximo - stock_actual (o 0 si ya está en máximo)
+      const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
       if (cantidad === 0) return null;
       return {
         producto_id: p.id,
@@ -173,33 +205,41 @@ export default function ComprasPage() {
     }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
 
     if (items.length === 0) {
-      alert("No hay productos con cantidad a comprar (stock ya es suficiente).");
+      alert("Todos los productos seleccionados ya tienen stock máximo.");
       return;
     }
 
-    const subtotal = items.reduce((sum, item) => sum + (item.cantidad * item.precio_compra), 0);
-    const iva = subtotal * (ivaPorcentaje / 100);
-    const retencion = subtotal * (retencionPorcentaje / 100);
-    const ica = subtotal * (icaPorcentaje / 100);
-    const total = subtotal + iva - retencion - ica;
+    const total = items.reduce((sum, item) => sum + (item.cantidad * item.precio_compra), 0);
 
     setConfirmData({
       items,
       proveedor: proveedor || "Proveedor general",
       metodo_pago: metodoPago,
-      subtotal,
-      iva,
-      retencion,
-      ica,
       total,
     });
     setShowConfirmModal(true);
   };
 
   // ============================================
-  // CONFIRMAR Y REGISTRAR COMPRA
+  // CONFIRMAR COMPRA (con mensaje de total con impuestos)
   // ============================================
   const confirmarCompra = async () => {
+    // Mostrar mensaje de confirmación con el total incluyendo impuestos
+    const mensajeConfirmacion = `
+      📋 Resumen de la compra:
+      • Subtotal: $${resumenContable.subtotal.toLocaleString()}
+      • IVA (${ivaPorcentaje}%): $${resumenContable.iva.toLocaleString()}
+      • Retención (${retencionPorcentaje}%): -$${resumenContable.retencion.toLocaleString()}
+      • ICA (${icaPorcentaje}%): -$${resumenContable.ica.toLocaleString()}
+      • Total a pagar: $${resumenContable.total.toLocaleString()}
+      
+      ¿Confirmas esta compra?
+    `;
+
+    if (!confirm(mensajeConfirmacion)) {
+      return;
+    }
+
     const body = {
       tenant_id: tenantId,
       proveedor: confirmData.proveedor,
@@ -220,7 +260,7 @@ export default function ComprasPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente.`);
+        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente. Total: $${resumenContable.total.toLocaleString()}`);
         setSeleccionados([]);
         setShowConfirmModal(false);
         cargarDatos();
@@ -233,7 +273,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // GENERAR ORDEN DE COMPRA (EXCEL)
+  // OTRAS FUNCIONES (CRUD, EXPORTAR, ETC.)
   // ============================================
   const generarOrdenCompra = () => {
     if (seleccionados.length === 0) {
@@ -247,9 +287,10 @@ export default function ComprasPage() {
       const stockActual = stockMap[p.id] ?? 0;
       return {
         Producto: p.nombre,
+        SKU: p.sku || "",
         "Stock Actual": stockActual,
-        "Mínimo Requerido": p.stock_minimo || 0,
-        "Cantidad a Comprar": Math.max((p.stock_minimo || 0) - stockActual, 0),
+        "Máximo Requerido": p.stock_maximo || 0,
+        "Cantidad a Comprar": Math.max((p.stock_maximo || 0) - stockActual, 0),
         Proveedor: p.proveedor || "",
         "Precio Compra": p.precio_compra || 0,
         Observaciones: p.observaciones || "",
@@ -263,15 +304,13 @@ export default function ComprasPage() {
     alert(`📦 Orden de compra generada con ${data.length} productos.`);
   };
 
-  // ============================================
-  // EXPORTAR INVENTARIO (Excel)
-  // ============================================
   const descargarInventarioCompleto = () => {
     const data = productos.map((p) => ({
       Nombre: p.nombre,
       SKU: p.sku || "",
       "Stock Actual": stockMap[p.id] ?? 0,
       "Stock Mínimo": p.stock_minimo || 0,
+      "Stock Máximo": p.stock_maximo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
       "Precio Venta": p.precio || 0,
@@ -286,9 +325,7 @@ export default function ComprasPage() {
     XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
   };
 
-  // ============================================
-  // SUBIR IMAGEN
-  // ============================================
+  // CRUD de productos
   const subirImagen = async () => {
     if (!imageFile) return;
     setUploadingImage(true);
@@ -314,9 +351,6 @@ export default function ComprasPage() {
     setUploadingImage(false);
   };
 
-  // ============================================
-  // CRUD DE PRODUCTOS
-  // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
@@ -409,7 +443,6 @@ export default function ComprasPage() {
         <button
           onClick={prepararConfirmacion}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Registrar compra y actualizar inventario"
         >
           <Plus className="w-4 h-4" /> Registrar Compra
         </button>
@@ -432,23 +465,9 @@ export default function ComprasPage() {
           </div>
         )}
 
-        <div
-          className={`rounded-2xl p-4 mb-6 ${
-            productosCriticos.length > 0
-              ? "bg-red-50 border border-red-200"
-              : "bg-emerald-50 border border-emerald-200"
-          }`}
-        >
-          <p className={`font-medium ${productosCriticos.length > 0 ? "text-red-700" : "text-emerald-700"}`}>
-            {productosCriticos.length > 0
-              ? `⚠️ ${productosCriticos.length} productos con stock por debajo del mínimo`
-              : "✅ Todos los productos tienen stock adecuado"}
-          </p>
-        </div>
-
-        {/* Configuración de impuestos */}
+        {/* Configuración contable */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
-          <h3 className="font-semibold text-stone-800 mb-2">Configuración contable</h3>
+          <h3 className="font-semibold text-stone-800 mb-2">⚖️ Configuración contable</h3>
           <div className="flex flex-wrap gap-4">
             <div>
               <label className="block text-xs text-stone-600">IVA (%)</label>
@@ -482,6 +501,35 @@ export default function ComprasPage() {
             </div>
           </div>
         </div>
+
+        {/* Resumen contable de la selección actual */}
+        {seleccionados.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+            <h4 className="font-semibold text-stone-800 mb-2">📊 Resumen de la compra</h4>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+              <div>
+                <span className="text-stone-600">Subtotal</span>
+                <p className="font-bold text-stone-800">${resumenContable.subtotal.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-stone-600">IVA ({ivaPorcentaje}%)</span>
+                <p className="font-bold text-blue-600">${resumenContable.iva.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-stone-600">Retención ({retencionPorcentaje}%)</span>
+                <p className="font-bold text-red-600">-${resumenContable.retencion.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-stone-600">ICA ({icaPorcentaje}%)</span>
+                <p className="font-bold text-orange-600">-${resumenContable.ica.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-stone-600 font-bold">Total a pagar</span>
+                <p className="font-bold text-emerald-600">${resumenContable.total.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-3 items-center mb-4">
           <div className="relative flex-1 min-w-[200px]">
@@ -534,6 +582,7 @@ export default function ComprasPage() {
                 <th className="p-2 text-left text-stone-700">Nombre</th>
                 <th className="p-2 text-left text-stone-700">Stock actual</th>
                 <th className="p-2 text-left text-stone-700">Mínimo</th>
+                <th className="p-2 text-left text-stone-700">Máximo</th>
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
@@ -545,6 +594,7 @@ export default function ComprasPage() {
               {productosFiltrados.map((p) => {
                 const stockActual = stockMap[p.id] ?? 0;
                 const esCritico = stockActual < (p.stock_minimo || 0);
+                const estaMaximo = stockActual >= (p.stock_maximo || 999999);
                 return (
                   <tr key={p.id} className="border-b border-stone-100">
                     <td className="p-2">
@@ -559,6 +609,7 @@ export default function ComprasPage() {
                     <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
                     <td className="p-2 font-medium text-stone-800">{stockActual}</td>
                     <td className="p-2 text-stone-600">{p.stock_minimo || 0}</td>
+                    <td className="p-2 text-stone-600">{p.stock_maximo || 0}</td>
                     <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
                     <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
@@ -567,8 +618,12 @@ export default function ComprasPage() {
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
                           Por debajo
                         </span>
-                      ) : (
+                      ) : estaMaximo ? (
                         <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                          Máximo
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
                           OK
                         </span>
                       )}
@@ -586,7 +641,7 @@ export default function ComprasPage() {
               })}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="p-4 text-center text-stone-500">
+                  <td colSpan={11} className="p-4 text-center text-stone-500">
                     No hay productos para este negocio
                   </td>
                 </tr>
@@ -802,7 +857,7 @@ export default function ComprasPage() {
         </div>
       )}
 
-      {/* Modal de Confirmación de Compra (mejorado con rubros contables) */}
+      {/* Modal de Confirmación de Compra (SIMPLE: cantidad, precio, total) */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -836,15 +891,14 @@ export default function ComprasPage() {
               </div>
 
               <div className="border-t pt-3 mt-3">
-                <h4 className="font-semibold text-stone-700 mb-2">Detalle de productos</h4>
+                <h4 className="font-semibold text-stone-700 mb-2">Productos</h4>
                 <div className="space-y-3 max-h-48 overflow-y-auto">
                   {confirmData.items.map((item, idx) => (
                     <div key={idx} className="flex flex-col border-b border-stone-100 py-2">
                       <div className="flex justify-between items-center">
                         <span className="text-stone-800 font-medium">{item.nombre}</span>
-                        <span className="text-stone-600 text-sm">${item.precio_compra.toLocaleString()} c/u</span>
                       </div>
-                      <div className="flex items-center justify-between mt-1">
+                      <div className="flex items-center justify-between mt-1 gap-2">
                         <div className="flex items-center gap-2">
                           <label className="text-sm text-stone-600">Cantidad:</label>
                           <input
@@ -854,21 +908,26 @@ export default function ComprasPage() {
                             onChange={(e) => {
                               const newItems = [...confirmData.items];
                               newItems[idx].cantidad = parseInt(e.target.value) || 0;
-                              const subtotal = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                              const iva = subtotal * (ivaPorcentaje / 100);
-                              const retencion = subtotal * (retencionPorcentaje / 100);
-                              const ica = subtotal * (icaPorcentaje / 100);
-                              setConfirmData({
-                                ...confirmData,
-                                items: newItems,
-                                subtotal,
-                                iva,
-                                retencion,
-                                ica,
-                                total: subtotal + iva - retencion - ica,
-                              });
+                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                              setConfirmData({ ...confirmData, items: newItems, total });
                             }}
                             className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-stone-600">Precio:</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={item.precio_compra}
+                            onChange={(e) => {
+                              const newItems = [...confirmData.items];
+                              newItems[idx].precio_compra = parseFloat(e.target.value) || 0;
+                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                              setConfirmData({ ...confirmData, items: newItems, total });
+                            }}
+                            className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
                           />
                         </div>
                         <span className="font-bold text-emerald-600">
@@ -878,30 +937,13 @@ export default function ComprasPage() {
                     </div>
                   ))}
                 </div>
-
-                {/* Resumen contable */}
-                <div className="mt-4 pt-3 border-t space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">Subtotal</span>
-                    <span className="font-medium text-stone-800">${confirmData.subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">IVA ({ivaPorcentaje}%)</span>
-                    <span className="font-medium text-blue-600">${confirmData.iva.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">Retención ({retencionPorcentaje}%)</span>
-                    <span className="font-medium text-red-600">-${confirmData.retencion.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">ICA ({icaPorcentaje}%)</span>
-                    <span className="font-medium text-orange-600">-${confirmData.ica.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                    <span>Total a pagar</span>
-                    <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
-                  </div>
+                <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
+                  <span>Total</span>
+                  <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
                 </div>
+                <p className="text-xs text-stone-500 mt-1">
+                  * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
+                </p>
               </div>
             </div>
 
