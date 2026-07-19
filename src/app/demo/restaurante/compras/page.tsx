@@ -43,10 +43,18 @@ interface Producto {
   precio?: number;
   precio_compra?: number;
   stock_minimo?: number;
+  stock_maximo?: number;
   proveedor?: string;
   observaciones?: string;
+  unidad?: string;
+  tipo_unidad?: string;
+  descripcion?: string;
+  fecha_caducidad?: string;
+  ubicacion?: string;
   imagen_url?: string;
-  // otros campos
+  categoria?: string;
+  stock?: number;
+  // otros campos que pueda tener
 }
 
 export default function ComprasPage() {
@@ -838,3 +846,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+
