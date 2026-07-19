@@ -62,15 +62,30 @@ export async function POST(request: Request) {
       }
     }
 
+        // Construir objeto de actualización solo con los campos que vienen en el body
+    const updateData: any = {};
+    const camposPermitidos = [
+      "nombre", "categoria", "precio", "precio_compra", "stock", "stock_minimo", "stock_maximo",
+      "unidad", "tipo_unidad", "venta_por_peso", "icono", "proveedor", "observaciones",
+      "sku", "descripcion", "fecha_caducidad", "ubicacion", "imagen_url"
+    ];
+    camposPermitidos.forEach((campo) => {
+      if (campo in body) {
+        // Si el campo está en el body, usamos su valor (puede ser null o vacío)
+        // Pero si es undefined, no lo incluimos
+        const valor = body[campo];
+        if (valor !== undefined) {
+          updateData[campo] = valor;
+        }
+      }
+    });
+    // Asegurar que updated_at se actualice siempre
+    updateData.updated_at = new Date().toISOString();
+
     const { data, error } = await supabase
       .from('productos')
-      .insert({
-        nombre, categoria, precio, precio_compra, stock, stock_minimo, stock_maximo,
-        unidad, tipo_unidad, venta_por_peso, icono, proveedor, observaciones,
-        sku: sku || null, descripcion: descripcion || '', fecha_caducidad: fecha_caducidad || null,
-        ubicacion: ubicacion || '', tenant_id, imagen_url: imagen_url || null,
-        created_at: new Date().toISOString(), updated_at: new Date().toISOString()
-      })
+      .update(updateData)
+      .eq('id', id)
       .select()
       .single()
 
@@ -135,15 +150,29 @@ export async function PUT(request: Request) {
       }
     }
 
+        // Construir objeto de actualización solo con los campos que vienen en el body
+    const updateData: any = {};
+    const camposPermitidos = [
+      "nombre", "categoria", "precio", "precio_compra", "stock", "stock_minimo", "stock_maximo",
+      "unidad", "tipo_unidad", "venta_por_peso", "icono", "proveedor", "observaciones",
+      "sku", "descripcion", "fecha_caducidad", "ubicacion", "imagen_url"
+    ];
+    camposPermitidos.forEach((campo) => {
+      if (campo in body) {
+        // Si el campo está en el body, usamos su valor (puede ser null o vacío)
+        // Pero si es undefined, no lo incluimos
+        const valor = body[campo];
+        if (valor !== undefined) {
+          updateData[campo] = valor;
+        }
+      }
+    });
+    // Asegurar que updated_at se actualice siempre
+    updateData.updated_at = new Date().toISOString();
+
     const { data, error } = await supabase
       .from('productos')
-      .update({
-        nombre, categoria, precio, precio_compra, stock, stock_minimo, stock_maximo,
-        unidad, tipo_unidad, venta_por_peso, icono, proveedor, observaciones,
-        sku: sku || null, descripcion: descripcion || '', fecha_caducidad: fecha_caducidad || null,
-        ubicacion: ubicacion || '', imagen_url: imagen_url || null,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
@@ -200,3 +229,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
