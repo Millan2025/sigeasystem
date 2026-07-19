@@ -41,12 +41,12 @@ export async function POST(request: Request) {
 
     if (!nombre || !categoria || !tenant_id) {
       return NextResponse.json(
-        { success: false, error: 'Faltan campos obligatorios' },
+        { success: false, error: 'Faltan campos obligatorios: nombre, categoria, tenant_id' },
         { status: 400 }
       )
     }
 
-    // Verificar SKU duplicado (solo si se proporciona)
+    // Verificar SKU duplicado (si se proporciona)
     if (sku) {
       const { data: existing } = await supabase
         .from('productos')
@@ -62,35 +62,37 @@ export async function POST(request: Request) {
       }
     }
 
-        // Construir objeto de actualización solo con los campos que vienen en el body
-    const updateData: any = {};
-    const camposPermitidos = [
-      "nombre", "categoria", "precio", "precio_compra", "stock", "stock_minimo", "stock_maximo",
-      "unidad", "tipo_unidad", "venta_por_peso", "icono", "proveedor", "observaciones",
-      "sku", "descripcion", "fecha_caducidad", "ubicacion", "imagen_url"
-    ];
-    camposPermitidos.forEach((campo) => {
-      if (campo in body) {
-        // Si el campo está en el body, usamos su valor (puede ser null o vacío)
-        // Pero si es undefined, no lo incluimos
-        const valor = body[campo];
-        if (valor !== undefined) {
-          updateData[campo] = valor;
-        }
-      }
-    });
-    // Asegurar que updated_at se actualice siempre
-    updateData.updated_at = new Date().toISOString();
-
     const { data, error } = await supabase
       .from('productos')
-      .update(updateData)
-      .eq('id', id)
+      .insert({
+        nombre,
+        categoria,
+        precio: precio || 0,
+        precio_compra: precio_compra || 0,
+        stock: stock || 0,
+        stock_minimo: stock_minimo || 0,
+        stock_maximo: stock_maximo || 0,
+        unidad: unidad || 'unidad',
+        tipo_unidad: tipo_unidad || 'unidad',
+        venta_por_peso: venta_por_peso || false,
+        icono: icono || '📦',
+        proveedor: proveedor || '',
+        observaciones: observaciones || '',
+        sku: sku || null,
+        descripcion: descripcion || '',
+        fecha_caducidad: fecha_caducidad || null,
+        ubicacion: ubicacion || '',
+        imagen_url: imagen_url || null,
+        tenant_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
       .select()
       .single()
 
     if (error) throw error
 
+    // Si se crea con stock > 0, registrar movimiento de entrada
     if (stock > 0) {
       await supabase
         .from('movimientos_inventario')
@@ -134,6 +136,7 @@ export async function PUT(request: Request) {
       .single()
     if (fetchErr) throw fetchErr
 
+    // Verificar SKU duplicado (si se actualiza)
     if (sku) {
       const { data: dup } = await supabase
         .from('productos')
@@ -150,25 +153,36 @@ export async function PUT(request: Request) {
       }
     }
 
-        // Construir objeto de actualización solo con los campos que vienen en el body
-    const updateData: any = {};
-    const camposPermitidos = [
-      "nombre", "categoria", "precio", "precio_compra", "stock", "stock_minimo", "stock_maximo",
-      "unidad", "tipo_unidad", "venta_por_peso", "icono", "proveedor", "observaciones",
-      "sku", "descripcion", "fecha_caducidad", "ubicacion", "imagen_url"
-    ];
-    camposPermitidos.forEach((campo) => {
+    // Construir objeto de actualización solo con los campos que vienen en el body
+    // (si no vienen, no se actualizan)
+    const updateData: any = {}
+    const campos = [
+      'nombre', 'categoria', 'precio', 'precio_compra', 'stock',
+      'stock_minimo', 'stock_maximo', 'unidad', 'tipo_unidad',
+      'venta_por_peso', 'icono', 'proveedor', 'observaciones',
+      'sku', 'descripcion', 'fecha_caducidad', 'ubicacion', 'imagen_url'
+    ]
+    campos.forEach((campo) => {
+      // Si el campo está presente en el body (incluso si es null o ""), lo incluimos
       if (campo in body) {
-        // Si el campo está en el body, usamos su valor (puede ser null o vacío)
-        // Pero si es undefined, no lo incluimos
-        const valor = body[campo];
+        const valor = body[campo]
+        // Si el valor es undefined no lo incluimos (pero eso no debería pasar)
         if (valor !== undefined) {
-          updateData[campo] = valor;
+          updateData[campo] = valor
         }
       }
-    });
-    // Asegurar que updated_at se actualice siempre
-    updateData.updated_at = new Date().toISOString();
+    })
+
+    // Siempre actualizar updated_at
+    updateData.updated_at = new Date().toISOString()
+
+    // Si no hay campos para actualizar, devolver error
+    if (Object.keys(updateData).length === 1) { // solo updated_at
+      return NextResponse.json(
+        { success: false, error: 'No hay campos para actualizar' },
+        { status: 400 }
+      )
+    }
 
     const { data, error } = await supabase
       .from('productos')
@@ -229,4 +243,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
