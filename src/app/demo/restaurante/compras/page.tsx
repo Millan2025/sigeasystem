@@ -13,6 +13,7 @@ import {
   Edit,
   Trash2,
   Search,
+  X,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -35,6 +36,19 @@ const estadoInicialForm = {
   imagen_url: "",
 };
 
+interface Producto {
+  id: string;
+  nombre: string;
+  sku?: string;
+  precio?: number;
+  precio_compra?: number;
+  stock_minimo?: number;
+  proveedor?: string;
+  observaciones?: string;
+  imagen_url?: string;
+  // otros campos
+}
+
 export default function ComprasPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,7 +56,7 @@ export default function ComprasPage() {
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
 
-  const [productos, setProductos] = useState<any[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroProveedor, setFiltroProveedor] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,14 +65,27 @@ export default function ComprasPage() {
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
-  const [titulo, setTitulo] = useState('Compras');
 
   // Modal CRUD
-  const [showModal, setShowModal] = useState(false); const [showConfirmModal, setShowConfirmModal] = useState(false); const [confirmData, setConfirmData] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [form, setForm] = useState({ ...estadoInicialForm });
+
+  // Modal de confirmación de compra
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmData, setConfirmData] = useState<{
+    items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
+    proveedor: string;
+    metodo_pago: string;
+    total: number;
+  }>({
+    items: [],
+    proveedor: "",
+    metodo_pago: "contado",
+    total: 0,
+  });
 
   // Obtener título del negocio
   useEffect(() => {
@@ -67,7 +94,7 @@ export default function ComprasPage() {
         const res = await fetch(`/api/business-config?tenant=${tenantId}`);
         const data = await res.json();
         if (data.success && data.data) {
-          setTitulo(data.data.nombre_negocio || 'Compras');
+          // setTitulo(data.data.nombre_negocio || 'Compras');
         }
       } catch (e) {}
     };
@@ -119,42 +146,9 @@ export default function ComprasPage() {
   };
 
   // ============================================
-    const confirmarCompra = async () => {
-    if (!confirmData) return;
-    const body = {
-      tenant_id: tenantId,
-      proveedor: confirmData.proveedor,
-      metodo_pago: confirmData.metodo_pago,
-      fecha: new Date().toISOString().split("T")[0],
-      items: confirmData.items.map(item => ({
-        producto_id: item.producto_id,
-        cantidad: item.cantidad,
-        precio_compra: item.precio_compra,
-      })),
-    };
-
-    try {
-      const res = await fetch("/api/compras", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente.`);
-        setSeleccionados([]);
-        setShowConfirmModal(false);
-        setConfirmData(null);
-        cargarDatos();
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (error) {
-      alert("Error de conexión");
-    }
-  };
+  // ABRIR MODAL DE CONFIRMACIÓN
   // ============================================
-  const registrarCompra = async () => {
+  const prepararConfirmacion = () => {
     if (seleccionados.length === 0) {
       alert("Selecciona al menos un producto.");
       return;
@@ -170,20 +164,41 @@ export default function ComprasPage() {
         producto_id: p.id,
         cantidad: cantidad,
         precio_compra: p.precio_compra || 0,
+        nombre: p.nombre,
       };
-    }).filter(Boolean);
+    }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
 
     if (items.length === 0) {
       alert("No hay productos con cantidad a comprar (stock ya es suficiente).");
       return;
     }
 
-    const body = {
-      tenant_id: tenantId,
+    const total = items.reduce((sum, item) => sum + (item.cantidad * item.precio_compra), 0);
+
+    setConfirmData({
+      items,
       proveedor: proveedor || "Proveedor general",
       metodo_pago: metodoPago,
+      total,
+    });
+    setShowConfirmModal(true);
+  };
+
+  // ============================================
+  // CONFIRMAR Y REGISTRAR COMPRA
+  // ============================================
+  const confirmarCompra = async () => {
+    const body = {
+      tenant_id: tenantId,
+      proveedor: confirmData.proveedor,
+      metodo_pago: confirmData.metodo_pago,
       fecha: new Date().toISOString().split("T")[0],
-      items: items,
+      items: confirmData.items.map((item) => ({
+        producto_id: item.producto_id,
+        cantidad: item.cantidad,
+        precio_compra: item.precio_compra,
+        // NO enviamos tenant_id porque la tabla compra_items no tiene esa columna
+      })),
     };
 
     try {
@@ -196,6 +211,7 @@ export default function ComprasPage() {
       if (data.success) {
         setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente.`);
         setSeleccionados([]);
+        setShowConfirmModal(false);
         cargarDatos();
       } else {
         alert("Error: " + data.error);
@@ -294,14 +310,11 @@ export default function ComprasPage() {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
     
-    // Preparar body
     let body: any = { ...form, tenant_id: tenantId };
     if (editando) body.id = editando.id;
     
-    // Convertir fecha_caducidad vacío a null
     if (body.fecha_caducidad === "") body.fecha_caducidad = null;
     
-    // Asegurar valores numéricos
     body.precio = parseFloat(body.precio) || 0;
     body.precio_compra = parseFloat(body.precio_compra) || 0;
     body.stock = parseInt(body.stock) || 0;
@@ -383,7 +396,7 @@ export default function ComprasPage() {
           <ShoppingBag className="w-4 h-4" /> Generar Orden
         </button>
         <button
-          onClick={registrarCompra}
+          onClick={prepararConfirmacion}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Registrar compra y actualizar inventario"
         >
@@ -535,7 +548,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD de producto (con todos los campos, sin icono) */}
+      {/* Modal CRUD de producto (sin cambios) */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -574,7 +587,7 @@ export default function ComprasPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700">SKU (Código de Barras)</label>
+                <label className="block text-sm font-medium text-stone-700">SKU</label>
                 <input
                   type="text"
                   value={form.sku}
@@ -740,7 +753,88 @@ export default function ComprasPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmación de Compra */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Confirmar Compra</h3>
+              <button onClick={() => setShowConfirmModal(false)} className="p-1 hover:bg-stone-100 rounded">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Proveedor</label>
+                <input
+                  type="text"
+                  value={confirmData.proveedor}
+                  onChange={(e) => setConfirmData({ ...confirmData, proveedor: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Método de Pago</label>
+                <select
+                  value={confirmData.metodo_pago}
+                  onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                >
+                  <option value="contado">Contado</option>
+                  <option value="credito">Crédito</option>
+                </select>
+              </div>
+
+              <div className="border-t pt-3 mt-3">
+                <h4 className="font-semibold text-stone-700 mb-2">Productos a comprar</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {confirmData.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-sm border-b border-stone-100 py-1">
+                      <span className="text-stone-800">{item.nombre}</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.cantidad}
+                          onChange={(e) => {
+                            const newItems = [...confirmData.items];
+                            newItems[idx].cantidad = parseInt(e.target.value) || 0;
+                            setConfirmData({ ...confirmData, items: newItems });
+                          }}
+                          className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+                        />
+                        <span className="text-stone-600">× ${item.precio_compra.toLocaleString()}</span>
+                        <span className="font-bold text-stone-800">${(item.cantidad * item.precio_compra).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
+                  <span>Total</span>
+                  <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarCompra}
+                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
+              >
+                Confirmar Compra
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
