@@ -58,6 +58,7 @@ export default function InventarioPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formProducto, setFormProducto] = useState({ ...estadoInicialForm });
+  const [camposModificados, setCamposModificados] = useState<Set<string>>(new Set());
 
   // Función para subir imagen
   const subirImagen = async () => {
@@ -74,6 +75,8 @@ export default function InventarioPage() {
       const data = await res.json();
       if (data.success) {
         setFormProducto((prev) => ({ ...prev, imagen_url: data.url }));
+        // Marcar imagen_url como modificada
+        setCamposModificados((prev) => new Set(prev).add("imagen_url"));
         setImageFile(null);
         alert("✅ Imagen subida correctamente");
       } else {
@@ -135,7 +138,7 @@ export default function InventarioPage() {
     }
   };
 
-  // CRUD Productos con comparación directa
+  // CRUD Productos con camposModificados
   const guardarProducto = async () => {
     const url = "/api/products";
 
@@ -159,36 +162,18 @@ export default function InventarioPage() {
       return;
     }
 
-    // Edición: comparar cada campo y enviar solo los cambios
-    const cambios: any = { id: editandoProducto.id, tenant_id: tenantId };
-    let hayCambios = false;
-
-    const campos = [
-      "nombre", "categoria", "precio", "precio_compra", "stock",
-      "stock_minimo", "stock_maximo", "proveedor", "observaciones",
-      "unidad", "tipo_unidad", "icono", "sku", "descripcion",
-      "fecha_caducidad", "ubicacion", "imagen_url"
-    ];
-
-    campos.forEach((campo) => {
-      const valorOriginal = (editandoProducto as any)[campo];
-      const valorForm = (formProducto as any)[campo];
-      // Comparar valores (manejar null/undefined)
-      const originalStr = valorOriginal !== undefined && valorOriginal !== null ? String(valorOriginal) : "";
-      const formStr = valorForm !== undefined && valorForm !== null ? String(valorForm) : "";
-      if (originalStr !== formStr) {
-        // Si el valor en el formulario es diferente al original, lo incluimos
-        cambios[campo] = valorForm;
-        hayCambios = true;
-      }
-    });
-
-    if (!hayCambios) {
+    // Edición: enviar solo campos que están en camposModificados
+    if (camposModificados.size === 0) {
       alert("No se detectaron cambios.");
       return;
     }
 
-    console.log("📦 Cambios a enviar:", cambios);
+    const cambios: any = { id: editandoProducto.id, tenant_id: tenantId };
+    camposModificados.forEach((campo) => {
+      cambios[campo] = (formProducto as any)[campo];
+    });
+
+    console.log("📦 Cambios a enviar (solo campos modificados):", cambios);
 
     const res = await fetch(url, {
       method: "PUT",
@@ -209,6 +194,7 @@ export default function InventarioPage() {
   const resetFormulario = () => {
     setEditandoProducto(null);
     setFormProducto({ ...estadoInicialForm });
+    setCamposModificados(new Set());
     setImageFile(null);
   };
 
@@ -253,6 +239,7 @@ export default function InventarioPage() {
       ubicacion: p.ubicacion || "",
       imagen_url: p.imagen_url || "",
     });
+    setCamposModificados(new Set());
     setShowProductoModal(true);
   };
 
@@ -418,6 +405,7 @@ export default function InventarioPage() {
           onClick={() => {
             setEditandoProducto(null);
             setFormProducto({ ...estadoInicialForm });
+            setCamposModificados(new Set());
             setShowProductoModal(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -709,7 +697,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.sku}
-                  onChange={(e) => setFormProducto({ ...formProducto, sku: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, sku: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("sku"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                   placeholder="Ej. PAN-001"
                 />
@@ -719,7 +710,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.nombre}
-                  onChange={(e) => setFormProducto({ ...formProducto, nombre: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, nombre: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("nombre"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -728,7 +722,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.descripcion}
-                  onChange={(e) => setFormProducto({ ...formProducto, descripcion: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, descripcion: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("descripcion"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                   placeholder="Ej. Baguette tradicional 250g"
                 />
@@ -738,7 +735,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.categoria}
-                  onChange={(e) => setFormProducto({ ...formProducto, categoria: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, categoria: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("categoria"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -748,7 +748,10 @@ export default function InventarioPage() {
                   type="number"
                   step="0.01"
                   value={formProducto.precio}
-                  onChange={(e) => setFormProducto({ ...formProducto, precio: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, precio: parseFloat(e.target.value) || 0 });
+                    setCamposModificados((prev) => new Set(prev).add("precio"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -758,7 +761,10 @@ export default function InventarioPage() {
                   type="number"
                   step="0.01"
                   value={formProducto.precio_compra}
-                  onChange={(e) => setFormProducto({ ...formProducto, precio_compra: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, precio_compra: parseFloat(e.target.value) || 0 });
+                    setCamposModificados((prev) => new Set(prev).add("precio_compra"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -777,7 +783,10 @@ export default function InventarioPage() {
                 <input
                   type="number"
                   value={formProducto.stock_minimo}
-                  onChange={(e) => setFormProducto({ ...formProducto, stock_minimo: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, stock_minimo: parseInt(e.target.value) || 0 });
+                    setCamposModificados((prev) => new Set(prev).add("stock_minimo"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -786,7 +795,10 @@ export default function InventarioPage() {
                 <input
                   type="number"
                   value={formProducto.stock_maximo}
-                  onChange={(e) => setFormProducto({ ...formProducto, stock_maximo: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, stock_maximo: parseInt(e.target.value) || 0 });
+                    setCamposModificados((prev) => new Set(prev).add("stock_maximo"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -795,7 +807,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.proveedor}
-                  onChange={(e) => setFormProducto({ ...formProducto, proveedor: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, proveedor: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("proveedor"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -804,7 +819,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.observaciones}
-                  onChange={(e) => setFormProducto({ ...formProducto, observaciones: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, observaciones: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("observaciones"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -813,7 +831,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.unidad}
-                  onChange={(e) => setFormProducto({ ...formProducto, unidad: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, unidad: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("unidad"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                   placeholder="kg, L, unidad, etc."
                 />
@@ -822,7 +843,10 @@ export default function InventarioPage() {
                 <label className="block text-sm font-medium text-stone-700">Tipo de unidad</label>
                 <select
                   value={formProducto.tipo_unidad}
-                  onChange={(e) => setFormProducto({ ...formProducto, tipo_unidad: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, tipo_unidad: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("tipo_unidad"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 >
                   <option value="unidad">Unidad</option>
@@ -838,7 +862,10 @@ export default function InventarioPage() {
                 <input
                   type="date"
                   value={formProducto.fecha_caducidad}
-                  onChange={(e) => setFormProducto({ ...formProducto, fecha_caducidad: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, fecha_caducidad: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("fecha_caducidad"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                 />
               </div>
@@ -847,7 +874,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.ubicacion}
-                  onChange={(e) => setFormProducto({ ...formProducto, ubicacion: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, ubicacion: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("ubicacion"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                   placeholder="Estante A1, Pasillo 2"
                 />
@@ -857,7 +887,10 @@ export default function InventarioPage() {
                 <input
                   type="text"
                   value={formProducto.icono}
-                  onChange={(e) => setFormProducto({ ...formProducto, icono: e.target.value })}
+                  onChange={(e) => {
+                    setFormProducto({ ...formProducto, icono: e.target.value });
+                    setCamposModificados((prev) => new Set(prev).add("icono"));
+                  }}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
                   maxLength={2}
                 />
@@ -868,6 +901,7 @@ export default function InventarioPage() {
                 onClick={() => {
                   setShowProductoModal(false);
                   setEditandoProducto(null);
+                  setCamposModificados(new Set());
                 }}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
               >
