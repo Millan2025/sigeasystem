@@ -3,3 +3,5 @@
 export default function restaurantePage() {
   return <NegocioHome negocioSlug="restaurante" />;
 }
+
+
