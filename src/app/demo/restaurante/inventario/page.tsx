@@ -139,10 +139,75 @@ export default function InventarioPage() {
   };
 
   // CRUD Productos con lógica de campos modificados
-  const guardarProducto = async () => {
+    const guardarProducto = async () => {
+    const url = "/api/products";
+    const method = editandoProducto ? "PUT" : "POST";
+
     if (!editandoProducto) {
-      // Nuevo producto: enviar todo
+      // Nuevo producto: enviar todo el formulario
       const body = { ...formProducto, tenant_id: tenantId };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowProductoModal(false);
+        resetFormulario();
+        cargarDatos();
+        recargarProductos();
+      } else {
+        alert(data.error || "Error al guardar producto");
+      }
+      return;
+    }
+
+    // Edición: copiar el producto original y sobrescribir solo campos modificados
+    const body: any = { ...editandoProducto };
+    let hayCambios = false;
+
+    // Lista de campos que pueden modificarse
+    const campos = [
+      "nombre", "categoria", "precio", "precio_compra", "stock",
+      "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+      "unidad", "tipo_unidad", "icono", "sku", "descripcion",
+      "fecha_caducidad", "ubicacion", "imagen_url"
+    ];
+
+    campos.forEach((campo) => {
+      if (camposModificados.has(campo)) {
+        const valor = (formProducto as any)[campo];
+        // Si el campo está en camposModificados, sobrescribir en body
+        // (incluso si el valor está vacío, pero el usuario lo modificó)
+        body[campo] = valor;
+        hayCambios = true;
+      }
+      // Si el campo NO está en camposModificados, mantener el valor original (ya está en body)
+    });
+
+    if (!hayCambios) {
+      alert("No se detectaron cambios.");
+      return;
+    }
+
+    console.log("📦 Body enviado a /api/products (producto completo actualizado):", body);
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowProductoModal(false);
+      resetFormulario();
+      cargarDatos();
+      recargarProductos();
+    } else {
+      alert(data.error || "Error al guardar producto");
+    }
+  };;
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -934,3 +999,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+
