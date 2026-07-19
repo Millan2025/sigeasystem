@@ -134,13 +134,79 @@ export default function InventarioPage() {
   };
 
   // CRUD Productos (MEJORADO: envía siempre imagen_url)
-  const guardarProducto = async () => {
+    const guardarProducto = async () => {
     const url = "/api/products";
     const method = editandoProducto ? "PUT" : "POST";
 
     if (!editandoProducto) {
-      // Nuevo producto
+      // Nuevo producto: enviar todo el formulario
       const body = { ...formProducto, tenant_id: tenantId };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowProductoModal(false);
+        resetFormulario();
+        cargarDatos();
+        recargarProductos();
+      } else {
+        alert(data.error || "Error al guardar producto");
+      }
+      return;
+    }
+
+    // Edición: construir objeto con solo los campos modificados
+    const cambios: any = { id: editandoProducto.id, tenant_id: tenantId };
+    let hayCambios = false;
+
+    // Lista de campos a comparar (excluyendo campos que no deben enviarse si no cambian)
+    const campos = [
+      "nombre", "categoria", "precio", "precio_compra", "stock",
+      "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+      "unidad", "tipo_unidad", "icono", "sku", "descripcion",
+      "fecha_caducidad", "ubicacion", "imagen_url"
+    ];
+
+    campos.forEach((campo) => {
+      const valorOriginal = (editandoProducto as any)[campo];
+      const valorForm = (formProducto as any)[campo];
+      // Normalizar valores para comparación
+      const valOriginal = valorOriginal !== undefined && valorOriginal !== null ? valorOriginal : "";
+      const valForm = valorForm !== undefined && valorForm !== null ? valorForm : "";
+      
+      // Si son diferentes, agregar al objeto de cambios
+      if (String(valOriginal) !== String(valForm)) {
+        cambios[campo] = valForm;
+        hayCambios = true;
+        console.log(`🔄 Campo modificado: ${campo} = "${valForm}" (original: "${valOriginal}")`);
+      }
+    });
+
+    if (!hayCambios) {
+      alert("No se detectaron cambios.");
+      return;
+    }
+
+    console.log("📦 Enviando solo campos modificados:", cambios);
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cambios),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowProductoModal(false);
+      resetFormulario();
+      cargarDatos();
+      recargarProductos();
+    } else {
+      alert(data.error || "Error al guardar producto");
+    }
+  };;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -926,4 +992,5 @@ export default function InventarioPage() {
     </div>
   );
 }
+
 
