@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
       const { data: allProducts, error: allErr } = await supabase
         .from('productos')
-        .select('id, nombre, stock, unidad, sku, descripcion, categoria, stock_minimo, stock_maximo, ubicacion, fecha_caducidad, proveedor, observaciones')
+        .select('id, nombre, stock, unidad, sku, descripcion, categoria, stock_minimo, stock_maximo, ubicacion, fecha_caducidad, proveedor, observaciones, imagen_url')
         .eq('tenant_id', tenantId)
         .order('nombre')
 
@@ -172,3 +172,4 @@ export async function POST(request: Request) {
     )
   }
 }
+
