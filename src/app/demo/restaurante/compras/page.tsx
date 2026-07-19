@@ -12,8 +12,28 @@ import {
   Plus,
   Edit,
   Trash2,
+  Search,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+
+const estadoInicialForm = {
+  nombre: "",
+  categoria: "",
+  precio: 0,
+  precio_compra: 0,
+  stock: 0,
+  stock_minimo: 0,
+  stock_maximo: 0,
+  proveedor: "",
+  observaciones: "",
+  unidad: "unidad",
+  tipo_unidad: "unidad",
+  sku: "",
+  descripcion: "",
+  fecha_caducidad: "",
+  ubicacion: "",
+  imagen_url: "",
+};
 
 export default function ComprasPage() {
   const pathname = usePathname();
@@ -30,38 +50,14 @@ export default function ComprasPage() {
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
-  const [titulo, setTitulo] = useState('Compras');
-
-  // Obtener título del negocio
-  useEffect(() => {
-    const getTitulo = async () => {
-      try {
-        const res = await fetch(`/api/business-config?tenant=${tenantId}`);
-        const data = await res.json();
-        if (data.success && data.data) {
-          setTitulo(data.data.nombre_negocio || 'Compras');
-        }
-      } catch (e) {}
-    };
-    getTitulo();
-  }, [tenantId]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Modal CRUD
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
-  const [form, setForm] = useState({
-    nombre: "",
-    categoria: "",
-    precio: 0,
-    precio_compra: 0,
-    stock: 0,
-    stock_minimo: 0,
-    proveedor: "",
-    observaciones: "",
-    unidad: "unidad",
-    tipo_unidad: "unidad",
-    icono: "📦",
-  });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [form, setForm] = useState({ ...estadoInicialForm });
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -97,6 +93,10 @@ export default function ComprasPage() {
 
   const productosFiltrados = productos.filter((p) => {
     if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
+    const searchLower = searchTerm.toLowerCase();
+    if (searchTerm && !p.nombre.toLowerCase().includes(searchLower) && !(p.sku && p.sku.toLowerCase().includes(searchLower))) {
+      return false;
+    }
     return true;
   });
 
@@ -104,6 +104,34 @@ export default function ComprasPage() {
     setSeleccionados((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
+  };
+
+  // ============================================
+  // SUBIR IMAGEN (igual que en inventario)
+  // ============================================
+  const subirImagen = async () => {
+    if (!imageFile) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("tenant_id", tenantId);
+    try {
+      const res = await fetch("/api/upload/product-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({ ...prev, imagen_url: data.url }));
+        setImageFile(null);
+        alert("✅ Imagen subida correctamente");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+    setUploadingImage(false);
   };
 
   // ============================================
@@ -196,14 +224,18 @@ export default function ComprasPage() {
   // ============================================
   const descargarInventarioCompleto = () => {
     const data = productos.map((p) => ({
+      SKU: p.sku || "",
       Nombre: p.nombre,
       "Stock Actual": stockMap[p.id] ?? 0,
       "Stock Mínimo": p.stock_minimo || 0,
+      "Stock Máximo": p.stock_maximo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
       "Precio Venta": p.precio || 0,
       "Precio Compra": p.precio_compra || 0,
       Observaciones: p.observaciones || "",
+      Ubicación: p.ubicacion || "",
+      "Fecha Caducidad": p.fecha_caducidad || "",
     }));
 
     const wb = XLSX.utils.book_new();
@@ -213,7 +245,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // CRUD DE PRODUCTOS
+  // CRUD DE PRODUCTOS (con todos los campos)
   // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
@@ -231,7 +263,7 @@ export default function ComprasPage() {
     if (data.success) {
       setShowModal(false);
       setEditando(null);
-      setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
+      setForm({ ...estadoInicialForm });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -252,17 +284,22 @@ export default function ComprasPage() {
   const editarProducto = (p: any) => {
     setEditando(p);
     setForm({
-      nombre: p.nombre,
-      categoria: p.categoria,
+      nombre: p.nombre || "",
+      categoria: p.categoria || "",
       precio: p.precio || 0,
       precio_compra: p.precio_compra || 0,
       stock: p.stock || 0,
       stock_minimo: p.stock_minimo || 0,
+      stock_maximo: p.stock_maximo || 0,
       proveedor: p.proveedor || "",
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "📦",
+      sku: p.sku || "",
+      descripcion: p.descripcion || "",
+      fecha_caducidad: p.fecha_caducidad || "",
+      ubicacion: p.ubicacion || "",
+      imagen_url: p.imagen_url || "",
     });
     setShowModal(true);
   };
@@ -300,7 +337,7 @@ export default function ComprasPage() {
         <button
           onClick={() => {
             setEditando(null);
-            setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
+            setForm({ ...estadoInicialForm });
             setShowModal(true);
           }}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -344,6 +381,17 @@ export default function ComprasPage() {
             ))}
           </select>
 
+          <div className="relative flex-1 min-w-[150px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre o SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
+            />
+          </div>
+
           <input
             type="text"
             placeholder="Proveedor de esta compra"
@@ -367,12 +415,12 @@ export default function ComprasPage() {
               <tr>
                 <th className="p-2 text-left text-stone-700">Seleccionar</th>
                 <th className="p-2 text-left text-stone-700">Nombre</th>
+                <th className="p-2 text-left text-stone-700">SKU</th>
                 <th className="p-2 text-left text-stone-700">Stock actual</th>
                 <th className="p-2 text-left text-stone-700">Mínimo</th>
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
-                <th className="p-2 text-left text-stone-700">Observaciones</th>
                 <th className="p-2 text-left text-stone-700">Estado</th>
                 <th className="p-2 text-left text-stone-700">Acciones</th>
               </tr>
@@ -392,12 +440,12 @@ export default function ComprasPage() {
                       />
                     </td>
                     <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
+                    <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
                     <td className="p-2 font-medium text-stone-800">{stockActual}</td>
                     <td className="p-2 text-stone-600">{p.stock_minimo || 0}</td>
                     <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
                     <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">{p.observaciones || ""}</td>
                     <td className="p-2">
                       {esCritico ? (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
@@ -432,7 +480,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD de producto */}
+      {/* Modal CRUD de producto (con todos los campos, sin Icono) */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -440,6 +488,46 @@ export default function ComprasPage() {
               {editando ? `Editar producto: ${editando.nombre}` : "Nuevo Producto"}
             </h3>
             <div className="space-y-3">
+              {/* Imagen */}
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Imagen del producto</label>
+                {form.imagen_url && (
+                  <div className="mb-2">
+                    <img src={form.imagen_url} alt="Producto" className="w-24 h-24 object-cover rounded-xl" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                />
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={subirImagen}
+                    disabled={uploadingImage}
+                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {uploadingImage ? "Subiendo..." : "Subir imagen"}
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700">SKU (Código de Barras)</label>
+                <input
+                  type="text"
+                  value={form.sku}
+                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  placeholder="Ej. PAN-001"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Nombre *</label>
                 <input
@@ -447,6 +535,16 @@ export default function ComprasPage() {
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Descripción</label>
+                <input
+                  type="text"
+                  value={form.descripcion}
+                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  placeholder="Ej. Baguette tradicional 250g"
                 />
               </div>
               <div>
@@ -498,6 +596,15 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-stone-700">Stock máximo</label>
+                <input
+                  type="number"
+                  value={form.stock_maximo}
+                  onChange={(e) => setForm({ ...form, stock_maximo: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-stone-700">Proveedor</label>
                 <input
                   type="text"
@@ -522,6 +629,7 @@ export default function ComprasPage() {
                   value={form.unidad}
                   onChange={(e) => setForm({ ...form, unidad: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  placeholder="kg, L, unidad, etc."
                 />
               </div>
               <div>
@@ -540,28 +648,42 @@ export default function ComprasPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Icono (emoji)</label>
+                <label className="block text-sm font-medium text-stone-700">Fecha de caducidad</label>
+                <input
+                  type="date"
+                  value={form.fecha_caducidad}
+                  onChange={(e) => setForm({ ...form, fecha_caducidad: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Ubicación en almacén</label>
                 <input
                   type="text"
-                  value={form.icono}
-                  onChange={(e) => setForm({ ...form, icono: e.target.value })}
+                  value={form.ubicacion}
+                  onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  maxLength={2}
+                  placeholder="Estante A1, Pasillo 2"
                 />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditando(null);
+                  setForm({ ...estadoInicialForm });
+                }}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
               >
                 Cancelar
               </button>
               <button
                 onClick={guardarProducto}
-                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
+                disabled={uploadingImage}
+                className={`flex-1 py-2 rounded-xl text-white ${uploadingImage ? 'bg-stone-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'}`}
               >
-                Guardar
+                {uploadingImage ? 'Subiendo imagen...' : 'Guardar'}
               </button>
             </div>
           </div>
@@ -570,4 +692,3 @@ export default function ComprasPage() {
     </div>
   );
 }
-
