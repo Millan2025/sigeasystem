@@ -54,7 +54,7 @@ export default function ComprasPage() {
   const [titulo, setTitulo] = useState('Compras');
 
   // Modal CRUD
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); const [showConfirmModal, setShowConfirmModal] = useState(false); const [confirmData, setConfirmData] = useState<any>(null);
   const [editando, setEditando] = useState<any>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -119,7 +119,40 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // FUNCIÓN PARA REGISTRAR LA COMPRA
+    const confirmarCompra = async () => {
+    if (!confirmData) return;
+    const body = {
+      tenant_id: tenantId,
+      proveedor: confirmData.proveedor,
+      metodo_pago: confirmData.metodo_pago,
+      fecha: new Date().toISOString().split("T")[0],
+      items: confirmData.items.map(item => ({
+        producto_id: item.producto_id,
+        cantidad: item.cantidad,
+        precio_compra: item.precio_compra,
+      })),
+    };
+
+    try {
+      const res = await fetch("/api/compras", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente.`);
+        setSeleccionados([]);
+        setShowConfirmModal(false);
+        setConfirmData(null);
+        cargarDatos();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (error) {
+      alert("Error de conexión");
+    }
+  };
   // ============================================
   const registrarCompra = async () => {
     if (seleccionados.length === 0) {
@@ -710,3 +743,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+

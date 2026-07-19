@@ -2,10 +2,7 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Usar SERVICE_ROLE_KEY para bypass RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 // GET: listar compras
 export async function GET(request: Request) {
@@ -156,3 +153,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
+
