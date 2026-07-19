@@ -142,10 +142,90 @@ export default function InventarioPage() {
   };
 
   // CRUD Productos con lógica de campos modificados
-  const guardarProducto = async () => {
+    const guardarProducto = async () => {
     if (!editandoProducto) {
       // Nuevo producto: enviar todo
       const body = { ...formProducto, tenant_id: tenantId };
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowProductoModal(false);
+        resetFormulario();
+        cargarDatos();
+        recargarProductos();
+      } else {
+        alert(data.error || "Error al guardar producto");
+      }
+      return;
+    }
+
+    // Edición: solo enviar campos modificados Y que tengan valor
+    const body: any = { id: editandoProducto.id, tenant_id: tenantId };
+    let hayCambios = false;
+
+    // Lista de campos a verificar
+    const campos = [
+      "nombre", "categoria", "precio", "precio_compra", "stock",
+      "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+      "unidad", "tipo_unidad", "icono", "sku", "descripcion",
+      "fecha_caducidad", "ubicacion", "imagen_url"
+    ];
+
+    campos.forEach((campo) => {
+      // Solo procesar si el campo fue marcado como modificado
+      if (camposModificados.has(campo)) {
+        const valor = (formProducto as any)[campo];
+        const valorOriginal = (editandoProducto as any)[campo] ?? "";
+
+        // Para imagen_url: solo actualizar si hay un valor nuevo y diferente
+        if (campo === "imagen_url") {
+          if (valor && valor !== valorOriginal) {
+            body[campo] = valor;
+            hayCambios = true;
+          }
+          // Si el usuario no subió imagen (valor vacío), NO actualizar
+          return;
+        }
+
+        // Para otros campos: solo si el valor NO está vacío
+        // y es diferente al original
+        if (valor !== undefined && valor !== null && valor !== "") {
+          // Si el valor es diferente al original, actualizar
+          if (String(valor) !== String(valorOriginal)) {
+            body[campo] = valor;
+            hayCambios = true;
+          }
+        }
+        // Si el valor está vacío, NO actualizar (mantener original)
+      }
+    });
+
+    if (!hayCambios) {
+      alert("No se detectaron cambios válidos para guardar.");
+      return;
+    }
+
+    console.log("📦 Body enviado a /api/products (solo campos modificados y con valor):", body);
+
+    const res = await fetch("/api/products", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowProductoModal(false);
+      resetFormulario();
+      cargarDatos();
+      recargarProductos();
+    } else {
+      alert(data.error || "Error al guardar producto");
+    }
+  };;
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -208,9 +288,12 @@ export default function InventarioPage() {
     }
   };
 
-  const resetFormulario = () => {
+    const resetFormulario = () => {
     setEditandoProducto(null);
     setFormProducto({ ...estadoInicialForm });
+    setCamposModificados(new Set());
+    setImageFile(null);
+  };);
     setCamposModificados(new Set());
     setImageFile(null);
   };
@@ -927,3 +1010,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+
