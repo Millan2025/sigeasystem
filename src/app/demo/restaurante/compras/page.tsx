@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-// Estado inicial para el formulario (coincide con el de Inventario)
 const estadoInicialForm = {
   nombre: "",
   categoria: "",
@@ -34,7 +33,6 @@ const estadoInicialForm = {
   fecha_caducidad: "",
   ubicacion: "",
   imagen_url: "",
-  // icono eliminado
 };
 
 export default function ComprasPage() {
@@ -47,12 +45,13 @@ export default function ComprasPage() {
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroProveedor, setFiltroProveedor] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
   const [stockMap, setStockMap] = useState<Record<string, number>>({});
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [titulo, setTitulo] = useState('Compras');
 
   // Modal CRUD
   const [showModal, setShowModal] = useState(false);
@@ -61,31 +60,19 @@ export default function ComprasPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [form, setForm] = useState({ ...estadoInicialForm });
 
-  // Subir imagen (igual que en Inventario)
-  const subirImagen = async () => {
-    if (!imageFile) return;
-    setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", imageFile);
-    formData.append("tenant_id", tenantId);
-    try {
-      const res = await fetch("/api/upload/product-image", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setForm((prev) => ({ ...prev, imagen_url: data.url }));
-        setImageFile(null);
-        alert("✅ Imagen subida correctamente");
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (e) {
-      alert("Error de conexión");
-    }
-    setUploadingImage(false);
-  };
+  // Obtener título del negocio
+  useEffect(() => {
+    const getTitulo = async () => {
+      try {
+        const res = await fetch(`/api/business-config?tenant=${tenantId}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          setTitulo(data.data.nombre_negocio || 'Compras');
+        }
+      } catch (e) {}
+    };
+    getTitulo();
+  }, [tenantId]);
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -119,12 +106,10 @@ export default function ComprasPage() {
     return stockActual < minimo;
   });
 
-  // Búsqueda por nombre o SKU
   const productosFiltrados = productos.filter((p) => {
-    const matchNombre = p.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchSku = p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchProveedor = filtroProveedor ? p.proveedor === filtroProveedor : true;
-    return (matchNombre || matchSku) && matchProveedor;
+    if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
+    if (searchTerm && !p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !(p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))) return false;
+    return true;
   });
 
   const toggleSeleccion = (id: string) => {
@@ -223,20 +208,16 @@ export default function ComprasPage() {
   // ============================================
   const descargarInventarioCompleto = () => {
     const data = productos.map((p) => ({
-      SKU: p.sku || "",
       Nombre: p.nombre,
-      Descripción: p.descripcion || "",
-      Categoría: p.categoria || "",
+      SKU: p.sku || "",
       "Stock Actual": stockMap[p.id] ?? 0,
       "Stock Mínimo": p.stock_minimo || 0,
-      "Stock Máximo": p.stock_maximo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
       "Precio Venta": p.precio || 0,
       "Precio Compra": p.precio_compra || 0,
       Observaciones: p.observaciones || "",
-      "Fecha Caducidad": p.fecha_caducidad || "",
-      Ubicación: p.ubicacion || "",
+      Imagen: p.imagen_url || "",
     }));
 
     const wb = XLSX.utils.book_new();
@@ -246,18 +227,53 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // CRUD DE PRODUCTOS (con los mismos campos que Inventario)
+  // SUBIR IMAGEN
+  // ============================================
+  const subirImagen = async () => {
+    if (!imageFile) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("tenant_id", tenantId);
+    try {
+      const res = await fetch("/api/upload/product-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({ ...prev, imagen_url: data.url }));
+        setImageFile(null);
+        alert("✅ Imagen subida correctamente");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+    setUploadingImage(false);
+  };
+
+  // ============================================
+  // CRUD DE PRODUCTOS (CON TODOS LOS CAMPOS)
   // ============================================
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
-    // Preparar body con todos los campos, manejando fecha_caducidad como null si está vacío
-    const body = editando
-      ? { ...form, id: editando.id, tenant_id: tenantId }
-      : { ...form, tenant_id: tenantId };
+    
+    // Preparar body
+    let body: any = { ...form, tenant_id: tenantId };
+    if (editando) body.id = editando.id;
     
     // Convertir fecha_caducidad vacío a null
     if (body.fecha_caducidad === "") body.fecha_caducidad = null;
+    
+    // Asegurar valores numéricos
+    body.precio = parseFloat(body.precio) || 0;
+    body.precio_compra = parseFloat(body.precio_compra) || 0;
+    body.stock = parseInt(body.stock) || 0;
+    body.stock_minimo = parseInt(body.stock_minimo) || 0;
+    body.stock_maximo = parseInt(body.stock_maximo) || 0;
 
     const res = await fetch(url, {
       method,
@@ -269,6 +285,7 @@ export default function ComprasPage() {
       setShowModal(false);
       setEditando(null);
       setForm({ ...estadoInicialForm });
+      setImageFile(null);
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -383,6 +400,7 @@ export default function ComprasPage() {
               className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-stone-800"
             />
           </div>
+
           <select
             value={filtroProveedor}
             onChange={(e) => setFiltroProveedor(e.target.value)}
@@ -425,7 +443,6 @@ export default function ComprasPage() {
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
-                <th className="p-2 text-left text-stone-700">Observaciones</th>
                 <th className="p-2 text-left text-stone-700">Estado</th>
                 <th className="p-2 text-left text-stone-700">Acciones</th>
               </tr>
@@ -451,7 +468,6 @@ export default function ComprasPage() {
                     <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
                     <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">{p.observaciones || ""}</td>
                     <td className="p-2">
                       {esCritico ? (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
@@ -476,7 +492,7 @@ export default function ComprasPage() {
               })}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="p-4 text-center text-stone-500">
+                  <td colSpan={10} className="p-4 text-center text-stone-500">
                     No hay productos para este negocio
                   </td>
                 </tr>
@@ -486,7 +502,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD de producto (sincronizado con Inventario) */}
+      {/* Modal CRUD de producto (con todos los campos, sin icono) */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -550,7 +566,7 @@ export default function ComprasPage() {
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. Harina de trigo 25kg"
+                  placeholder="Ej. Harina de trigo 1kg"
                 />
               </div>
               <div>
