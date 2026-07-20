@@ -1,4 +1,5 @@
-﻿import { NextResponse } from 'next/server'
+﻿@'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -36,7 +37,8 @@ export async function POST(request: Request) {
     const {
       nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
       venta_por_peso, icono, tenant_id, proveedor, stock_minimo, stock_maximo,
-      observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url
+      observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url,
+      exento_iva
     } = body
 
     if (!nombre || !categoria || !tenant_id) {
@@ -46,7 +48,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verificar SKU duplicado (si se proporciona)
     if (sku) {
       const { data: existing } = await supabase
         .from('productos')
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
         descripcion: descripcion || '',
         fecha_caducidad: fecha_caducidad || null,
         ubicacion: ubicacion || '',
-        imagen_url: imagen_url || null,`n        exento_iva: exento_iva || false,`n      exento_iva: exento_iva || false,
+        imagen_url: imagen_url || null,
+        exento_iva: exento_iva || false,
         tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -92,7 +94,6 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    // Si se crea con stock > 0, registrar movimiento de entrada
     if (stock > 0) {
       await supabase
         .from('movimientos_inventario')
@@ -118,7 +119,8 @@ export async function PUT(request: Request) {
     const {
       id, nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
       venta_por_peso, icono, proveedor, stock_minimo, stock_maximo,
-      observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url
+      observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url,
+      exento_iva
     } = body
 
     if (!id) {
@@ -136,7 +138,6 @@ export async function PUT(request: Request) {
       .single()
     if (fetchErr) throw fetchErr
 
-    // Verificar SKU duplicado (si se actualiza)
     if (sku) {
       const { data: dup } = await supabase
         .from('productos')
@@ -153,23 +154,19 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Construir objeto de actualización solo con los campos que vienen en el body
-    // (si no vienen, no se actualizan)
+    // Construir objeto de actualización solo con campos presentes en el body
     const updateData: any = {}
+
     const campos = [
       'nombre', 'categoria', 'precio', 'precio_compra', 'stock',
       'stock_minimo', 'stock_maximo', 'unidad', 'tipo_unidad',
       'venta_por_peso', 'icono', 'proveedor', 'observaciones',
-      'sku', 'descripcion', 'fecha_caducidad', 'ubicacion', 'imagen_url'
+      'sku', 'descripcion', 'fecha_caducidad', 'ubicacion', 'imagen_url',
+      'exento_iva'
     ]
     campos.forEach((campo) => {
-      // Si el campo está presente en el body (incluso si es null o ""), lo incluimos
-      if (campo in body) {
-        const valor = body[campo]
-        // Si el valor es undefined no lo incluimos (pero eso no debería pasar)
-        if (valor !== undefined) {
-          updateData[campo] = valor
-        }
+      if (campo in body && body[campo] !== undefined) {
+        updateData[campo] = body[campo]
       }
     })
 
@@ -177,7 +174,7 @@ export async function PUT(request: Request) {
     updateData.updated_at = new Date().toISOString()
 
     // Si no hay campos para actualizar, devolver error
-    if (Object.keys(updateData).length === 1) { // solo updated_at
+    if (Object.keys(updateData).length === 1) {
       return NextResponse.json(
         { success: false, error: 'No hay campos para actualizar' },
         { status: 400 }
@@ -243,4 +240,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+'@ | Set-Content -LiteralPath "src/app/api/products/route.ts" -Encoding UTF8
 
+Write-Host "✅ Archivo products/route.ts reescrito correctamente" -ForegroundColor Green
