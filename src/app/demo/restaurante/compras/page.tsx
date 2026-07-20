@@ -520,7 +520,7 @@ export default function ComprasPage() {
 
         <div className="flex flex-wrap gap-3 items-center mb-4">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-600" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-900" />
             <input
               type="text"
               placeholder="Buscar por nombre o SKU..."
@@ -630,7 +630,7 @@ export default function ComprasPage() {
               })}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-4 text-center text-stone-700">
+                  <td colSpan={12} className="p-4 text-center text-stone-900">
                     No hay productos para este negocio
                   </td>
                 </tr>
@@ -938,7 +938,7 @@ export default function ComprasPage() {
                   <span>Total</span>
                   <span className="text-emerald-700">${confirmData.total.toLocaleString()}</span>
                 </div>
-                <p className="text-xs text-stone-700 mt-1">
+                <p className="text-xs text-stone-900 mt-1">
                   * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
                 </p>
               </div>
@@ -964,6 +964,7 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
 
 
