@@ -250,7 +250,7 @@ export default function InventarioPage() {
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
-      imagen_url: p.imagen_url || "",
+      imagen_url: p.imagen_url || "",`n      exento_iva: p.exento_iva || false,
     });
     setShowProductoModal(true);
   };
@@ -871,3 +871,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+

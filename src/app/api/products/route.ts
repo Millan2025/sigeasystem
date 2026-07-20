@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         descripcion: descripcion || '',
         fecha_caducidad: fecha_caducidad || null,
         ubicacion: ubicacion || '',
-        imagen_url: imagen_url || null,
+        imagen_url: imagen_url || null,`n        exento_iva: exento_iva || false,`n      exento_iva: exento_iva || false,
         tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -243,3 +243,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+

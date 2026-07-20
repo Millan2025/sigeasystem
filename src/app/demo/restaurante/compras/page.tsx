@@ -111,9 +111,39 @@ export default function ComprasPage() {
   // ============================================
   // ACTUALIZAR RESUMEN CONTABLE
   // ============================================
-  const actualizarResumenContable = () => {
+    const actualizarResumenContable = () => {
     if (seleccionados.length === 0) {
       setResumenContable({ subtotal: 0, iva: 0, retencion: 0, ica: 0, total: 0 });
+      return;
+    }
+
+    let subtotal = 0;
+    let ivaTotal = 0;
+    let totalConIva = 0;
+
+    // Calcular por producto
+    seleccionados.forEach((id) => {
+      const p = productos.find((prod) => prod.id === id);
+      if (!p) return;
+      const stockActual = stockMap[p.id] ?? 0;
+      const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
+      if (cantidad <= 0) return;
+      const precioCompra = p.precio_compra || 0;
+      const subtotalProducto = cantidad * precioCompra;
+      subtotal += subtotalProducto;
+      
+      // IVA por producto (si está exento, no se aplica)
+      if (!p.exento_iva) {
+        ivaTotal += subtotalProducto * (ivaPorcentaje / 100);
+      }
+    });
+
+    const retencion = subtotal * (retencionPorcentaje / 100);
+    const ica = subtotal * (icaPorcentaje / 100);
+    const total = subtotal + ivaTotal - retencion - ica;
+
+    setResumenContable({ subtotal, iva: ivaTotal, retencion, ica, total });
+  };);
       return;
     }
 
@@ -231,7 +261,7 @@ export default function ComprasPage() {
       • IVA (${ivaPorcentaje}%): $${resumenContable.iva.toLocaleString()}
       • Retención (${retencionPorcentaje}%): -$${resumenContable.retencion.toLocaleString()}
       • ICA (${icaPorcentaje}%): -$${resumenContable.ica.toLocaleString()}
-      • Total a pagar: $${resumenContable.total.toLocaleString()}
+      • Total a pagar (con impuestos): $${resumenContable.total.toLocaleString()}
       
       ¿Confirmas esta compra?
     `;
@@ -412,7 +442,7 @@ export default function ComprasPage() {
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
-      imagen_url: p.imagen_url || "",
+      imagen_url: p.imagen_url || "",`n      exento_iva: p.exento_iva || false,
     });
     setShowModal(true);
   };
@@ -513,19 +543,19 @@ export default function ComprasPage() {
               </div>
               <div>
                 <span className="text-stone-600">IVA ({ivaPorcentaje}%)</span>
-                <p className="font-bold text-blue-600">${resumenContable.iva.toLocaleString()}</p>
+                <p className="font-bold text-stone-800">${resumenContable.iva.toLocaleString()}</p>
               </div>
               <div>
                 <span className="text-stone-600">Retención ({retencionPorcentaje}%)</span>
-                <p className="font-bold text-red-600">-${resumenContable.retencion.toLocaleString()}</p>
+                <p className="font-bold text-stone-800">-${resumenContable.retencion.toLocaleString()}</p>
               </div>
               <div>
                 <span className="text-stone-600">ICA ({icaPorcentaje}%)</span>
-                <p className="font-bold text-orange-600">-${resumenContable.ica.toLocaleString()}</p>
+                <p className="font-bold text-stone-800">-${resumenContable.ica.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600 font-bold">Total a pagar</span>
-                <p className="font-bold text-emerald-600">${resumenContable.total.toLocaleString()}</p>
+                <span className="text-stone-600 font-bold">Total a pagar (con impuestos)</span>
+                <p className="font-bold text-stone-800 font-bold">${resumenContable.total.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -930,7 +960,7 @@ export default function ComprasPage() {
                             className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
                           />
                         </div>
-                        <span className="font-bold text-emerald-600">
+                        <span className="font-bold text-stone-800 font-bold">
                           ${(item.cantidad * item.precio_compra).toLocaleString()}
                         </span>
                       </div>
@@ -939,7 +969,7 @@ export default function ComprasPage() {
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
+                  <span className="text-stone-800 font-bold">${confirmData.total.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-stone-500 mt-1">
                   * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
@@ -967,3 +997,5 @@ export default function ComprasPage() {
     </div>
   );
 }
+
+
