@@ -124,7 +124,7 @@ export default function ComprasPage() {
       const precioCompra = p.precio_compra || 0;
       const subtotalProducto = cantidad * precioCompra;
       subtotal += subtotalProducto;
-      
+
       if (!p.exento_iva) {
         ivaTotal += subtotalProducto * (ivaPorcentaje / 100);
       }
@@ -223,7 +223,7 @@ export default function ComprasPage() {
       • Retención: -$${resumenContable.retencion.toLocaleString()}
       • ICA: -$${resumenContable.ica.toLocaleString()}
       • Total a pagar: $${resumenContable.total.toLocaleString()}
-      
+
       ¿Confirmas esta compra?
     `;
 
@@ -342,12 +342,12 @@ export default function ComprasPage() {
   const guardarProducto = async () => {
     const url = "/api/products";
     const method = editando ? "PUT" : "POST";
-    
+
     let body: any = { ...form, tenant_id: tenantId };
     if (editando) body.id = editando.id;
-    
+
     if (body.fecha_caducidad === "") body.fecha_caducidad = null;
-    
+
     body.precio = parseFloat(body.precio) || 0;
     body.precio_compra = parseFloat(body.precio_compra) || 0;
     body.stock = parseInt(body.stock) || 0;
@@ -425,7 +425,7 @@ export default function ComprasPage() {
         </button>
         <button
           onClick={generarOrdenCompra}
-          className="bg-blue-1000 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
+          className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
         >
           <ShoppingBag className="w-4 h-4" /> Generar Orden
         </button>
@@ -463,7 +463,7 @@ export default function ComprasPage() {
                 type="number"
                 value={ivaPorcentaje}
                 onChange={(e) => setIvaPorcentaje(parseFloat(e.target.value) || 0)}
-                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm" text-black
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                 step="0.1"
               />
             </div>
@@ -473,7 +473,7 @@ export default function ComprasPage() {
                 type="number"
                 value={retencionPorcentaje}
                 onChange={(e) => setRetencionPorcentaje(parseFloat(e.target.value) || 0)}
-                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm" text-black
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                 step="0.1"
               />
             </div>
@@ -483,7 +483,7 @@ export default function ComprasPage() {
                 type="number"
                 value={icaPorcentaje}
                 onChange={(e) => setIcaPorcentaje(parseFloat(e.target.value) || 0)}
-                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm" text-black
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                 step="0.1"
               />
             </div>
@@ -523,17 +523,17 @@ export default function ComprasPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
             <input
               type="text"
-              placeholder=" " style="color: black; opacity: 0.8;" class="placeholder-black"
+              placeholder="Buscar por nombre o SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-black" text-black
+              className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-black placeholder-black"
             />
           </div>
 
           <select
             value={filtroProveedor}
             onChange={(e) => setFiltroProveedor(e.target.value)}
-            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black" text-black
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
           >
             <option value="">Todos los proveedores</option>
             {proveedores.map((prov) => (
@@ -545,15 +545,15 @@ export default function ComprasPage() {
 
           <input
             type="text"
-            placeholder=" " style="color: black; opacity: 0.8;" class="placeholder-black"
+            placeholder="Proveedor de esta compra"
             value={proveedor}
             onChange={(e) => setProveedor(e.target.value)}
-            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black flex-1 min-w-[150px]" text-black
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black placeholder-black flex-1 min-w-[150px]"
           />
           <select
             value={metodoPago}
             onChange={(e) => setMetodoPago(e.target.value)}
-            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black" text-black
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
           >
             <option value="contado">Contado</option>
             <option value="credito">Crédito</option>
@@ -663,14 +663,14 @@ export default function ComprasPage() {
                       setImageFile(e.target.files[0]);
                     }
                   }}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-black"
                 />
                 {imageFile && (
                   <button
                     type="button"
                     onClick={subirImagen}
                     disabled={uploadingImage}
-                    className="mt-2 bg-blue-1000 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
+                    className="mt-2 bg-blue-600 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-700 disabled:opacity-50"
                   >
                     {uploadingImage ? "Subiendo..." : "Subir imagen"}
                   </button>
@@ -683,8 +683,8 @@ export default function ComprasPage() {
                   type="text"
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
-                  placeholder=" " style="color: black; opacity: 0.8;" class="placeholder-black"
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                  placeholder="Ej. HAR-001"
                 />
               </div>
               <div>
@@ -693,7 +693,7 @@ export default function ComprasPage() {
                   type="text"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -702,8 +702,8 @@ export default function ComprasPage() {
                   type="text"
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
-                  placeholder=" " style="color: black; opacity: 0.8;" class="placeholder-black"
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                  placeholder="Ej. Harina de trigo 1kg"
                 />
               </div>
               <div>
@@ -712,7 +712,7 @@ export default function ComprasPage() {
                   type="text"
                   value={form.categoria}
                   onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -722,7 +722,7 @@ export default function ComprasPage() {
                   step="0.01"
                   value={form.precio}
                   onChange={(e) => setForm({ ...form, precio: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -732,7 +732,7 @@ export default function ComprasPage() {
                   step="0.01"
                   value={form.precio_compra}
                   onChange={(e) => setForm({ ...form, precio_compra: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -741,7 +741,7 @@ export default function ComprasPage() {
                   type="text"
                   value={stockMap[editando?.id] ?? 0}
                   disabled
-                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-black"
                 />
                 <p className="text-xs text-black mt-1">El stock se calcula automáticamente</p>
               </div>
@@ -751,7 +751,7 @@ export default function ComprasPage() {
                   type="number"
                   value={form.stock_minimo}
                   onChange={(e) => setForm({ ...form, stock_minimo: parseInt(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -760,7 +760,7 @@ export default function ComprasPage() {
                   type="number"
                   value={form.stock_maximo}
                   onChange={(e) => setForm({ ...form, stock_maximo: parseInt(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -769,7 +769,7 @@ export default function ComprasPage() {
                   type="text"
                   value={form.proveedor}
                   onChange={(e) => setForm({ ...form, proveedor: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -778,7 +778,7 @@ export default function ComprasPage() {
                   type="text"
                   value={form.observaciones}
                   onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -787,8 +787,8 @@ export default function ComprasPage() {
                   type="text"
                   value={form.unidad}
                   onChange={(e) => setForm({ ...form, unidad: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
-                  placeholder=" " style="color: black; opacity: 0.8;" class="placeholder-black"
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                  placeholder="kg, L, unidad, etc."
                 />
               </div>
               <div>
@@ -796,7 +796,7 @@ export default function ComprasPage() {
                 <select
                   value={form.tipo_unidad}
                   onChange={(e) => setForm({ ...form, tipo_unidad: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 >
                   <option value="unidad">Unidad</option>
                   <option value="kilogramo">Kilogramo</option>
@@ -812,7 +812,7 @@ export default function ComprasPage() {
                   type="date"
                   value={form.fecha_caducidad}
                   onChange={(e) => setForm({ ...form, fecha_caducidad: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -821,8 +821,8 @@ export default function ComprasPage() {
                   type="text"
                   value={form.ubicacion}
                   onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
-                  placeholder=" " style="color: black; opacity: 0.8;" class="placeholder-black"
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                  placeholder="Estante A1, Pasillo 2"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -830,7 +830,7 @@ export default function ComprasPage() {
                   type="checkbox"
                   checked={form.exento_iva || false}
                   onChange={(e) => setForm({ ...form, exento_iva: e.target.checked })}
-                  className="w-4 h-4 rounded border-stone-300" text-black
+                  className="w-4 h-4 rounded border-stone-300"
                 />
                 <label className="text-sm font-bold text-black">Exento de IVA</label>
               </div>
@@ -838,7 +838,7 @@ export default function ComprasPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-black" text-black
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
               >
                 Cancelar
               </button>
@@ -872,7 +872,7 @@ export default function ComprasPage() {
                   type="text"
                   value={confirmData.proveedor}
                   onChange={(e) => setConfirmData({ ...confirmData, proveedor: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 />
               </div>
               <div>
@@ -880,7 +880,7 @@ export default function ComprasPage() {
                 <select
                   value={confirmData.metodo_pago}
                   onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black" text-black
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 >
                   <option value="contado">Contado</option>
                   <option value="credito">Crédito</option>
@@ -908,7 +908,7 @@ export default function ComprasPage() {
                               const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
                               setConfirmData({ ...confirmData, items: newItems, total });
                             }}
-                            className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black" text-black
+                            className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
                         </div>
                         <div className="flex items-center gap-2">
@@ -924,7 +924,7 @@ export default function ComprasPage() {
                               const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
                               setConfirmData({ ...confirmData, items: newItems, total });
                             }}
-                            className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black" text-black
+                            className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
                         </div>
                         <span className="font-bold text-black">
@@ -947,7 +947,7 @@ export default function ComprasPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-black" text-black
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
               >
                 Cancelar
               </button>
@@ -964,12 +964,3 @@ export default function ComprasPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
