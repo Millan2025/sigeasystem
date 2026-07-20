@@ -413,11 +413,11 @@ export default function ComprasPage() {
         <h1 className="text-xl font-bold text-stone-800">Compras</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5 text-stone-700" />
+          <RefreshCw className="w-5 h-5 text-stone-900" />
         </button>
         <button
           onClick={descargarInventarioCompleto}
-          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700"
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-900"
           title="Descargar inventario completo"
         >
           <Download className="w-5 h-5" />
@@ -425,13 +425,13 @@ export default function ComprasPage() {
         </button>
         <button
           onClick={generarOrdenCompra}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          className="bg-blue-1000 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
         >
           <ShoppingBag className="w-4 h-4" /> Generar Orden
         </button>
         <button
           onClick={prepararConfirmacion}
-          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
         >
           <Plus className="w-4 h-4" /> Registrar Compra
         </button>
@@ -441,7 +441,7 @@ export default function ComprasPage() {
             setForm({ ...estadoInicialForm });
             setShowModal(true);
           }}
-          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
         >
           <Plus className="w-4 h-4" /> Nuevo Producto
         </button>
@@ -449,7 +449,7 @@ export default function ComprasPage() {
 
       <div className="p-4 max-w-7xl mx-auto">
         {mensaje && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-4 text-emerald-700 font-medium">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-4 text-emerald-700 font-bold">
             {mensaje}
           </div>
         )}
@@ -458,7 +458,7 @@ export default function ComprasPage() {
           <h3 className="font-semibold text-stone-800 mb-2">⚖️ Configuración contable</h3>
           <div className="flex flex-wrap gap-4">
             <div>
-              <label className="block text-xs text-stone-600">IVA (%)</label>
+              <label className="block text-xs text-stone-900">IVA (%)</label>
               <input
                 type="number"
                 value={ivaPorcentaje}
@@ -468,7 +468,7 @@ export default function ComprasPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-stone-600">Retención (%)</label>
+              <label className="block text-xs text-stone-900">Retención (%)</label>
               <input
                 type="number"
                 value={retencionPorcentaje}
@@ -478,7 +478,7 @@ export default function ComprasPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-stone-600">ICA (%)</label>
+              <label className="block text-xs text-stone-900">ICA (%)</label>
               <input
                 type="number"
                 value={icaPorcentaje}
@@ -491,28 +491,28 @@ export default function ComprasPage() {
         </div>
 
         {seleccionados.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+          <div className="bg-blue-100 border border-blue-300 rounded-2xl p-4 mb-4">
             <h4 className="font-semibold text-stone-800 mb-2">📊 Resumen de la compra</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
               <div>
-                <span className="text-stone-600">Subtotal</span>
+                <span className="text-stone-900">Subtotal</span>
                 <p className="font-bold text-stone-800">${resumenContable.subtotal.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600">IVA</span>
+                <span className="text-stone-900">IVA</span>
                 <p className="font-bold text-stone-800">${resumenContable.iva.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600">Retención</span>
+                <span className="text-stone-900">Retención</span>
                 <p className="font-bold text-stone-800">-${resumenContable.retencion.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600">ICA</span>
+                <span className="text-stone-900">ICA</span>
                 <p className="font-bold text-stone-800">-${resumenContable.ica.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600 font-bold">Total a pagar</span>
-                <p className="font-bold text-emerald-600">${resumenContable.total.toLocaleString()}</p>
+                <span className="text-stone-900 font-bold">Total a pagar</span>
+                <p className="font-bold text-emerald-700">${resumenContable.total.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -564,18 +564,18 @@ export default function ComprasPage() {
           <table className="w-full text-sm">
             <thead className="bg-stone-50">
               <tr>
-                <th className="p-2 text-left text-stone-700">Seleccionar</th>
-                <th className="p-2 text-left text-stone-700">SKU</th>
-                <th className="p-2 text-left text-stone-700">Nombre</th>
-                <th className="p-2 text-left text-stone-700">Stock actual</th>
-                <th className="p-2 text-left text-stone-700">Mínimo</th>
-                <th className="p-2 text-left text-stone-700">Máximo</th>
-                <th className="p-2 text-left text-stone-700">Proveedor</th>
-                <th className="p-2 text-left text-stone-700">Precio Venta</th>
-                <th className="p-2 text-left text-stone-700">Precio Compra</th>
-                <th className="p-2 text-left text-stone-700">Exento IVA</th>
-                <th className="p-2 text-left text-stone-700">Estado</th>
-                <th className="p-2 text-left text-stone-700">Acciones</th>
+                <th className="p-2 text-left text-stone-900">Seleccionar</th>
+                <th className="p-2 text-left text-stone-900">SKU</th>
+                <th className="p-2 text-left text-stone-900">Nombre</th>
+                <th className="p-2 text-left text-stone-900">Stock actual</th>
+                <th className="p-2 text-left text-stone-900">Mínimo</th>
+                <th className="p-2 text-left text-stone-900">Máximo</th>
+                <th className="p-2 text-left text-stone-900">Proveedor</th>
+                <th className="p-2 text-left text-stone-900">Precio Venta</th>
+                <th className="p-2 text-left text-stone-900">Precio Compra</th>
+                <th className="p-2 text-left text-stone-900">Exento IVA</th>
+                <th className="p-2 text-left text-stone-900">Estado</th>
+                <th className="p-2 text-left text-stone-900">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -593,33 +593,33 @@ export default function ComprasPage() {
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
-                    <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
-                    <td className="p-2 font-medium text-stone-800">{stockActual}</td>
-                    <td className="p-2 text-stone-600">{p.stock_minimo || 0}</td>
-                    <td className="p-2 text-stone-600">{p.stock_maximo || 0}</td>
-                    <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
+                    <td className="p-2 text-stone-900 font-mono text-xs">{p.sku || "-"}</td>
+                    <td className="p-2 text-stone-800 font-bold">{p.nombre}</td>
+                    <td className="p-2 font-bold text-stone-800">{stockActual}</td>
+                    <td className="p-2 text-stone-900">{p.stock_minimo || 0}</td>
+                    <td className="p-2 text-stone-900">{p.stock_maximo || 0}</td>
+                    <td className="p-2 text-stone-900">{p.proveedor || "-"}</td>
                     <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">{p.exento_iva ? "Sí" : "No"}</td>
+                    <td className="p-2 text-stone-900">{p.exento_iva ? "Sí" : "No"}</td>
                     <td className="p-2">
                       {esCritico ? (
-                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
                           Por debajo
                         </span>
                       ) : estaMaximo ? (
-                        <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                        <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
                           Máximo
                         </span>
                       ) : (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
                           OK
                         </span>
                       )}
                     </td>
                     <td className="p-2 flex gap-2">
                       <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
-                        <Edit className="w-4 h-4 text-stone-600" />
+                        <Edit className="w-4 h-4 text-stone-900" />
                       </button>
                       <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 rounded">
                         <Trash2 className="w-4 h-4 text-red-500" />
@@ -649,7 +649,7 @@ export default function ComprasPage() {
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">Imagen del producto</label>
+                <label className="block text-sm font-bold text-stone-900">Imagen del producto</label>
                 {form.imagen_url && (
                   <div className="mb-2">
                     <img src={form.imagen_url} alt="Producto" className="w-24 h-24 object-cover rounded-xl" />
@@ -670,7 +670,7 @@ export default function ComprasPage() {
                     type="button"
                     onClick={subirImagen}
                     disabled={uploadingImage}
-                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
+                    className="mt-2 bg-blue-1000 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
                   >
                     {uploadingImage ? "Subiendo..." : "Subir imagen"}
                   </button>
@@ -678,7 +678,7 @@ export default function ComprasPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700">SKU</label>
+                <label className="block text-sm font-bold text-stone-900">SKU</label>
                 <input
                   type="text"
                   value={form.sku}
@@ -688,7 +688,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Nombre *</label>
+                <label className="block text-sm font-bold text-stone-900">Nombre *</label>
                 <input
                   type="text"
                   value={form.nombre}
@@ -697,7 +697,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Descripción</label>
+                <label className="block text-sm font-bold text-stone-900">Descripción</label>
                 <input
                   type="text"
                   value={form.descripcion}
@@ -707,7 +707,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
+                <label className="block text-sm font-bold text-stone-900">Categoría *</label>
                 <input
                   type="text"
                   value={form.categoria}
@@ -716,7 +716,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Precio Venta</label>
+                <label className="block text-sm font-bold text-stone-900">Precio Venta</label>
                 <input
                   type="number"
                   step="0.01"
@@ -726,7 +726,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Precio Compra</label>
+                <label className="block text-sm font-bold text-stone-900">Precio Compra</label>
                 <input
                   type="number"
                   step="0.01"
@@ -736,17 +736,17 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock actual</label>
+                <label className="block text-sm font-bold text-stone-900">Stock actual</label>
                 <input
                   type="text"
                   value={stockMap[editando?.id] ?? 0}
                   disabled
-                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
+                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-900"
                 />
-                <p className="text-xs text-stone-600 mt-1">El stock se calcula automáticamente</p>
+                <p className="text-xs text-stone-900 mt-1">El stock se calcula automáticamente</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
+                <label className="block text-sm font-bold text-stone-900">Stock mínimo</label>
                 <input
                   type="number"
                   value={form.stock_minimo}
@@ -755,7 +755,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock máximo</label>
+                <label className="block text-sm font-bold text-stone-900">Stock máximo</label>
                 <input
                   type="number"
                   value={form.stock_maximo}
@@ -764,7 +764,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Proveedor</label>
+                <label className="block text-sm font-bold text-stone-900">Proveedor</label>
                 <input
                   type="text"
                   value={form.proveedor}
@@ -773,7 +773,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Observaciones</label>
+                <label className="block text-sm font-bold text-stone-900">Observaciones</label>
                 <input
                   type="text"
                   value={form.observaciones}
@@ -782,7 +782,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Unidad</label>
+                <label className="block text-sm font-bold text-stone-900">Unidad</label>
                 <input
                   type="text"
                   value={form.unidad}
@@ -792,7 +792,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Tipo de unidad</label>
+                <label className="block text-sm font-bold text-stone-900">Tipo de unidad</label>
                 <select
                   value={form.tipo_unidad}
                   onChange={(e) => setForm({ ...form, tipo_unidad: e.target.value })}
@@ -807,7 +807,7 @@ export default function ComprasPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Fecha de caducidad</label>
+                <label className="block text-sm font-bold text-stone-900">Fecha de caducidad</label>
                 <input
                   type="date"
                   value={form.fecha_caducidad}
@@ -816,7 +816,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Ubicación en almacén</label>
+                <label className="block text-sm font-bold text-stone-900">Ubicación en almacén</label>
                 <input
                   type="text"
                   value={form.ubicacion}
@@ -832,13 +832,13 @@ export default function ComprasPage() {
                   onChange={(e) => setForm({ ...form, exento_iva: e.target.checked })}
                   className="w-4 h-4 rounded border-stone-300"
                 />
-                <label className="text-sm font-medium text-stone-700">Exento de IVA</label>
+                <label className="text-sm font-bold text-stone-900">Exento de IVA</label>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-900"
               >
                 Cancelar
               </button>
@@ -861,13 +861,13 @@ export default function ComprasPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Confirmar Compra</h3>
               <button onClick={() => setShowConfirmModal(false)} className="p-1 hover:bg-stone-100 rounded">
-                <X className="w-5 h-5 text-stone-600" />
+                <X className="w-5 h-5 text-stone-900" />
               </button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">Proveedor</label>
+                <label className="block text-sm font-bold text-stone-900">Proveedor</label>
                 <input
                   type="text"
                   value={confirmData.proveedor}
@@ -876,7 +876,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Método de Pago</label>
+                <label className="block text-sm font-bold text-stone-900">Método de Pago</label>
                 <select
                   value={confirmData.metodo_pago}
                   onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })}
@@ -888,16 +888,16 @@ export default function ComprasPage() {
               </div>
 
               <div className="border-t pt-3 mt-3">
-                <h4 className="font-semibold text-stone-700 mb-2">Productos</h4>
+                <h4 className="font-semibold text-stone-900 mb-2">Productos</h4>
                 <div className="space-y-3 max-h-48 overflow-y-auto">
                   {confirmData.items.map((item, idx) => (
                     <div key={idx} className="flex flex-col border-b border-stone-100 py-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-stone-800 font-medium">{item.nombre}</span>
+                        <span className="text-stone-800 font-bold">{item.nombre}</span>
                       </div>
                       <div className="flex items-center justify-between mt-1 gap-2">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm text-stone-600">Cantidad:</label>
+                          <label className="text-sm text-stone-900">Cantidad:</label>
                           <input
                             type="number"
                             min="0"
@@ -912,7 +912,7 @@ export default function ComprasPage() {
                           />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-stone-600">Precio:</span>
+                          <span className="text-sm text-stone-900">Precio:</span>
                           <input
                             type="number"
                             min="0"
@@ -927,7 +927,7 @@ export default function ComprasPage() {
                             className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
                           />
                         </div>
-                        <span className="font-bold text-emerald-600">
+                        <span className="font-bold text-emerald-700">
                           ${(item.cantidad * item.precio_compra).toLocaleString()}
                         </span>
                       </div>
@@ -936,7 +936,7 @@ export default function ComprasPage() {
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
+                  <span className="text-emerald-700">${confirmData.total.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-stone-500 mt-1">
                   * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
@@ -947,7 +947,7 @@ export default function ComprasPage() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-900"
               >
                 Cancelar
               </button>
@@ -964,4 +964,5 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
