@@ -523,7 +523,7 @@ export default function ComprasPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-900" />
             <input
               type="text"
-              placeholder="Buscar por nombre o SKU..."
+              placeholder=""
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-stone-800"
@@ -545,7 +545,7 @@ export default function ComprasPage() {
 
           <input
             type="text"
-            placeholder="Proveedor de esta compra"
+            placeholder=""
             value={proveedor}
             onChange={(e) => setProveedor(e.target.value)}
             className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800 flex-1 min-w-[150px]"
@@ -684,7 +684,7 @@ export default function ComprasPage() {
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. HAR-001"
+                  placeholder=""
                 />
               </div>
               <div>
@@ -703,7 +703,7 @@ export default function ComprasPage() {
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ej. Harina de trigo 1kg"
+                  placeholder=""
                 />
               </div>
               <div>
@@ -788,7 +788,7 @@ export default function ComprasPage() {
                   value={form.unidad}
                   onChange={(e) => setForm({ ...form, unidad: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="kg, L, unidad, etc."
+                  placeholder=""
                 />
               </div>
               <div>
@@ -822,7 +822,7 @@ export default function ComprasPage() {
                   value={form.ubicacion}
                   onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Estante A1, Pasillo 2"
+                  placeholder=""
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -964,6 +964,7 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
 
 
