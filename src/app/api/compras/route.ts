@@ -69,14 +69,13 @@ export async function POST(request: Request) {
 
     if (compraErr) throw compraErr
 
-    // 2. Insertar items de compra
+    // 2. Insertar items de compra (SIN tenant_id)
     const compraItems = items.map((item: any) => ({
       compra_id: compra.id,
       producto_id: item.producto_id,
       cantidad: item.cantidad,
       precio_compra: item.precio_compra,
-      subtotal: item.cantidad * item.precio_compra,
-      tenant_id: tenant_id
+      subtotal: item.cantidad * item.precio_compra
     }))
 
     const { error: itemsErr } = await supabase
@@ -153,13 +152,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-
