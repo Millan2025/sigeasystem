@@ -1,5 +1,4 @@
-﻿@'
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -130,7 +129,6 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Obtener tenant_id del producto
     const { data: existing, error: fetchErr } = await supabase
       .from('productos')
       .select('tenant_id')
@@ -154,9 +152,7 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Construir objeto de actualización solo con campos presentes en el body
     const updateData: any = {}
-
     const campos = [
       'nombre', 'categoria', 'precio', 'precio_compra', 'stock',
       'stock_minimo', 'stock_maximo', 'unidad', 'tipo_unidad',
@@ -170,10 +166,8 @@ export async function PUT(request: Request) {
       }
     })
 
-    // Siempre actualizar updated_at
     updateData.updated_at = new Date().toISOString()
 
-    // Si no hay campos para actualizar, devolver error
     if (Object.keys(updateData).length === 1) {
       return NextResponse.json(
         { success: false, error: 'No hay campos para actualizar' },
@@ -206,7 +200,6 @@ export async function DELETE(request: Request) {
       )
     }
 
-    // Verificar movimientos y ventas
     const { data: movs, error: movErr } = await supabase
       .from('movimientos_inventario')
       .select('id')
@@ -240,6 +233,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-'@ | Set-Content -LiteralPath "src/app/api/products/route.ts" -Encoding UTF8
-
-Write-Host "✅ Archivo products/route.ts reescrito correctamente" -ForegroundColor Green
