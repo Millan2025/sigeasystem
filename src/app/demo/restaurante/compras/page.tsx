@@ -34,6 +34,7 @@ const estadoInicialForm = {
   fecha_caducidad: "",
   ubicacion: "",
   imagen_url: "",
+  exento_iva: false,
 };
 
 interface Producto {
@@ -54,6 +55,7 @@ interface Producto {
   imagen_url?: string;
   categoria?: string;
   stock?: number;
+  exento_iva?: boolean;
 }
 
 export default function ComprasPage() {
@@ -72,13 +74,11 @@ export default function ComprasPage() {
   const [proveedor, setProveedor] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
-  
-  // Configuración contable (visible en la página)
+
   const [ivaPorcentaje, setIvaPorcentaje] = useState(19);
   const [retencionPorcentaje, setRetencionPorcentaje] = useState(2.5);
   const [icaPorcentaje, setIcaPorcentaje] = useState(0.5);
 
-  // Resumen contable (calculado en la página)
   const [resumenContable, setResumenContable] = useState({
     subtotal: 0,
     iva: 0,
@@ -87,14 +87,12 @@ export default function ComprasPage() {
     total: 0,
   });
 
-  // Modal CRUD
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [form, setForm] = useState({ ...estadoInicialForm });
 
-  // Modal de confirmación de compra (simple: cantidad, precio, total)
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmData, setConfirmData] = useState<{
     items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
@@ -108,10 +106,7 @@ export default function ComprasPage() {
     total: 0,
   });
 
-  // ============================================
-  // ACTUALIZAR RESUMEN CONTABLE
-  // ============================================
-    const actualizarResumenContable = () => {
+  const actualizarResumenContable = () => {
     if (seleccionados.length === 0) {
       setResumenContable({ subtotal: 0, iva: 0, retencion: 0, ica: 0, total: 0 });
       return;
@@ -119,9 +114,7 @@ export default function ComprasPage() {
 
     let subtotal = 0;
     let ivaTotal = 0;
-    let totalConIva = 0;
 
-    // Calcular por producto
     seleccionados.forEach((id) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return;
@@ -132,7 +125,6 @@ export default function ComprasPage() {
       const subtotalProducto = cantidad * precioCompra;
       subtotal += subtotalProducto;
       
-      // IVA por producto (si está exento, no se aplica)
       if (!p.exento_iva) {
         ivaTotal += subtotalProducto * (ivaPorcentaje / 100);
       }
@@ -143,35 +135,12 @@ export default function ComprasPage() {
     const total = subtotal + ivaTotal - retencion - ica;
 
     setResumenContable({ subtotal, iva: ivaTotal, retencion, ica, total });
-  };);
-      return;
-    }
-
-    // Calcular subtotal basado en la cantidad de compra (stock_maximo - stock_actual)
-    const subtotal = seleccionados.reduce((sum, id) => {
-      const p = productos.find((prod) => prod.id === id);
-      if (!p) return sum;
-      const stockActual = stockMap[p.id] ?? 0;
-      const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
-      return sum + (cantidad * (p.precio_compra || 0));
-    }, 0);
-
-    const iva = subtotal * (ivaPorcentaje / 100);
-    const retencion = subtotal * (retencionPorcentaje / 100);
-    const ica = subtotal * (icaPorcentaje / 100);
-    const total = subtotal + iva - retencion - ica;
-
-    setResumenContable({ subtotal, iva, retencion, ica, total });
   };
 
-  // Recalcular cuando cambian seleccionados o porcentajes
   useEffect(() => {
     actualizarResumenContable();
   }, [seleccionados, productos, stockMap, ivaPorcentaje, retencionPorcentaje, icaPorcentaje]);
 
-  // ============================================
-  // FUNCIONES DE CARGA DE DATOS
-  // ============================================
   const cargarDatos = async () => {
     setLoading(true);
     const url = `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`;
@@ -210,9 +179,6 @@ export default function ComprasPage() {
     );
   };
 
-  // ============================================
-  // ABRIR MODAL DE CONFIRMACIÓN (SIMPLE)
-  // ============================================
   const prepararConfirmacion = () => {
     if (seleccionados.length === 0) {
       alert("Selecciona al menos un producto.");
@@ -223,7 +189,6 @@ export default function ComprasPage() {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
       const stockActual = stockMap[p.id] ?? 0;
-      // Cantidad de compra = stock_maximo - stock_actual (o 0 si ya está en máximo)
       const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
       if (cantidad === 0) return null;
       return {
@@ -250,18 +215,14 @@ export default function ComprasPage() {
     setShowConfirmModal(true);
   };
 
-  // ============================================
-  // CONFIRMAR COMPRA (con mensaje de total con impuestos)
-  // ============================================
   const confirmarCompra = async () => {
-    // Mostrar mensaje de confirmación con el total incluyendo impuestos
     const mensajeConfirmacion = `
       📋 Resumen de la compra:
       • Subtotal: $${resumenContable.subtotal.toLocaleString()}
-      • IVA (${ivaPorcentaje}%): $${resumenContable.iva.toLocaleString()}
-      • Retención (${retencionPorcentaje}%): -$${resumenContable.retencion.toLocaleString()}
-      • ICA (${icaPorcentaje}%): -$${resumenContable.ica.toLocaleString()}
-      • Total a pagar (con impuestos): $${resumenContable.total.toLocaleString()}
+      • IVA: $${resumenContable.iva.toLocaleString()}
+      • Retención: -$${resumenContable.retencion.toLocaleString()}
+      • ICA: -$${resumenContable.ica.toLocaleString()}
+      • Total a pagar: $${resumenContable.total.toLocaleString()}
       
       ¿Confirmas esta compra?
     `;
@@ -302,9 +263,6 @@ export default function ComprasPage() {
     }
   };
 
-  // ============================================
-  // OTRAS FUNCIONES (CRUD, EXPORTAR, ETC.)
-  // ============================================
   const generarOrdenCompra = () => {
     if (seleccionados.length === 0) {
       alert("Selecciona al menos un producto.");
@@ -347,6 +305,7 @@ export default function ComprasPage() {
       "Precio Compra": p.precio_compra || 0,
       Observaciones: p.observaciones || "",
       Imagen: p.imagen_url || "",
+      "Exento IVA": p.exento_iva ? "Sí" : "No",
     }));
 
     const wb = XLSX.utils.book_new();
@@ -355,7 +314,6 @@ export default function ComprasPage() {
     XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
   };
 
-  // CRUD de productos
   const subirImagen = async () => {
     if (!imageFile) return;
     setUploadingImage(true);
@@ -442,7 +400,8 @@ export default function ComprasPage() {
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
-      imagen_url: p.imagen_url || "",`n      exento_iva: p.exento_iva || false,
+      imagen_url: p.imagen_url || "",
+      exento_iva: p.exento_iva || false,
     });
     setShowModal(true);
   };
@@ -495,7 +454,6 @@ export default function ComprasPage() {
           </div>
         )}
 
-        {/* Configuración contable */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
           <h3 className="font-semibold text-stone-800 mb-2">⚖️ Configuración contable</h3>
           <div className="flex flex-wrap gap-4">
@@ -532,7 +490,6 @@ export default function ComprasPage() {
           </div>
         </div>
 
-        {/* Resumen contable de la selección actual */}
         {seleccionados.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
             <h4 className="font-semibold text-stone-800 mb-2">📊 Resumen de la compra</h4>
@@ -542,20 +499,20 @@ export default function ComprasPage() {
                 <p className="font-bold text-stone-800">${resumenContable.subtotal.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600">IVA ({ivaPorcentaje}%)</span>
+                <span className="text-stone-600">IVA</span>
                 <p className="font-bold text-stone-800">${resumenContable.iva.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600">Retención ({retencionPorcentaje}%)</span>
+                <span className="text-stone-600">Retención</span>
                 <p className="font-bold text-stone-800">-${resumenContable.retencion.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600">ICA ({icaPorcentaje}%)</span>
+                <span className="text-stone-600">ICA</span>
                 <p className="font-bold text-stone-800">-${resumenContable.ica.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-stone-600 font-bold">Total a pagar (con impuestos)</span>
-                <p className="font-bold text-stone-800 font-bold">${resumenContable.total.toLocaleString()}</p>
+                <span className="text-stone-600 font-bold">Total a pagar</span>
+                <p className="font-bold text-emerald-600">${resumenContable.total.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -616,6 +573,7 @@ export default function ComprasPage() {
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
+                <th className="p-2 text-left text-stone-700">Exento IVA</th>
                 <th className="p-2 text-left text-stone-700">Estado</th>
                 <th className="p-2 text-left text-stone-700">Acciones</th>
               </tr>
@@ -643,6 +601,7 @@ export default function ComprasPage() {
                     <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
                     <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">{p.exento_iva ? "Sí" : "No"}</td>
                     <td className="p-2">
                       {esCritico ? (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
@@ -671,7 +630,7 @@ export default function ComprasPage() {
               })}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="p-4 text-center text-stone-500">
+                  <td colSpan={12} className="p-4 text-center text-stone-500">
                     No hay productos para este negocio
                   </td>
                 </tr>
@@ -681,7 +640,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* Modal CRUD de producto (sin cambios) */}
+      {/* Modal CRUD de producto */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -689,7 +648,6 @@ export default function ComprasPage() {
               {editando ? `Editar producto: ${editando.nombre}` : "Nuevo Producto"}
             </h3>
             <div className="space-y-3">
-              {/* Imagen */}
               <div>
                 <label className="block text-sm font-medium text-stone-700">Imagen del producto</label>
                 {form.imagen_url && (
@@ -867,6 +825,15 @@ export default function ComprasPage() {
                   placeholder="Estante A1, Pasillo 2"
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={form.exento_iva || false}
+                  onChange={(e) => setForm({ ...form, exento_iva: e.target.checked })}
+                  className="w-4 h-4 rounded border-stone-300"
+                />
+                <label className="text-sm font-medium text-stone-700">Exento de IVA</label>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
@@ -887,7 +854,7 @@ export default function ComprasPage() {
         </div>
       )}
 
-      {/* Modal de Confirmación de Compra (SIMPLE: cantidad, precio, total) */}
+      {/* Modal de Confirmación de Compra */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -960,7 +927,7 @@ export default function ComprasPage() {
                             className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
                           />
                         </div>
-                        <span className="font-bold text-stone-800 font-bold">
+                        <span className="font-bold text-emerald-600">
                           ${(item.cantidad * item.precio_compra).toLocaleString()}
                         </span>
                       </div>
@@ -969,7 +936,7 @@ export default function ComprasPage() {
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-stone-800 font-bold">${confirmData.total.toLocaleString()}</span>
+                  <span className="text-emerald-600">${confirmData.total.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-stone-500 mt-1">
                   * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
@@ -997,5 +964,4 @@ export default function ComprasPage() {
     </div>
   );
 }
-
 

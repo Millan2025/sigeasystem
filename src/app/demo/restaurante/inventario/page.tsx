@@ -33,6 +33,7 @@ const estadoInicialForm = {
   fecha_caducidad: "",
   ubicacion: "",
   imagen_url: "",
+  exento_iva: false,
 };
 
 export default function InventarioPage() {
@@ -160,7 +161,7 @@ export default function InventarioPage() {
       "nombre", "categoria", "precio", "precio_compra", "stock",
       "stock_minimo", "stock_maximo", "proveedor", "observaciones",
       "unidad", "tipo_unidad", "sku", "descripcion",
-      "fecha_caducidad", "ubicacion", "imagen_url"
+      "fecha_caducidad", "ubicacion", "imagen_url", "exento_iva"
     ];
 
     campos.forEach((campo) => {
@@ -250,7 +251,8 @@ export default function InventarioPage() {
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
-      imagen_url: p.imagen_url || "",`n      exento_iva: p.exento_iva || false,
+      imagen_url: p.imagen_url || "",
+      exento_iva: p.exento_iva || false,
     });
     setShowProductoModal(true);
   };
@@ -273,6 +275,7 @@ export default function InventarioPage() {
       "Fecha Caducidad": p.fecha_caducidad || "",
       Observaciones: p.observaciones || "",
       Imagen: p.imagen_url || "",
+      "Exento IVA": p.exento_iva ? "Sí" : "No",
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -286,12 +289,12 @@ export default function InventarioPage() {
       "sku", "nombre", "descripcion", "categoria", "precio", "precio_compra",
       "stock", "stock_minimo", "stock_maximo", "unidad", "tipo_unidad",
       "venta_por_peso", "proveedor", "observaciones",
-      "fecha_caducidad", "ubicacion", "imagen_url",
+      "fecha_caducidad", "ubicacion", "imagen_url", "exento_iva",
     ];
     const filaEjemplo = [
       "PAN-001", "Pan de Sal", "Pan tradicional de sal, 250g", "Panaderia",
       2500, 1800, 100, 10, 200, "unidad", "unidad", false, "Proveedor XYZ",
-      "Producto estrella", "2026-07-15", "Estante A1", "",
+      "Producto estrella", "2026-07-15", "Estante A1", "", false,
     ];
     const data = [columnas, filaEjemplo];
     const wb = XLSX.utils.book_new();
@@ -327,7 +330,7 @@ export default function InventarioPage() {
             sku, nombre, descripcion, categoria, precio, precio_compra,
             stock, stock_minimo, stock_maximo, unidad, tipo_unidad,
             venta_por_peso, proveedor, observaciones,
-            fecha_caducidad, ubicacion, imagen_url
+            fecha_caducidad, ubicacion, imagen_url, exento_iva
           ] = row;
           try {
             const res = await fetch("/api/products", {
@@ -351,6 +354,7 @@ export default function InventarioPage() {
                 fecha_caducidad: fecha_caducidad?.trim() || null,
                 ubicacion: ubicacion?.trim() || "",
                 imagen_url: imagen_url?.trim() || null,
+                exento_iva: exento_iva === true || exento_iva === "true" || exento_iva === "si",
                 tenant_id: tenantId,
               }),
             });
@@ -483,6 +487,7 @@ export default function InventarioPage() {
                 <th className="text-left p-2 text-stone-700">Proveedor</th>
                 <th className="text-left p-2 text-stone-700">Ubicación</th>
                 <th className="text-left p-2 text-stone-700">Caducidad</th>
+                <th className="text-left p-2 text-stone-700">Exento IVA</th>
                 <th className="text-left p-2 text-stone-700">Acciones</th>
               </tr>
             </thead>
@@ -508,6 +513,9 @@ export default function InventarioPage() {
                   <td className="p-2 text-stone-600">
                     {p.fecha_caducidad ? new Date(p.fecha_caducidad).toLocaleDateString() : "-"}
                   </td>
+                  <td className="p-2 text-stone-600">
+                    {p.exento_iva ? "Sí" : "No"}
+                  </td>
                   <td className="p-2 flex gap-2">
                     <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
                       <Edit className="w-4 h-4 text-stone-600" />
@@ -520,7 +528,7 @@ export default function InventarioPage() {
               ))}
               {stockFiltrado.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="p-4 text-center text-stone-500">
+                  <td colSpan={13} className="p-4 text-center text-stone-500">
                     No hay productos
                   </td>
                 </tr>
@@ -846,6 +854,15 @@ export default function InventarioPage() {
                   placeholder="Estante A1, Pasillo 2"
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formProducto.exento_iva || false}
+                  onChange={(e) => setFormProducto({ ...formProducto, exento_iva: e.target.checked })}
+                  className="w-4 h-4 rounded border-stone-300"
+                />
+                <label className="text-sm font-medium text-stone-700">Exento de IVA</label>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
@@ -871,4 +888,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
