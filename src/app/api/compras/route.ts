@@ -151,7 +151,7 @@ export async function POST(request: Request) {
           console.error('❌ Error al crear categoría:', createErr)
         } else {
           categoria = newCat
-          console.log('✅ Categoría creada:', categoria.id)
+          console.log('✅ Categoría creada:', categoria?.id)
         }
       }
 
@@ -208,5 +208,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
