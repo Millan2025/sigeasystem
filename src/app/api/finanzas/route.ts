@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET: devuelve transacciones con metodo_pago
+// GET: listar transacciones
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('transacciones')
-      .select(`*, categorias_contables(*)`)
+      .select('*, categorias_contables(*)')
       .eq('tenant_id', tenantId)
       .order('fecha', { ascending: false })
 
@@ -29,15 +29,14 @@ export async function GET(request: Request) {
     if (categoriaId) query = query.eq('categoria_contable_id', categoriaId)
 
     if (periodoId) {
-      const { data: periodo, error: periodoError } = await supabase
+      const { data: periodo } = await supabase
         .from('periodos_fiscales')
         .select('fecha_inicio, fecha_fin')
         .eq('id', periodoId)
         .single()
-      if (periodoError) throw periodoError
-      query = query
-        .gte('fecha', periodo.fecha_inicio)
-        .lte('fecha', periodo.fecha_fin)
+      if (periodo) {
+        query = query.gte('fecha', periodo.fecha_inicio).lte('fecha', periodo.fecha_fin)
+      }
     }
 
     const { data, error } = await query
@@ -49,7 +48,6 @@ export async function GET(request: Request) {
     const retenciones = data?.reduce((sum, t) => sum + (t.retencion || 0), 0) || 0
     const saldo = ingresos - egresos
 
-    // Desglose por método de pago (solo ingresos)
     const desglosePagos: Record<string, number> = {}
     data?.filter(t => t.tipo === 'ingreso').forEach(t => {
       const metodo = t.metodo_pago || 'Otro'
@@ -62,11 +60,12 @@ export async function GET(request: Request) {
       resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos }
     })
   } catch (error: any) {
+    console.error('❌ Error GET /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// POST: guarda metodo_pago
+// POST: crear transacción
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -96,17 +95,80 @@ export async function POST(request: Request) {
         tenant_id,
         created_at: new Date().toISOString()
       })
-      .select(`*, categorias_contables(*)`)
+      .select('*, categorias_contables(*)')
       .single()
 
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
+    console.error('❌ Error POST /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// PUT y DELETE se mantienen igual (solo actualizan los campos que ya tienen)
+// PUT: actualizar transacción
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json()
+    const { id, tipo, monto, categoria_contable_id, descripcion, fecha, impuesto, retencion, metodo_pago, tenant_id } = body
 
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Se requiere ID' },
+        { status: 400 }
+      )
+    }
 
+    const total_con_impuestos = monto + (impuesto || 0) - (retencion || 0)
 
+    const { data, error } = await supabase
+      .from('transacciones')
+      .update({
+        tipo,
+        monto,
+        categoria_contable_id: categoria_contable_id || null,
+        descripcion: descripcion || '',
+        fecha: fecha || new Date().toISOString().split('T')[0],
+        impuesto: impuesto || 0,
+        retencion: retencion || 0,
+        total_con_impuestos,
+        metodo_pago: metodo_pago || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select('*, categorias_contables(*)')
+      .single()
+
+    if (error) throw error
+    return NextResponse.json({ success: true, data })
+  } catch (error: any) {
+    console.error('❌ Error PUT /api/finanzas:', error)
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
+
+// DELETE: eliminar transacción
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url)
+    const id = url.searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Se requiere ID' },
+        { status: 400 }
+      )
+    }
+
+    const { error } = await supabase
+      .from('transacciones')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+    return NextResponse.json({ success: true, message: 'Transacción eliminada' })
+  } catch (error: any) {
+    console.error('❌ Error DELETE /api/finanzas:', error)
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
