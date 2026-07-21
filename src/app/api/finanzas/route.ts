@@ -132,8 +132,8 @@ export async function PUT(request: Request) {
         impuesto: impuesto || 0,
         retencion: retencion || 0,
         total_con_impuestos,
-        metodo_pago: metodo_pago || null,
-        updated_at: new Date().toISOString()
+        metodo_pago: metodo_pago || null
+        // updated_at eliminado porque la columna no existe
       })
       .eq('id', id)
       .select('*, categorias_contables(*)')
@@ -172,4 +172,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
