@@ -93,7 +93,23 @@ export async function POST(request: Request) {
     }
 
     // 3. Descontar stock (movimientos de salida)
-    for (const item of items) {
+        for (const item of items) {
+      console.log('🔍 Descontando stock para producto:', item.producto_id, 'cantidad:', item.cantidad);
+      // Verificar que el producto existe
+      const { data: producto, error: prodErr } = await supabase
+        .from('productos')
+        .select('id, stock')
+        .eq('id', item.producto_id)
+        .eq('tenant_id', tenant_id)
+        .single();
+      if (prodErr) {
+        console.error('❌ Producto no encontrado:', item.producto_id, prodErr);
+        continue;
+      }
+      if (!producto) {
+        console.warn('⚠️ Producto no existe, saltando...');
+        continue;
+      }
       const { error: movErr } = await supabase
         .from('movimientos_inventario')
         .insert({
@@ -194,6 +210,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
