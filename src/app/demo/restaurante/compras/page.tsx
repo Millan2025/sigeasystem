@@ -425,7 +425,7 @@ export default function ComprasPage() {
         </button>
         <button
           onClick={generarOrdenCompra}
-          className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
         >
           <ShoppingBag className="w-4 h-4" /> Generar Orden
         </button>
@@ -670,7 +670,7 @@ export default function ComprasPage() {
                     type="button"
                     onClick={subirImagen}
                     disabled={uploadingImage}
-                    className="mt-2 bg-blue-600 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-700 disabled:opacity-50"
+                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
                   >
                     {uploadingImage ? "Subiendo..." : "Subir imagen"}
                   </button>
@@ -684,7 +684,6 @@ export default function ComprasPage() {
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                  placeholder="Ej. HAR-001"
                 />
               </div>
               <div>
@@ -703,7 +702,6 @@ export default function ComprasPage() {
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                  placeholder="Ej. Harina de trigo 1kg"
                 />
               </div>
               <div>
@@ -788,7 +786,6 @@ export default function ComprasPage() {
                   value={form.unidad}
                   onChange={(e) => setForm({ ...form, unidad: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                  placeholder="kg, L, unidad, etc."
                 />
               </div>
               <div>
@@ -822,7 +819,6 @@ export default function ComprasPage() {
                   value={form.ubicacion}
                   onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                  placeholder="Estante A1, Pasillo 2"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -935,8 +931,8 @@ export default function ComprasPage() {
                   ))}
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
-                  <span>Total</span>
-                  <span className="text-black">${confirmData.total.toLocaleString()}</span>
+                  <span className="text-black">Total</span>
+                  <span className="text-black font-bold">${confirmData.total.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-black mt-1">
                   * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
