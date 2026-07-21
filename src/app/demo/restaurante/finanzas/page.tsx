@@ -527,7 +527,7 @@ export default function FinanzasPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
-              <button onClick={guardarTransaccion} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">Guardar</button>
+              <button onClick={guardarTransaccion} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all duration-200 text-white rounded-xl font-bold">Guardar</button>
             </div>
           </div>
         </div>
@@ -610,6 +610,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
