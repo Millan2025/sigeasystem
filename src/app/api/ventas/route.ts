@@ -1,13 +1,11 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Usar SERVICE_ROLE_KEY para bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET: listar ventas (con SERVICE_ROLE_KEY)
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
@@ -29,7 +27,6 @@ export async function GET(request: Request) {
     const { data, error } = await query
     if (error) throw error
 
-    // Calcular totales para el resumen
     const total = data?.reduce((sum, v) => sum + (v.total || 0), 0) || 0
     const transacciones = data?.length || 0
 
@@ -44,7 +41,6 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: crear venta (ya existente, con SERVICE_ROLE_KEY)
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -56,6 +52,8 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    console.log('📥 POST /api/ventas - Datos recibidos:', { tenant_id, metodo_pago, total, items: items?.length })
 
     // 1. Insertar cabecera de venta
     const { data: venta, error: ventaErr } = await supabase
@@ -71,10 +69,9 @@ export async function POST(request: Request) {
       .single()
 
     if (ventaErr) throw ventaErr
+    console.log('✅ Venta insertada con ID:', venta.id)
 
-    // 2. Insertar items de venta (solo si existe la tabla sale_items)
-    // Si no existe, podemos guardar los items en un campo JSON o en otra tabla.
-    // Por ahora, intentamos insertar en sale_items.
+    // 2. Insertar items en sale_items (si existe la tabla)
     try {
       const saleItems = items.map((item: any) => ({
         sale_id: venta.id,
@@ -94,7 +91,7 @@ export async function POST(request: Request) {
       console.warn('⚠️ Error al insertar items:', e)
     }
 
-    // 3. Descontar stock (crear movimientos de salida)
+    // 3. Descontar stock
     for (const item of items) {
       await supabase
         .from('movimientos_inventario')
@@ -107,13 +104,13 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString()
         })
 
-      const { data: movs, error: movsErr } = await supabase
+      const { data: movs } = await supabase
         .from('movimientos_inventario')
         .select('tipo, cantidad')
         .eq('producto_id', item.producto_id)
         .eq('tenant_id', tenant_id)
 
-      if (!movsErr && movs) {
+      if (movs) {
         let nuevoStock = 0
         movs.forEach(m => {
           nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
@@ -124,6 +121,81 @@ export async function POST(request: Request) {
           .eq('id', item.producto_id)
           .eq('tenant_id', tenant_id)
       }
+    }
+    console.log('✅ Stock actualizado')
+
+    // 4. REGISTRAR INGRESO EN FINANZAS (transacciones)
+    try {
+      // Buscar categoría "Ingresos operacionales" (código 4-01-01)
+      let { data: categoria, error: catErr } = await supabase
+        .from('categorias_contables')
+        .select('id')
+        .eq('codigo', '4-01-01')
+        .eq('tenant_id', tenant_id)
+        .maybeSingle()
+
+      // Si no existe, crearla
+      if (!categoria) {
+        console.log('⚠️ Categoría 4-01-01 no encontrada, creándola...')
+        const { data: newCat, error: createErr } = await supabase
+          .from('categorias_contables')
+          .insert({
+            codigo: '4-01-01',
+            nombre: 'Ingresos operacionales',
+            tipo: 'ingreso',
+            tenant_id: tenant_id
+          })
+          .select()
+          .single()
+
+        if (createErr) {
+          console.error('❌ Error al crear categoría:', createErr)
+        } else {
+          categoria = newCat
+          console.log('✅ Categoría creada:', categoria.id)
+        }
+      }
+
+      if (categoria?.id) {
+        const categoriaId = categoria.id
+        const total_con_impuestos = total // Por ahora sin impuestos
+
+        console.log('📝 Insertando en transacciones:', {
+          tipo: 'ingreso',
+          monto: total,
+          categoria_contable_id: categoriaId,
+          descripcion: `Venta #${venta.id} - ${metodo_pago}`,
+          fecha: new Date().toISOString().split('T')[0],
+          metodo_pago: metodo_pago,
+          tenant_id
+        })
+
+        const { error: transError } = await supabase
+          .from('transacciones')
+          .insert({
+            tipo: 'ingreso',
+            monto: total,
+            categoria_contable_id: categoriaId,
+            descripcion: `Venta #${venta.id} - ${metodo_pago}`,
+            fecha: new Date().toISOString().split('T')[0],
+            impuesto: 0,
+            retencion: 0,
+            total_con_impuestos: total_con_impuestos,
+            metodo_pago: metodo_pago,
+            tenant_id: tenant_id,
+            created_at: new Date().toISOString()
+          })
+
+        if (transError) {
+          console.error('❌ Error al insertar en transacciones:', transError)
+        } else {
+          console.log('✅ Transacción registrada en finanzas para venta #' + venta.id)
+        }
+      } else {
+        console.error('❌ No se pudo obtener/crear categoría para la venta.')
+      }
+    } catch (finError) {
+      console.error('❌ Error en el registro financiero:', finError)
     }
 
     return NextResponse.json({
