@@ -420,6 +420,7 @@ export default function POSPage() {
               <button onClick={() => pay("Crédito")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">
                 Crédito
               </button>
+              <button onClick={() => pay("Otros")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Otros</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">
               Cancelar
@@ -562,5 +563,6 @@ export default function POSPage() {
     </div>
   );
 }
+
 
 

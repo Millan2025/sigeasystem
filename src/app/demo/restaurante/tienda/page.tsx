@@ -194,7 +194,7 @@ export default function TiendaPage() {
                     <option value="Nequi">Nequi</option>
                     <option value="Bancolombia">Bancolombia</option>
                     <option value="Daviplata">Daviplata</option>
-                    <option value="Crédito">Crédito</option><option value="Otros">Otros</option>
+                    <option value="Crédito">Crédito</option><option value="Otros">Otros</option><option value="Otros">Otros</option>
                   </select>
                 </div>
                 <button onClick={finalizarPedido} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Finalizar Pedido</button>
@@ -206,4 +206,5 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
