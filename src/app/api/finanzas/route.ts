@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 // GET: devuelve transacciones con metodo_pago
@@ -107,3 +107,5 @@ export async function POST(request: Request) {
 }
 
 // PUT y DELETE se mantienen igual (solo actualizan los campos que ya tienen)
+
+
