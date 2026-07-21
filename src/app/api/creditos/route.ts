@@ -25,9 +25,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { responsable, telefono, direccion, monto, tenant_id } = body
+    const { responsable, cliente, telefono, direccion, monto, tenant_id } = body
 
-    if (!responsable || !monto || !tenant_id) {
+    const nombreCliente = responsable || cliente; if (!nombreCliente || !monto || !tenant_id) {
       return NextResponse.json(
         { success: false, error: 'Faltan: responsable, monto, tenant_id' },
         { status: 400 }
@@ -137,4 +137,5 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
