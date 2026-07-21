@@ -6,7 +6,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET: listar ventas
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
@@ -42,13 +41,12 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: crear venta y registrar en finanzas
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { tenant_id, metodo_pago, total, items } = body
 
-    console.log('📥 POST /api/ventas - Datos recibidos:', { tenant_id, metodo_pago, total, items: items?.length })
+    console.log('📥 POST /api/ventas - Datos:', { tenant_id, metodo_pago, total, items: items?.length })
 
     if (!tenant_id || !items || items.length === 0) {
       return NextResponse.json(
@@ -74,9 +72,9 @@ export async function POST(request: Request) {
       console.error('❌ Error al insertar venta:', ventaErr)
       throw ventaErr
     }
-    console.log('✅ Venta insertada con ID:', venta.id)
+    console.log('✅ Venta insertada ID:', venta.id)
 
-    // 2. Insertar items de venta (si existe la tabla sale_items)
+    // 2. Insertar items (sale_items)
     try {
       const saleItems = items.map((item: any) => ({
         sale_id: venta.id,
@@ -86,19 +84,17 @@ export async function POST(request: Request) {
         subtotal: item.subtotal,
         tenant_id: tenant_id
       }))
-
       const { error: itemsErr } = await supabase
         .from('sale_items')
         .insert(saleItems)
-
-      if (itemsErr) console.warn('⚠️ No se pudieron insertar items en sale_items:', itemsErr)
+      if (itemsErr) console.warn('⚠️ Error en sale_items:', itemsErr)
     } catch (e) {
-      console.warn('⚠️ Error al insertar items:', e)
+      console.warn('⚠️ Error en items:', e)
     }
 
-    // 3. Descontar stock
+    // 3. Descontar stock (movimientos de salida)
     for (const item of items) {
-      await supabase
+      const { error: movErr } = await supabase
         .from('movimientos_inventario')
         .insert({
           producto_id: item.producto_id,
@@ -108,7 +104,9 @@ export async function POST(request: Request) {
           tenant_id,
           created_at: new Date().toISOString()
         })
+      if (movErr) console.error('❌ Error al insertar movimiento:', movErr)
 
+      // Recalcular stock
       const { data: movs } = await supabase
         .from('movimientos_inventario')
         .select('tipo, cantidad')
@@ -120,19 +118,19 @@ export async function POST(request: Request) {
         movs.forEach(m => {
           nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
         })
-        await supabase
+        const { error: updateErr } = await supabase
           .from('productos')
           .update({ stock: nuevoStock })
           .eq('id', item.producto_id)
           .eq('tenant_id', tenant_id)
+        if (updateErr) console.error('❌ Error al actualizar stock:', updateErr)
       }
     }
     console.log('✅ Stock actualizado')
 
-    // 4. REGISTRAR EN FINANZAS (ingreso)
+    // 4. Registrar en Finanzas (ingreso)
     try {
-      console.log('🔍 Buscando categoría contable para ingresos (4-01-01)')
-
+      console.log('🔍 Buscando categoría 4-01-01')
       let { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
         .select('id')
@@ -152,7 +150,6 @@ export async function POST(request: Request) {
           })
           .select()
           .single()
-
         if (createErr) {
           console.error('❌ Error al crear categoría:', createErr)
         } else if (newCat) {
@@ -162,7 +159,6 @@ export async function POST(request: Request) {
       }
 
       if (categoria?.id) {
-        const total_con_impuestos = total
         const { error: transError } = await supabase
           .from('transacciones')
           .insert({
@@ -173,22 +169,19 @@ export async function POST(request: Request) {
             fecha: new Date().toISOString().split('T')[0],
             impuesto: 0,
             retencion: 0,
-            total_con_impuestos: total_con_impuestos,
+            total_con_impuestos: total,
             metodo_pago: metodo_pago || 'contado',
             tenant_id: tenant_id,
             created_at: new Date().toISOString()
           })
-
         if (transError) {
-          console.error('❌ Error al insertar en transacciones:', transError)
+          console.error('❌ Error en transacciones:', transError)
         } else {
-          console.log('✅ Transacción registrada en finanzas para venta #' + venta.id)
+          console.log('✅ Transacción registrada en finanzas')
         }
-      } else {
-        console.error('❌ No se pudo obtener/crear categoría contable para la venta.')
       }
     } catch (finError) {
-      console.error('❌ Error en el registro financiero:', finError)
+      console.error('❌ Error en finanzas:', finError)
     }
 
     return NextResponse.json({
@@ -196,7 +189,6 @@ export async function POST(request: Request) {
       data: { venta },
       message: `Venta #${venta.id} registrada`
     })
-
   } catch (error: any) {
     console.error('❌ Error POST /api/ventas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
