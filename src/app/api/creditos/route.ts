@@ -27,15 +27,22 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { responsable, cliente, telefono, direccion, monto, tenant_id } = body
 
-    const nombreCliente = responsable || cliente
-    if (!nombreCliente || !monto || !tenant_id) {
+    // Asegurar que tengamos un nombre de cliente (usar "Cliente" por defecto si viene vacío)
+    const nombreCliente = responsable || cliente || "Cliente sin nombre"
+    if (!monto || !tenant_id) {
       return NextResponse.json(
-        { success: false, error: 'Faltan: responsable, monto, tenant_id' },
+        { success: false, error: 'Faltan: monto, tenant_id' },
         { status: 400 }
       )
     }
 
     const observaciones = `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
+
+    // Calcular fecha_fin (30 días después de fecha_inicio)
+    const fechaInicio = new Date().toISOString().split('T')[0]
+    const fechaFinDate = new Date()
+    fechaFinDate.setDate(fechaFinDate.getDate() + 30)
+    const fechaFin = fechaFinDate.toISOString().split('T')[0]
 
     const { data, error } = await supabase
       .from('creditos')
@@ -45,7 +52,8 @@ export async function POST(request: Request) {
         responsable: nombreCliente,
         valor_total: monto,
         valor_pagado: 0,
-        fecha_inicio: new Date().toISOString().split('T')[0],
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
         estado: 'pendiente',
         observaciones: observaciones.trim()
       })
@@ -135,3 +143,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
