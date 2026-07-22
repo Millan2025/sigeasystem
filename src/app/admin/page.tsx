@@ -90,9 +90,9 @@ export default function AdminMasterPage() {
   const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
   // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
-  const [showImportarProductos, setShowImportarProductos] = useState(false);
+  const [showImportarProductos, setShowModal] = useState(false);
   const [tenantId, settenantId] = useState<string | null>(null);
-  const [importProgress, setImportProgress] = useState<string>("");
+  const [importProgress, console.log] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
 
   // ============================================
@@ -291,7 +291,7 @@ export default function AdminMasterPage() {
           console.log(`⚠️ No se importaron productos. ${data.errores ? "Errores: " + data.errores.join(", ") : "El archivo estaba vacío o con formato incorrecto."}`);
         }
         setTimeout(() => console.log(""), 6000);
-        setShowImportarProductos(false);
+        setShowModal(false);
       } else {
         alert("Error: " + data.error);
         console.log("❌ Error al importar: " + data.error);
@@ -534,7 +534,7 @@ export default function AdminMasterPage() {
                       </button>
                       {/* 🔥 NUEVO BOTÓN CARGAR PRODUCTOS */}
                       <button
-                        onClick={() => { settenantId(c.tenant_id); setShowImportarProductos(true); }}
+                        onClick={() => { settenantId(c.tenant_id); setShowModal(true); }}
                         className="flex-1 bg-green-50 hover:bg-green-100 py-2 rounded-lg text-xs font-medium text-green-600 flex items-center justify-center gap-1"
                       >
                         <Upload className="w-3 h-3" /> Cargar Productos
@@ -1185,7 +1185,7 @@ export default function AdminMasterPage() {
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900">Cargar Productos</h2>
-              <button onClick={() => setShowImportarProductos(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-stone-100 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
             </div>
@@ -1218,7 +1218,7 @@ export default function AdminMasterPage() {
               <div className="flex gap-3 mt-4">
                 <button 
                   type="button" 
-                  onClick={() => setShowImportarProductos(false)} 
+                  onClick={() => setShowModal(false)} 
                   className="flex-1 bg-stone-200 hover:bg-stone-300 py-3 rounded-xl font-bold text-stone-700 transition-all duration-200"
                 >
                   Cancelar
@@ -1238,5 +1238,6 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
 
 
