@@ -81,7 +81,7 @@ export async function POST(request: Request) {
           .single()
         if (!createErr && newCat) {
           categoria = newCat
-          console.log('✅ Categoría Cuentas por Cobrar creada:', categoria.id)
+
         }
       }
 
@@ -197,6 +197,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
