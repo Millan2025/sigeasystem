@@ -270,7 +270,7 @@ export default function AdminMasterPage() {
   async function importarProductos(e: React.FormEvent) {
     e.preventDefault();
     setIsImporting(true);
-    setImportProgress("⏳ Subiendo archivo...");
+    console.log("⏳ Subiendo archivo...");
 
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     formData.append("tenant_id", tenantImport || "");
@@ -284,23 +284,23 @@ export default function AdminMasterPage() {
       
       if (data.success) {
         if (data.importados > 0) {
-          setImportProgress(`✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : ""));
+          console.log(`✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : ""));
           setMensaje(`✅ ${data.importados} productos importados para el cliente.`);
           setTimeout(() => setMensaje(""), 5000);
         } else {
-          setImportProgress(`⚠️ No se importaron productos. ${data.errores ? "Errores: " + data.errores.join(", ") : "El archivo estaba vacío o con formato incorrecto."}`);
+          console.log(`⚠️ No se importaron productos. ${data.errores ? "Errores: " + data.errores.join(", ") : "El archivo estaba vacío o con formato incorrecto."}`);
         }
-        setTimeout(() => setImportProgress(""), 6000);
+        setTimeout(() => console.log(""), 6000);
         setShowImportarProductos(false);
       } else {
         alert("Error: " + data.error);
-        setImportProgress("❌ Error al importar: " + data.error);
-        setTimeout(() => setImportProgress(""), 5000);
+        console.log("❌ Error al importar: " + data.error);
+        setTimeout(() => console.log(""), 5000);
       }
     } catch (error) {
       alert("Error de conexión al importar productos.");
-      setImportProgress("❌ Error de conexión");
-      setTimeout(() => setImportProgress(""), 5000);
+      console.log("❌ Error de conexión");
+      setTimeout(() => console.log(""), 5000);
     } finally {
       setIsImporting(false);
     }
@@ -1238,3 +1238,4 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+

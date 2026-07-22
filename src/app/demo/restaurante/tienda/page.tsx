@@ -93,7 +93,7 @@ export default function TiendaPage() {
     async function importarProductos(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setImportProgress("⏳ Subiendo archivo...");
+    console.log("⏳ Subiendo archivo...");
     
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     formData.append("tenant_id", tenantImport || "");
@@ -108,17 +108,17 @@ export default function TiendaPage() {
       
       if (data.success) {
         const msg = `✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : "");
-        setImportProgress(msg);
-        setTimeout(() => setImportProgress(""), 5000);
+        console.log(msg);
+        setTimeout(() => console.log(""), 5000);
         setShowImportarProductos(false);
         cargarDatos();
       } else {
-        setImportProgress(`❌ Error: ${data.error}`);
-        setTimeout(() => setImportProgress(""), 5000);
+        console.log(`❌ Error: ${data.error}`);
+        setTimeout(() => console.log(""), 5000);
       }
     } catch (error: any) {
-      setImportProgress(`❌ Error de conexión: ${error.message}`);
-      setTimeout(() => setImportProgress(""), 5000);
+      console.log(`❌ Error de conexión: ${error.message}`);
+      setTimeout(() => console.log(""), 5000);
     } finally {
       setLoading(false);
     }
@@ -230,6 +230,7 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 
 
