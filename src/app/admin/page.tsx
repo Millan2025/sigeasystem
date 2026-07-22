@@ -92,7 +92,7 @@ export default function AdminMasterPage() {
   // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
   const [showImportarProductos, setShowModal] = useState(false);
   const [tenantId, settenantId] = useState<string | null>(null);
-  const [importProgress, console.log] = useState<string>("");
+  const [importProgress, setImportProgress] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
 
   // ============================================
@@ -270,7 +270,7 @@ export default function AdminMasterPage() {
   async function importarProductos(e: React.FormEvent) {
     e.preventDefault();
     setIsImporting(true);
-    console.log("⏳ Subiendo archivo...");
+    setImportProgress("⏳ Subiendo archivo...");
 
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     formData.append("tenant_id", tenantId || "");
@@ -284,23 +284,23 @@ export default function AdminMasterPage() {
       
       if (data.success) {
         if (data.importados > 0) {
-          console.log(`✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : ""));
+          setImportProgress(`✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : ""));
           setMensaje(`✅ ${data.importados} productos importados para el cliente.`);
           setTimeout(() => setMensaje(""), 5000);
         } else {
-          console.log(`⚠️ No se importaron productos. ${data.errores ? "Errores: " + data.errores.join(", ") : "El archivo estaba vacío o con formato incorrecto."}`);
+          setImportProgress(`⚠️ No se importaron productos. ${data.errores ? "Errores: " + data.errores.join(", ") : "El archivo estaba vacío o con formato incorrecto."}`);
         }
-        setTimeout(() => console.log(""), 6000);
+        setTimeout(() => setImportProgress(""), 6000);
         setShowModal(false);
       } else {
         alert("Error: " + data.error);
-        console.log("❌ Error al importar: " + data.error);
-        setTimeout(() => console.log(""), 5000);
+        setImportProgress("❌ Error al importar: " + data.error);
+        setTimeout(() => setImportProgress(""), 5000);
       }
     } catch (error) {
       alert("Error de conexión al importar productos.");
-      console.log("❌ Error de conexión");
-      setTimeout(() => console.log(""), 5000);
+      setImportProgress("❌ Error de conexión al servidor");
+      setTimeout(() => setImportProgress(""), 5000);
     } finally {
       setIsImporting(false);
     }
@@ -1238,6 +1238,7 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
 
 
 
