@@ -1,11 +1,9 @@
 ﻿"use client";
-
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
-
 interface Producto {
   id: string;
   nombre: string;
@@ -15,14 +13,12 @@ interface Producto {
   categoria: string;
   imagen_url?: string;
 }
-
 export default function TiendaPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
-
   const [productos, setProductos] = useState<Producto[]>([]);
   const [carrito, setCarrito] = useState<any[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -31,7 +27,6 @@ export default function TiendaPage() {
   const [mensaje, setMensaje] = useState("");
   const [checkoutData, setCheckoutData] = useState({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
   const [loading, setLoading] = useState(true);
-
   const cargarProductos = () => {
     setLoading(true);
     fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
@@ -42,27 +37,22 @@ export default function TiendaPage() {
       })
       .catch(() => setLoading(false));
   };
-
   useEffect(() => {
     cargarProductos();
   }, [tenantId, categoriaNegocio]);
-
   useEffect(() => {
     const saved = localStorage.getItem(`carrito_${negocioSlug}`);
     if (saved) setCarrito(JSON.parse(saved));
   }, []);
-
   useEffect(() => {
     localStorage.setItem(`carrito_${negocioSlug}`, JSON.stringify(carrito));
   }, [carrito]);
-
   const cats = ["Todo", ...new Set(productos.map(p => p.categoria))];
   const filtered = productos.filter(p => {
     const matchCat = catFilter === "Todo" || p.categoria === catFilter;
     const matchSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase());
     return matchCat && matchSearch;
   });
-
   const agregarAlCarrito = (p: Producto) => {
     setCarrito(prev => {
       const exist = prev.find(item => item.id === p.id);
@@ -72,11 +62,9 @@ export default function TiendaPage() {
       return [...prev, { ...p, cantidad: 1 }];
     });
   };
-
   const quitarDelCarrito = (id: string) => {
     setCarrito(prev => prev.filter(item => item.id !== id));
   };
-
   const actualizarCantidad = (id: string, delta: number) => {
     setCarrito(prev => prev.map(item => {
       if (item.id === id) {
@@ -87,30 +75,24 @@ export default function TiendaPage() {
       return item;
     }).filter(Boolean));
   };
-
   const totalCarrito = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-
     async function importarProductos(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     console.log("⏳ Subiendo archivo...");
-    
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     formData.append("tenant_id", tenantId || "");
     console.log("📤 Enviando tenant_id:", tenantId);
-    
     try {
       const res = await fetch("/api/admin/products/import", {
         method: "POST",
         body: formData,
       });
       const data = await res.json();
-      
       if (data.success) {
         const msg = `✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : "");
         console.log(msg);
         setTimeout(() => console.log(""), 5000);
-        setShowImportModal(false);
         cargarDatos();
       } else {
         console.log(`❌ Error: ${data.error}`);
@@ -123,7 +105,6 @@ export default function TiendaPage() {
       setLoading(false);
     }
   }
-
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
@@ -138,9 +119,7 @@ export default function TiendaPage() {
           {carrito.length > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{carrito.reduce((s, i) => s + i.cantidad, 0)}</span>}
         </button>
       </header>
-
       {mensaje && <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">{mensaje}</div>}
-
       <div className="p-4 max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-2 mb-4">
           {cats.map(c => (
@@ -152,7 +131,6 @@ export default function TiendaPage() {
         <div className="relative mb-4">
           <input type="text" placeholder="Buscar productos..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-4 pr-4 py-2 rounded-xl border border-stone-300 bg-white text-stone-800" />
         </div>
-
         {loading ? (
           <div className="text-center py-8 text-stone-500">Cargando productos...</div>
         ) : (
@@ -173,7 +151,6 @@ export default function TiendaPage() {
           </div>
         )}
       </div>
-
       {/* Modal Carrito */}
       {showCart && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -230,15 +207,4 @@ export default function TiendaPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
 
