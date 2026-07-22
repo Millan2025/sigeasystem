@@ -90,15 +90,39 @@ export default function TiendaPage() {
 
   const totalCarrito = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
-  const finalizarPedido = async () => {
-    if (carrito.length === 0) {
-      alert("Carrito vacío");
-      return;
+    async function importarProductos(e: React.FormEvent) {
+    e.preventDefault();
+    setIsUploading(true);
+    setImportProgress("⏳ Subiendo archivo...");
+    
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    formData.append("tenant_id", tenantImport || "");
+    console.log("📤 Enviando tenant_id:", tenantImport);
+    
+    try {
+      const res = await fetch("/api/admin/products/import", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        const msg = `✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : "");
+        setImportProgress(msg);
+        setTimeout(() => setImportProgress(""), 5000);
+        setShowImportarProductos(false);
+        cargarDatos();
+      } else {
+        setImportProgress(`❌ Error: ${data.error}`);
+        setTimeout(() => setImportProgress(""), 5000);
+      }
+    } catch (error: any) {
+      setImportProgress(`❌ Error de conexión: ${error.message}`);
+      setTimeout(() => setImportProgress(""), 5000);
+    } finally {
+      setIsUploading(false);
     }
-    alert("✅ Pedido realizado con éxito. Pronto recibirás confirmación.");
-    setCarrito([]);
-    setShowCart(false);
-  };
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -206,6 +230,9 @@ export default function TiendaPage() {
     </div>
   );
 }
+
+
+
 
 
 
