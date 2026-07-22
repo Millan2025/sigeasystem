@@ -83,14 +83,14 @@ export default function AdminMasterPage() {
   const [uploadMsg, setUploadMsg] = useState("");
   const [notificaciones, setNotificaciones] = useState<any[]>([]);
   const [editandoUsuario, setEditandoUsuario] = useState<Usuario | null>(null);
-  const [showModalEditarUsuario, setShowModalEditarUsuario] = useState(false);
+  const [showModalEditarUsuario, setShowImportModalEditarUsuario] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
-  const [showModalEditarCliente, setShowModalEditarCliente] = useState(false);
+  const [showModalEditarCliente, setShowImportModalEditarCliente] = useState(false);
   const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
   // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [tenantId, settenantId] = useState<string | null>(null);
   const [importProgress, setImportProgress] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
@@ -220,7 +220,7 @@ export default function AdminMasterPage() {
 
     setMensaje("✅ Cliente actualizado" + (password && password.length >= 6 ? " y contraseña cambiada" : ""));
     setTimeout(() => setMensaje(""), 3000);
-    setShowModalEditarCliente(false);
+    setShowImportModalEditarCliente(false);
     cargarDatos();
   }
 
@@ -239,7 +239,7 @@ export default function AdminMasterPage() {
       setMensaje("✅ Usuario actualizado");
       setTimeout(() => setMensaje(""), 3000);
       cargarDatos();
-      setShowModalEditarUsuario(false);
+      setShowImportModalEditarUsuario(false);
     } else {
       alert("Error: " + data.error);
     }
@@ -291,7 +291,7 @@ export default function AdminMasterPage() {
           setImportProgress(`⚠️ No se importaron productos. ${data.errores ? "Errores: " + data.errores.join(", ") : "El archivo estaba vacío o con formato incorrecto."}`);
         }
         setTimeout(() => setImportProgress(""), 6000);
-        setShowModal(false);
+        setShowImportModal(false);
       } else {
         alert("Error: " + data.error);
         setImportProgress("❌ Error al importar: " + data.error);
@@ -527,14 +527,14 @@ export default function AdminMasterPage() {
                         <Trash2 className="w-3 h-3" /> Eliminar
                       </button>
                       <button
-                        onClick={() => { setEditandoCliente(c); setShowModalEditarCliente(true); }}
+                        onClick={() => { setEditandoCliente(c); setShowImportModalEditarCliente(true); }}
                         className="flex-1 bg-blue-50 hover:bg-blue-100 py-2 rounded-lg text-xs font-medium text-blue-600 flex items-center justify-center gap-1"
                       >
                         <Edit className="w-3 h-3" /> Editar
                       </button>
                       {/* 🔥 NUEVO BOTÓN CARGAR PRODUCTOS */}
                       <button
-                        onClick={() => { settenantId(c.tenant_id); setShowModal(true); }}
+                        onClick={() => { settenantId(c.tenant_id); setShowImportModal(true); }}
                         className="flex-1 bg-green-50 hover:bg-green-100 py-2 rounded-lg text-xs font-medium text-green-600 flex items-center justify-center gap-1"
                       >
                         <Upload className="w-3 h-3" /> Cargar Productos
@@ -616,7 +616,7 @@ export default function AdminMasterPage() {
                             <button
                               onClick={() => {
                                 setEditandoUsuario(u);
-                                setShowModalEditarUsuario(true);
+                                setShowImportModalEditarUsuario(true);
                               }}
                               className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-xs flex items-center gap-1"
                             >
@@ -999,7 +999,7 @@ export default function AdminMasterPage() {
       {showModalEditarCliente && editandoCliente && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={() => setShowModalEditarCliente(false)}
+          onClick={() => setShowImportModalEditarCliente(false)}
         >
           <div
             className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto"
@@ -1110,7 +1110,7 @@ export default function AdminMasterPage() {
                 </div>
               </div>
               <div className="flex gap-3 mt-4">
-                <button type="button" onClick={() => setShowModalEditarCliente(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
+                <button type="button" onClick={() => setShowImportModalEditarCliente(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
                 <button type="submit" className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold">Guardar</button>
               </div>
             </form>
@@ -1121,7 +1121,7 @@ export default function AdminMasterPage() {
       {showModalEditarUsuario && editandoUsuario && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={() => setShowModalEditarUsuario(false)}
+          onClick={() => setShowImportModalEditarUsuario(false)}
         >
           <div
             className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl"
@@ -1129,7 +1129,7 @@ export default function AdminMasterPage() {
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900">Editar Usuario</h2>
-              <button onClick={() => setShowModalEditarUsuario(false)}><X className="w-5 h-5 text-stone-600" /></button>
+              <button onClick={() => setShowImportModalEditarUsuario(false)}><X className="w-5 h-5 text-stone-600" /></button>
             </div>
             <p className="text-sm text-stone-600 mb-2">Email: <span className="font-medium text-stone-800">{editandoUsuario.email}</span></p>
             <div className="space-y-3">
@@ -1167,7 +1167,7 @@ export default function AdminMasterPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-4">
-              <button onClick={() => setShowModalEditarUsuario(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
+              <button onClick={() => setShowImportModalEditarUsuario(false)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700">Cancelar</button>
               <button
                 onClick={() => cambiarRolUsuario(editandoUsuario.id, editandoUsuario.rol, (editandoUsuario as any).password)}
                 className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold"
@@ -1185,7 +1185,7 @@ export default function AdminMasterPage() {
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900">Cargar Productos</h2>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+              <button onClick={() => setShowImportModal(false)} className="p-2 hover:bg-stone-100 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
             </div>
@@ -1218,7 +1218,7 @@ export default function AdminMasterPage() {
               <div className="flex gap-3 mt-4">
                 <button 
                   type="button" 
-                  onClick={() => setShowModal(false)} 
+                  onClick={() => setShowImportModal(false)} 
                   className="flex-1 bg-stone-200 hover:bg-stone-300 py-3 rounded-xl font-bold text-stone-700 transition-all duration-200"
                 >
                   Cancelar
@@ -1238,6 +1238,7 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
 
 
 
