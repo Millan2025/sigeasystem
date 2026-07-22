@@ -53,7 +53,7 @@ export default function PersonalPage() {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [asistencias, setAsistencias] = useState<Asistencia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<Empleado | null>(null);
   const [form, setForm] = useState<Partial<Empleado>>({
     nombre: "",
@@ -136,7 +136,7 @@ export default function PersonalPage() {
       nuevos = [...empleados, nuevo];
     }
     guardarEmpleados(nuevos);
-    setShowModal(false);
+    setShowImportModal(false);
     setEditando(null);
     setForm({ nombre: "", telefono: "", email: "", rol: "mesero", salario_base: 0, fecha_contratacion: new Date().toISOString().split("T")[0], activo: true });
   };
@@ -149,7 +149,7 @@ export default function PersonalPage() {
   const editarEmpleado = (emp: Empleado) => {
     setEditando(emp);
     setForm(emp);
-    setShowModal(true);
+    setShowImportModal(true);
   };
 
   // Registrar asistencia
@@ -202,7 +202,7 @@ export default function PersonalPage() {
             onClick={() => {
               setEditando(null);
               setForm({ nombre: "", telefono: "", email: "", rol: "mesero", salario_base: 0, fecha_contratacion: new Date().toISOString().split("T")[0], activo: true });
-              setShowModal(true);
+              setShowImportModal(true);
             }}
             className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           >
@@ -385,7 +385,7 @@ export default function PersonalPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">
+              <button onClick={() => setShowImportModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">
                 Cancelar
               </button>
               <button onClick={guardarEmpleado} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">
@@ -398,3 +398,4 @@ export default function PersonalPage() {
     </div>
   );
 }
+

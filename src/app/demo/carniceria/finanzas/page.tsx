@@ -49,9 +49,9 @@ export default function FinanzasPage() {
   const [loading, setLoading] = useState(true);
   const [categorias, setCategorias] = useState<any[]>([]);
   const [periodos, setPeriodos] = useState<any[]>([]);
-  const [showModalTransaccion, setShowModalTransaccion] = useState(false);
-  const [showModalCategoria, setShowModalCategoria] = useState(false);
-  const [showModalPeriodo, setShowModalPeriodo] = useState(false);
+  const [showModalTransaccion, setShowImportModalTransaccion] = useState(false);
+  const [showModalCategoria, setShowImportModalCategoria] = useState(false);
+  const [showModalPeriodo, setShowImportModalPeriodo] = useState(false);
   const [filtros, setFiltros] = useState({ start: "", end: "", tipo: "", categoria: "", periodo: "" });
   const [editando, setEditando] = useState<any>(null);
   const [formTransaccion, setFormTransaccion] = useState({
@@ -145,7 +145,7 @@ export default function FinanzasPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setShowModalTransaccion(false);
+      setShowImportModalTransaccion(false);
       setEditando(null);
       setFormTransaccion({
         tipo: "ingreso",
@@ -186,7 +186,7 @@ export default function FinanzasPage() {
       retencion: t.retencion || 0,
       metodo_pago: t.metodo_pago || "",
     });
-    setShowModalTransaccion(true);
+    setShowImportModalTransaccion(true);
   };
 
   const exportarExcel = () => {
@@ -326,7 +326,7 @@ export default function FinanzasPage() {
               retencion: 0,
               metodo_pago: "",
             });
-            setShowModalTransaccion(true);
+            setShowImportModalTransaccion(true);
           }}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Registrar nuevo movimiento"
@@ -334,14 +334,14 @@ export default function FinanzasPage() {
           <Plus className="w-4 h-4" /> Nueva Transacción
         </button>
         <button
-          onClick={() => setShowModalCategoria(true)}
+          onClick={() => setShowImportModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Plan de cuentas"
         >
           <BookOpen className="w-4 h-4" /> Categorías
         </button>
         <button
-          onClick={() => setShowModalPeriodo(true)}
+          onClick={() => setShowImportModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Períodos fiscales"
         >
@@ -536,7 +536,7 @@ export default function FinanzasPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
+              <button onClick={() => setShowImportModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
               <button onClick={guardarTransaccion} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">Guardar</button>
             </div>
           </div>
@@ -549,7 +549,7 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Plan de Cuentas</h3>
-              <button onClick={() => setShowModalCategoria(false)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setShowImportModalCategoria(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {categorias.map((c: any) => (
@@ -583,7 +583,7 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Períodos Fiscales</h3>
-              <button onClick={() => setShowModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
               {periodos.map((p: any) => (
@@ -620,3 +620,4 @@ export default function FinanzasPage() {
     </div>
   );
 }
+

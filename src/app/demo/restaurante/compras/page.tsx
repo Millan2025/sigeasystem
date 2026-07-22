@@ -87,7 +87,7 @@ export default function ComprasPage() {
     total: 0,
   });
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -361,7 +361,7 @@ export default function ComprasPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setShowModal(false);
+      setShowImportModal(false);
       setEditando(null);
       setForm({ ...estadoInicialForm });
       setImageFile(null);
@@ -403,7 +403,7 @@ export default function ComprasPage() {
       imagen_url: p.imagen_url || "",
       exento_iva: p.exento_iva || false,
     });
-    setShowModal(true);
+    setShowImportModal(true);
   };
 
   return (
@@ -439,7 +439,7 @@ export default function ComprasPage() {
           onClick={() => {
             setEditando(null);
             setForm({ ...estadoInicialForm });
-            setShowModal(true);
+            setShowImportModal(true);
           }}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
         >
@@ -833,7 +833,7 @@ export default function ComprasPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowImportModal(false)}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
               >
                 Cancelar
@@ -960,3 +960,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+

@@ -57,7 +57,7 @@ export default function PedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<Pedido | null>(null);
   const [form, setForm] = useState<{
     customer_name: string;
@@ -198,7 +198,7 @@ export default function PedidosPage() {
       if (data.success) {
         setMensaje(`✅ Pedido #${data.data.id.slice(0, 6)} creado`);
         setTimeout(() => setMensaje(""), 5000);
-        setShowModal(false);
+        setShowImportModal(false);
         setForm({ customer_name: "", metodo_pago: "Efectivo", direccion_entrega: "", items: [] });
         cargarPedidos();
       } else {
@@ -250,7 +250,7 @@ export default function PedidosPage() {
             onClick={() => {
               setEditando(null);
               setForm({ customer_name: "", metodo_pago: "Efectivo", direccion_entrega: "", items: [] });
-              setShowModal(true);
+              setShowImportModal(true);
             }}
             className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           >
@@ -427,7 +427,7 @@ export default function PedidosPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">
+              <button onClick={() => setShowImportModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">
                 Cancelar
               </button>
               <button onClick={guardarPedido} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">
@@ -475,4 +475,5 @@ export default function PedidosPage() {
     </div>
   );
 }
+
 

@@ -24,7 +24,7 @@ export default function PersonalPage() {
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
   const [showDetail, setShowDetail] = useState<Colaborador | null>(null);
   const [tenantId, setTenantId] = useState('7e045520-5e36-4e3f-a39f-10ea7d6dce76');
@@ -108,7 +108,7 @@ export default function PersonalPage() {
       estado: colaborador.estado || "activo",
       observaciones: colaborador.observaciones || ""
     });
-    setShowModal(true);
+    setShowImportModal(true);
   };
 
   const resetForm = () => {
@@ -124,7 +124,7 @@ export default function PersonalPage() {
       observaciones: ""
     });
     setEditing(null);
-    setShowModal(false);
+    setShowImportModal(false);
   };
 
   const exportarExcel = () => {
@@ -181,7 +181,7 @@ export default function PersonalPage() {
             <button onClick={exportarExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition text-sm">
               <Download className="w-4 h-4" /> Exportar
             </button>
-            <button onClick={() => setShowModal(true)} className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition text-sm">
+            <button onClick={() => setShowImportModal(true)} className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition text-sm">
               <Plus className="w-4 h-4" /> Nuevo
             </button>
           </div>
@@ -280,3 +280,4 @@ export default function PersonalPage() {
     </div>
   );
 }
+

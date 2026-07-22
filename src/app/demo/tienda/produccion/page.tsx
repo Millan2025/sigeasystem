@@ -81,7 +81,7 @@ export default function ProduccionPage() {
   // ========== ESTADO DE ÓRDENES ==========
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [loadingOrdenes, setLoadingOrdenes] = useState(true);
-  const [showModalOrden, setShowModalOrden] = useState(false);
+  const [showModalOrden, setShowImportModalOrden] = useState(false);
   const [nuevaOrden, setNuevaOrden] = useState<Partial<Orden>>({
     tipo: "pedido_pos",
     productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
@@ -96,7 +96,7 @@ export default function ProduccionPage() {
   const [jornada, setJornada] = useState<any[]>([]);
   const [loadingJornada, setLoadingJornada] = useState(true);
   const [fechaJornada, setFechaJornada] = useState(new Date().toISOString().split("T")[0]);
-  const [showModalJornada, setShowModalJornada] = useState(false);
+  const [showModalJornada, setShowImportModalJornada] = useState(false);
   const [formJornada, setFormJornada] = useState<{ producto_id: string; cantidad: number }[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
   const [resumenJornada, setResumenJornada] = useState({ planificado: 0, vendido: 0, restante: 0 });
@@ -212,7 +212,7 @@ export default function ProduccionPage() {
         setContadorNuevas((prev) => prev + 1);
         setNotificacion(`📢 Nueva orden #${data.data.id.slice(0, 6)}`);
         setTimeout(() => setNotificacion(null), 5000);
-        setShowModalOrden(false);
+        setShowImportModalOrden(false);
         setNuevaOrden({
           tipo: "pedido_pos",
           productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
@@ -294,7 +294,7 @@ export default function ProduccionPage() {
       cantidad_vendida: 0,
     }));
     guardarJornada(nuevaJornada);
-    setShowModalJornada(false);
+    setShowImportModalJornada(false);
     setFormJornada([]);
   };
 
@@ -366,7 +366,7 @@ export default function ProduccionPage() {
               <RefreshCw className="w-5 h-5 text-stone-700" />
             </button>
             <button
-              onClick={() => setShowModalOrden(true)}
+              onClick={() => setShowImportModalOrden(true)}
               className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
             >
               <Plus className="w-4 h-4" /> Nueva Orden
@@ -393,7 +393,7 @@ export default function ProduccionPage() {
             <button
               onClick={() => {
                 setFormJornada([]);
-                setShowModalJornada(true);
+                setShowImportModalJornada(true);
               }}
               className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
             >
@@ -702,7 +702,7 @@ export default function ProduccionPage() {
 
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowModalOrden(false)}
+                onClick={() => setShowImportModalOrden(false)}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
               >
                 Cancelar
@@ -724,7 +724,7 @@ export default function ProduccionPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Planificar Jornada</h3>
-              <button onClick={() => setShowModalJornada(false)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setShowImportModalJornada(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-3">
               {formJornada.map((f, idx) => (
@@ -759,7 +759,7 @@ export default function ProduccionPage() {
               </button>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowModalJornada(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">
+              <button onClick={() => setShowImportModalJornada(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">
                 Cancelar
               </button>
               <button onClick={guardarPlanificacion} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">
@@ -774,3 +774,4 @@ export default function ProduccionPage() {
     </div>
   );
 }
+

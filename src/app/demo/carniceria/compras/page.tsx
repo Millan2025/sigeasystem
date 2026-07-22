@@ -41,7 +41,7 @@ export default function ComprasPage() {
   const [mensaje, setMensaje] = useState("");
 
   // Modal CRUD
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState({
     nombre: "",
@@ -225,7 +225,7 @@ export default function ComprasPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setShowModal(false);
+      setShowImportModal(false);
       setEditando(null);
       setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
       cargarDatos();
@@ -260,7 +260,7 @@ export default function ComprasPage() {
       tipo_unidad: p.tipo_unidad || "unidad",
       icono: p.icono || "📦",
     });
-    setShowModal(true);
+    setShowImportModal(true);
   };
 
   return (
@@ -299,7 +299,7 @@ export default function ComprasPage() {
           onClick={() => {
             setEditando(null);
             setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
-            setShowModal(true);
+            setShowImportModal(true);
           }}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
         >
@@ -550,7 +550,7 @@ export default function ComprasPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowImportModal(false)}
                 className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
               >
                 Cancelar
@@ -568,3 +568,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+

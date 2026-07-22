@@ -18,7 +18,7 @@ export default function ProductosAdminPage() {
   const pathname = usePathname();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     nombre: '',
@@ -62,7 +62,7 @@ export default function ProductosAdminPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setShowModal(false);
+      setShowImportModal(false);
       setEditing(null);
       setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' });
       cargarProductos();
@@ -94,7 +94,7 @@ export default function ProductosAdminPage() {
       venta_por_peso: p.venta_por_peso || false,
       icono: p.icono || '📦'
     });
-    setShowModal(true);
+    setShowImportModal(true);
   };
 
   return (
@@ -108,7 +108,7 @@ export default function ProductosAdminPage() {
         <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5" />
         </button>
-        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' }); setShowModal(true); }} 
+        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' }); setShowImportModal(true); }} 
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
           <Plus className="w-4 h-4" /> Nuevo
         </button>
@@ -195,7 +195,7 @@ export default function ProductosAdminPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">Cancelar</button>
+              <button onClick={() => setShowImportModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">Cancelar</button>
               <button onClick={guardarProducto} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">Guardar</button>
             </div>
           </div>
@@ -204,4 +204,5 @@ export default function ProductosAdminPage() {
     </div>
   );
 }
+
 

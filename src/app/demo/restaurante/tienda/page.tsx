@@ -110,7 +110,7 @@ export default function TiendaPage() {
         const msg = `✅ ${data.importados} productos importados.` + (data.errores ? ` Errores: ${data.errores.join(", ")}` : "");
         console.log(msg);
         setTimeout(() => console.log(""), 5000);
-        setShowModal(false);
+        setShowImportModal(false);
         cargarDatos();
       } else {
         console.log(`❌ Error: ${data.error}`);
@@ -230,6 +230,7 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 
 
