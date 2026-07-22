@@ -96,8 +96,8 @@ export default function TiendaPage() {
     console.log("⏳ Subiendo archivo...");
     
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    formData.append("tenant_id", tenantImport || "");
-    console.log("📤 Enviando tenant_id:", tenantImport);
+    formData.append("tenant_id", tenantId || "");
+    console.log("📤 Enviando tenant_id:", tenantId);
     
     try {
       const res = await fetch("/api/admin/products/import", {
@@ -230,6 +230,7 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 
 
