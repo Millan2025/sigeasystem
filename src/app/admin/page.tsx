@@ -90,7 +90,7 @@ export default function AdminMasterPage() {
   const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
   // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
-  const [showImportarProductos, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [tenantId, settenantId] = useState<string | null>(null);
   const [importProgress, setImportProgress] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
@@ -1180,7 +1180,7 @@ export default function AdminMasterPage() {
       )}
 
       {/* 🔥 MODAL IMPORTAR PRODUCTOS (MEJORADO) */}
-      {showImportarProductos && (
+      {showModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex justify-between items-center mb-4">
@@ -1238,6 +1238,7 @@ export default function AdminMasterPage() {
     </div>
   );
 }
+
 
 
 
