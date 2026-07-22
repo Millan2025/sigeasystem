@@ -27,22 +27,18 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { responsable, cliente, telefono, direccion, monto, tenant_id } = body
 
-    // Asegurar que tengamos un nombre de cliente (usar "Cliente" por defecto si viene vacío)
-    const nombreCliente = responsable || cliente || "Cliente sin nombre"
-    if (!monto || !tenant_id) {
+    const nombreCliente = responsable || cliente
+    if (!nombreCliente || !monto || !tenant_id) {
       return NextResponse.json(
-        { success: false, error: 'Faltan: monto, tenant_id' },
+        { success: false, error: 'Faltan: responsable, monto, tenant_id' },
         { status: 400 }
       )
     }
 
     const observaciones = `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
-
-    // Calcular fecha_fin (30 días después de fecha_inicio)
-    const fechaInicio = new Date().toISOString().split('T')[0]
-    const fechaFinDate = new Date()
-    fechaFinDate.setDate(fechaFinDate.getDate() + 30)
-    const fechaFin = fechaFinDate.toISOString().split('T')[0]
+    const hoy = new Date().toISOString().split('T')[0]
+    // Establecer fecha_fin a 30 días por defecto (o la misma fecha de inicio)
+    const fechaFin = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
     const { data, error } = await supabase
       .from('creditos')
@@ -52,7 +48,7 @@ export async function POST(request: Request) {
         responsable: nombreCliente,
         valor_total: monto,
         valor_pagado: 0,
-        fecha_inicio: fechaInicio,
+        fecha_inicio: hoy,
         fecha_fin: fechaFin,
         estado: 'pendiente',
         observaciones: observaciones.trim()
@@ -82,24 +78,29 @@ export async function PUT(request: Request) {
     // Obtener crédito actual (incluyendo tenant_id para finanzas)
     const { data: credito, error: getErr } = await supabase
       .from('creditos')
-      .select('saldo_pendiente, valor_pagado, tenant_id')
+      .select('valor_pagado, tenant_id, valor_total')
       .eq('id', id)
       .single()
 
     if (getErr) throw getErr
 
-    const nuevoSaldo = credito.saldo_pendiente - monto_abono
-    const nuevoPagado = credito.valor_pagado + monto_abono
+    const nuevoPagado = (credito.valor_pagado || 0) + monto_abono
+    const nuevoSaldo = (credito.valor_total || 0) - nuevoPagado
     const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
 
-    // Actualizar crédito (sin saldo_pendiente porque es GENERATED ALWAYS)
+    // Actualizar crédito (sin tocar saldo_pendiente, que es GENERATED)
+    const updateData: any = {
+      valor_pagado: nuevoPagado,
+      estado,
+      updated_at: new Date().toISOString()
+    }
+    if (estado === 'pagado') {
+      updateData.fecha_fin = new Date().toISOString().split('T')[0]
+    }
+
     const { data, error } = await supabase
       .from('creditos')
-      .update({
-        valor_pagado: nuevoPagado,
-        estado,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
@@ -143,4 +144,5 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
