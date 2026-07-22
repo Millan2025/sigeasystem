@@ -37,10 +37,10 @@ export async function POST(request: Request) {
 
     const observaciones = `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
     const hoy = new Date().toISOString().split('T')[0]
-    // Establecer fecha_fin a 30 días por defecto (o la misma fecha de inicio)
+    // Establecer fecha_fin a 30 días por defecto
     const fechaFin = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-    const { data, error } = await supabase
+    const { data: credito, error } = await supabase
       .from('creditos')
       .insert({
         tenant_id,
@@ -57,7 +57,60 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
-    return NextResponse.json({ success: true, data })
+
+    // 🔥 REGISTRAR INGRESO EN FINANZAS (Cuentas por Cobrar)
+    try {
+      // Obtener o crear categoría "Cuentas por Cobrar" (código 1-01-01)
+      let { data: categoria, error: catErr } = await supabase
+        .from('categorias_contables')
+        .select('id')
+        .eq('codigo', '1-01-01')
+        .eq('tenant_id', tenant_id)
+        .maybeSingle()
+
+      if (!categoria) {
+        const { data: newCat, error: createErr } = await supabase
+          .from('categorias_contables')
+          .insert({
+            codigo: '1-01-01',
+            nombre: 'Cuentas por Cobrar',
+            tipo: 'activo',
+            tenant_id: tenant_id
+          })
+          .select()
+          .single()
+        if (!createErr && newCat) {
+          categoria = newCat
+          console.log('✅ Categoría Cuentas por Cobrar creada:', categoria.id)
+        }
+      }
+
+      if (categoria?.id) {
+        await supabase
+          .from('transacciones')
+          .insert({
+            tipo: 'ingreso',
+            monto: monto,
+            categoria_contable_id: categoria.id,
+            descripcion: `Crédito #${credito.id} - ${nombreCliente}`,
+            fecha: hoy,
+            impuesto: 0,
+            retencion: 0,
+            total_con_impuestos: monto,
+            metodo_pago: 'Crédito',
+            tenant_id: tenant_id,
+            referencia_id: credito.id,
+            referencia_tipo: 'credito',
+            created_at: new Date().toISOString()
+          })
+        console.log('✅ Transacción registrada en finanzas para crédito #' + credito.id)
+      }
+    } catch (finErr) {
+      console.error('Error al registrar transacción en finanzas:', finErr)
+      // No bloqueamos la operación, solo log
+    }
+
+    return NextResponse.json({ success: true, data: credito })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
@@ -144,5 +197,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
