@@ -27,7 +27,8 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { responsable, cliente, telefono, direccion, monto, tenant_id } = body
 
-    const nombreCliente = responsable || cliente; if (!nombreCliente || !monto || !tenant_id) {
+    const nombreCliente = responsable || cliente
+    if (!nombreCliente || !monto || !tenant_id) {
       return NextResponse.json(
         { success: false, error: 'Faltan: responsable, monto, tenant_id' },
         { status: 400 }
@@ -40,7 +41,8 @@ export async function POST(request: Request) {
       .from('creditos')
       .insert({
         tenant_id,
-        responsable,
+        cliente: nombreCliente,
+        responsable: nombreCliente,
         valor_total: monto,
         valor_pagado: 0,
         fecha_inicio: new Date().toISOString().split('T')[0],
@@ -82,7 +84,7 @@ export async function PUT(request: Request) {
     const nuevoPagado = credito.valor_pagado + monto_abono
     const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
 
-    // Actualizar crédito
+    // Actualizar crédito (sin saldo_pendiente porque es GENERATED ALWAYS)
     const { data, error } = await supabase
       .from('creditos')
       .update({
@@ -98,7 +100,6 @@ export async function PUT(request: Request) {
 
     // 🔥 REGISTRAR INGRESO EN FINANZAS POR EL ABONO
     try {
-      // Obtener ID de la categoría "Cuentas por Cobrar" (código 1-01-01)
       const { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
         .select('id')
@@ -126,7 +127,6 @@ export async function PUT(request: Request) {
         })
       }
     } catch (finErr) {
-      // Si falla el registro en finanzas, no bloqueamos la operación, pero lo registramos en consola
       console.error('Error al registrar abono en finanzas:', finErr)
     }
 
@@ -135,12 +135,3 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
