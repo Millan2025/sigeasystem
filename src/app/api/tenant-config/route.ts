@@ -15,18 +15,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: 'Falta tenant_id' }, { status: 400 })
     }
 
-    // Buscar en business_config usando tenant_id
+    // Usar business_config (no tenants)
     const { data, error } = await supabase
       .from('business_config')
       .select('nombre_negocio, whatsapp, direccion, telefono')
-      .eq('tenant_id', tenantId)
+      .eq('id', tenantId)
       .single()
 
-    if (error) {
-      console.error('Error al obtener config:', error)
-      // Si no hay registro, devolver datos vacíos
-      return NextResponse.json({ success: true, data: { whatsapp: '' } })
-    }
+    if (error) throw error
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {

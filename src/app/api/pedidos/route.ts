@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   const tenantId = url.searchParams.get('tenant') || '7e045520-5e36-4e3f-a39f-10ea7d6dce76'
   const estado = url.searchParams.get('estado')
-  let query = supabase.from('pedidos').select('*').eq('tenant_id', tenantId).order('created_at', { ascending: false })
+  let query = supabase.from('pedidos').select('*').eq('id', tenantId).order('created_at', { ascending: false })
   if (estado) query = query.eq('estado', estado)
   const { data, error } = await query
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -97,3 +97,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
