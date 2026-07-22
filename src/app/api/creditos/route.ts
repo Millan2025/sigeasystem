@@ -43,7 +43,6 @@ export async function POST(request: Request) {
         responsable,
         valor_total: monto,
         valor_pagado: 0,
-        saldo_pendiente: monto,
         fecha_inicio: new Date().toISOString().split('T')[0],
         estado: 'pendiente',
         observaciones: observaciones.trim()
@@ -87,7 +86,6 @@ export async function PUT(request: Request) {
     const { data, error } = await supabase
       .from('creditos')
       .update({
-        saldo_pendiente: nuevoSaldo,
         valor_pagado: nuevoPagado,
         estado,
         updated_at: new Date().toISOString()
@@ -137,6 +135,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
