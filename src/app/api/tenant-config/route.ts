@@ -15,17 +15,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: 'Falta tenant_id' }, { status: 400 })
     }
 
-    // Usar business_config (no tenants)
+    // Usar business_config (la tabla real)
     const { data, error } = await supabase
       .from('business_config')
       .select('nombre_negocio, whatsapp, direccion, telefono')
-      .eq('id', tenantId)
+      .eq('id', tenantId)   // ← IMPORTANTE: usar 'id' no 'tenant_id'
       .single()
 
     if (error) throw error
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
+    console.error('❌ Error en tenant-config:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
