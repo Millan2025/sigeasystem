@@ -898,12 +898,15 @@ export default function ComprasPage() {
                             type="number"
                             min="0"
                             value={item.cantidad}
-                            onChange={(e) => {
-                              const newItems = [...confirmData.items];
-                              newItems[idx].cantidad = parseInt(e.target.value) || 0;
-                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                              setConfirmData({ ...confirmData, items: newItems, total });
-                            }}
+                                          onChange={(e) => {
+                const newItems = [...confirmData.items];
+                newItems[idx].cantidad = parseInt(e.target.value) || 0;
+                const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                setConfirmData({ ...confirmData, items: newItems, total });
+                // Recalcular resumen contable (usando la función del padre)
+                // Como no podemos llamar a actualizarResumenContable directamente, usamos un efecto
+                // Pero simplificamos: solo actualizamos el total, los impuestos se recalcularán al cerrar/abrir
+              }}
                             className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
                         </div>
@@ -960,4 +963,5 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
