@@ -35,9 +35,31 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { tenant_id, proveedor, fecha, metodo_pago, observaciones, items, subtotal, iva, retencion, ica, total_con_impuestos } = body
+    const { 
+      tenant_id, 
+      proveedor, 
+      fecha, 
+      metodo_pago, 
+      observaciones, 
+      items, 
+      subtotal, 
+      iva, 
+      retencion, 
+      ica, 
+      total_con_impuestos 
+    } = body
 
-    console.log('📥 POST /api/compras - Datos recibidos:', { tenant_id, proveedor, metodo_pago, items: items?.length })
+    console.log('📥 POST /api/compras - Datos recibidos:', { 
+      tenant_id, 
+      proveedor, 
+      metodo_pago, 
+      items: items?.length,
+      subtotal,
+      iva,
+      retencion,
+      ica,
+      total_con_impuestos
+    })
 
     if (!tenant_id || !items || items.length === 0) {
       return NextResponse.json(
@@ -46,17 +68,19 @@ export async function POST(request: Request) {
       )
     }
 
-    const total = items.reduce((sum: number, item: any) => sum + (item.cantidad * item.precio_compra), 0)
-    console.log('💰 Total de la compra:', total)
-
-    // 1. Insertar cabecera de compra
+    // 1. Insertar cabecera de compra CON IMPUESTOS
     const { data: compra, error: compraErr } = await supabase
       .from('compras')
       .insert({
         tenant_id,
         proveedor: proveedor || '',
         fecha: fecha || new Date().toISOString().split('T')[0],
-        total,
+        total: total_con_impuestos || 0,  // total final con impuestos
+        subtotal: subtotal || 0,
+        iva: iva || 0,
+        retencion: retencion || 0,
+        ica: ica || 0,
+        total_con_impuestos: total_con_impuestos || 0,
         metodo_pago: metodo_pago || 'contado',
         observaciones: observaciones || '',
         created_at: new Date().toISOString()
@@ -69,6 +93,7 @@ export async function POST(request: Request) {
       throw compraErr
     }
     console.log('✅ Compra insertada con ID:', compra.id)
+    console.log('📊 Impuestos guardados:', { subtotal, iva, retencion, ica, total_con_impuestos })
 
     // 2. Insertar items de compra
     const compraItems = items.map((item: any) => ({
@@ -89,11 +114,12 @@ export async function POST(request: Request) {
     }
     console.log('✅ Items insertados:', compraItems.length)
 
-    // 3. Actualizar stock
-        for (const item of items) {
-      console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad, 'precio:', item.precio_compra);
-      console.log('📦 Insertando movimiento de inventario...');
-      const { data: movData, error: movInsertErr } = await supabase
+    // 3. Actualizar stock (con logs detallados)
+    for (const item of items) {
+      console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad)
+      
+      // Insertar movimiento de inventario
+      const { error: movInsertErr } = await supabase
         .from('movimientos_inventario')
         .insert({
           producto_id: item.producto_id,
@@ -103,23 +129,13 @@ export async function POST(request: Request) {
           tenant_id,
           created_at: new Date().toISOString()
         })
-        .select();
+      
       if (movInsertErr) {
-        console.error('❌ Error al insertar movimiento:', movInsertErr);
-        continue;
+        console.error('❌ Error al insertar movimiento:', movInsertErr)
+        continue
       }
-      console.log('✅ Movimiento insertado:', movData);
-      await supabase
-        .from('movimientos_inventario')
-        .insert({
-          producto_id: item.producto_id,
-          tipo: 'entrada',
-          cantidad: item.cantidad,
-          motivo: `Compra #${compra.id}`,
-          tenant_id,
-          created_at: new Date().toISOString()
-        })
 
+      // Recalcular stock
       const { data: movs } = await supabase
         .from('movimientos_inventario')
         .select('tipo, cantidad')
@@ -131,19 +147,33 @@ export async function POST(request: Request) {
         nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
       })
 
-      await supabase
+      const { error: updateErr } = await supabase
         .from('productos')
         .update({ stock: nuevoStock })
         .eq('id', item.producto_id)
         .eq('tenant_id', tenant_id)
+      
+      if (updateErr) {
+        console.error('❌ Error al actualizar stock del producto', item.producto_id, ':', updateErr)
+      } else {
+        console.log('✅ Stock actualizado para producto', item.producto_id, 'nuevo stock:', nuevoStock)
+      }
     }
     console.log('✅ Stock actualizado')
 
-    // 4. REGISTRAR EN FINANZAS (con logs detallados)
+    // 4. REGISTRAR EN FINANZAS con nombres de productos en la descripción
     try {
+      // Obtener nombres de productos para la descripción
+      const nombresProductos = items.map((item: any) => {
+        const producto = productosEncontrados?.find((p: any) => p.id === item.producto_id)
+        return producto ? producto.nombre : item.producto_id
+      }).join(', ')
+      
+      // Si no tenemos los nombres, usar los IDs
+      const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos || 'varios productos'}`
+
       console.log('🔍 Buscando categoría contable para tenant:', tenant_id)
 
-      // Buscar categoría "Compras" (código 5-01-01)
       let { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
         .select('id')
@@ -151,7 +181,6 @@ export async function POST(request: Request) {
         .eq('tenant_id', tenant_id)
         .maybeSingle()
 
-      // Si no existe, crearla
       if (!categoria) {
         console.log('⚠️ Categoría 5-01-01 no encontrada, creándola...')
         const { data: newCat, error: createErr } = await supabase
@@ -174,40 +203,28 @@ export async function POST(request: Request) {
       }
 
       if (categoria?.id) {
-        const categoriaId = categoria.id
-                const totalImpuesto = iva || 0;
-        const totalRetencion = retencion || 0;
-        const totalConImpuestos = total_con_impuestos || total || 0;
-
         console.log('📝 Insertando en transacciones:', {
           tipo: 'egreso',
-          monto: totalConImpuestos,
-          categoria_contable_id: categoriaId,
-                  // Generar descripción con nombres de productos
-        const nombresProductos = items.map((i: any) => i.nombre || i.producto_id).join(', ');
-        const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos}`;
-        descripcion: descripcion,
-          fecha: fecha || new Date().toISOString().split('T')[0],
-          metodo_pago: metodo_pago || 'contado',
-          tenant_id
+          monto: total_con_impuestos || 0,
+          descripcion,
+          metodo_pago: metodo_pago || 'contado'
         })
 
         const { error: transError } = await supabase
           .from('transacciones')
           .insert({
             tipo: 'egreso',
-            monto: totalConImpuestos,
-            categoria_contable_id: categoriaId,
-                    // Generar descripción con nombres de productos
-        const nombresProductos = items.map((i: any) => i.nombre || i.producto_id).join(', ');
-        const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos}`;
-        descripcion: descripcion,
+            monto: total_con_impuestos || 0,
+            categoria_contable_id: categoria.id,
+            descripcion: descripcion,
             fecha: fecha || new Date().toISOString().split('T')[0],
-            impuesto: totalImpuesto,
-            retencion: totalRetencion,
-            total_con_impuestos: totalConImpuestos,
+            impuesto: iva || 0,
+            retencion: retencion || 0,
+            total_con_impuestos: total_con_impuestos || 0,
             metodo_pago: metodo_pago || 'contado',
             tenant_id: tenant_id,
+            referencia_id: compra.id,
+            referencia_tipo: 'compra',
             created_at: new Date().toISOString()
           })
 
@@ -234,8 +251,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
-
