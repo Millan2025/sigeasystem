@@ -86,6 +86,26 @@ export default function ComprasPage() {
     ica: 0,
     total: 0,
   });
+  // Función para recalcular resumen desde los items del modal
+  const recalcularResumenDesdeItems = (items: { cantidad: number; precio_compra: number; exento_iva?: boolean }[]) => {
+    let subtotal = 0;
+    let ivaTotal = 0;
+
+    items.forEach(item => {
+      const subtotalItem = item.cantidad * item.precio_compra;
+      subtotal += subtotalItem;
+      if (!item.exento_iva) {
+        ivaTotal += subtotalItem * (ivaPorcentaje / 100);
+      }
+    });
+
+    const retencion = subtotal * (retencionPorcentaje / 100);
+    const ica = subtotal * (icaPorcentaje / 100);
+    const total = subtotal + ivaTotal - retencion - ica;
+
+    setResumenContable({ subtotal, iva: ivaTotal, retencion, ica, total });
+  };
+
 
   const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
@@ -942,7 +962,7 @@ export default function ComprasPage() {
                 const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
                 setConfirmData({ ...confirmData, items: newItems, total });
                 // Recalcular resumen contable
-                actualizarResumenDesdeItems(newItems);
+                recalcularResumenDesdeItems(newItems);
               }}
                             className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
@@ -984,5 +1004,6 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
 
