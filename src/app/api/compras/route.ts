@@ -114,11 +114,10 @@ export async function POST(request: Request) {
     }
     console.log('✅ Items insertados:', compraItems.length)
 
-    // 3. Actualizar stock (con logs detallados)
+    // 3. Actualizar stock
     for (const item of items) {
       console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad)
       
-      // Insertar movimiento de inventario
       const { error: movInsertErr } = await supabase
         .from('movimientos_inventario')
         .insert({
@@ -135,7 +134,6 @@ export async function POST(request: Request) {
         continue
       }
 
-      // Recalcular stock
       const { data: movs } = await supabase
         .from('movimientos_inventario')
         .select('tipo, cantidad')
@@ -147,21 +145,15 @@ export async function POST(request: Request) {
         nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
       })
 
-      const { error: updateErr } = await supabase
+      await supabase
         .from('productos')
         .update({ stock: nuevoStock })
         .eq('id', item.producto_id)
         .eq('tenant_id', tenant_id)
-      
-      if (updateErr) {
-        console.error('❌ Error al actualizar stock del producto', item.producto_id, ':', updateErr)
-      } else {
-        console.log('✅ Stock actualizado para producto', item.producto_id, 'nuevo stock:', nuevoStock)
-      }
     }
     console.log('✅ Stock actualizado')
 
-    // 4. REGISTRAR EN FINANZAS con descripción simple
+    // 4. REGISTRAR EN FINANZAS con todos los impuestos
     try {
       console.log('🔍 Buscando categoría contable para tenant:', tenant_id)
 
@@ -194,34 +186,35 @@ export async function POST(request: Request) {
       }
 
       if (categoria?.id) {
-            // Construir descripción con nombres de productos
-    const nombresProductos = items.map((item: any) => item.nombre || item.producto_id).join(', ');
-    const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos}`;
+        // Construir descripción sin UUID
+        const nombresProductos = items.map((item: any) => item.nombre || item.producto_id).join(', ');
+        let descripcion = `Compra - ${metodo_pago} - ${nombresProductos}`;
+        if (observaciones) {
+          descripcion += ` - ${observaciones}`;
+        }
 
-        console.log('📝 Insertando en transacciones:', {
+        const transaccion = {
           tipo: 'egreso',
           monto: total_con_impuestos || 0,
-          descripcion,
-          metodo_pago: metodo_pago || 'contado'
-        })
+          categoria_contable_id: categoria.id,
+          descripcion: descripcion,
+          fecha: fecha || new Date().toISOString().split('T')[0],
+          impuesto: iva || 0,
+          retencion: retencion || 0,
+          ica: ica || 0,
+          total_con_impuestos: total_con_impuestos || 0,
+          metodo_pago: metodo_pago || 'contado',
+          tenant_id: tenant_id,
+          referencia_id: compra.id,
+          referencia_tipo: 'compra',
+          created_at: new Date().toISOString()
+        }
+
+        console.log('📝 Insertando en transacciones:', transaccion)
 
         const { error: transError } = await supabase
           .from('transacciones')
-          .insert({
-            tipo: 'egreso',
-            monto: total_con_impuestos || 0,
-            categoria_contable_id: categoria.id,
-            descripcion: descripcion,
-            fecha: fecha || new Date().toISOString().split('T')[0],
-            impuesto: iva || 0,
-            retencion: retencion || 0,
-            total_con_impuestos: total_con_impuestos || 0,
-            metodo_pago: metodo_pago || 'contado',
-            tenant_id: tenant_id,
-            referencia_id: compra.id,
-            referencia_tipo: 'compra',
-            created_at: new Date().toISOString()
-          })
+          .insert(transaccion)
 
         if (transError) {
           console.error('❌ Error al insertar en transacciones:', transError)
@@ -229,7 +222,7 @@ export async function POST(request: Request) {
           console.log('✅ Transacción registrada en finanzas para compra #' + compra.id)
         }
       } else {
-        console.error('❌ No se pudo obtener/crear categoría contable para la compra.')
+        console.error('❌ No se pudo obtener/crear categoría contable.')
       }
     } catch (finError) {
       console.error('❌ Error en el registro financiero:', finError)
@@ -246,7 +239,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
