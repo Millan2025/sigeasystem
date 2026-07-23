@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { tenant_id, proveedor, fecha, metodo_pago, observaciones, items } = body
+    const { tenant_id, proveedor, fecha, metodo_pago, observaciones, items, subtotal, iva, retencion, ica, total_con_impuestos } = body
 
     console.log('📥 POST /api/compras - Datos recibidos:', { tenant_id, proveedor, metodo_pago, items: items?.length })
 
@@ -90,7 +90,25 @@ export async function POST(request: Request) {
     console.log('✅ Items insertados:', compraItems.length)
 
     // 3. Actualizar stock
-    for (const item of items) {
+        for (const item of items) {
+      console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad, 'precio:', item.precio_compra);
+      console.log('📦 Insertando movimiento de inventario...');
+      const { data: movData, error: movInsertErr } = await supabase
+        .from('movimientos_inventario')
+        .insert({
+          producto_id: item.producto_id,
+          tipo: 'entrada',
+          cantidad: item.cantidad,
+          motivo: `Compra #${compra.id}`,
+          tenant_id,
+          created_at: new Date().toISOString()
+        })
+        .select();
+      if (movInsertErr) {
+        console.error('❌ Error al insertar movimiento:', movInsertErr);
+        continue;
+      }
+      console.log('✅ Movimiento insertado:', movData);
       await supabase
         .from('movimientos_inventario')
         .insert({
@@ -161,7 +179,7 @@ export async function POST(request: Request) {
 
         console.log('📝 Insertando en transacciones:', {
           tipo: 'egreso',
-          monto: total,
+          monto: total_con_impuestos || total,
           categoria_contable_id: categoriaId,
           descripcion: `Compra #${compra.id} - ${metodo_pago}`,
           fecha: fecha || new Date().toISOString().split('T')[0],
@@ -173,13 +191,13 @@ export async function POST(request: Request) {
           .from('transacciones')
           .insert({
             tipo: 'egreso',
-            monto: total,
+            monto: total_con_impuestos || total,
             categoria_contable_id: categoriaId,
             descripcion: `Compra #${compra.id} - ${metodo_pago}`,
             fecha: fecha || new Date().toISOString().split('T')[0],
             impuesto: 0,
             retencion: 0,
-            total_con_impuestos: total_con_impuestos,
+            total_con_impuestos: total_con_impuestos || total,
             metodo_pago: metodo_pago || 'contado',
             tenant_id: tenant_id,
             created_at: new Date().toISOString()
@@ -208,6 +226,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
