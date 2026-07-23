@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
+import Link from "next/link";
 import {
+  ArrowLeft,
   RefreshCw,
   ShoppingBag,
   Download,
@@ -57,6 +59,7 @@ interface Producto {
 }
 
 export default function ComprasPage() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
@@ -103,27 +106,6 @@ export default function ComprasPage() {
     total: 0,
   });
 
-  // 🔥 Función para recalcular resumen contable desde los items del modal
-  const recalcularResumenDesdeItems = (items: { cantidad: number; precio_compra: number; exento_iva?: boolean }[]) => {
-    let subtotal = 0;
-    let ivaTotal = 0;
-
-    items.forEach(item => {
-      const subtotalItem = item.cantidad * item.precio_compra;
-      subtotal += subtotalItem;
-      if (!item.exento_iva) {
-        ivaTotal += subtotalItem * (ivaPorcentaje / 100);
-      }
-    });
-
-    const retencion = subtotal * (retencionPorcentaje / 100);
-    const ica = subtotal * (icaPorcentaje / 100);
-    const total = subtotal + ivaTotal - retencion - ica;
-
-    setResumenContable({ subtotal, iva: ivaTotal, retencion, ica, total });
-  };
-
-  // Actualizar resumen desde la selección principal (stock máximo - actual)
   const actualizarResumenContable = () => {
     if (seleccionados.length === 0) {
       setResumenContable({ subtotal: 0, iva: 0, retencion: 0, ica: 0, total: 0 });
@@ -216,7 +198,7 @@ export default function ComprasPage() {
         nombre: p.nombre,
         exento_iva: p.exento_iva || false,
       };
-    }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva?: boolean }[];
+    }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva: boolean }[];
 
     if (items.length === 0) {
       alert("Todos los productos seleccionados ya tienen stock máximo.");
@@ -231,19 +213,33 @@ export default function ComprasPage() {
       metodo_pago: metodoPago,
       total,
     });
-    // Recalcular resumen desde los items del modal
-    recalcularResumenDesdeItems(items);
     setShowConfirmModal(true);
   };
 
   const confirmarCompra = async () => {
+    // Recalcular impuestos con los datos actuales del modal
+    let subtotal = 0;
+    let ivaTotal = 0;
+
+    confirmData.items.forEach((item) => {
+      const subtotalItem = item.cantidad * item.precio_compra;
+      subtotal += subtotalItem;
+      if (!item.exento_iva) {
+        ivaTotal += subtotalItem * (ivaPorcentaje / 100);
+      }
+    });
+
+    const retencion = subtotal * (retencionPorcentaje / 100);
+    const ica = subtotal * (icaPorcentaje / 100);
+    const totalFinal = subtotal + ivaTotal - retencion - ica;
+
     const mensajeConfirmacion = `
       📋 Resumen de la compra:
-      • Subtotal: $${resumenContable.subtotal.toLocaleString()}
-      • IVA: $${resumenContable.iva.toLocaleString()}
-      • Retención: -$${resumenContable.retencion.toLocaleString()}
-      • ICA: -$${resumenContable.ica.toLocaleString()}
-      • Total a pagar: $${resumenContable.total.toLocaleString()}
+      • Subtotal: $${subtotal.toLocaleString()}
+      • IVA: $${ivaTotal.toLocaleString()}
+      • Retención: -$${retencion.toLocaleString()}
+      • ICA: -$${ica.toLocaleString()}
+      • Total a pagar: $${totalFinal.toLocaleString()}
 
       ¿Confirmas esta compra?
     `;
@@ -262,11 +258,11 @@ export default function ComprasPage() {
         cantidad: item.cantidad,
         precio_compra: item.precio_compra,
       })),
-      subtotal: resumenContable.subtotal,
-      iva: resumenContable.iva,
-      retencion: resumenContable.retencion,
-      ica: resumenContable.ica,
-      total_con_impuestos: resumenContable.total,
+      subtotal: subtotal,
+      iva: ivaTotal,
+      retencion: retencion,
+      ica: ica,
+      total_con_impuestos: totalFinal,
     };
 
     try {
@@ -277,7 +273,7 @@ export default function ComprasPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente. Total: $${resumenContable.total.toLocaleString()}`);
+        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente. Total: $${totalFinal.toLocaleString()}`);
         setSeleccionados([]);
         setShowConfirmModal(false);
         cargarDatos();
@@ -289,12 +285,12 @@ export default function ComprasPage() {
     }
   };
 
-  // Funciones auxiliares (generar orden, descargar, etc.)
   const generarOrdenCompra = () => {
     if (seleccionados.length === 0) {
       alert("Selecciona al menos un producto.");
       return;
     }
+
     const data = seleccionados.map((id) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
@@ -310,6 +306,7 @@ export default function ComprasPage() {
         Observaciones: p.observaciones || "",
       };
     }).filter(Boolean);
+
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
@@ -332,19 +329,105 @@ export default function ComprasPage() {
       Imagen: p.imagen_url || "",
       "Exento IVA": p.exento_iva ? "Sí" : "No",
     }));
+
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "Inventario");
     XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
   };
 
-  // CRUD de productos (resumido para brevedad)
-  const subirImagen = async () => { /* ... */ };
-  const guardarProducto = async () => { /* ... */ };
-  const eliminarProducto = async (id: string) => { /* ... */ };
-  const editarProducto = (p: any) => { /* ... */ };
+  const subirImagen = async () => {
+    if (!imageFile) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("tenant_id", tenantId);
+    try {
+      const res = await fetch("/api/upload/product-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({ ...prev, imagen_url: data.url }));
+        setImageFile(null);
+        alert("✅ Imagen subida correctamente");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+    setUploadingImage(false);
+  };
 
-  // Render (igual que antes, solo se ajusta el modal para usar recalcularResumenDesdeItems)
+  const guardarProducto = async () => {
+    const url = "/api/products";
+    const method = editando ? "PUT" : "POST";
+
+    let body: any = { ...form, tenant_id: tenantId };
+    if (editando) body.id = editando.id;
+
+    if (body.fecha_caducidad === "") body.fecha_caducidad = null;
+
+    body.precio = parseFloat(body.precio) || 0;
+    body.precio_compra = parseFloat(body.precio_compra) || 0;
+    body.stock = parseInt(body.stock) || 0;
+    body.stock_minimo = parseInt(body.stock_minimo) || 0;
+    body.stock_maximo = parseInt(body.stock_maximo) || 0;
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowImportModal(false);
+      setEditando(null);
+      setForm({ ...estadoInicialForm });
+      setImageFile(null);
+      cargarDatos();
+    } else {
+      alert(data.error || "Error al guardar");
+    }
+  };
+
+  const eliminarProducto = async (id: string) => {
+    if (!confirm("¿Eliminar este producto?")) return;
+    const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.success) {
+      cargarDatos();
+    } else {
+      alert(data.error || "Error al eliminar");
+    }
+  };
+
+  const editarProducto = (p: any) => {
+    setEditando(p);
+    setForm({
+      nombre: p.nombre || "",
+      categoria: p.categoria || "",
+      precio: p.precio || 0,
+      precio_compra: p.precio_compra || 0,
+      stock: p.stock || 0,
+      stock_minimo: p.stock_minimo || 0,
+      stock_maximo: p.stock_maximo || 0,
+      proveedor: p.proveedor || "",
+      observaciones: p.observaciones || "",
+      unidad: p.unidad || "unidad",
+      tipo_unidad: p.tipo_unidad || "unidad",
+      sku: p.sku || "",
+      descripcion: p.descripcion || "",
+      fecha_caducidad: p.fecha_caducidad || "",
+      ubicacion: p.ubicacion || "",
+      imagen_url: p.imagen_url || "",
+      exento_iva: p.exento_iva || false,
+    });
+    setShowImportModal(true);
+  };
+
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
@@ -354,30 +437,78 @@ export default function ComprasPage() {
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-black" />
         </button>
-        <button onClick={descargarInventarioCompleto} className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-black" title="Descargar inventario completo">
+        <button
+          onClick={descargarInventarioCompleto}
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-black"
+          title="Descargar inventario completo"
+        >
           <Download className="w-5 h-5" />
           <span className="text-xs hidden sm:inline">Exportar Inv.</span>
         </button>
-        <button onClick={generarOrdenCompra} className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1">
+        <button
+          onClick={generarOrdenCompra}
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
+        >
           <ShoppingBag className="w-4 h-4" /> Generar Orden
         </button>
-        <button onClick={prepararConfirmacion} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1">
+        <button
+          onClick={prepararConfirmacion}
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
+        >
           <Plus className="w-4 h-4" /> Registrar Compra
         </button>
-        <button onClick={() => { setEditando(null); setForm({ ...estadoInicialForm }); setShowImportModal(true); }} className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1">
+        <button
+          onClick={() => {
+            setEditando(null);
+            setForm({ ...estadoInicialForm });
+            setShowImportModal(true);
+          }}
+          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
+        >
           <Plus className="w-4 h-4" /> Nuevo Producto
         </button>
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {mensaje && <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-4 text-black font-bold">{mensaje}</div>}
+        {mensaje && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-4 text-black font-bold">
+            {mensaje}
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
           <h3 className="font-semibold text-black mb-2">⚖️ Configuración contable</h3>
           <div className="flex flex-wrap gap-4">
-            <div><label className="block text-xs text-black">IVA (%)</label><input type="number" value={ivaPorcentaje} onChange={(e) => setIvaPorcentaje(parseFloat(e.target.value) || 0)} className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black" step="0.1" /></div>
-            <div><label className="block text-xs text-black">Retención (%)</label><input type="number" value={retencionPorcentaje} onChange={(e) => setRetencionPorcentaje(parseFloat(e.target.value) || 0)} className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black" step="0.1" /></div>
-            <div><label className="block text-xs text-black">ICA (%)</label><input type="number" value={icaPorcentaje} onChange={(e) => setIcaPorcentaje(parseFloat(e.target.value) || 0)} className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black" step="0.1" /></div>
+            <div>
+              <label className="block text-xs text-black">IVA (%)</label>
+              <input
+                type="number"
+                value={ivaPorcentaje}
+                onChange={(e) => setIvaPorcentaje(parseFloat(e.target.value) || 0)}
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-black">Retención (%)</label>
+              <input
+                type="number"
+                value={retencionPorcentaje}
+                onChange={(e) => setRetencionPorcentaje(parseFloat(e.target.value) || 0)}
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-black">ICA (%)</label>
+              <input
+                type="number"
+                value={icaPorcentaje}
+                onChange={(e) => setIcaPorcentaje(parseFloat(e.target.value) || 0)}
+                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
+                step="0.1"
+              />
+            </div>
           </div>
         </div>
 
@@ -385,11 +516,26 @@ export default function ComprasPage() {
           <div className="bg-blue-100 border border-blue-300 rounded-2xl p-4 mb-4">
             <h4 className="font-semibold text-black mb-2">📊 Resumen de la compra</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
-              <div><span className="text-black">Subtotal</span><p className="font-bold text-black">${resumenContable.subtotal.toLocaleString()}</p></div>
-              <div><span className="text-black">IVA</span><p className="font-bold text-black">${resumenContable.iva.toLocaleString()}</p></div>
-              <div><span className="text-black">Retención</span><p className="font-bold text-black">-${resumenContable.retencion.toLocaleString()}</p></div>
-              <div><span className="text-black">ICA</span><p className="font-bold text-black">-${resumenContable.ica.toLocaleString()}</p></div>
-              <div><span className="text-black font-bold">Total a pagar</span><p className="font-bold text-black">${resumenContable.total.toLocaleString()}</p></div>
+              <div>
+                <span className="text-black">Subtotal</span>
+                <p className="font-bold text-black">${resumenContable.subtotal.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-black">IVA</span>
+                <p className="font-bold text-black">${resumenContable.iva.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-black">Retención</span>
+                <p className="font-bold text-black">-${resumenContable.retencion.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-black">ICA</span>
+                <p className="font-bold text-black">-${resumenContable.ica.toLocaleString()}</p>
+              </div>
+              <div>
+                <span className="text-black font-bold">Total a pagar</span>
+                <p className="font-bold text-black">${resumenContable.total.toLocaleString()}</p>
+              </div>
             </div>
           </div>
         )}
@@ -397,14 +543,40 @@ export default function ComprasPage() {
         <div className="flex flex-wrap gap-3 items-center mb-4">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
-            <input type="text" placeholder="Buscar por nombre o SKU..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-black placeholder-black" />
+            <input
+              type="text"
+              placeholder="Buscar por nombre o SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-black placeholder-black"
+            />
           </div>
-          <select value={filtroProveedor} onChange={(e) => setFiltroProveedor(e.target.value)} className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black">
+
+          <select
+            value={filtroProveedor}
+            onChange={(e) => setFiltroProveedor(e.target.value)}
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
+          >
             <option value="">Todos los proveedores</option>
-            {proveedores.map((prov) => <option key={prov} value={prov}>{prov}</option>)}
+            {proveedores.map((prov) => (
+              <option key={prov} value={prov}>
+                {prov}
+              </option>
+            ))}
           </select>
-          <input type="text" placeholder="Proveedor de esta compra" value={proveedor} onChange={(e) => setProveedor(e.target.value)} className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black placeholder-black flex-1 min-w-[150px]" />
-          <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black">
+
+          <input
+            type="text"
+            placeholder="Proveedor de esta compra"
+            value={proveedor}
+            onChange={(e) => setProveedor(e.target.value)}
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black placeholder-black flex-1 min-w-[150px]"
+          />
+          <select
+            value={metodoPago}
+            onChange={(e) => setMetodoPago(e.target.value)}
+            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
+          >
             <option value="contado">Contado</option>
             <option value="credito">Crédito</option>
           </select>
@@ -435,7 +607,14 @@ export default function ComprasPage() {
                 const estaMaximo = stockActual >= (p.stock_maximo || 999999);
                 return (
                   <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2"><input type="checkbox" checked={seleccionados.includes(p.id)} onChange={() => toggleSeleccion(p.id)} className="w-4 h-4" /></td>
+                    <td className="p-2">
+                      <input
+                        type="checkbox"
+                        checked={seleccionados.includes(p.id)}
+                        onChange={() => toggleSeleccion(p.id)}
+                        className="w-4 h-4"
+                      />
+                    </td>
                     <td className="p-2 text-black font-mono text-xs">{p.sku || "-"}</td>
                     <td className="p-2 text-black font-bold">{p.nombre}</td>
                     <td className="p-2 font-bold text-black">{stockActual}</td>
@@ -446,25 +625,252 @@ export default function ComprasPage() {
                     <td className="p-2 text-black">${(p.precio_compra || 0).toLocaleString()}</td>
                     <td className="p-2 text-black">{p.exento_iva ? "Sí" : "No"}</td>
                     <td className="p-2">
-                      {esCritico ? <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Por debajo</span> :
-                        estaMaximo ? <span className="px-2 py-1 bg-emerald-100 text-black rounded-full text-xs font-bold">Máximo</span> :
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">OK</span>}
+                      {esCritico ? (
+                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                          Por debajo
+                        </span>
+                      ) : estaMaximo ? (
+                        <span className="px-2 py-1 bg-emerald-100 text-black rounded-full text-xs font-bold">
+                          Máximo
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
+                          OK
+                        </span>
+                      )}
                     </td>
                     <td className="p-2 flex gap-2">
-                      <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-black" /></button>
-                      <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                      <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
+                        <Edit className="w-4 h-4 text-black" />
+                      </button>
+                      <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 rounded">
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
                     </td>
                   </tr>
                 );
               })}
-              {productosFiltrados.length === 0 && <tr><td colSpan={12} className="p-4 text-center text-black">No hay productos para este negocio</td></tr>}
+              {productosFiltrados.length === 0 && (
+                <tr>
+                  <td colSpan={12} className="p-4 text-center text-black">
+                    No hay productos para este negocio
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Modal CRUD de producto (resumido) */}
-      {showModal && (/* mismo código de antes */)}
+      {/* Modal CRUD de producto */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-black mb-4">
+              {editando ? `Editar producto: ${editando.nombre}` : "Nuevo Producto"}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-bold text-black">Imagen del producto</label>
+                {form.imagen_url && (
+                  <div className="mb-2">
+                    <img src={form.imagen_url} alt="Producto" className="w-24 h-24 object-cover rounded-xl" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-black"
+                />
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={subirImagen}
+                    disabled={uploadingImage}
+                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {uploadingImage ? "Subiendo..." : "Subir imagen"}
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-black">SKU</label>
+                <input
+                  type="text"
+                  value={form.sku}
+                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Nombre *</label>
+                <input
+                  type="text"
+                  value={form.nombre}
+                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Descripción</label>
+                <input
+                  type="text"
+                  value={form.descripcion}
+                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Categoría *</label>
+                <input
+                  type="text"
+                  value={form.categoria}
+                  onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Precio Venta</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.precio}
+                  onChange={(e) => setForm({ ...form, precio: parseFloat(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Precio Compra</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.precio_compra}
+                  onChange={(e) => setForm({ ...form, precio_compra: parseFloat(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Stock actual</label>
+                <input
+                  type="text"
+                  value={stockMap[editando?.id] ?? 0}
+                  disabled
+                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-black"
+                />
+                <p className="text-xs text-black mt-1">El stock se calcula automáticamente</p>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Stock mínimo</label>
+                <input
+                  type="number"
+                  value={form.stock_minimo}
+                  onChange={(e) => setForm({ ...form, stock_minimo: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Stock máximo</label>
+                <input
+                  type="number"
+                  value={form.stock_maximo}
+                  onChange={(e) => setForm({ ...form, stock_maximo: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Proveedor</label>
+                <input
+                  type="text"
+                  value={form.proveedor}
+                  onChange={(e) => setForm({ ...form, proveedor: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Observaciones</label>
+                <input
+                  type="text"
+                  value={form.observaciones}
+                  onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Unidad</label>
+                <input
+                  type="text"
+                  value={form.unidad}
+                  onChange={(e) => setForm({ ...form, unidad: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Tipo de unidad</label>
+                <select
+                  value={form.tipo_unidad}
+                  onChange={(e) => setForm({ ...form, tipo_unidad: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                >
+                  <option value="unidad">Unidad</option>
+                  <option value="kilogramo">Kilogramo</option>
+                  <option value="gramo">Gramo</option>
+                  <option value="libra">Libra</option>
+                  <option value="litro">Litro</option>
+                  <option value="mililitro">Mililitro</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Fecha de caducidad</label>
+                <input
+                  type="date"
+                  value={form.fecha_caducidad}
+                  onChange={(e) => setForm({ ...form, fecha_caducidad: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black">Ubicación en almacén</label>
+                <input
+                  type="text"
+                  value={form.ubicacion}
+                  onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={form.exento_iva || false}
+                  onChange={(e) => setForm({ ...form, exento_iva: e.target.checked })}
+                  className="w-4 h-4 rounded border-stone-300"
+                />
+                <label className="text-sm font-bold text-black">Exento de IVA</label>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={guardarProducto}
+                disabled={uploadingImage}
+                className={`flex-1 py-2 rounded-xl text-white ${uploadingImage ? 'bg-stone-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'}`}
+              >
+                {uploadingImage ? 'Subiendo imagen...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Confirmación de Compra */}
       {showConfirmModal && (
@@ -472,17 +878,28 @@ export default function ComprasPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-black">Confirmar Compra</h3>
-              <button onClick={() => setShowConfirmModal(false)} className="p-1 hover:bg-stone-100 rounded"><X className="w-5 h-5 text-black" /></button>
+              <button onClick={() => setShowConfirmModal(false)} className="p-1 hover:bg-stone-100 rounded">
+                <X className="w-5 h-5 text-black" />
+              </button>
             </div>
 
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-bold text-black">Proveedor</label>
-                <input type="text" value={confirmData.proveedor} onChange={(e) => setConfirmData({ ...confirmData, proveedor: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-black" />
+                <input
+                  type="text"
+                  value={confirmData.proveedor}
+                  onChange={(e) => setConfirmData({ ...confirmData, proveedor: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                />
               </div>
               <div>
                 <label className="block text-sm font-bold text-black">Método de Pago</label>
-                <select value={confirmData.metodo_pago} onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-black">
+                <select
+                  value={confirmData.metodo_pago}
+                  onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
+                >
                   <option value="contado">Contado</option>
                   <option value="credito">Crédito</option>
                 </select>
@@ -508,8 +925,6 @@ export default function ComprasPage() {
                               newItems[idx].cantidad = parseInt(e.target.value) || 0;
                               const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
                               setConfirmData({ ...confirmData, items: newItems, total });
-                              // Recalcular resumen contable
-                              recalcularResumenDesdeItems(newItems);
                             }}
                             className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
@@ -521,18 +936,20 @@ export default function ComprasPage() {
                             min="0"
                             step="0.01"
                             value={item.precio_compra}
-                            onChange={(e) => {
-                              const newItems = [...confirmData.items];
-                              newItems[idx].precio_compra = parseFloat(e.target.value) || 0;
-                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                              setConfirmData({ ...confirmData, items: newItems, total });
-                              // Recalcular resumen contable
-                              recalcularResumenDesdeItems(newItems);
-                            }}
+                                          onChange={(e) => {
+                const newItems = [...confirmData.items];
+                newItems[idx].precio_compra = parseFloat(e.target.value) || 0;
+                const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                setConfirmData({ ...confirmData, items: newItems, total });
+                // Recalcular resumen contable
+                actualizarResumenDesdeItems(newItems);
+              }}
                             className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
                         </div>
-                        <span className="font-bold text-black">${(item.cantidad * item.precio_compra).toLocaleString()}</span>
+                        <span className="font-bold text-black">
+                          ${(item.cantidad * item.precio_compra).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -541,22 +958,25 @@ export default function ComprasPage() {
                   <span className="text-black">Total</span>
                   <span className="text-black font-bold">${confirmData.total.toLocaleString()}</span>
                 </div>
-                <div className="bg-blue-50 p-3 rounded-xl mt-2">
-                  <p className="text-xs text-black font-bold">📊 Resumen contable calculado:</p>
-                  <div className="grid grid-cols-2 gap-1 text-xs mt-1">
-                    <span className="text-black">Subtotal: ${resumenContable.subtotal.toLocaleString()}</span>
-                    <span className="text-black">IVA: ${resumenContable.iva.toLocaleString()}</span>
-                    <span className="text-black">Retención: -${resumenContable.retencion.toLocaleString()}</span>
-                    <span className="text-black">ICA: -${resumenContable.ica.toLocaleString()}</span>
-                    <span className="text-black font-bold col-span-2">Total a pagar: ${resumenContable.total.toLocaleString()}</span>
-                  </div>
-                </div>
+                <p className="text-xs text-black mt-1">
+                  * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
+                </p>
               </div>
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowConfirmModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-black">Cancelar</button>
-              <button onClick={confirmarCompra} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">Confirmar Compra</button>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarCompra}
+                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
+              >
+                Confirmar Compra
+              </button>
             </div>
           </div>
         </div>
@@ -564,3 +984,5 @@ export default function ComprasPage() {
     </div>
   );
 }
+
+
