@@ -194,7 +194,9 @@ export async function POST(request: Request) {
       }
 
       if (categoria?.id) {
-        const descripcion = `Compra #${compra.id} - ${metodo_pago}`
+            // Construir descripción con nombres de productos
+    const nombresProductos = items.map((item: any) => item.nombre || item.producto_id).join(', ');
+    const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos}`;
 
         console.log('📝 Insertando en transacciones:', {
           tipo: 'egreso',
@@ -244,3 +246,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
