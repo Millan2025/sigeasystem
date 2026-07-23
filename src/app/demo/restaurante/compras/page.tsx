@@ -273,10 +273,11 @@ export default function ComprasPage() {
       proveedor: confirmData.proveedor,
       metodo_pago: confirmData.metodo_pago,
       fecha: new Date().toISOString().split("T")[0],
-      items: confirmData.items.map((item) => ({
+            items: confirmData.items.map((item) => ({
         producto_id: item.producto_id,
         cantidad: item.cantidad,
         precio_compra: item.precio_compra,
+        nombre: item.nombre, // para la descripción
       })),
       subtotal: subtotal,
       iva: ivaTotal,
@@ -1004,6 +1005,7 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
 
 

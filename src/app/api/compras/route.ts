@@ -175,13 +175,18 @@ export async function POST(request: Request) {
 
       if (categoria?.id) {
         const categoriaId = categoria.id
-        const total_con_impuestos = total // Por ahora sin impuestos
+                const totalImpuesto = iva || 0;
+        const totalRetencion = retencion || 0;
+        const totalConImpuestos = total_con_impuestos || total || 0;
 
         console.log('📝 Insertando en transacciones:', {
           tipo: 'egreso',
-          monto: total_con_impuestos || total,
+          monto: totalConImpuestos,
           categoria_contable_id: categoriaId,
-          descripcion: `Compra #${compra.id} - ${metodo_pago}`,
+                  // Generar descripción con nombres de productos
+        const nombresProductos = items.map((i: any) => i.nombre || i.producto_id).join(', ');
+        const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos}`;
+        descripcion: descripcion,
           fecha: fecha || new Date().toISOString().split('T')[0],
           metodo_pago: metodo_pago || 'contado',
           tenant_id
@@ -191,13 +196,16 @@ export async function POST(request: Request) {
           .from('transacciones')
           .insert({
             tipo: 'egreso',
-            monto: total_con_impuestos || total,
+            monto: totalConImpuestos,
             categoria_contable_id: categoriaId,
-            descripcion: `Compra #${compra.id} - ${metodo_pago}`,
+                    // Generar descripción con nombres de productos
+        const nombresProductos = items.map((i: any) => i.nombre || i.producto_id).join(', ');
+        const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos}`;
+        descripcion: descripcion,
             fecha: fecha || new Date().toISOString().split('T')[0],
-            impuesto: 0,
-            retencion: 0,
-            total_con_impuestos: total_con_impuestos || total,
+            impuesto: totalImpuesto,
+            retencion: totalRetencion,
+            total_con_impuestos: totalConImpuestos,
             metodo_pago: metodo_pago || 'contado',
             tenant_id: tenant_id,
             created_at: new Date().toISOString()
@@ -226,6 +234,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
