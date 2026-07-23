@@ -42,21 +42,102 @@ export async function GET(request: Request) {
     const { data, error } = await query
     if (error) throw error
 
-    const ingresos = data?.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + t.total_con_impuestos, 0) || 0
-    const egresos = data?.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + t.total_con_impuestos, 0) || 0
-    const impuestos = data?.reduce((sum, t) => sum + (t.impuesto || 0), 0) || 0
-    const retenciones = data?.reduce((sum, t) => sum + (t.retencion || 0), 0) || 0
+    // Expandir transacciones de compra en items
+    const expandedData: any[] = []
+    let itemCounter = 1
+
+    for (const t of data || []) {
+      if (t.referencia_tipo === 'compra' && t.referencia_id) {
+        // Obtener items de la compra
+        const { data: items, error: itemsErr } = await supabase
+          .from('compra_items')
+          .select('*, productos(id, nombre)')
+          .eq('compra_id', t.referencia_id)
+
+        if (itemsErr) {
+          console.error('Error al obtener items de compra:', itemsErr)
+          // Si falla, mostrar la transacción original sin expandir
+          expandedData.push({
+            ...t,
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            item: itemCounter++
+          })
+          continue
+        }
+
+        if (items && items.length > 0) {
+          // Calcular proporciones para distribuir impuestos
+          const subtotalTotal = items.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0)
+          const ivaTotal = t.impuesto || 0
+          const retencionTotal = t.retencion || 0
+          const icaTotal = t.ica || 0
+
+          for (const item of items) {
+            const subtotalItem = item.cantidad * item.precio_compra
+            const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+
+            expandedData.push({
+              ...t,
+              descripcion: item.productos?.nombre || 'Producto',
+              cantidad: item.cantidad,
+              precio_unitario: item.precio_compra,
+              subtotal: subtotalItem,
+              iva: ivaTotal * proporcional,
+              retencion: retencionTotal * proporcional,
+              ica: icaTotal * proporcional,
+              total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
+              item: itemCounter++
+            })
+          }
+        } else {
+          // Sin items, mostrar transacción original
+          expandedData.push({
+            ...t,
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            item: itemCounter++
+          })
+        }
+      } else {
+        // Transacciones no compra
+        expandedData.push({
+          ...t,
+          cantidad: 1,
+          precio_unitario: t.monto,
+          subtotal: t.monto,
+          iva: 0,
+          retencion: 0,
+          ica: 0,
+          item: itemCounter++
+        })
+      }
+    }
+
+    // Recalcular resumen sobre los datos expandidos
+    const ingresos = expandedData.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
+    const egresos = expandedData.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
+    const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0)
+    const retenciones = expandedData.reduce((sum, t) => sum + (t.retencion || 0), 0)
     const saldo = ingresos - egresos
 
     const desglosePagos: Record<string, number> = {}
-    data?.filter(t => t.tipo === 'ingreso').forEach(t => {
+    expandedData.filter(t => t.tipo === 'ingreso').forEach(t => {
       const metodo = t.metodo_pago || 'Otro'
-      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + t.total_con_impuestos
+      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || 0)
     })
 
     return NextResponse.json({
       success: true,
-      data: data || [],
+      data: expandedData,
       resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos }
     })
   } catch (error: any) {
@@ -172,6 +253,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
