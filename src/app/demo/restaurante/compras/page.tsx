@@ -95,7 +95,7 @@ export default function ComprasPage() {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmData, setConfirmData] = useState<{
-    items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
+    items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva?: boolean }[];
     proveedor: string;
     metodo_pago: string;
     total: number;
@@ -196,8 +196,9 @@ export default function ComprasPage() {
         cantidad: cantidad,
         precio_compra: p.precio_compra || 0,
         nombre: p.nombre,
+        exento_iva: p.exento_iva || false,
       };
-    }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string }[];
+    }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva: boolean }[];
 
     if (items.length === 0) {
       alert("Todos los productos seleccionados ya tienen stock máximo.");
@@ -216,13 +217,29 @@ export default function ComprasPage() {
   };
 
   const confirmarCompra = async () => {
+    // Recalcular impuestos con los datos actuales del modal
+    let subtotal = 0;
+    let ivaTotal = 0;
+
+    confirmData.items.forEach((item) => {
+      const subtotalItem = item.cantidad * item.precio_compra;
+      subtotal += subtotalItem;
+      if (!item.exento_iva) {
+        ivaTotal += subtotalItem * (ivaPorcentaje / 100);
+      }
+    });
+
+    const retencion = subtotal * (retencionPorcentaje / 100);
+    const ica = subtotal * (icaPorcentaje / 100);
+    const totalFinal = subtotal + ivaTotal - retencion - ica;
+
     const mensajeConfirmacion = `
       📋 Resumen de la compra:
-      • Subtotal: $${resumenContable.subtotal.toLocaleString()}
-      • IVA: $${resumenContable.iva.toLocaleString()}
-      • Retención: -$${resumenContable.retencion.toLocaleString()}
-      • ICA: -$${resumenContable.ica.toLocaleString()}
-      • Total a pagar: $${resumenContable.total.toLocaleString()}
+      • Subtotal: $${subtotal.toLocaleString()}
+      • IVA: $${ivaTotal.toLocaleString()}
+      • Retención: -$${retencion.toLocaleString()}
+      • ICA: -$${ica.toLocaleString()}
+      • Total a pagar: $${totalFinal.toLocaleString()}
 
       ¿Confirmas esta compra?
     `;
@@ -241,6 +258,11 @@ export default function ComprasPage() {
         cantidad: item.cantidad,
         precio_compra: item.precio_compra,
       })),
+      subtotal: subtotal,
+      iva: ivaTotal,
+      retencion: retencion,
+      ica: ica,
+      total_con_impuestos: totalFinal,
     };
 
     try {
@@ -251,7 +273,7 @@ export default function ComprasPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente. Total: $${resumenContable.total.toLocaleString()}`);
+        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente. Total: $${totalFinal.toLocaleString()}`);
         setSeleccionados([]);
         setShowConfirmModal(false);
         cargarDatos();
@@ -898,15 +920,12 @@ export default function ComprasPage() {
                             type="number"
                             min="0"
                             value={item.cantidad}
-                                          onChange={(e) => {
-                const newItems = [...confirmData.items];
-                newItems[idx].cantidad = parseInt(e.target.value) || 0;
-                const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                setConfirmData({ ...confirmData, items: newItems, total });
-                // Recalcular resumen contable (usando la función del padre)
-                // Como no podemos llamar a actualizarResumenContable directamente, usamos un efecto
-                // Pero simplificamos: solo actualizamos el total, los impuestos se recalcularán al cerrar/abrir
-              }}
+                            onChange={(e) => {
+                              const newItems = [...confirmData.items];
+                              newItems[idx].cantidad = parseInt(e.target.value) || 0;
+                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                              setConfirmData({ ...confirmData, items: newItems, total });
+                            }}
                             className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
                         </div>
@@ -963,5 +982,3 @@ export default function ComprasPage() {
     </div>
   );
 }
-
-
