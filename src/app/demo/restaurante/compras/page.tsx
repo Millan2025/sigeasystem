@@ -936,12 +936,14 @@ export default function ComprasPage() {
                             min="0"
                             step="0.01"
                             value={item.precio_compra}
-                            onChange={(e) => {
-                              const newItems = [...confirmData.items];
-                              newItems[idx].precio_compra = parseFloat(e.target.value) || 0;
-                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                              setConfirmData({ ...confirmData, items: newItems, total });
-                            }}
+                                          onChange={(e) => {
+                const newItems = [...confirmData.items];
+                newItems[idx].precio_compra = parseFloat(e.target.value) || 0;
+                const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
+                setConfirmData({ ...confirmData, items: newItems, total });
+                // Recalcular resumen contable
+                actualizarResumenDesdeItems(newItems);
+              }}
                             className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
                           />
                         </div>
@@ -982,3 +984,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+
