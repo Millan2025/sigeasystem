@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         tenant_id,
         proveedor: proveedor || '',
         fecha: fecha || new Date().toISOString().split('T')[0],
-        total: total_con_impuestos || 0,  // total final con impuestos
+        total: total_con_impuestos || 0,
         subtotal: subtotal || 0,
         iva: iva || 0,
         retencion: retencion || 0,
@@ -161,17 +161,8 @@ export async function POST(request: Request) {
     }
     console.log('✅ Stock actualizado')
 
-    // 4. REGISTRAR EN FINANZAS con nombres de productos en la descripción
+    // 4. REGISTRAR EN FINANZAS con descripción simple
     try {
-      // Obtener nombres de productos para la descripción
-      const nombresProductos = items.map((item: any) => {
-        const producto = productosEncontrados?.find((p: any) => p.id === item.producto_id)
-        return producto ? producto.nombre : item.producto_id
-      }).join(', ')
-      
-      // Si no tenemos los nombres, usar los IDs
-      const descripcion = `Compra #${compra.id} - ${metodo_pago} - ${nombresProductos || 'varios productos'}`
-
       console.log('🔍 Buscando categoría contable para tenant:', tenant_id)
 
       let { data: categoria, error: catErr } = await supabase
@@ -203,6 +194,8 @@ export async function POST(request: Request) {
       }
 
       if (categoria?.id) {
+        const descripcion = `Compra #${compra.id} - ${metodo_pago}`
+
         console.log('📝 Insertando en transacciones:', {
           tipo: 'egreso',
           monto: total_con_impuestos || 0,
