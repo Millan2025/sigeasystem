@@ -38,6 +38,10 @@ export default function FinanzasPage() {
     impuestos: 0,
     retenciones: 0,
     desglosePagos: {} as Record<string, number>,
+    costo_ventas: 0,
+    gastos_operativos: 0,
+    utilidad_bruta: 0,
+    utilidad_neta: 0,
   });
   const [cuentasPorCobrar, setCuentasPorCobrar] = useState(0);
   const [cuentasPorPagar, setCuentasPorPagar] = useState(0);
@@ -78,7 +82,7 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
+      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {}, costo_ventas: 0, gastos_operativos: 0, utilidad_bruta: 0, utilidad_neta: 0 });
     }
 
     // 2. Cuentas por Cobrar (saldos pendientes de créditos)
@@ -622,6 +626,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
