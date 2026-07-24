@@ -51,7 +51,7 @@ export default function FinanzasPage() {
   const [editando, setEditando] = useState<any>(null);
   const [formTransaccion, setFormTransaccion] = useState({
     tipo: "ingreso",
-    monto: 0,
+    Subtotal: 0,
     categoria_contable_id: "",
     descripcion: "",
     fecha: new Date().toLocaleDateString("en-CA"),
@@ -141,7 +141,7 @@ export default function FinanzasPage() {
       setEditando(null);
       setFormTransaccion({
         tipo: "ingreso",
-        monto: 0,
+        Subtotal: 0,
         categoria_contable_id: "",
         descripcion: "",
         fecha: new Date().toLocaleDateString("en-CA"),
@@ -170,7 +170,7 @@ export default function FinanzasPage() {
     setEditando(t);
     setFormTransaccion({
       tipo: t.tipo,
-      monto: t.monto,
+      Subtotal: t.Subtotal,
       categoria_contable_id: t.categoria_contable_id || "",
       descripcion: t.descripcion || "",
       fecha: t.fecha,
@@ -312,7 +312,7 @@ export default function FinanzasPage() {
             setEditando(null);
             setFormTransaccion({
               tipo: "ingreso",
-              monto: 0,
+              Subtotal: 0,
               categoria_contable_id: "",
               descripcion: "",
               fecha: new Date().toLocaleDateString("en-CA"),
@@ -395,10 +395,10 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
             <h3 className="font-semibold text-stone-800 mb-2">Desglose por Método de Pago</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-              {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
+              {Object.entries(resumen.desglosePagos).map(([metodo, Subtotal]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
                   <p className="text-xs text-stone-500">{metodo}</p>
-                  <p className="text-sm font-bold text-stone-800">${monto.toLocaleString()}</p>
+                  <p className="text-sm font-bold text-stone-800">${Subtotal.toLocaleString()}</p>
                 </div>
               ))}
             </div>
@@ -434,41 +434,49 @@ export default function FinanzasPage() {
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-stone-50">
+                            <thead className="bg-stone-50">
                 <tr>
+                  <th className="text-left p-2 text-stone-700">#</th>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Tipo</th>
                   <th className="text-left p-2 text-stone-700">Categoría</th>
                   <th className="text-left p-2 text-stone-700">Descripción</th>
                   <th className="text-left p-2 text-stone-700">Método de Pago</th>
-                  <th className="text-left p-2 text-stone-700">Monto</th>
-                  <th className="text-left p-2 text-stone-700">Impuesto</th>
+                  <th className="text-left p-2 text-stone-700">Cantidad</th>
+                  <th className="text-left p-2 text-stone-700">Precio Unit.</th>
+                  <th className="text-left p-2 text-stone-700">Subtotal</th>
+                  <th className="text-left p-2 text-stone-700">IVA</th>
                   <th className="text-left p-2 text-stone-700">Retención</th>
+                  <th className="text-left p-2 text-stone-700">ICA</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
                   <th className="text-left p-2 text-stone-700">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {transacciones.map((t: any) => (
-                  <tr key={t.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
-                    <td className="p-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                        {t.tipo}
-                      </span>
-                    </td>
-                    <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
-                    <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
-                    <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
-                    <td className="p-2 text-stone-800 font-medium">${t.monto.toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.impuesto || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-800 font-bold">${(t.total_con_impuestos || t.monto).toLocaleString()}</td>
-                    <td className="p-2 flex gap-2">
-                      <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
-                      <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
-                    </td>
-                  </tr>
+                                  <tr key={t.id} className="border-b border-stone-100">
+                  <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
+                  <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
+                  <td className="p-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                      {t.tipo}
+                    </span>
+                  </td>
+                  <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
+                  <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
+                  <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
+                  <td className="p-2 text-stone-800 font-medium">{t.cantidad || 1}</td>
+                  <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario || 0).toLocaleString()}</td>
+                  <td className="p-2 text-stone-800 font-medium">${(t.subtotal || 0).toLocaleString()}</td>
+                  <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
+                  <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+                  <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+                  <td className="p-2 text-stone-800 font-bold">${(t.total || t.total_con_impuestos || 0).toLocaleString()}</td>
+                  <td className="p-2 flex gap-2">
+                    <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                    <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                  </td>
+                </tr>
                 ))}
                 {transacciones.length === 0 && <tr><td colSpan={10} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
               </tbody>
@@ -491,8 +499,8 @@ export default function FinanzasPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Monto</label>
-                <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+                <label className="block text-sm font-medium text-stone-700">Subtotal</label>
+                <input type="number" step="0.01" value={formTransaccion.Subtotal} onChange={(e) => setFormTransaccion({ ...formTransaccion, Subtotal: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Categoría contable</label>
@@ -614,6 +622,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
