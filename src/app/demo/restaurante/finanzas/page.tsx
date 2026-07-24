@@ -357,7 +357,7 @@ export default function FinanzasPage() {
 
       <div className="p-4 max-w-7xl mx-auto">
         {/* Resumen principal */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
             <p className="text-sm text-stone-500">Ingresos</p>
             <p className="text-2xl font-bold text-emerald-600">${resumen.ingresos.toLocaleString()}</p>
@@ -388,6 +388,39 @@ export default function FinanzasPage() {
             <p className="text-sm text-blue-700">Cuentas por Cobrar</p>
             <p className="text-2xl font-bold text-blue-600">${cuentasPorCobrar.toLocaleString()}</p>
           </div>
+          <div className="bg-orange-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
+            <p className="text-sm text-orange-700">Cuentas por Pagar</p>
+            <p className="text-2xl font-bold text-orange-600">${cuentasPorPagar.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Utilidades y Gastos Operativos */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-indigo-50 rounded-2xl p-4 shadow-sm border border-indigo-200 text-center">
+            <p className="text-sm text-indigo-700">Costo de Ventas</p>
+            <p className="text-2xl font-bold text-indigo-600">${resumen.costo_ventas?.toLocaleString() || 0}</p>
+          </div>
+          <div className="bg-purple-50 rounded-2xl p-4 shadow-sm border border-purple-200 text-center">
+            <p className="text-sm text-purple-700">Gastos Operativos</p>
+            <p className="text-2xl font-bold text-purple-600">${resumen.gastos_operativos?.toLocaleString() || 0}</p>
+          </div>
+          <div className="bg-emerald-50 rounded-2xl p-4 shadow-sm border border-emerald-200 text-center">
+            <p className="text-sm text-emerald-700">Utilidad Bruta</p>
+            <p className={`text-2xl font-bold ${resumen.utilidad_bruta >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              ${resumen.utilidad_bruta?.toLocaleString() || 0}
+            </p>
+          </div>
+          <div className="bg-blue-50 rounded-2xl p-4 shadow-sm border border-blue-200 text-center">
+            <p className="text-sm text-blue-700">Utilidad Neta</p>
+            <p className={`text-2xl font-bold ${resumen.utilidad_neta >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+              ${resumen.utilidad_neta?.toLocaleString() || 0}
+            </p>
+          </div>
+          <div className="bg-amber-50 rounded-2xl p-4 shadow-sm border border-amber-200 text-center flex flex-col items-center justify-center cursor-pointer hover:bg-amber-100 transition" onClick={() => setShowGastoModal(true)}>
+            <p className="text-sm text-amber-700">➕ Agregar Gasto</p>
+            <p className="text-xs text-amber-600 mt-1">Servicios, transportes, etc.</p>
+          </div>
+        </div>
           <div className="bg-orange-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
             <p className="text-sm text-orange-700">Cuentas por Pagar</p>
             <p className="text-2xl font-bold text-orange-600">${cuentasPorPagar.toLocaleString()}</p>
@@ -626,6 +659,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
