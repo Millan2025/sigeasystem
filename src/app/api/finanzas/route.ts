@@ -138,7 +138,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       data: expandedData,
-      resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos }
+      resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos, costo_ventas, gastos_operativos, utilidad_bruta, utilidad_neta }
     })
   } catch (error: any) {
     console.error('❌ Error GET /api/finanzas:', error)
@@ -253,6 +253,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
