@@ -188,27 +188,18 @@ export default function FinanzasPage() {
     }
         const data = transacciones.map((t: any) => ({
       "#": t.item || '',
-      Fecha: formatDate(t.fecha),
-      Tipo: t.tipo,
-      Categoría: t.categorias_contables?.nombre || '',
-      Descripción: t.descripcion || '',
+      "Fecha": formatDate(t.fecha),
+      "Tipo": t.tipo,
+      "Categoría": t.categorias_contables?.nombre || '',
+      "Descripción": t.descripcion || '',
       "Método de Pago": t.metodo_pago || '',
-      Cantidad: t.cantidad || 1,
+      "Cantidad": t.cantidad || 1,
       "Precio Unitario": t.precio_unitario || 0,
-      Subtotal: t.subtotal || 0,
-      IVA: t.iva || 0,
-      Retención: t.retencion || 0,
-      ICA: t.ica || 0,
-      Total: t.total || t.total_con_impuestos || 0,
-      Fecha: formatDate(t.fecha),
-      Tipo: t.tipo,
-      Categoría: t.categorias_contables?.nombre || "",
-      Descripción: t.descripcion || "",
-      "Método de Pago": t.metodo_pago || "",
-      Monto: t.monto,
-      Impuesto: t.impuesto || 0,
-      Retención: t.retencion || 0,
-      "Total con impuestos": t.total_con_impuestos || 0,
+      "Subtotal": t.subtotal || 0,
+      "IVA": t.iva || 0,
+      "Retención": t.retencion || 0,
+      "ICA": t.ica || 0,
+      "Total": t.total || t.total_con_impuestos || 0,
     }));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
@@ -460,28 +451,24 @@ export default function FinanzasPage() {
               <tbody>
                 {transacciones.map((t: any) => (
                   <tr key={t.id} className="border-b border-stone-100">
-                  <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
-                  <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
-                  <td className="p-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                      {t.tipo}
-                    </span>
-                  </td>
-                  <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
-                  <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
-                  <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
-                  <td className="p-2 text-stone-800 font-medium">{t.cantidad || 1}</td>
-                  <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario || 0).toLocaleString()}</td>
-                  <td className="p-2 text-stone-800 font-medium">${(t.subtotal || 0).toLocaleString()}</td>
-                  <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
-                  <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
-                  <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
-                  <td className="p-2 text-stone-800 font-bold">${(t.total || t.total_con_impuestos || 0).toLocaleString()}</td>
-                  <td className="p-2 flex gap-2">
-                    <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
-                    <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
-                  </td>
-                </tr>
+                    <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
+                    <td className="p-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                        {t.tipo}
+                      </span>
+                    </td>
+                    <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
+                    <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
+                    <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
+                    <td className="p-2 text-stone-800 font-medium">${t.monto.toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">${(t.impuesto || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-800 font-bold">${(t.total_con_impuestos || t.monto).toLocaleString()}</td>
+                    <td className="p-2 flex gap-2">
+                      <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                      <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                    </td>
+                  </tr>
                 ))}
                 {transacciones.length === 0 && <tr><td colSpan={10} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
               </tbody>
