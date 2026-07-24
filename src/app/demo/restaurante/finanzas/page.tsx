@@ -43,10 +43,10 @@ export default function FinanzasPage() {
   const [cuentasPorPagar, setCuentasPorPagar] = useState(0);
   const [loading, setLoading] = useState(true);
   const [categorias, setCategorias] = useState<any[]>([]);
-  const [periodos, setPeriodos] = useState<any[]>([]);
+  
   const [showModalTransaccion, setShowImportModalTransaccion] = useState(false);
   const [showModalCategoria, setShowImportModalCategoria] = useState(false);
-  const [showModalPeriodo, setShowImportModalPeriodo] = useState(false);
+  
   const [filtros, setFiltros] = useState({ start: "", end: "", tipo: "", categoria: "", periodo: "" });
   const [editando, setEditando] = useState<any>(null);
   const [formTransaccion, setFormTransaccion] = useState({
@@ -60,7 +60,7 @@ export default function FinanzasPage() {
     metodo_pago: "",
   });
   const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
-  const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
+  
 
   
 
@@ -107,14 +107,7 @@ export default function FinanzasPage() {
       setCuentasPorPagar(0);
     }
 
-    // 4. Categorías y períodos
-    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
-    const catData = await catRes.json();
-    if (catData.success) setCategorias(catData.data || []);
-
-    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
-    const perData = await perRes.json();
-    if (perData.success) setPeriodos(perData.data || []);
+    
 
     setLoading(false);
   };
@@ -220,79 +213,9 @@ export default function FinanzasPage() {
     }
   };
 
-  const crearPeriodo = async () => {
-    const res = await fetch("/api/periodos-fiscales", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...formPeriodo, tenant_id: tenantId }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
-      cargarDatos();
-      alert("Período creado");
-    } else {
-      alert(data.error);
-    }
-  };
+  
 
-  const generarPeriodosAutomaticos = (tipo: string) => {
-    const year = new Date().getFullYear();
-    let periodos = [];
-    if (tipo === "bimestral") {
-      for (let i = 0; i < 6; i++) {
-        const start = new Date(year, i * 2, 1);
-        const end = new Date(year, i * 2 + 2, 1);
-        end.setDate(end.getDate() - 1);
-        periodos.push({
-          nombre: `Bimestre ${i+1} - ${year}`,
-          fecha_inicio: start.toISOString().split('T')[0],
-          fecha_fin: end.toISOString().split('T')[0],
-          tipo: "bimestral",
-        });
-      }
-    } else if (tipo === "trimestral") {
-      for (let i = 0; i < 4; i++) {
-        const start = new Date(year, i * 3, 1);
-        const end = new Date(year, i * 3 + 3, 1);
-        end.setDate(end.getDate() - 1);
-        periodos.push({
-          nombre: `Trimestre ${i+1} - ${year}`,
-          fecha_inicio: start.toISOString().split('T')[0],
-          fecha_fin: end.toISOString().split('T')[0],
-          tipo: "trimestral",
-        });
-      }
-    } else if (tipo === "semestral") {
-      for (let i = 0; i < 2; i++) {
-        const start = new Date(year, i * 6, 1);
-        const end = new Date(year, i * 6 + 6, 1);
-        end.setDate(end.getDate() - 1);
-        periodos.push({
-          nombre: `Semestre ${i+1} - ${year}`,
-          fecha_inicio: start.toISOString().split('T')[0],
-          fecha_fin: end.toISOString().split('T')[0],
-          tipo: "semestral",
-        });
-      }
-    } else if (tipo === "anual") {
-      periodos.push({
-        nombre: `Año ${year}`,
-        fecha_inicio: `${year}-01-01`,
-        fecha_fin: `${year}-12-31`,
-        tipo: "anual",
-      });
-    }
-    periodos.forEach(async (p) => {
-      await fetch("/api/periodos-fiscales", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...p, tenant_id: tenantId, cerrado: false }),
-      });
-    });
-    cargarDatos();
-    alert(`Períodos ${tipo} generados correctamente`);
-  };
+  
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -418,10 +341,7 @@ export default function FinanzasPage() {
               <option value="">Todas las categorías</option>
               {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
             </select>
-            <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todos los períodos</option>
-              {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
-            </select>
+            
           </div>
         </div>
 
@@ -575,49 +495,11 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* Modal Períodos */}
-      {showModalPeriodo && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">Períodos Fiscales</h3>
-              <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
-            </div>
-            <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
-              {periodos.map((p: any) => (
-                <div key={p.id} className="flex justify-between border-b py-1 text-sm">
-                  <span className="text-stone-800">{p.nombre}</span>
-                  <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
-                </div>
-              ))}
-              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay períodos.</p>}
-            </div>
-            <div>
-              <h4 className="font-medium text-stone-700 mb-2">Generar períodos automáticos</h4>
-              <div className="flex flex-wrap gap-2">
-                <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
-                <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
-                <button onClick={() => generarPeriodosAutomaticos("semestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Semestres</button>
-                <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
-              </div>
-              <div className="mt-4 border-t pt-4">
-                <h4 className="font-medium text-stone-700 mb-2">Crear período manual</h4>
-                <div className="space-y-2">
-                  <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <div className="flex gap-2">
-                    <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                    <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  </div>
-                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear Período</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }
+
 
 
 
