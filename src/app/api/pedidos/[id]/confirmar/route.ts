@@ -7,12 +7,12 @@ const supabase = createClient(
 )
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
-    const body = await request.json()
+    const { id } = await params
+    const body = await req.json()
     const { metodo_pago } = body
 
     // 1. Obtener el pedido
