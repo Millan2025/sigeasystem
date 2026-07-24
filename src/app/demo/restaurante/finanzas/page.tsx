@@ -253,13 +253,7 @@ export default function FinanzasPage() {
         >
           <BookOpen className="w-4 h-4" /> Categorías
         </button>
-        <button
-          onClick={() => setShowImportModalPeriodo(true)}
-          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Períodos fiscales"
-        >
-          <Calendar className="w-4 h-4" /> Períodos
-        </button>
+        
         <button
           onClick={exportarExcel}
           className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
@@ -499,6 +493,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
