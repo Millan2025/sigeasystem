@@ -48,7 +48,6 @@ export async function GET(request: Request) {
 
     for (const t of data || []) {
       if (t.referencia_tipo === 'compra' && t.referencia_id) {
-        // Obtener items de la compra
         const { data: items, error: itemsErr } = await supabase
           .from('compra_items')
           .select('*, productos(id, nombre)')
@@ -56,7 +55,6 @@ export async function GET(request: Request) {
 
         if (itemsErr) {
           console.error('Error al obtener items de compra:', itemsErr)
-          // Si falla, mostrar la transacción original sin expandir
           expandedData.push({
             ...t,
             cantidad: 1,
@@ -71,7 +69,6 @@ export async function GET(request: Request) {
         }
 
         if (items && items.length > 0) {
-          // Calcular proporciones para distribuir impuestos
           const subtotalTotal = items.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0)
           const ivaTotal = t.impuesto || 0
           const retencionTotal = t.retencion || 0
@@ -95,7 +92,6 @@ export async function GET(request: Request) {
             })
           }
         } else {
-          // Sin items, mostrar transacción original
           expandedData.push({
             ...t,
             cantidad: 1,
@@ -108,7 +104,6 @@ export async function GET(request: Request) {
           })
         }
       } else {
-        // Transacciones no compra
         expandedData.push({
           ...t,
           cantidad: 1,
@@ -122,7 +117,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // Recalcular resumen sobre los datos expandidos
+    // Calcular resumen básico
     const ingresos = expandedData.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
     const egresos = expandedData.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
     const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0)
@@ -135,10 +130,43 @@ export async function GET(request: Request) {
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || 0)
     })
 
+    // 🔥 NUEVO: Calcular costo de ventas (egresos de Compras)
+    const costo_ventas = expandedData
+      .filter(t => t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras')
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
+
+    // 🔥 Obtener gastos operativos desde la tabla gastos_operativos
+    let gastos_operativos = 0
+    try {
+      const { data: gastosData, error: gastosErr } = await supabase
+        .from('gastos_operativos')
+        .select('monto')
+        .eq('tenant_id', tenantId)
+      if (!gastosErr && gastosData) {
+        gastos_operativos = gastosData.reduce((sum, g) => sum + (g.monto || 0), 0)
+      }
+    } catch (e) {
+      console.error('Error al obtener gastos operativos:', e)
+    }
+
+    const utilidad_bruta = ingresos - costo_ventas
+    const utilidad_neta = utilidad_bruta - gastos_operativos
+
     return NextResponse.json({
       success: true,
       data: expandedData,
-      resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos, costo_ventas, gastos_operativos, utilidad_bruta, utilidad_neta }
+      resumen: {
+        ingresos,
+        egresos,
+        saldo,
+        impuestos,
+        retenciones,
+        desglosePagos,
+        costo_ventas,
+        gastos_operativos,
+        utilidad_bruta,
+        utilidad_neta
+      }
     })
   } catch (error: any) {
     console.error('❌ Error GET /api/finanzas:', error)
@@ -253,6 +281,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
