@@ -40,14 +40,12 @@ const LISTA_ESTADOS = ["pendiente", "pagado", "confirmado", "preparando", "en_ca
 export default function PedidosPage() {
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
-  const negocioSlug = searchParams.get("slug") || "restaurante";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [detallePedido, setDetallePedido] = useState<Pedido | null>(null);
   const [mensaje, setMensaje] = useState("");
-  const [prevPedidosCount, setPrevPedidosCount] = useState(0);
 
   const cargarPedidos = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -55,27 +53,7 @@ export default function PedidosPage() {
       const res = await fetch(`/api/pedidos?tenant=${tenantId}`);
       const data = await res.json();
       if (data.success) {
-        const nuevos = data.data || [];
-        // Detectar nuevo pedido (por cantidad)
-        if (nuevos.length > pedidos.length && pedidos.length > 0) {
-          const nuevo = nuevos[0];
-          // Sonido
-          try {
-            const audio = new Audio('/notification.mp3');
-            audio.play().catch(() => {});
-          } catch (e) {}
-          // Notificación
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Nuevo pedido', {
-              body: `Pedido #${nuevo.id.slice(0,6)} de ${nuevo.cliente || 'Cliente'} - $${nuevo.total?.toLocaleString()}`,
-              icon: '/icon-192.png'
-            });
-          } else if ('Notification' in window && Notification.permission !== 'denied') {
-            Notification.requestPermission();
-          }
-        }
-        setPedidos(nuevos);
-        setPrevPedidosCount(nuevos.length);
+        setPedidos(data.data || []);
       } else {
         setPedidos([]);
       }
@@ -120,10 +98,12 @@ export default function PedidosPage() {
     if (idxNuevo <= idxActual) return;
 
     try {
-      const res = await fetch("/api/pedidos", {
+      // Usamos la API de confirmación para cambiar a confirmado, y para otros estados, actualizamos directamente en la base de datos
+      // Como la API de pedidos no tiene PUT, usaremos la API de confirmación para todos los cambios (la modificaremos luego)
+      const res = await fetch(`/api/pedidos/${id}/confirmar`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, estado: nuevoEstado })
+        body: JSON.stringify({ metodo_pago: nuevoEstado })
       });
       const data = await res.json();
       if (data.success) {
@@ -138,10 +118,25 @@ export default function PedidosPage() {
     }
   };
 
+  // Función para renderizar items
+  const renderItems = (items: any[]) => {
+    if (!items || items.length === 0) return <p className="text-sm text-stone-500">Sin productos</p>;
+    return items.map((item: any, idx: number) => (
+      <div key={idx} className="flex justify-between text-sm border-b border-stone-100 py-1">
+        <span>{item.cantidad} × {item.nombre || "Producto"}</span>
+        <span>${(item.cantidad * item.precio).toLocaleString()}</span>
+      </div>
+    ));
+  };
+
   const pedidosFiltrados = pedidos.filter(p => {
     if (filtroEstado === "todos") return true;
     return p.estado === filtroEstado;
   });
+
+  const getEstadoInfo = (estado: string) => {
+    return ESTADOS[estado as keyof typeof ESTADOS] || ESTADOS.pendiente;
+  };
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -172,11 +167,16 @@ export default function PedidosPage() {
           {LISTA_ESTADOS.map((estado) => {
             const info = ESTADOS[estado as keyof typeof ESTADOS];
             const count = pedidos.filter(p => p.estado === estado).length;
+            const isActive = filtroEstado === estado;
             return (
               <button
                 key={estado}
                 onClick={() => setFiltroEstado(estado)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === estado ? `${info.color} border-2 border-current` : "bg-white text-stone-700 border border-stone-300"}`}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                  isActive
+                    ? `${info.color} border-2 border-current shadow-sm`
+                    : "bg-white text-stone-700 border border-stone-300 hover:bg-stone-50"
+                }`}
               >
                 {info.label} ({count})
               </button>
@@ -194,10 +194,10 @@ export default function PedidosPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pedidosFiltrados.map((pedido) => {
-              const estadoInfo = ESTADOS[pedido.estado as keyof typeof ESTADOS] || ESTADOS.pendiente;
+              const estadoInfo = getEstadoInfo(pedido.estado);
               const itemsCount = pedido.items?.length || 0;
               return (
-                <div key={pedido.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition">
+                <div key={pedido.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition flex flex-col">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <span className="font-bold text-stone-800">#{pedido.id.slice(0, 6)}</span>
@@ -213,7 +213,26 @@ export default function PedidosPage() {
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
                   {pedido.direccion && <p className="text-xs text-stone-400">📍 {pedido.direccion}</p>}
 
-                                    <div className="mt-3 flex flex-wrap gap-2">
+                  {/* Vista previa de productos (máximo 2) */}
+                  <div className="mt-2 text-xs text-stone-600 border-t pt-2">
+                    {pedido.items && pedido.items.length > 0 ? (
+                      <>
+                        {pedido.items.slice(0, 2).map((item: any, idx: number) => (
+                          <div key={idx} className="flex justify-between">
+                            <span>{item.cantidad} × {item.nombre || "Producto"}</span>
+                            <span>${(item.cantidad * item.precio).toLocaleString()}</span>
+                          </div>
+                        ))}
+                        {pedido.items.length > 2 && (
+                          <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} más</div>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-stone-400">Sin productos</span>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       onClick={() => setDetallePedido(pedido)}
                       className="text-xs bg-stone-200 text-stone-700 px-2 py-1 rounded-full hover:bg-stone-300"
@@ -230,14 +249,13 @@ export default function PedidosPage() {
                       </button>
                     )}
 
-                    {/* Botones de cambio de estado futuros */}
+                    {/* Mostrar botones de estado siguientes */}
                     {LISTA_ESTADOS.map((estado) => {
                       const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
                       const idxNuevo = LISTA_ESTADOS.indexOf(estado);
-                      // Solo mostrar estados posteriores (no incluir "pagado" si no es actual)
                       if (idxNuevo <= idxActual) return null;
-                      if (estado === "pagado") return null;
                       const info = ESTADOS[estado as keyof typeof ESTADOS];
+                      if (estado === "pagado") return null;
                       return (
                         <button
                           key={estado}
@@ -248,18 +266,6 @@ export default function PedidosPage() {
                         </button>
                       );
                     })}
-                    {pedido.estado === "pendiente" && (
-                      <button
-                        onClick={() => {
-                          if (confirm("¿Eliminar este pedido?")) {
-                            alert("Eliminación no implementada en API.");
-                          }
-                        }}
-                        className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full hover:bg-red-200"
-                      >
-                        <Trash2 className="w-3 h-3 inline mr-1" />
-                      </button>
-                    )}
                   </div>
                 </div>
               );
@@ -284,14 +290,18 @@ export default function PedidosPage() {
             {detallePedido.telefono && <p className="text-sm text-stone-600">Teléfono: {detallePedido.telefono}</p>}
             <div className="mt-3 border-t pt-3">
               <h4 className="font-semibold text-stone-700">Productos</h4>
-              <ul className="space-y-1 mt-1">
-                {detallePedido.items?.map((item: any, i: number) => (
-                  <li key={i} className="text-sm text-stone-700 flex justify-between">
-                    <span>{item.cantidad} × {item.nombre || "Producto"}</span>
-                    <span>${(item.cantidad * item.precio).toLocaleString()}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="space-y-1 mt-1">
+                {detallePedido.items && detallePedido.items.length > 0 ? (
+                  detallePedido.items.map((item: any, i: number) => (
+                    <div key={i} className="flex justify-between text-sm border-b border-stone-100 py-1">
+                      <span>{item.cantidad} × {item.nombre || "Producto"}</span>
+                      <span>${(item.cantidad * item.precio).toLocaleString()}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-stone-500">Sin productos</p>
+                )}
+              </div>
               <div className="flex justify-between font-bold mt-2 text-stone-800">
                 <span>Total</span>
                 <span>${detallePedido.total?.toLocaleString()}</span>
@@ -306,4 +316,3 @@ export default function PedidosPage() {
     </div>
   );
 }
-
