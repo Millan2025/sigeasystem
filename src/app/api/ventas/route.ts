@@ -92,7 +92,7 @@ export async function POST(request: Request) {
       console.warn('⚠️ Error en items:', e)
     }
 
-        // 3. Descontar stock (movimientos de salida)
+            // 3. Descontar stock (movimientos de salida)
     for (const item of items) {
       console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad);
 
@@ -105,8 +105,66 @@ export async function POST(request: Request) {
         .single();
 
       if (prodErr) {
-        console.error('❌ Producto no encontrado o error:', prodErr);
+        console.error('❌ Error al buscar producto:', prodErr);
         continue;
+      }
+      if (!producto) {
+        console.warn('⚠️ Producto no existe, saltando...');
+        continue;
+      }
+      console.log('✅ Producto encontrado, stock actual:', producto.stock);
+
+      // 2. Insertar movimiento de salida
+      const { data: movData, error: movErr } = await supabase
+        .from('movimientos_inventario')
+        .insert({
+          producto_id: item.producto_id,
+          tipo: 'salida',
+          cantidad: item.cantidad,
+          motivo: `Venta #${venta.id}`,
+          tenant_id,
+          created_at: new Date().toISOString()
+        })
+        .select();
+
+      if (movErr) {
+        console.error('❌ Error al insertar movimiento:', movErr);
+        continue;
+      }
+      console.log('✅ Movimiento insertado:', movData);
+
+      // 3. Recalcular stock (sumar todas las entradas y restar salidas)
+      const { data: movs, error: movsErr } = await supabase
+        .from('movimientos_inventario')
+        .select('tipo, cantidad')
+        .eq('producto_id', item.producto_id)
+        .eq('tenant_id', tenant_id);
+
+      if (movsErr) {
+        console.error('❌ Error al obtener movimientos:', movsErr);
+        continue;
+      }
+
+      let nuevoStock = 0;
+      movs?.forEach(m => {
+        nuevoStock += m.tipo === 'entrada' ? Number(m.cantidad) : -Number(m.cantidad);
+      });
+      console.log('📊 Nuevo stock calculado:', nuevoStock);
+
+      // 4. Actualizar stock en productos
+      const { error: updateErr } = await supabase
+        .from('productos')
+        .update({ stock: nuevoStock })
+        .eq('id', item.producto_id)
+        .eq('tenant_id', tenant_id);
+
+      if (updateErr) {
+        console.error('❌ Error al actualizar stock:', updateErr);
+      } else {
+        console.log('✅ Stock actualizado correctamente. Nuevo stock:', nuevoStock);
+      }
+    }
+    console.log('✅ Stock actualizado');
       }
       if (!producto) {
         console.warn('⚠️ Producto no existe, saltando...');
@@ -270,6 +328,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
