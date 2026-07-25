@@ -143,7 +143,7 @@ export default function TiendaPage() {
                          `Método de pago: ${checkoutData.metodo_pago}%0A` +
                          `Total: $${totalCarrito.toLocaleString()}%0A` +
                          `Productos: ${carrito.map(i => `${i.nombre} x${i.cantidad}`).join(", ")}%0A%0A` +
-                         `Confirma el pedido desde: ${window.location.origin}/admin`;
+                         `Confirma el pedido desde: ${window.location.origin}/demo/${negocioSlug}/pedidos?tenant=${tenantId}&pedido=${pedidoId}`;
         if (whatsapp) {
           window.open(`https://wa.me/${whatsapp}?text=${mensajeWA}`, "_blank");
         }
@@ -267,4 +267,5 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
