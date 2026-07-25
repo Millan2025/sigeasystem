@@ -90,13 +90,11 @@ export default function TiendaPage() {
 
   const totalCarrito = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
-  const finalizarPedido = async () => {
+    const finalizarPedido = async () => {
     if (carrito.length === 0) {
       alert("Carrito vacío");
       return;
     }
-
-    
 
     const items = carrito.map(item => ({
       producto_id: item.id,
@@ -123,19 +121,6 @@ export default function TiendaPage() {
       if (data.success) {
         const pedidoId = data.data.id;
         setMensaje("✅ Pedido #" + pedidoId + " registrado con éxito.");
-
-        const mensajeWA = `Nuevo pedido #${pedidoId}%0A` +
-                         `Cliente: ${checkoutData.nombre}%0A` +
-                         `Dirección: ${checkoutData.direccion}%0A` +
-                         `Teléfono: ${checkoutData.telefono}%0A` +
-                         `Método de pago: ${checkoutData.metodo_pago}%0A` +
-                         `Total: $${totalCarrito.toLocaleString()}%0A` +
-                         `Productos: ${carrito.map(i => `${i.nombre} x${i.cantidad}`).join(", ")}%0A%0A` +
-                         `Confirma el pedido desde: ${window.location.origin}/demo/${negocioSlug}/pedidos?tenant=${tenantId}&pedido=${pedidoId}`;
-        if (whatsapp) {
-          
-        }
-
         setCarrito([]);
         setShowCart(false);
         setCheckoutData({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
@@ -255,6 +240,7 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 
 
