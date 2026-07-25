@@ -163,7 +163,7 @@ const pay = async (metodo: string) => {
 
     try {
       const items = cart.map((item) => {
-        const producto_id = item.id.includes("-") ? item.id.split("-")[0] : item.id;
+        const producto_id = item.id;
         return {
           producto_id,
           cantidad: item.cantidad,
@@ -559,6 +559,7 @@ const pay = async (metodo: string) => {
     </div>
   );
 }
+
 
 
 
