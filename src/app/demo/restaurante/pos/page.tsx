@@ -152,9 +152,9 @@ export default function POSPage() {
     setPesoModal({ producto: null, cantidad: 1, unidad: "gramos" });
   };
 
-  const pay = async (metodo: string) => {
-	console.log('🎯 pay called with metodo:', metodo);    
-	if (cart.length === 0) return;
+const pay = async (metodo: string) => {
+    console.log('🎯 pay called with metodo:', metodo);
+    if (cart.length === 0) return;
 
     if (metodo === "Crédito") {
       setShowCreditoModal(true);
@@ -172,12 +172,18 @@ export default function POSPage() {
         };
       });
 
+      console.log("📤 Enviando fetch a /api/ventas con body:", {
+        tenant_id: tenantId,
+        metodo_pago: metodo,
+        total: totalPrecio,
+        items
+      });
+
       const res = await fetch("/api/ventas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-        console.log("📤 Enviando fetch a /api/ventas con body:", {
-	  tenant_id: tenantId,
+          tenant_id: tenantId,
           metodo_pago: metodo,
           total: totalPrecio,
           items,
