@@ -153,7 +153,8 @@ export default function POSPage() {
   };
 
   const pay = async (metodo: string) => {
-    if (cart.length === 0) return;
+	console.log('🎯 pay called with metodo:', metodo);    
+	if (cart.length === 0) return;
 
     if (metodo === "Crédito") {
       setShowCreditoModal(true);
@@ -175,7 +176,8 @@ export default function POSPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tenant_id: tenantId,
+        console.log("📤 Enviando fetch a /api/ventas con body:", {
+	  tenant_id: tenantId,
           metodo_pago: metodo,
           total: totalPrecio,
           items,
