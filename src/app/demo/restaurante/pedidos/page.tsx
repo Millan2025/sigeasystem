@@ -213,7 +213,7 @@ export default function PedidosPage() {
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
                   {pedido.direccion && <p className="text-xs text-stone-400">📍 {pedido.direccion}</p>}
 
-                  <div className="mt-3 flex flex-wrap gap-2">
+                                    <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       onClick={() => setDetallePedido(pedido)}
                       className="text-xs bg-stone-200 text-stone-700 px-2 py-1 rounded-full hover:bg-stone-300"
@@ -230,12 +230,14 @@ export default function PedidosPage() {
                       </button>
                     )}
 
+                    {/* Botones de cambio de estado futuros */}
                     {LISTA_ESTADOS.map((estado) => {
                       const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
                       const idxNuevo = LISTA_ESTADOS.indexOf(estado);
+                      // Solo mostrar estados posteriores (no incluir "pagado" si no es actual)
                       if (idxNuevo <= idxActual) return null;
+                      if (estado === "pagado") return null;
                       const info = ESTADOS[estado as keyof typeof ESTADOS];
-                      if (estado === "pagado") return null; // no mostramos "pagado" como botón
                       return (
                         <button
                           key={estado}
@@ -250,7 +252,6 @@ export default function PedidosPage() {
                       <button
                         onClick={() => {
                           if (confirm("¿Eliminar este pedido?")) {
-                            // No implementado; solo aviso
                             alert("Eliminación no implementada en API.");
                           }
                         }}
@@ -305,3 +306,4 @@ export default function PedidosPage() {
     </div>
   );
 }
+
