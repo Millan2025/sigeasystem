@@ -96,19 +96,7 @@ export default function TiendaPage() {
       return;
     }
 
-    // Obtener WhatsApp del dueño
-    let whatsapp = "";
-    try {
-      const resConfig = await fetch(`/api/tenant-config?tenant=${tenantId}`);
-      const dataConfig = await resConfig.json();
-      if (dataConfig.success && dataConfig.data?.whatsapp) {
-        whatsapp = dataConfig.data.whatsapp;
-      } else {
-        whatsapp = process.env.NEXT_PUBLIC_WA_DUENO || "";
-      }
-    } catch (e) {
-      console.warn("No se pudo obtener WhatsApp:", e);
-    }
+    
 
     const items = carrito.map(item => ({
       producto_id: item.id,
@@ -145,7 +133,7 @@ export default function TiendaPage() {
                          `Productos: ${carrito.map(i => `${i.nombre} x${i.cantidad}`).join(", ")}%0A%0A` +
                          `Confirma el pedido desde: ${window.location.origin}/demo/${negocioSlug}/pedidos?tenant=${tenantId}&pedido=${pedidoId}`;
         if (whatsapp) {
-          window.open(`https://wa.me/${whatsapp}?text=${mensajeWA}`, "_blank");
+          
         }
 
         setCarrito([]);
@@ -267,6 +255,7 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 
 
