@@ -110,7 +110,11 @@ export default function InventarioPage() {
 
   useEffect(() => {
     cargarDatos();
-  }, [tenantId]);
+    const interval = setInterval(() => {
+        cargarDatos();
+    }, 15000);
+    return () => clearInterval(interval);
+}, [tenantId]);
 
   const registrarMovimiento = async () => {
     const res = await fetch("/api/inventory", {
@@ -888,3 +892,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+
