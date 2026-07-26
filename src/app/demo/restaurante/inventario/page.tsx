@@ -120,9 +120,22 @@ export default function InventarioPage() {
   // Carga inicial y polling cada 10 segundos
   useEffect(() => {
     cargarDatos(true);
-    const interval = setInterval(() => { cargarDatos(false); }, 3000);
-    return () => clearInterval(interval);
-  }, [tenantId]);
+    console.log('🔄 Inventario: Iniciando polling cada 3 segundos');
+    const interval = setInterval(() => {
+        console.log('🔄 Inventario: Polling ejecutado');
+        cargarDatos(false);
+    }, 3000);
+    // Escuchar evento de actualización desde pedidos
+    const handleInventoryUpdate = (event: CustomEvent) => {
+        console.log('🔄 Inventario: Evento inventory-updated recibido', event.detail);
+        cargarDatos(false);
+    };
+    window.addEventListener('inventory-updated', handleInventoryUpdate as EventListener);
+    return () => {
+        clearInterval(interval);
+        window.removeEventListener('inventory-updated', handleInventoryUpdate as EventListener);
+    };
+}, [tenantId]);
 
   const registrarMovimiento = async () => {
     const res = await fetch("/api/inventory", {
@@ -903,4 +916,5 @@ export default function InventarioPage() {
     </div>
   );
 }
+
 
