@@ -15,15 +15,15 @@ export async function PUT(
     const body = await req.json()
     const { metodo_pago } = body
 
-    // 1. Obtener el pedido
+    // 1. Obtener pedido
     const { data: pedido, error: getErr } = await supabase
       .from('pedidos')
       .select('*')
       .eq('id', id)
       .single()
     if (getErr) throw getErr
-    if (pedido.estado !== 'pendiente') {
-      return NextResponse.json({ success: false, error: 'El pedido ya fue procesado' }, { status: 400 })
+    if (pedido.estado !== 'pagado') {
+      return NextResponse.json({ success: false, error: 'El pedido no está en estado "pagado"' }, { status: 400 })
     }
 
     const tenant_id = pedido.tenant_id
@@ -63,14 +63,15 @@ export async function PUT(
         })
     }
 
-    // 3. Crear venta
+    // 3. Crear venta (sin columna 'estado')
     const { data: venta, error: ventaErr } = await supabase
       .from('ventas')
       .insert({
         tenant_id,
         total,
         metodo_pago: pago,
-        estado: 'completada',
+        cliente: pedido.cliente,
+        fecha: new Date().toISOString().split('T')[0],
         created_at: new Date().toISOString()
       })
       .select()
@@ -87,55 +88,31 @@ export async function PUT(
       })
       .eq('id', id)
 
-    // 5. Si es Crédito
-    if (pago === 'Crédito') {
-      const { data: credito, error: credErr } = await supabase
-        .from('creditos')
-        .select('id, saldo_pendiente, valor_pagado')
-        .eq('tenant_id', tenant_id)
-        .eq('cliente', pedido.cliente)
-        .eq('estado', 'pendiente')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
+    // 5. Registrar en finanzas
+    const { data: categoria, error: catErr } = await supabase
+      .from('categorias_contables')
+      .select('id')
+      .eq('codigo', '4-01-01')
+      .eq('tenant_id', tenant_id)
+      .single()
 
-      if (!credErr && credito) {
-        const nuevoSaldo = credito.saldo_pendiente - total
-        await supabase
-          .from('creditos')
-          .update({
-            valor_pagado: (credito.valor_pagado || 0) + total,
-            saldo_pendiente: nuevoSaldo,
-            estado: nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
-          })
-          .eq('id', credito.id)
-      }
-
-      const { data: categoria, error: catErr } = await supabase
-        .from('categorias_contables')
-        .select('id')
-        .eq('codigo', '1-01-01')
-        .eq('tenant_id', tenant_id)
-        .single()
-
-      if (!catErr && categoria) {
-        await supabase
-          .from('transacciones')
-          .insert({
-            tipo: 'ingreso',
-            monto: total,
-            categoria_contable_id: categoria.id,
-            descripcion: `Pedido #${id} (Crédito confirmado)`,
-            fecha: new Date().toISOString().split('T')[0],
-            impuesto: 0,
-            retencion: 0,
-            total_con_impuestos: total,
-            metodo_pago: 'Crédito',
-            tenant_id,
-            referencia_id: venta.id,
-            referencia_tipo: 'venta'
-          })
-      }
+    if (!catErr && categoria) {
+      await supabase
+        .from('transacciones')
+        .insert({
+          tipo: 'ingreso',
+          monto: total,
+          categoria_contable_id: categoria.id,
+          descripcion: `Pedido #${id} (${pago})`,
+          fecha: new Date().toISOString().split('T')[0],
+          impuesto: 0,
+          retencion: 0,
+          total_con_impuestos: total,
+          metodo_pago: pago,
+          tenant_id,
+          referencia_id: venta.id,
+          referencia_tipo: 'venta'
+        })
     }
 
     return NextResponse.json({ success: true, data: venta })
