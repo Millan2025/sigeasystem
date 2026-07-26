@@ -1,18 +1,16 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
-import {
-  RefreshCw,
-  Eye,
-  ShoppingBag,
-  X,
-  CheckCircle,
-  Clock,
-  Truck,
-  Trash2
-} from "lucide-react";
+import { RefreshCw, Eye, ShoppingBag, X, CheckCircle, Trash2 } from "lucide-react";
+
+interface PedidoItem {
+  producto_id: string;
+  cantidad: number;
+  precio: number;
+  nombre: string;
+}
 
 interface Pedido {
   id: string;
@@ -20,10 +18,11 @@ interface Pedido {
   total: number;
   metodo_pago: string;
   estado: string;
-  items: any[];
+  items: PedidoItem[];
   created_at: string;
   direccion?: string;
   telefono?: string;
+  observaciones?: string;
 }
 
 const ESTADOS = {
@@ -52,11 +51,8 @@ export default function PedidosPage() {
     try {
       const res = await fetch(`/api/pedidos?tenant=${tenantId}`);
       const data = await res.json();
-      if (data.success) {
-        setPedidos(data.data || []);
-      } else {
-        setPedidos([]);
-      }
+      if (data.success) setPedidos(data.data || []);
+      else setPedidos([]);
     } catch (e) {
       setPedidos([]);
     }
@@ -68,6 +64,32 @@ export default function PedidosPage() {
     const interval = setInterval(() => cargarPedidos(false), 10000);
     return () => clearInterval(interval);
   }, [tenantId]);
+
+  const cambiarEstado = async (id: string, nuevoEstado: string) => {
+    const pedido = pedidos.find(p => p.id === id);
+    if (!pedido) return;
+    const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
+    const idxNuevo = LISTA_ESTADOS.indexOf(nuevoEstado);
+    if (idxNuevo <= idxActual) return;
+
+    try {
+      const res = await fetch("/api/pedidos", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, estado: nuevoEstado })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje(`✅ Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
+        setTimeout(() => setMensaje(""), 5000);
+        cargarPedidos(true);
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+  };
 
   const confirmarPedido = async (id: string) => {
     if (!confirm("¿Confirmar este pedido? Se descontará stock y se registrará en finanzas.")) return;
@@ -90,43 +112,8 @@ export default function PedidosPage() {
     }
   };
 
-  const cambiarEstado = async (id: string, nuevoEstado: string) => {
-    const pedido = pedidos.find(p => p.id === id);
-    if (!pedido) return;
-    const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
-    const idxNuevo = LISTA_ESTADOS.indexOf(nuevoEstado);
-    if (idxNuevo <= idxActual) return;
-
-    try {
-      // Usamos la API de confirmación para cambiar a confirmado, y para otros estados, actualizamos directamente en la base de datos
-      // Como la API de pedidos no tiene PUT, usaremos la API de confirmación para todos los cambios (la modificaremos luego)
-      const res = await fetch(`/api/pedidos/${id}/confirmar`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ metodo_pago: nuevoEstado })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMensaje(`✅ Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
-        setTimeout(() => setMensaje(""), 5000);
-        cargarPedidos(true);
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (e) {
-      alert("Error de conexión");
-    }
-  };
-
-  // Función para renderizar items
-  const renderItems = (items: any[]) => {
-    if (!items || items.length === 0) return <p className="text-sm text-stone-500">Sin productos</p>;
-    return items.map((item: any, idx: number) => (
-      <div key={idx} className="flex justify-between text-sm border-b border-stone-100 py-1">
-        <span>{item.cantidad} × {item.nombre || "Producto"}</span>
-        <span>${(item.cantidad * item.precio).toLocaleString()}</span>
-      </div>
-    ));
+  const getEstadoInfo = (estado: string) => {
+    return ESTADOS[estado as keyof typeof ESTADOS] || ESTADOS.pendiente;
   };
 
   const pedidosFiltrados = pedidos.filter(p => {
@@ -134,20 +121,14 @@ export default function PedidosPage() {
     return p.estado === filtroEstado;
   });
 
-  const getEstadoInfo = (estado: string) => {
-    return ESTADOS[estado as keyof typeof ESTADOS] || ESTADOS.pendiente;
-  };
-
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
         <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={() => cargarPedidos(true)} className="p-2 hover:bg-stone-100 rounded-xl">
-            <RefreshCw className="w-5 h-5 text-stone-700" />
-          </button>
-        </div>
+        <button onClick={() => cargarPedidos(true)} className="p-2 hover:bg-stone-100 rounded-xl">
+          <RefreshCw className="w-5 h-5 text-stone-700" />
+        </button>
       </header>
 
       {mensaje && (
@@ -167,16 +148,11 @@ export default function PedidosPage() {
           {LISTA_ESTADOS.map((estado) => {
             const info = ESTADOS[estado as keyof typeof ESTADOS];
             const count = pedidos.filter(p => p.estado === estado).length;
-            const isActive = filtroEstado === estado;
             return (
               <button
                 key={estado}
                 onClick={() => setFiltroEstado(estado)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-                  isActive
-                    ? `${info.color} border-2 border-current shadow-sm`
-                    : "bg-white text-stone-700 border border-stone-300 hover:bg-stone-50"
-                }`}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === estado ? `${info.color} border-2 border-current` : "bg-white text-stone-700 border border-stone-300"}`}
               >
                 {info.label} ({count})
               </button>
@@ -195,7 +171,6 @@ export default function PedidosPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pedidosFiltrados.map((pedido) => {
               const estadoInfo = getEstadoInfo(pedido.estado);
-              const itemsCount = pedido.items?.length || 0;
               return (
                 <div key={pedido.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition flex flex-col">
                   <div className="flex justify-between items-start mb-2">
@@ -208,27 +183,21 @@ export default function PedidosPage() {
                     </span>
                   </div>
                   <p className="text-sm text-stone-700 font-medium">{pedido.cliente || "Cliente"}</p>
-                  <p className="text-sm text-stone-500">📦 {itemsCount} productos</p>
+                  <p className="text-sm text-stone-500">📦 {pedido.items?.length || 0} productos</p>
                   <p className="text-sm text-stone-500">💰 ${pedido.total?.toLocaleString()}</p>
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
                   {pedido.direccion && <p className="text-xs text-stone-400">📍 {pedido.direccion}</p>}
+                  {pedido.observaciones && <p className="text-xs text-stone-400">📝 {pedido.observaciones}</p>}
 
-                  {/* Vista previa de productos (máximo 2) */}
                   <div className="mt-2 text-xs text-stone-600 border-t pt-2">
-                    {pedido.items && pedido.items.length > 0 ? (
-                      <>
-                        {pedido.items.slice(0, 2).map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between">
-                            <span>{item.cantidad} × {item.nombre || "Producto"}</span>
-                            <span>${(item.cantidad * item.precio).toLocaleString()}</span>
-                          </div>
-                        ))}
-                        {pedido.items.length > 2 && (
-                          <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} más</div>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-stone-400">Sin productos</span>
+                    {pedido.items?.slice(0, 2).map((item, idx) => (
+                      <div key={idx} className="flex justify-between">
+                        <span>{item.cantidad} × {item.nombre}</span>
+                        <span>${(item.cantidad * item.precio).toLocaleString()}</span>
+                      </div>
+                    ))}
+                    {pedido.items?.length > 2 && (
+                      <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} más</div>
                     )}
                   </div>
 
@@ -240,7 +209,18 @@ export default function PedidosPage() {
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
                     </button>
 
-                    {pedido.estado === "pagado" && (
+                    {/* Botón Marcar como Pagado (solo si está pendiente) */}
+                    {pedido.estado === 'pendiente' && (
+                      <button
+                        onClick={() => cambiarEstado(pedido.id, 'pagado')}
+                        className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200"
+                      >
+                        <CheckCircle className="w-3 h-3 inline mr-1" /> Marcar como Pagado
+                      </button>
+                    )}
+
+                    {/* Botón Confirmar (solo si está pagado) */}
+                    {pedido.estado === 'pagado' && (
                       <button
                         onClick={() => confirmarPedido(pedido.id)}
                         className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full hover:bg-blue-200"
@@ -249,13 +229,14 @@ export default function PedidosPage() {
                       </button>
                     )}
 
-                    {/* Mostrar botones de estado siguientes */}
+                    {/* Botones de estados futuros (excepto pagado y confirmado) */}
                     {LISTA_ESTADOS.map((estado) => {
                       const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
                       const idxNuevo = LISTA_ESTADOS.indexOf(estado);
                       if (idxNuevo <= idxActual) return null;
+                      if (estado === 'pagado') return null;
+                      if (estado === 'confirmado') return null; // Confirmado se maneja con el botón especial
                       const info = ESTADOS[estado as keyof typeof ESTADOS];
-                      if (estado === "pagado") return null;
                       return (
                         <button
                           key={estado}
@@ -288,17 +269,19 @@ export default function PedidosPage() {
             <p className="text-sm text-stone-600">Estado: {ESTADOS[detallePedido.estado as keyof typeof ESTADOS]?.label || detallePedido.estado}</p>
             {detallePedido.direccion && <p className="text-sm text-stone-600">Dirección: {detallePedido.direccion}</p>}
             {detallePedido.telefono && <p className="text-sm text-stone-600">Teléfono: {detallePedido.telefono}</p>}
+            {detallePedido.observaciones && <p className="text-sm text-stone-600">Observaciones: {detallePedido.observaciones}</p>}
+
             <div className="mt-3 border-t pt-3">
               <h4 className="font-semibold text-stone-700">Productos</h4>
               <div className="space-y-1 mt-1">
-                {detallePedido.items && detallePedido.items.length > 0 ? (
-                  detallePedido.items.map((item: any, i: number) => (
-                    <div key={i} className="flex justify-between text-sm border-b border-stone-100 py-1">
-                      <span>{item.cantidad} × {item.nombre || "Producto"}</span>
-                      <span>${(item.cantidad * item.precio).toLocaleString()}</span>
-                    </div>
-                  ))
-                ) : (
+                {detallePedido.items?.map((item, i) => (
+                  <div key={i} className="flex justify-between text-sm border-b border-stone-100 py-1 items-center">
+                    <span>{item.cantidad} × {item.nombre}</span>
+                    <span className="text-xs">Unit: ${item.precio?.toLocaleString()}</span>
+                    <span className="font-bold">Subtotal: ${(item.cantidad * item.precio).toLocaleString()}</span>
+                  </div>
+                ))}
+                {(!detallePedido.items || detallePedido.items.length === 0) && (
                   <p className="text-sm text-stone-500">Sin productos</p>
                 )}
               </div>
@@ -316,7 +299,3 @@ export default function PedidosPage() {
     </div>
   );
 }
-
-
-
-

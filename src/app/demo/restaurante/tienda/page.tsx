@@ -1,10 +1,9 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
-import Link from "next/link";
-import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
+import { ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
 
 interface Producto {
   id: string;
@@ -17,11 +16,9 @@ interface Producto {
 }
 
 export default function TiendaPage() {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoriaNegocio = "";
 
   const [productos, setProductos] = useState<Producto[]>([]);
   const [carrito, setCarrito] = useState<any[]>([]);
@@ -29,12 +26,18 @@ export default function TiendaPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [catFilter, setCatFilter] = useState("Todo");
   const [mensaje, setMensaje] = useState("");
-  const [checkoutData, setCheckoutData] = useState({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
   const [loading, setLoading] = useState(true);
+  const [checkoutData, setCheckoutData] = useState({
+    nombre: "",
+    direccion: "",
+    telefono: "",
+    metodo_pago: "Efectivo"
+  });
+  const [observaciones, setObservaciones] = useState("");
 
   const cargarProductos = () => {
     setLoading(true);
-    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+    fetch(`/api/products?tenant=${tenantId}`)
       .then(r => r.json())
       .then(d => {
         if (d.success) setProductos(d.data || []);
@@ -45,7 +48,7 @@ export default function TiendaPage() {
 
   useEffect(() => {
     cargarProductos();
-  }, [tenantId, categoriaNegocio]);
+  }, [tenantId]);
 
   useEffect(() => {
     const saved = localStorage.getItem(`carrito_${negocioSlug}`);
@@ -67,9 +70,11 @@ export default function TiendaPage() {
     setCarrito(prev => {
       const exist = prev.find(item => item.id === p.id);
       if (exist) {
-        return prev.map(item => item.id === p.id ? { ...item, cantidad: item.cantidad + 1 } : item);
+        return prev.map(item =>
+          item.id === p.id ? { ...item, cantidad: item.cantidad + 1 } : item
+        );
       }
-      return [...prev, { ...p, cantidad: 1 }];
+      return [{ ...p, cantidad: 1 }, ...prev];
     });
   };
 
@@ -78,19 +83,23 @@ export default function TiendaPage() {
   };
 
   const actualizarCantidad = (id: string, delta: number) => {
-    setCarrito(prev => prev.map(item => {
-      if (item.id === id) {
-        const nuevaCant = item.cantidad + delta;
-        if (nuevaCant <= 0) return null;
-        return { ...item, cantidad: nuevaCant };
-      }
-      return item;
-    }).filter(Boolean));
+    setCarrito(prev =>
+      prev
+        .map(item => {
+          if (item.id === id) {
+            const nuevaCant = item.cantidad + delta;
+            if (nuevaCant <= 0) return null;
+            return { ...item, cantidad: nuevaCant };
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
   };
 
-  const totalCarrito = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+  const totalCarrito = carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
 
-    const finalizarPedido = async () => {
+  const finalizarPedido = async () => {
     if (carrito.length === 0) {
       alert("Carrito vacío");
       return;
@@ -99,7 +108,8 @@ export default function TiendaPage() {
     const items = carrito.map(item => ({
       producto_id: item.id,
       cantidad: item.cantidad,
-      precio: item.precio
+      precio: item.precio,
+      nombre: item.nombre || "Producto"
     }));
 
     try {
@@ -109,27 +119,27 @@ export default function TiendaPage() {
         body: JSON.stringify({
           tenant_id: tenantId,
           cliente: checkoutData.nombre || "Cliente",
-          direccion: checkoutData.direccion,
-          telefono: checkoutData.telefono,
+          direccion: checkoutData.direccion || "",
+          telefono: checkoutData.telefono || "",
           metodo_pago: checkoutData.metodo_pago,
           total: totalCarrito,
           items: items,
-          observaciones: ""
+          observaciones: observaciones || ""
         })
       });
       const data = await res.json();
       if (data.success) {
-        const pedidoId = data.data.id;
-        setMensaje("✅ Pedido #" + pedidoId + " registrado con éxito.");
+        setMensaje("✅ Pedido #" + data.data.id.slice(0, 6) + " registrado.");
         setCarrito([]);
         setShowCart(false);
+        setObservaciones("");
         setCheckoutData({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
         setTimeout(() => setMensaje(""), 5000);
       } else {
-        alert("Error al registrar pedido: " + data.error);
+        alert("Error: " + data.error);
       }
     } catch (error) {
-      alert("Error de conexión al servidor");
+      alert("Error de conexión");
     }
   };
 
@@ -142,24 +152,47 @@ export default function TiendaPage() {
         <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
         </button>
-        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2">
+        <button
+          onClick={() => setShowCart(true)}
+          className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2"
+        >
           <ShoppingCart className="w-4 h-4" />
-          {carrito.length > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{carrito.reduce((s, i) => s + i.cantidad, 0)}</span>}
+          {carrito.length > 0 && (
+            <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+              {carrito.reduce((s, i) => s + i.cantidad, 0)}
+            </span>
+          )}
         </button>
       </header>
 
-      {mensaje && <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">{mensaje}</div>}
+      {mensaje && (
+        <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">
+          {mensaje}
+        </div>
+      )}
 
       <div className="p-4 max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-2 mb-4">
           {cats.map(c => (
-            <button key={c} onClick={() => setCatFilter(c)} className={`px-4 py-1.5 rounded-full text-sm font-medium ${catFilter === c ? 'bg-emerald-500 text-white' : 'bg-white text-stone-700'}`}>
+            <button
+              key={c}
+              onClick={() => setCatFilter(c)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+                catFilter === c ? "bg-emerald-500 text-white" : "bg-white text-stone-700"
+              }`}
+            >
               {c}
             </button>
           ))}
         </div>
         <div className="relative mb-4">
-          <input type="text" placeholder="Buscar productos..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-4 pr-4 py-2 rounded-xl border border-stone-300 bg-white text-stone-800" />
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-4 pr-4 py-2 rounded-xl border border-stone-300 bg-white text-stone-800"
+          />
         </div>
 
         {loading ? (
@@ -176,7 +209,12 @@ export default function TiendaPage() {
                 <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
                 <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
                 <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
-                <button onClick={() => agregarAlCarrito(p)} className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600">Agregar</button>
+                <button
+                  onClick={() => agregarAlCarrito(p)}
+                  className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600"
+                >
+                  Agregar
+                </button>
               </div>
             ))}
           </div>
@@ -189,7 +227,9 @@ export default function TiendaPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Carrito</h3>
-              <button onClick={() => setShowCart(false)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setShowCart(false)}>
+                <X className="w-5 h-5 text-stone-700" />
+              </button>
             </div>
             {carrito.length === 0 ? (
               <p className="text-center text-stone-500 py-4">Carrito vacío</p>
@@ -207,11 +247,23 @@ export default function TiendaPage() {
                       <p className="text-sm text-stone-600">${item.precio.toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => actualizarCantidad(item.id, -1)} className="p-1 hover:bg-stone-100 rounded"><Minus className="w-4 h-4 text-stone-700" /></button>
+                      <button
+                        onClick={() => actualizarCantidad(item.id, -1)}
+                        className="p-1 hover:bg-stone-100 rounded"
+                      >
+                        <Minus className="w-4 h-4 text-stone-700" />
+                      </button>
                       <span className="w-6 text-center text-stone-800">{item.cantidad}</span>
-                      <button onClick={() => actualizarCantidad(item.id, 1)} className="p-1 hover:bg-stone-100 rounded"><Plus className="w-4 h-4 text-stone-700" /></button>
+                      <button
+                        onClick={() => actualizarCantidad(item.id, 1)}
+                        className="p-1 hover:bg-stone-100 rounded"
+                      >
+                        <Plus className="w-4 h-4 text-stone-700" />
+                      </button>
                     </div>
-                    <button onClick={() => quitarDelCarrito(item.id)} className="text-red-500"><X className="w-4 h-4" /></button>
+                    <button onClick={() => quitarDelCarrito(item.id)} className="text-red-500">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold text-lg mt-4 text-stone-800">
@@ -219,10 +271,32 @@ export default function TiendaPage() {
                   <span>${totalCarrito.toLocaleString()}</span>
                 </div>
                 <div className="mt-4 space-y-2">
-                  <input type="text" placeholder="Nombre" value={checkoutData.nombre} onChange={e => setCheckoutData({...checkoutData, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <input type="text" placeholder="Dirección" value={checkoutData.direccion} onChange={e => setCheckoutData({...checkoutData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <input type="text" placeholder="Teléfono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <select value={checkoutData.metodo_pago} onChange={e => setCheckoutData({...checkoutData, metodo_pago: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800">
+                  <input
+                    type="text"
+                    placeholder="Nombre"
+                    value={checkoutData.nombre}
+                    onChange={e => setCheckoutData({ ...checkoutData, nombre: e.target.value })}
+                    className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Dirección"
+                    value={checkoutData.direccion}
+                    onChange={e => setCheckoutData({ ...checkoutData, direccion: e.target.value })}
+                    className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Teléfono"
+                    value={checkoutData.telefono}
+                    onChange={e => setCheckoutData({ ...checkoutData, telefono: e.target.value })}
+                    className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                  />
+                  <select
+                    value={checkoutData.metodo_pago}
+                    onChange={e => setCheckoutData({ ...checkoutData, metodo_pago: e.target.value })}
+                    className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                  >
                     <option value="Efectivo">Efectivo</option>
                     <option value="Nequi">Nequi</option>
                     <option value="Bancolombia">Bancolombia</option>
@@ -230,8 +304,22 @@ export default function TiendaPage() {
                     <option value="Crédito">Crédito</option>
                     <option value="Otros">Otros</option>
                   </select>
+                  <div>
+                    <textarea
+                      placeholder="Observaciones (opcional)"
+                      value={observaciones}
+                      onChange={e => setObservaciones(e.target.value)}
+                      className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                      rows={2}
+                    />
+                  </div>
                 </div>
-                <button onClick={finalizarPedido} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Finalizar Pedido</button>
+                <button
+                  onClick={finalizarPedido}
+                  className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium"
+                >
+                  Finalizar Pedido
+                </button>
               </>
             )}
           </div>
@@ -240,13 +328,3 @@ export default function TiendaPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
