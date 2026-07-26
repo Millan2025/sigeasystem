@@ -240,7 +240,18 @@ export default function PedidosPage() {
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
                     </button>
 
-                    {pedido.estado === "pagado" && (
+                    {/* Botón para marcar como Pagado (solo si está pendiente) */}
+                    {pedido.estado === 'pendiente' && (
+                      <button
+                        onClick={() => cambiarEstado(pedido.id, 'pagado')}
+                        className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hover:bg-green-200"
+                      >
+                        <CheckCircle className="w-3 h-3 inline mr-1" /> Marcar como Pagado
+                      </button>
+                    )}
+
+                    {/* Botón Confirmar (solo si está pagado) */}
+                    {pedido.estado === 'pagado' && (
                       <button
                         onClick={() => confirmarPedido(pedido.id)}
                         className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full hover:bg-blue-200"
@@ -249,13 +260,14 @@ export default function PedidosPage() {
                       </button>
                     )}
 
-                    {/* Mostrar botones de estado siguientes */}
+                    {/* Botones de estados futuros (solo si el estado actual es 'pagado' o superior) */}
                     {LISTA_ESTADOS.map((estado) => {
                       const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
                       const idxNuevo = LISTA_ESTADOS.indexOf(estado);
+                      // Mostrar solo estados posteriores al actual, y excluir 'pagado' (ya tiene su botón)
                       if (idxNuevo <= idxActual) return null;
+                      if (estado === 'pagado') return null; // No mostrar 'pagado' como botón
                       const info = ESTADOS[estado as keyof typeof ESTADOS];
-                      if (estado === "pagado") return null;
                       return (
                         <button
                           key={estado}
@@ -267,8 +279,6 @@ export default function PedidosPage() {
                       );
                     })}
                   </div>
-                </div>
-              );
             })}
           </div>
         )}
@@ -316,6 +326,7 @@ export default function PedidosPage() {
     </div>
   );
 }
+
 
 
 
