@@ -12,8 +12,6 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    console.log(`🔍 Confirmando pedido: ${id}`)
-
     const body = await req.json()
     const { metodo_pago } = body
 
@@ -23,142 +21,89 @@ export async function PUT(
       .select('*')
       .eq('id', id)
       .single()
+    if (getErr) throw getErr
 
-    if (getErr) {
-      console.error('❌ Error al obtener pedido:', getErr)
-      throw getErr
+    // Si el pedido ya está confirmado, no hacer nada
+    if (pedido.estado === 'confirmado') {
+      return NextResponse.json({ success: false, error: 'El pedido ya está confirmado' }, { status: 400 })
     }
 
-    if (pedido.estado !== 'pagado') {
-      console.warn(`⚠️ Pedido ${id} no está en estado "pagado" (${pedido.estado})`)
-      return NextResponse.json({ success: false, error: 'El pedido no está en estado "pagado"' }, { status: 400 })
-    }
+    // Si el pedido no está en estado 'pagado' (para créditos) o 'pendiente' (para no-crédito, pero debería estar pagado si ya se descontó)
+    // Para simplificar, permitimos confirmar solo si estado es 'pagado' (para créditos) o 'pendiente' (para no-crédito que ya se pagó? Mejor permitimos ambos pero condicionamos el descuento)
+    // En realidad, el estado después de la creación para no-crédito es 'pagado' (porque se paga en el momento). Para crédito es 'pendiente'.
+    // Entonces, para no-crédito, estado debe ser 'pagado'. Para crédito, estado debe ser 'pendiente'.
+    // Pero podemos permitir confirmar solo si estado es 'pagado' o 'pendiente' y actuar según el método de pago.
 
     const tenant_id = pedido.tenant_id
     const items = pedido.items || []
     const total = pedido.total
     const pago = metodo_pago || pedido.metodo_pago
 
-    console.log(`📦 Procesando ${items.length} items`)
-
-    // 2. Descontar stock y registrar movimientos
-    for (const item of items) {
-      console.log(`🔍 Producto: ${item.producto_id}, Cantidad: ${item.cantidad}`)
-
-      // Verificar producto
-      const { data: prod, error: prodErr } = await supabase
-        .from('productos')
-        .select('stock')
-        .eq('id', item.producto_id)
-        .eq('tenant_id', tenant_id)
-        .single()
-
-      if (prodErr) {
-        console.error(`❌ Producto no encontrado ${item.producto_id}:`, prodErr)
-        return NextResponse.json({ success: false, error: `Producto no encontrado: ${item.producto_id}` }, { status: 404 })
+    // 2. Si el pedido es Crédito, descontar stock (porque no se descontó al crear)
+    if (pedido.metodo_pago === 'Crédito') {
+      if (pedido.estado !== 'pagado') {
+        // Solo si está pagado (el dueño lo marcó como pagado)
+        // De lo contrario, no debería confirmarse sin pago.
+        // Pero asumimos que el dueño ya marcó como pagado.
+        // Si no está pagado, devolver error.
+        return NextResponse.json({ success: false, error: 'El pedido a crédito debe estar marcado como "pagado" antes de confirmar' }, { status: 400 })
       }
 
-      const nuevoStock = prod.stock - item.cantidad
-      if (nuevoStock < 0) {
-        console.error(`❌ Stock insuficiente para ${item.producto_id} (actual: ${prod.stock}, solicitado: ${item.cantidad})`)
-        return NextResponse.json({ success: false, error: `Stock insuficiente para producto ${item.producto_id}` }, { status: 400 })
+      // Descontar stock
+      for (const item of items) {
+        const { data: prod, error: prodErr } = await supabase
+          .from('productos')
+          .select('stock')
+          .eq('id', item.producto_id)
+          .eq('tenant_id', tenant_id)
+          .single()
+        if (prodErr) throw prodErr
+
+        const nuevoStock = prod.stock - item.cantidad
+        if (nuevoStock < 0) {
+          return NextResponse.json({ success: false, error: `Stock insuficiente para ${item.producto_id}` }, { status: 400 })
+        }
+
+        await supabase
+          .from('productos')
+          .update({ stock: nuevoStock })
+          .eq('id', item.producto_id)
+          .eq('tenant_id', tenant_id)
+
+        await supabase
+          .from('movimientos_inventario')
+          .insert({
+            producto_id: item.producto_id,
+            tenant_id,
+            tipo: 'salida',
+            cantidad: item.cantidad,
+            descripcion: `Pedido #${id} (confirmado)`,
+            created_at: new Date().toISOString()
+          })
       }
 
-      // Actualizar stock
-      const { error: updateErr } = await supabase
-        .from('productos')
-        .update({ stock: nuevoStock })
-        .eq('id', item.producto_id)
-        .eq('tenant_id', tenant_id)
-
-      if (updateErr) {
-        console.error(`❌ Error al actualizar stock de ${item.producto_id}:`, updateErr)
-        return NextResponse.json({ success: false, error: `Error al actualizar stock: ${updateErr.message}` }, { status: 500 })
-      }
-      console.log(`✅ Stock actualizado: ${item.producto_id} -> ${nuevoStock}`)
-
-      // Registrar movimiento de salida
-      const { error: movErr } = await supabase
-        .from('movimientos_inventario')
+      // Crear venta
+      const { data: venta, error: ventaErr } = await supabase
+        .from('ventas')
         .insert({
-          producto_id: item.producto_id,
           tenant_id,
-          tipo: 'salida',
-          cantidad: item.cantidad,
-          descripcion: `Pedido #${id} (confirmado)`,
+          total,
+          metodo_pago: pago,
+          cliente: pedido.cliente,
+          fecha: new Date().toISOString().split('T')[0],
           created_at: new Date().toISOString()
         })
+        .select()
+        .single()
+      if (ventaErr) throw ventaErr
 
-      if (movErr) {
-        console.error(`❌ Error al registrar movimiento para ${item.producto_id}:`, movErr)
-        // No interrumpimos el flujo, solo log
-      } else {
-        console.log(`✅ Movimiento registrado para ${item.producto_id}`)
-      }
-    }
-
-    // 3. Crear venta en tabla ventas (sin columna estado)
-    console.log(`📝 Creando venta para pedido ${id}`)
-    const { data: venta, error: ventaErr } = await supabase
-      .from('ventas')
-      .insert({
-        tenant_id,
-        total,
-        metodo_pago: pago,
-        cliente: pedido.cliente,
-        fecha: new Date().toISOString().split('T')[0],
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single()
-
-    if (ventaErr) {
-      console.error('❌ Error al crear venta:', ventaErr)
-      return NextResponse.json({ success: false, error: `Error al crear venta: ${ventaErr.message}` }, { status: 500 })
-    }
-    console.log(`✅ Venta creada: ${venta.id}`)
-
-    // 4. Insertar sale_items (opcional, pero recomendado para reportes)
-    const saleItems = items.map((item: any) => ({
-      sale_id: venta.id,
-      product_id: item.producto_id,
-      quantity: item.cantidad,
-      price_at_sale: item.precio,
-      subtotal: item.cantidad * item.precio,
-      tenant_id
-    }))
-    const { error: saleErr } = await supabase
-      .from('sale_items')
-      .insert(saleItems)
-    if (saleErr) {
-      console.warn('⚠️ Error al insertar sale_items (no crítico):', saleErr)
-    }
-
-    // 5. Actualizar pedido (estado a 'confirmado')
-    const { error: updatePedidoErr } = await supabase
-      .from('pedidos')
-      .update({
-        estado: 'confirmado',
-        venta_id: venta.id,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-
-    if (updatePedidoErr) {
-      console.error('❌ Error al actualizar pedido:', updatePedidoErr)
-      return NextResponse.json({ success: false, error: `Error al actualizar pedido: ${updatePedidoErr.message}` }, { status: 500 })
-    }
-    console.log(`✅ Pedido ${id} actualizado a 'confirmado'`)
-
-    // 6. Registrar transacción en finanzas
-    try {
+      // Registrar finanzas (ingreso)
       const { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
         .select('id')
         .eq('codigo', '4-01-01')
         .eq('tenant_id', tenant_id)
         .single()
-
       if (!catErr && categoria) {
         await supabase
           .from('transacciones')
@@ -176,13 +121,81 @@ export async function PUT(
             referencia_id: venta.id,
             referencia_tipo: 'venta'
           })
-        console.log('✅ Transacción financiera registrada')
       }
-    } catch (finErr) {
-      console.warn('⚠️ Error al registrar finanzas (no crítico):', finErr)
+
+      // Actualizar crédito (si existe)
+      try {
+        const { data: credito, error: credErr } = await supabase
+          .from('creditos')
+          .select('id, saldo_pendiente, valor_pagado')
+          .eq('tenant_id', tenant_id)
+          .eq('cliente', pedido.cliente)
+          .eq('estado', 'pendiente')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (!credErr && credito) {
+          const nuevoSaldo = credito.saldo_pendiente - total
+          await supabase
+            .from('creditos')
+            .update({
+              valor_pagado: (credito.valor_pagado || 0) + total,
+              saldo_pendiente: nuevoSaldo,
+              estado: nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
+            })
+            .eq('id', credito.id)
+        }
+      } catch (e) {}
+
+      // Actualizar pedido con venta_id
+      await supabase
+        .from('pedidos')
+        .update({
+          estado: 'confirmado',
+          venta_id: venta.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+
+      return NextResponse.json({ success: true, data: venta })
+
+    } else {
+      // Si NO es Crédito, el stock ya se descontó al crear el pedido.
+      // Solo confirmar el pedido (cambiar estado a 'confirmado') y crear orden de producción si procede.
+      // Además, verificar que ya tenga venta asociada (se creó en el POST)
+      // Si no tiene venta, crearla (por si acaso)
+      let ventaId = pedido.venta_id
+      if (!ventaId) {
+        // Crear venta (aunque ya debería existir)
+        const { data: venta, error: ventaErr } = await supabase
+          .from('ventas')
+          .insert({
+            tenant_id,
+            total,
+            metodo_pago: pago,
+            cliente: pedido.cliente,
+            fecha: new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+        if (ventaErr) throw ventaErr
+        ventaId = venta.id
+      }
+
+      // Actualizar pedido
+      await supabase
+        .from('pedidos')
+        .update({
+          estado: 'confirmado',
+          venta_id: ventaId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+
+      return NextResponse.json({ success: true, message: 'Pedido confirmado' })
     }
 
-    return NextResponse.json({ success: true, data: venta })
   } catch (error: any) {
     console.error('❌ Error en confirmar pedido:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
