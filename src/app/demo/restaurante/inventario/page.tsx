@@ -120,9 +120,7 @@ export default function InventarioPage() {
   // Carga inicial y polling cada 10 segundos
   useEffect(() => {
     cargarDatos(true);
-    const interval = setInterval(() => {
-      cargarDatos(false);
-    }, 10000);
+    const interval = setInterval(() => { cargarDatos(false); }, 3000);
     return () => clearInterval(interval);
   }, [tenantId]);
 
@@ -905,3 +903,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+
