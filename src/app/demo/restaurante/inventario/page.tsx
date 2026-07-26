@@ -46,6 +46,7 @@ export default function InventarioPage() {
   const [movimientos, setMovimientos] = useState([]);
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [showMovimientoModal, setShowMovimientoModal] = useState(false);
   const [showProductoModal, setShowProductoModal] = useState(false);
   const [formMovimiento, setFormMovimiento] = useState({ producto_id: "", tipo: "entrada", cantidad: 1, motivo: "" });
@@ -53,12 +54,13 @@ export default function InventarioPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [importando, setImportando] = useState(false);
-
   const [editandoProducto, setEditandoProducto] = useState<any>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formProducto, setFormProducto] = useState({ ...estadoInicialForm });
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
+  // Subir imagen (igual que antes)
   const subirImagen = async () => {
     if (!imageFile) return;
     setUploadingImage(true);
@@ -84,6 +86,7 @@ export default function InventarioPage() {
     setUploadingImage(false);
   };
 
+  // Cargar productos para selects
   useEffect(() => {
     fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
       .then((r) => r.json())
@@ -92,29 +95,36 @@ export default function InventarioPage() {
       });
   }, [tenantId, categoriaNegocio]);
 
-  const cargarDatos = () => {
-    setLoading(true);
-    fetch(`/api/inventory?tenant=${tenantId}&stock=true`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setStock(d.data || []);
-      });
-
-    fetch(`/api/inventory?tenant=${tenantId}&limit=100`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setMovimientos(d.data || []);
-        setLoading(false);
-      });
+  // Función principal para cargar datos
+  const cargarDatos = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    setUpdating(true);
+    try {
+      const [stockRes, movRes] = await Promise.all([
+        fetch(`/api/inventory?tenant=${tenantId}&stock=true`),
+        fetch(`/api/inventory?tenant=${tenantId}&limit=100`),
+      ]);
+      const stockData = await stockRes.json();
+      const movData = await movRes.json();
+      if (stockData.success) setStock(stockData.data || []);
+      if (movData.success) setMovimientos(movData.data || []);
+      setLastUpdate(new Date());
+    } catch (e) {
+      console.error("Error cargando inventario:", e);
+    } finally {
+      if (showLoading) setLoading(false);
+      setUpdating(false);
+    }
   };
 
+  // Carga inicial y polling cada 10 segundos
   useEffect(() => {
-    cargarDatos();
+    cargarDatos(true);
     const interval = setInterval(() => {
-        cargarDatos();
-    }, 15000);
+      cargarDatos(false);
+    }, 10000);
     return () => clearInterval(interval);
-}, [tenantId]);
+  }, [tenantId]);
 
   const registrarMovimiento = async () => {
     const res = await fetch("/api/inventory", {
@@ -129,7 +139,7 @@ export default function InventarioPage() {
     const data = await res.json();
     if (data.success) {
       setShowMovimientoModal(false);
-      cargarDatos();
+      cargarDatos(true);
       setFormMovimiento({ producto_id: "", tipo: "entrada", cantidad: 1, motivo: "" });
     } else {
       alert(data.error || "Error al registrar movimiento");
@@ -150,7 +160,7 @@ export default function InventarioPage() {
       if (data.success) {
         setShowProductoModal(false);
         resetFormulario();
-        cargarDatos();
+        cargarDatos(true);
         recargarProductos();
       } else {
         alert(data.error || "Error al guardar producto");
@@ -204,7 +214,7 @@ export default function InventarioPage() {
     if (data.success) {
       setShowProductoModal(false);
       resetFormulario();
-      cargarDatos();
+      cargarDatos(true);
       recargarProductos();
     } else {
       alert(data.error || "Error al guardar producto");
@@ -230,7 +240,7 @@ export default function InventarioPage() {
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
-      cargarDatos();
+      cargarDatos(true);
       recargarProductos();
     } else {
       alert(data.error || "Error al eliminar");
@@ -377,7 +387,7 @@ export default function InventarioPage() {
           `✅ Productos importados: ${importados}\n` +
           (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
         );
-        cargarDatos();
+        cargarDatos(true);
         recargarProductos();
         setImportando(false);
       };
@@ -388,6 +398,7 @@ export default function InventarioPage() {
     }
   };
 
+  // Filtros y render (igual que antes, pero con indicador de actualización)
   const stockFiltrado = stock.filter((p: any) =>
     p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -409,9 +420,10 @@ export default function InventarioPage() {
         <BackButton />
         <h1 className="text-xl font-bold text-stone-800">Inventario</h1>
         <div className="flex-1"></div>
-        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5 text-stone-700" />
+        <button onClick={() => cargarDatos(true)} className="p-2 hover:bg-stone-100 rounded-xl" title="Actualizar ahora">
+          <RefreshCw className={`w-5 h-5 text-stone-700 ${updating ? 'animate-spin' : ''}`} />
         </button>
+        {updating && <span className="text-xs text-stone-500">Actualizando...</span>}
         <button
           onClick={() => setShowMovimientoModal(true)}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -601,6 +613,7 @@ export default function InventarioPage() {
         </div>
       </div>
 
+      {/* Modales (igual que antes) */}
       {showMovimientoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -892,4 +905,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-
