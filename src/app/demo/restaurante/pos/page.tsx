@@ -257,7 +257,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
         setShowPay(false);
         setShowCart(false);
         setShowCreditoModal(false);
-        setCreditoData({ cliente: "", telefono: "", direccion: "" });
+        setCreditoData({ cliente: "", telefono: "", direccion: "", observaciones: "" });
         cargarProductos();
         setTimeout(() => setMsg(""), 4000);
       } else {
@@ -527,7 +527,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
               <button
                 onClick={() => {
                   setShowCreditoModal(false);
-                  setCreditoData({ cliente: "", telefono: "", direccion: "" });
+                  setCreditoData({ cliente: "", telefono: "", direccion: "", observaciones: "" });
                 }}
                 className="flex-1 border border-stone-300 py-2 rounded-xl text-stone-700"
               >
@@ -587,5 +587,6 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
     </div>
   );
 }
+
 
 
