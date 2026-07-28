@@ -46,15 +46,18 @@ export async function GET(request: Request) {
     let itemCounter = 1
 
     for (const t of data || []) {
-      // Si es compra o venta, expandir en items
-      if (t.referencia_tipo === 'compra' && t.referencia_id) {
+      // Determinar si es compra o venta
+      const esCompra = t.referencia_tipo === 'compra' && t.referencia_id
+      const esVenta = t.referencia_tipo === 'venta' && t.referencia_id
+
+      if (esCompra) {
+        // Expandir compra
         const { data: items, error: itemsErr } = await supabase
           .from('compra_items')
           .select('*, productos(id, nombre)')
           .eq('compra_id', t.referencia_id)
 
-        if (itemsErr) {
-          console.error('Error al obtener items de compra:', itemsErr)
+        if (itemsErr || !items || items.length === 0) {
           expandedData.push({
             ...t,
             cantidad: 1,
@@ -69,56 +72,39 @@ export async function GET(request: Request) {
           continue
         }
 
-        if (items && items.length > 0) {
-          const subtotalTotal = items.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0)
-          const ivaTotal = t.impuesto || 0
-          const retencionTotal = t.retencion || 0
-          const icaTotal = t.ica || 0
-          // Construir descripción con nombres de productos
-          const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
-          const descripcionBase = `Compra #${t.referencia_id} - ${nombres}`
+        const subtotalTotal = items.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0)
+        const ivaTotal = t.impuesto || 0
+        const retencionTotal = t.retencion || 0
+        const icaTotal = t.ica || 0
+        const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
+        const descripcionBase = `Compra #${t.referencia_id} - ${nombres}`
 
-          for (const item of items) {
-            const subtotalItem = item.cantidad * item.precio_compra
-            const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+        for (const item of items) {
+          const subtotalItem = item.cantidad * item.precio_compra
+          const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
 
-            expandedData.push({
-              ...t,
-              descripcion: item.productos?.nombre || 'Producto',
-              cantidad: item.cantidad,
-              precio_unitario: item.precio_compra,
-              subtotal: subtotalItem,
-              iva: ivaTotal * proporcional,
-              retencion: retencionTotal * proporcional,
-              ica: icaTotal * proporcional,
-              total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
-              item: itemCounter++,
-              // También guardamos la descripción resumida en un campo extra para mostrar en la vista general
-              descripcion_resumida: descripcionBase
-            })
-          }
-        } else {
           expandedData.push({
             ...t,
-            cantidad: 1,
-            precio_unitario: t.monto,
-            subtotal: t.monto,
-            iva: 0,
-            retencion: 0,
-            ica: 0,
+            descripcion: item.productos?.nombre || 'Producto',
+            cantidad: item.cantidad,
+            precio_unitario: item.precio_compra,
+            subtotal: subtotalItem,
+            iva: ivaTotal * proporcional,
+            retencion: retencionTotal * proporcional,
+            ica: icaTotal * proporcional,
+            total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
             item: itemCounter++,
-            descripcion: `Compra #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Compras'}`
+            descripcion_resumida: descripcionBase
           })
         }
-      } else if (t.referencia_tipo === 'venta' && t.referencia_id) {
-        // 🔥 Expandir ventas en items y construir descripción con productos
+      } else if (esVenta) {
+        // Expandir venta
         const { data: items, error: itemsErr } = await supabase
           .from('sale_items')
           .select('*, productos(id, nombre)')
           .eq('sale_id', t.referencia_id)
 
-        if (itemsErr) {
-          console.error('Error al obtener items de venta:', itemsErr)
+        if (itemsErr || !items || items.length === 0) {
           expandedData.push({
             ...t,
             cantidad: 1,
@@ -133,52 +119,37 @@ export async function GET(request: Request) {
           continue
         }
 
-        if (items && items.length > 0) {
-          const ivaTotal = t.impuesto || 0
-          const retencionTotal = t.retencion || 0
-          const icaTotal = t.ica || 0
-          const subtotalTotal = items.reduce((sum, i) => sum + (i.quantity * i.price_at_sale), 0)
-          // Construir descripción con nombres de productos
-          const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
-          const metodo = t.metodo_pago || ''
-          const descripcionBase = `Venta #${t.referencia_id} - ${metodo} - ${nombres}`
+        const ivaTotal = t.impuesto || 0
+        const retencionTotal = t.retencion || 0
+        const icaTotal = t.ica || 0
+        const subtotalTotal = items.reduce((sum, i) => sum + (i.quantity * i.price_at_sale), 0)
+        const metodo = t.metodo_pago || ''
+        const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
+        const descripcionBase = `Venta #${t.referencia_id} - ${metodo} - ${nombres}`
 
-          for (const item of items) {
-            const subtotalItem = item.quantity * item.price_at_sale
-            const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+        for (const item of items) {
+          const subtotalItem = item.quantity * item.price_at_sale
+          const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
 
-            expandedData.push({
-              ...t,
-              descripcion: item.productos?.nombre || 'Producto',
-              cantidad: item.quantity,
-              precio_unitario: item.price_at_sale,
-              subtotal: subtotalItem,
-              iva: ivaTotal * proporcional,
-              retencion: retencionTotal * proporcional,
-              ica: icaTotal * proporcional,
-              total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
-              item: itemCounter++,
-              descripcion_resumida: descripcionBase
-            })
-          }
-        } else {
           expandedData.push({
             ...t,
-            cantidad: 1,
-            precio_unitario: t.monto,
-            subtotal: t.monto,
-            iva: 0,
-            retencion: 0,
-            ica: 0,
+            descripcion: item.productos?.nombre || 'Producto',
+            cantidad: item.quantity,
+            precio_unitario: item.price_at_sale,
+            subtotal: subtotalItem,
+            iva: ivaTotal * proporcional,
+            retencion: retencionTotal * proporcional,
+            ica: icaTotal * proporcional,
+            total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
             item: itemCounter++,
-            descripcion: `Venta #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Ventas'}`
+            descripcion_resumida: descripcionBase
           })
         }
       } else {
-        // Transacciones no compra/venta (ej: créditos, abonos, gastos operativos)
+        // Otras transacciones (créditos, abonos, gastos)
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
-          // Obtener nombre del cliente desde la transacción o desde el crédito
+          // Intentar obtener cliente desde créditos
           const { data: credito } = await supabase
             .from('creditos')
             .select('cliente')
@@ -188,13 +159,12 @@ export async function GET(request: Request) {
           desc = `Crédito #${t.referencia_id} - ${cliente}`
         } else if (t.referencia_tipo === 'abono') {
           desc = `Abono a crédito #${t.referencia_id}`
+        } else if (t.categorias_contables?.nombre === 'Gastos Operativos') {
+          desc = t.descripcion || 'Gasto operativo'
         } else if (t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras') {
           desc = `Compra - ${t.descripcion || ''}`
         } else if (t.tipo === 'ingreso' && t.categorias_contables?.nombre === 'Cuentas por Cobrar') {
           desc = `Crédito - ${t.descripcion || ''}`
-        }
-        if (t.categorias_contables?.nombre === 'Gastos Operativos') {
-          desc = t.descripcion || 'Gasto operativo'
         }
 
         expandedData.push({
@@ -376,6 +346,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
