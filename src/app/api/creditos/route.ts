@@ -35,10 +35,10 @@ export async function POST(request: Request) {
       )
     }
 
-    const observaciones = `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
-    const hoy = new Date().toISOString().split('T')[0]
-    // Establecer fecha_fin a 30 días por defecto
+    // Usar fecha enviada desde frontend (en formato YYYY-MM-DD) o fallback a UTC
+    const hoy = fecha || new Date().toISOString().split('T')[0]
     const fechaFin = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const obs = observaciones || `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
 
     const { data: credito, error } = await supabase
       .from('creditos')
@@ -51,16 +51,17 @@ export async function POST(request: Request) {
         fecha_inicio: hoy,
         fecha_fin: fechaFin,
         estado: 'pendiente',
-        telefono: telefono || "", direccion: direccion || "", observaciones: observaciones || ""
+        observaciones: obs,
+        telefono: telefono || null,
+        direccion: direccion || null
       })
       .select()
       .single()
 
     if (error) throw error
 
-    // 🔥 REGISTRAR INGRESO EN FINANZAS (Cuentas por Cobrar)
+    // Registrar ingreso en finanzas (Cuentas por Cobrar)
     try {
-      // Obtener o crear categoría "Cuentas por Cobrar" (código 1-01-01)
       let { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
         .select('id')
@@ -79,10 +80,7 @@ export async function POST(request: Request) {
           })
           .select()
           .single()
-        if (!createErr && newCat) {
-          categoria = newCat
-
-        }
+        if (!createErr && newCat) categoria = newCat
       }
 
       if (categoria?.id) {
@@ -107,7 +105,6 @@ export async function POST(request: Request) {
       }
     } catch (finErr) {
       console.error('Error al registrar transacción en finanzas:', finErr)
-      // No bloqueamos la operación, solo log
     }
 
     return NextResponse.json({ success: true, data: credito })
@@ -128,20 +125,17 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Obtener crédito actual (incluyendo tenant_id para finanzas)
     const { data: credito, error: getErr } = await supabase
       .from('creditos')
       .select('valor_pagado, tenant_id, valor_total')
       .eq('id', id)
       .single()
-
     if (getErr) throw getErr
 
     const nuevoPagado = (credito.valor_pagado || 0) + monto_abono
     const nuevoSaldo = (credito.valor_total || 0) - nuevoPagado
     const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
 
-    // Actualizar crédito (sin tocar saldo_pendiente, que es GENERATED)
     const updateData: any = {
       valor_pagado: nuevoPagado,
       estado,
@@ -157,10 +151,8 @@ export async function PUT(request: Request) {
       .eq('id', id)
       .select()
       .single()
-
     if (error) throw error
 
-    // 🔥 REGISTRAR INGRESO EN FINANZAS POR EL ABONO
     try {
       const { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
@@ -197,14 +189,3 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-
-
