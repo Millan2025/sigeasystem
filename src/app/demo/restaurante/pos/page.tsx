@@ -85,7 +85,8 @@ export default function POSPage() {
   }, [tenantId]);
 
   const cats = ["Todo", ...Array.from(new Set(productos.map((p) => p.cat)))];
-  const searchFiltered = searchTerm ? productos.filter((p) => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
+  const searchFiltered = searchTerm ? productos.filter((p) =>
+p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
   const filtered = catFilter === "Todo" ? searchFiltered : searchFiltered.filter((p) => p.cat === catFilter);
   const totalItems = cart.reduce((s, i) => s + i.cantidad, 0);
   const totalPrecio = cart.reduce((s, i) => s + i.subtotal, 0);
@@ -152,7 +153,7 @@ export default function POSPage() {
     setPesoModal({ producto: null, cantidad: 1, unidad: "gramos" });
   };
 
-const pay = async (metodo: string) => {
+  const pay = async (metodo: string) => {
     console.log('🎯 pay called with metodo:', metodo);
     if (cart.length === 0) return;
 
@@ -163,9 +164,8 @@ const pay = async (metodo: string) => {
 
     try {
       const items = cart.map((item) => {
-        const producto_id = item.id;
         return {
-          producto_id,
+          producto_id: item.id,
           cantidad: item.cantidad,
           precio_unitario: item.precioUnitario,
           subtotal: item.subtotal,
@@ -211,6 +211,10 @@ const pay = async (metodo: string) => {
       return;
     }
     try {
+      // Obtener fecha local en formato YYYY-MM-DD
+      const fechaLocal = new Date().toLocaleDateString('en-CA');
+      
+      // 1. Crear el crédito (enviando fecha local)
       const res = await fetch("/api/creditos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -220,11 +224,35 @@ const pay = async (metodo: string) => {
           direccion: creditoData.direccion,
           monto: totalPrecio,
           tenant_id: tenantId,
+          fecha: fechaLocal
         }),
       });
       const data = await res.json();
       if (data.success) {
         setMsg("✅ Crédito registrado - $" + totalPrecio.toLocaleString());
+        // 2. Descontar stock y registrar venta (como crédito)
+        const items = cart.map((item) => ({
+          producto_id: item.id,
+          cantidad: item.cantidad,
+          precio_unitario: item.precioUnitario,
+          subtotal: item.subtotal,
+        }));
+        const ventaRes = await fetch("/api/ventas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            metodo_pago: "Crédito",
+            total: totalPrecio,
+            items: items,
+          }),
+        });
+        const ventaData = await ventaRes.json();
+        if (!ventaData.success) {
+          console.warn("⚠️ Venta de crédito no registrada:", ventaData.error);
+        } else {
+          console.log("✅ Venta de crédito registrada, stock descontado");
+        }
         setCart([]);
         setShowPay(false);
         setShowCart(false);
@@ -233,7 +261,7 @@ const pay = async (metodo: string) => {
         cargarProductos();
         setTimeout(() => setMsg(""), 4000);
       } else {
-        alert("Error: " + data.error);
+        alert("Error al registrar crédito: " + data.error);
       }
     } catch (error) {
       alert("Error de conexión");
@@ -559,13 +587,3 @@ const pay = async (metodo: string) => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
