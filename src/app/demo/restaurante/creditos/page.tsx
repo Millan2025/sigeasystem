@@ -87,7 +87,7 @@ export default function CreditosPage() {
           <h3 className="font-semibold text-stone-800 mb-3">Listado de créditos</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-stone-50">
+                            <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
                   <th className="text-left p-2 text-stone-700">Teléfono</th>
@@ -98,61 +98,36 @@ export default function CreditosPage() {
                   <th className="text-left p-2 text-stone-700">Estado</th>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Observaciones</th>
-                  <th className="text-left p-2 text-stone-700">Pagado</th>
-                  <th className="text-left p-2 text-stone-700">Saldo</th>
-                  <th className="text-left p-2 text-stone-700">Estado</th>
-                  <th className="text-left p-2 text-stone-700">Observaciones</th><th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Acción</th>
                 </tr>
               </thead>
-              <tbody>
-                {creditos.map((c) => (
-                  <tr key={c.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-800">{c.responsable}</td>
-                    <td className="p-2 text-stone-800">${c.valor_total.toLocaleString()}</td>
-                    <td className="p-2 text-stone-800">${c.valor_pagado.toLocaleString()}</td>
-                    <td className="p-2 font-medium text-stone-800">${c.saldo_pendiente.toLocaleString()}</td>
+                            <tbody>
+                {transacciones.map((t: any) => (
+                  <tr key={t.id} className="border-b border-stone-100">
+                    <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
+                    <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
                     <td className="p-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          c.estado === "pagado"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {c.estado}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                        {t.tipo}
                       </span>
                     </td>
-                    <td className="p-2 text-stone-600">{c.observaciones || "-"}</td><td className="p-2 text-stone-600">{new Date(c.fecha_inicio).toLocaleDateString()}</td>
-                    <td className="p-2">
-                      {c.estado === "pendiente" && (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            placeholder="Abono"
-                            className="w-20 border border-stone-300 rounded p-1 text-sm text-stone-800"
-                            onChange={(e) =>
-                              setAbono({ id: c.id, monto: parseFloat(e.target.value) || 0 })
-                            }
-                          />
-                          <button
-                            onClick={() => registrarAbono(c.id)}
-                            className="p-1 bg-emerald-500 text-white rounded hover:bg-emerald-600"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                    <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
+                    <td className="p-2 text-stone-600">{t.descripcion || '-'}</td>
+                    <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
+                    <td className="p-2 text-stone-800 font-medium">{t.cantidad || 1}</td>
+                    <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-800 font-medium">${(t.subtotal || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-800 font-bold">${(t.total || t.total_con_impuestos || 0).toLocaleString()}</td>
+                    <td className="p-2 flex gap-2">
+                      <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                      <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
                     </td>
                   </tr>
                 ))}
-                {creditos.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="p-4 text-center text-stone-500">
-                      No hay créditos
-                    </td>
-                  </tr>
-                )}
+                {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
               </tbody>
             </table>
           </div>
@@ -161,6 +136,7 @@ export default function CreditosPage() {
     </div>
   );
 }
+
 
 
 
