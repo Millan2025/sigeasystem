@@ -218,14 +218,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
       const res = await fetch("/api/creditos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cliente: creditoData.cliente,
-          telefono: creditoData.telefono,
-          direccion: creditoData.direccion,
-          monto: totalPrecio,
-          tenant_id: tenantId,
-          fecha: fechaLocal
-        }),
+        body: JSON.stringify({ cliente: creditoData.cliente, telefono: creditoData.telefono, direccion: creditoData.direccion, monto: totalPrecio, tenant_id: tenantId, fecha: fechaLocal, observaciones: creditoData.observaciones || "" }),
       });
       const data = await res.json();
       if (data.success) {
@@ -593,6 +586,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
     </div>
   );
 }
+
 
 
 

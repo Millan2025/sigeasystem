@@ -118,35 +118,84 @@ export async function PUT(request: Request) {
     const body = await request.json()
     const { id, monto_abono, observaciones, telefono, direccion } = body
 
-    if (!id || !monto_abono) {
+    if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Faltan: id, monto_abono' },
+        { success: false, error: 'Se requiere ID' },
         { status: 400 }
       )
     }
 
-    const { data: credito, error: getErr } = await supabase
-      .from('creditos')
-      .select('valor_pagado, tenant_id, valor_total')
-      .eq('id', id)
-      .single()
-    if (getErr) throw getErr
+    // Caso 1: Hay abono (monto_abono > 0) -> registrar abono
+    if (monto_abono !== undefined && monto_abono > 0) {
+      const { data: credito, error: getErr } = await supabase
+        .from('creditos')
+        .select('valor_pagado, tenant_id, valor_total')
+        .eq('id', id)
+        .single()
+      if (getErr) throw getErr
 
-    const nuevoPagado = (credito.valor_pagado || 0) + monto_abono
-    const nuevoSaldo = (credito.valor_total || 0) - nuevoPagado
-    const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
+      const nuevoPagado = (credito.valor_pagado || 0) + monto_abono
+      const nuevoSaldo = (credito.valor_total || 0) - nuevoPagado
+      const estado = nuevoSaldo <= 0 ? 'pagado' : 'pendiente'
 
+      const updateData: any = {
+        valor_pagado: nuevoPagado,
+        estado,
+        updated_at: new Date().toISOString()
+      }
+      if (estado === 'pagado') {
+        updateData.fecha_fin = new Date().toISOString().split('T')[0]
+      }
+
+      const { data, error } = await supabase
+        .from('creditos')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+
+      // Registrar abono en finanzas
+      try {
+        const { data: categoria, error: catErr } = await supabase
+          .from('categorias_contables')
+          .select('id')
+          .eq('codigo', '1-01-01')
+          .eq('tenant_id', credito.tenant_id)
+          .single()
+        if (!catErr && categoria) {
+          await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/finanzas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tipo: 'ingreso',
+              monto: monto_abono,
+              categoria_contable_id: categoria.id,
+              descripcion: `Abono a crédito #${id}`,
+              fecha: new Date().toISOString().split('T')[0],
+              impuesto: 0,
+              retencion: 0,
+              metodo_pago: 'Abono',
+              tenant_id: credito.tenant_id,
+              referencia_id: id,
+              referencia_tipo: 'credito'
+            })
+          })
+        }
+      } catch (finErr) {
+        console.error('Error al registrar abono en finanzas:', finErr)
+      }
+
+      return NextResponse.json({ success: true, data })
+    }
+
+    // Caso 2: No hay abono -> solo actualizar datos (observaciones, telefono, direccion)
     const updateData: any = {
-      valor_pagado: nuevoPagado,
-      estado,
       updated_at: new Date().toISOString()
     }
-    if (body.observaciones !== undefined) updateData.observaciones = body.observaciones
-    if (body.telefono !== undefined) updateData.telefono = body.telefono
-    if (body.direccion !== undefined) updateData.direccion = body.direccion
-    if (estado === 'pagado') {
-      updateData.fecha_fin = new Date().toISOString().split('T')[0]
-    }
+    if (observaciones !== undefined) updateData.observaciones = observaciones
+    if (telefono !== undefined) updateData.telefono = telefono
+    if (direccion !== undefined) updateData.direccion = direccion
 
     const { data, error } = await supabase
       .from('creditos')
@@ -156,42 +205,13 @@ export async function PUT(request: Request) {
       .single()
     if (error) throw error
 
-    try {
-      const { data: categoria, error: catErr } = await supabase
-        .from('categorias_contables')
-        .select('id')
-        .eq('codigo', '1-01-01')
-        .eq('tenant_id', credito.tenant_id)
-        .single()
-
-      if (!catErr && categoria) {
-        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/finanzas`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tipo: 'ingreso',
-            monto: monto_abono,
-            categoria_contable_id: categoria.id,
-            descripcion: `Abono a crédito #${id}`,
-            fecha: new Date().toISOString().split('T')[0],
-            impuesto: 0,
-            retencion: 0,
-            metodo_pago: 'Abono',
-            tenant_id: credito.tenant_id,
-            referencia_id: id,
-            referencia_tipo: 'credito'
-          })
-        })
-      }
-    } catch (finErr) {
-      console.error('Error al registrar abono en finanzas:', finErr)
-    }
-
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
+    console.error('❌ Error PUT /api/creditos:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
