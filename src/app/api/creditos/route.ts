@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { responsable, cliente, telefono, direccion, monto, tenant_id, fecha } = body
+    const { responsable, cliente, telefono, direccion, monto, tenant_id, fecha, observaciones } = body
 
     const nombreCliente = responsable || cliente
     if (!nombreCliente || !monto || !tenant_id) {
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         fecha_inicio: hoy,
         fecha_fin: fechaFin,
         estado: 'pendiente',
-        observaciones: observaciones.trim()
+        telefono: telefono || "", direccion: direccion || "", observaciones: observaciones || ""
       })
       .select()
       .single()
@@ -197,6 +197,8 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
+
 
 
 

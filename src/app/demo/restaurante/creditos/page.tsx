@@ -90,7 +90,14 @@ export default function CreditosPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
+                  <th className="text-left p-2 text-stone-700">Teléfono</th>
+                  <th className="text-left p-2 text-stone-700">Dirección</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
+                  <th className="text-left p-2 text-stone-700">Pagado</th>
+                  <th className="text-left p-2 text-stone-700">Saldo</th>
+                  <th className="text-left p-2 text-stone-700">Estado</th>
+                  <th className="text-left p-2 text-stone-700">Fecha</th>
+                  <th className="text-left p-2 text-stone-700">Observaciones</th>
                   <th className="text-left p-2 text-stone-700">Pagado</th>
                   <th className="text-left p-2 text-stone-700">Saldo</th>
                   <th className="text-left p-2 text-stone-700">Estado</th>
@@ -154,6 +161,7 @@ export default function CreditosPage() {
     </div>
   );
 }
+
 
 
 

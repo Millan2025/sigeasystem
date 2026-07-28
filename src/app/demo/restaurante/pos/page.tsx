@@ -41,7 +41,7 @@ export default function POSPage() {
   const [showPay, setShowPay] = useState(false);
   const [showCreditoModal, setShowCreditoModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [creditoData, setCreditoData] = useState({ cliente: "", telefono: "", direccion: "" });
+  const [creditoData, setCreditoData] = useState({ cliente: "", telefono: "", direccion: "", observaciones: "" });
   const [msg, setMsg] = useState("");
   const [catFilter, setCatFilter] = useState("Todo");
   const [searchTerm, setSearchTerm] = useState("");
@@ -587,3 +587,4 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
     </div>
   );
 }
+
