@@ -1,9 +1,10 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react", Edit;
+import { ArrowLeft, RefreshCw, CheckCircle, Edit, X } from "lucide-react";
 
 interface Credito {
   id: string;
@@ -28,8 +29,9 @@ export default function CreditosPage() {
   const [creditos, setCreditos] = useState<Credito[]>([]);
   const [loading, setLoading] = useState(true);
   const [abono, setAbono] = useState<{ id: string; monto: number } | null>(null);
-
-  
+  const [editando, setEditando] = useState<Credito | null>(null);
+  const [editData, setEditData] = useState({ observaciones: "", telefono: "", direccion: "" });
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const cargarCreditos = () => {
     setLoading(true);
@@ -64,6 +66,43 @@ export default function CreditosPage() {
     }
   };
 
+  const abrirEdicion = (credito: Credito) => {
+    setEditando(credito);
+    setEditData({
+      observaciones: credito.observaciones || "",
+      telefono: credito.telefono || "",
+      direccion: credito.direccion || "",
+    });
+    setShowEditModal(true);
+  };
+
+  const guardarEdicion = async () => {
+    if (!editando) return;
+    try {
+      const res = await fetch("/api/creditos", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editando.id,
+          observaciones: editData.observaciones,
+          telefono: editData.telefono,
+          direccion: editData.direccion,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowEditModal(false);
+        setEditando(null);
+        cargarCreditos();
+        alert("✅ Datos actualizados");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    }
+  };
+
   const totalPendiente = creditos
     .filter((c) => c.estado === "pendiente")
     .reduce((sum, c) => sum + c.saldo_pendiente, 0);
@@ -89,7 +128,7 @@ export default function CreditosPage() {
           <h3 className="font-semibold text-stone-800 mb-3">Listado de créditos</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-                                          <thead className="bg-stone-50">
+              <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
                   <th className="text-left p-2 text-stone-700">Teléfono</th>
@@ -103,7 +142,7 @@ export default function CreditosPage() {
                   <th className="text-left p-2 text-stone-700">Acción</th>
                 </tr>
               </thead>
-                                          <tbody>
+              <tbody>
                 {creditos.map((c) => (
                   <tr key={c.id} className="border-b border-stone-100">
                     <td className="p-2 text-stone-800">{c.responsable}</td>
@@ -119,16 +158,26 @@ export default function CreditosPage() {
                     </td>
                     <td className="p-2 text-stone-600">{new Date(c.fecha_inicio).toLocaleDateString()}</td>
                     <td className="p-2 text-stone-600">{c.observaciones || "-"}</td>
-                    <td className="p-2">
+                    <td className="p-2 flex gap-2">
+                      <button
+                        onClick={() => abrirEdicion(c)}
+                        className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        title="Editar datos"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
                       {c.estado === "pendiente" && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <input
                             type="number"
                             placeholder="Abono"
-                            className="w-20 border border-stone-300 rounded p-1 text-sm text-stone-800"
+                            className="w-16 border border-stone-300 rounded p-1 text-sm text-stone-800"
                             onChange={(e) => setAbono({ id: c.id, monto: parseFloat(e.target.value) || 0 })}
                           />
-                          <button onClick={() => registrarAbono(c.id)} className="p-1 bg-emerald-500 text-white rounded hover:bg-emerald-600">
+                          <button
+                            onClick={() => registrarAbono(c.id)}
+                            className="p-1 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+                          >
                             <CheckCircle className="w-4 h-4" />
                           </button>
                         </div>
@@ -148,19 +197,62 @@ export default function CreditosPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal Editar */}
+      {showEditModal && editando && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Editar datos de {editando.responsable}</h3>
+              <button onClick={() => setShowEditModal(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Teléfono</label>
+                <input
+                  type="text"
+                  value={editData.telefono}
+                  onChange={(e) => setEditData({ ...editData, telefono: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Dirección</label>
+                <input
+                  type="text"
+                  value={editData.direccion}
+                  onChange={(e) => setEditData({ ...editData, direccion: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Observaciones</label>
+                <textarea
+                  value={editData.observaciones}
+                  onChange={(e) => setEditData({ ...editData, observaciones: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                  rows={3}
+                  placeholder="Observaciones adicionales"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={guardarEdicion}
+                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
