@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+Ôªøimport { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -39,94 +39,39 @@ export async function GET(request: Request) {
       }
     }
 
-        // PaginaciÛn (lÌmite de 50 registros por p·gina)
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '50');
-    const start = (page - 1) * pageSize;
-    query = query.range(start, start + pageSize - 1);
-
     const { data, error } = await query
     if (error) throw error
 
-    // Obtener todos los IDs de ventas y compras en lote
-    const saleIds = data?.filter(t => t.referencia_tipo === 'venta' && t.referencia_id).map(t => t.referencia_id) || []
-    const compraIds = data?.filter(t => t.referencia_tipo === 'compra' && t.referencia_id).map(t => t.referencia_id) || []
-
-    // Obtener todos los items de ventas de una vez
-    let saleItemsMap: Record<string, any[]> = {}
-    if (saleIds.length > 0) {
-      const { data: saleItems } = await supabase
-        .from('sale_items')
-        .select('*, productos(id, nombre)')
-        .in('sale_id', saleIds)
-      if (saleItems) {
-        saleItems.forEach(item => {
-          if (!saleItemsMap[item.sale_id]) saleItemsMap[item.sale_id] = []
-          saleItemsMap[item.sale_id].push(item)
-        })
-      }
-    }
-
-    // Obtener todos los items de compras de una vez
-    let compraItemsMap: Record<string, any[]> = {}
-    if (compraIds.length > 0) {
-      const { data: compraItems } = await supabase
-        .from('compra_items')
-        .select('*, productos(id, nombre)')
-        .in('compra_id', compraIds)
-      if (compraItems) {
-        compraItems.forEach(item => {
-          if (!compraItemsMap[item.compra_id]) compraItemsMap[item.compra_id] = []
-          compraItemsMap[item.compra_id].push(item)
-        })
-      }
-    }
-
-    // Expandir datos usando los maps
     const expandedData: any[] = []
     let itemCounter = 1
 
     for (const t of data || []) {
-      const esVenta = t.referencia_tipo === 'venta' && t.referencia_id
+      // Determinar si es compra o venta
       const esCompra = t.referencia_tipo === 'compra' && t.referencia_id
+      const esVenta = t.referencia_tipo === 'venta' && t.referencia_id
 
-      if (esVenta) {
-        const items = saleItemsMap[t.referencia_id] || []
-        if (items.length === 0) {
-          expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: `Venta #${t.referencia_id}` })
-          continue
-        }
-        const ivaTotal = t.impuesto || 0
-        const retencionTotal = t.retencion || 0
-        const icaTotal = t.ica || 0
-        const subtotalTotal = items.reduce((sum, i) => sum + (i.quantity * i.price_at_sale), 0)
-        const metodo = t.metodo_pago || ''
-        const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
-        const descripcionBase = `Venta #${t.referencia_id} - ${metodo} - ${nombres}`
+      if (esCompra) {
+        // Expandir compra
+        const { data: items, error: itemsErr } = await supabase
+          .from('compra_items')
+          .select('*, productos(id, nombre)')
+          .eq('compra_id', t.referencia_id)
 
-        for (const item of items) {
-          const subtotalItem = item.quantity * item.price_at_sale
-          const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+        if (itemsErr || !items || items.length === 0) {
           expandedData.push({
             ...t,
-            descripcion: item.productos?.nombre || 'Producto',
-            cantidad: item.quantity,
-            precio_unitario: item.price_at_sale,
-            subtotal: subtotalItem,
-            iva: ivaTotal * proporcional,
-            retencion: retencionTotal * proporcional,
-            ica: icaTotal * proporcional,
-            total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
             item: itemCounter++,
-            descripcion_resumida: descripcionBase
+            descripcion: `Compra #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Compras'}`
           })
-        }
-      } else if (esCompra) {
-        const items = compraItemsMap[t.referencia_id] || []
-        if (items.length === 0) {
-          expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: `Compra #${t.referencia_id}` })
           continue
         }
+
         const subtotalTotal = items.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0)
         const ivaTotal = t.impuesto || 0
         const retencionTotal = t.retencion || 0
@@ -137,6 +82,7 @@ export async function GET(request: Request) {
         for (const item of items) {
           const subtotalItem = item.cantidad * item.precio_compra
           const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+
           expandedData.push({
             ...t,
             descripcion: item.productos?.nombre || 'Producto',
@@ -151,18 +97,88 @@ export async function GET(request: Request) {
             descripcion_resumida: descripcionBase
           })
         }
+      } else if (esVenta) {
+        // Expandir venta
+        const { data: items, error: itemsErr } = await supabase
+          .from('sale_items')
+          .select('*, productos(id, nombre)')
+          .eq('sale_id', t.referencia_id)
+
+        if (itemsErr || !items || items.length === 0) {
+          expandedData.push({
+            ...t,
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            item: itemCounter++,
+            descripcion: `Venta #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Ventas'}`
+          })
+          continue
+        }
+
+        const ivaTotal = t.impuesto || 0
+        const retencionTotal = t.retencion || 0
+        const icaTotal = t.ica || 0
+        const subtotalTotal = items.reduce((sum, i) => sum + (i.quantity * i.price_at_sale), 0)
+        const metodo = t.metodo_pago || ''
+        const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
+        const descripcionBase = `Venta #${t.referencia_id} - ${metodo} - ${nombres}`
+
+        for (const item of items) {
+          const subtotalItem = item.quantity * item.price_at_sale
+          const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+
+          expandedData.push({
+            ...t,
+            descripcion: item.productos?.nombre || 'Producto',
+            cantidad: item.quantity,
+            precio_unitario: item.price_at_sale,
+            subtotal: subtotalItem,
+            iva: ivaTotal * proporcional,
+            retencion: retencionTotal * proporcional,
+            ica: icaTotal * proporcional,
+            total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
+            item: itemCounter++,
+            descripcion_resumida: descripcionBase
+          })
+        }
       } else {
-        // Otras transacciones
+        // Otras transacciones (cr√©ditos, abonos, gastos)
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
-          const { data: credito } = await supabase.from('creditos').select('cliente').eq('id', t.referencia_id).single()
-          desc = `CrÈdito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
+          // Intentar obtener cliente desde cr√©ditos
+          const { data: credito } = await supabase
+            .from('creditos')
+            .select('cliente')
+            .eq('id', t.referencia_id)
+            .single()
+          const cliente = credito?.cliente || 'Cliente'
+          desc = `Cr√©dito #${t.referencia_id} - ${cliente}`
         } else if (t.referencia_tipo === 'abono') {
-          desc = `Abono a crÈdito #${t.referencia_id}`
+          desc = `Abono a cr√©dito #${t.referencia_id}`
         } else if (t.categorias_contables?.nombre === 'Gastos Operativos') {
           desc = t.descripcion || 'Gasto operativo'
+        } else if (t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras') {
+          desc = `Compra - ${t.descripcion || ''}`
+        } else if (t.tipo === 'ingreso' && t.categorias_contables?.nombre === 'Cuentas por Cobrar') {
+          desc = `Cr√©dito - ${t.descripcion || ''}`
         }
-        expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: desc, descripcion_resumida: desc })
+
+        expandedData.push({
+          ...t,
+          cantidad: 1,
+          precio_unitario: t.monto,
+          subtotal: t.monto,
+          iva: 0,
+          retencion: 0,
+          ica: 0,
+          item: itemCounter++,
+          descripcion: desc,
+          descripcion_resumida: desc
+        })
       }
     }
 
@@ -176,16 +192,27 @@ export async function GET(request: Request) {
     const desglosePagos: Record<string, number> = {}
     expandedData.filter(t => t.tipo === 'ingreso').forEach(t => {
       let metodo = t.metodo_pago || 'Otro'
-      if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros'
+      if (metodo === 'Otro') metodo = 'Otros'
+      if (metodo === 'Confirmado') metodo = 'Otros'
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || 0)
     })
 
-    const costo_ventas = expandedData.filter(t => t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
+    const costo_ventas = expandedData
+      .filter(t => t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras')
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
+
     let gastos_operativos = 0
     try {
-      const { data: gastosData } = await supabase.from('gastos_operativos').select('monto').eq('tenant_id', tenantId)
-      if (gastosData) gastos_operativos = gastosData.reduce((sum, g) => sum + (g.monto || 0), 0)
-    } catch (e) {}
+      const { data: gastosData, error: gastosErr } = await supabase
+        .from('gastos_operativos')
+        .select('monto')
+        .eq('tenant_id', tenantId)
+      if (!gastosErr && gastosData) {
+        gastos_operativos = gastosData.reduce((sum, g) => sum + (g.monto || 0), 0)
+      }
+    } catch (e) {
+      console.error('Error al obtener gastos operativos:', e)
+    }
 
     const utilidad_bruta = ingresos - costo_ventas
     const utilidad_neta = utilidad_bruta - gastos_operativos
@@ -193,15 +220,26 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       data: expandedData,
-      resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos, costo_ventas, gastos_operativos, utilidad_bruta, utilidad_neta }
+      resumen: {
+        ingresos,
+        egresos,
+        saldo,
+        impuestos,
+        retenciones,
+        desglosePagos,
+        costo_ventas,
+        gastos_operativos,
+        utilidad_bruta,
+        utilidad_neta
+      }
     })
   } catch (error: any) {
-    console.error('? Error GET /api/finanzas:', error)
+    console.error('‚ùå Error GET /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// POST: crear transacciÛn
+// POST: crear transacci√≥n
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -237,12 +275,12 @@ export async function POST(request: Request) {
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('? Error POST /api/finanzas:', error)
+    console.error('‚ùå Error POST /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// PUT: actualizar transacciÛn
+// PUT: actualizar transacci√≥n
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
@@ -278,12 +316,12 @@ export async function PUT(request: Request) {
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('? Error PUT /api/finanzas:', error)
+    console.error('‚ùå Error PUT /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// DELETE: eliminar transacciÛn
+// DELETE: eliminar transacci√≥n
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url)
@@ -302,15 +340,12 @@ export async function DELETE(request: Request) {
       .eq('id', id)
 
     if (error) throw error
-    return NextResponse.json({ success: true, message: 'TransacciÛn eliminada' })
+    return NextResponse.json({ success: true, message: 'Transacci√≥n eliminada' })
   } catch (error: any) {
-    console.error('? Error DELETE /api/finanzas:', error)
+    console.error('‚ùå Error DELETE /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
 
 
 
