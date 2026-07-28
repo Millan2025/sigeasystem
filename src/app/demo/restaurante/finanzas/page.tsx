@@ -515,3 +515,4 @@
 <td className="p-2 text-stone-600" title={t.descripcion_resumida || t.descripcion}>{t.descripcion || "-"}</td><td className="p-2 text-stone-600" title={t.descripcion_resumida || t.descripcion}>{t.descripcion || "-"}</td>
 <td className="p-2 text-stone-600" title={t.descripcion_resumida || t.descripcion}>{t.descripcion || "-"}</td><td className="p-2 text-stone-600" title={t.descripcion_resumida || t.descripcion}>{t.descripcion || "-"}</td>
 <td className="p-2 text-stone-600" title={t.descripcion_resumida || t.descripcion}>{t.descripcion || "-"}</td>
+
