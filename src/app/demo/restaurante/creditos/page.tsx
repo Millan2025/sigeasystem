@@ -156,7 +156,7 @@ export default function CreditosPage() {
                         {c.estado}
                       </span>
                     </td>
-                    <td className="p-2 text-stone-600">{new Date(c.fecha_inicio).toLocaleDateString()}</td>
+                    <td className="p-2 text-stone-600">{c.fecha_inicio}</td>
                     <td className="p-2 text-stone-600">{c.observaciones || "-"}</td>
                     <td className="p-2 flex gap-2">
                       <button
@@ -256,3 +256,4 @@ export default function CreditosPage() {
     </div>
   );
 }
+

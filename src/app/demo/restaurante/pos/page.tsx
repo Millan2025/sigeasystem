@@ -501,7 +501,13 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
             <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar Crédito</h3>
             <p className="text-sm text-stone-600 mb-4">Total: ${totalPrecio.toLocaleString()}</p>
             <div className="space-y-3">
-              <input
+                            <input
+                type="text"
+                placeholder="Observaciones (opcional)"
+                value={creditoData.observaciones}
+                onChange={(e) => setCreditoData({ ...creditoData, observaciones: e.target.value })}
+                className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+              /><input
                 type="text"
                 placeholder="Nombre del cliente"
                 value={creditoData.cliente}
@@ -587,6 +593,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
     </div>
   );
 }
+
 
 
 
