@@ -74,6 +74,9 @@ export async function GET(request: Request) {
           const ivaTotal = t.impuesto || 0
           const retencionTotal = t.retencion || 0
           const icaTotal = t.ica || 0
+          // Construir descripción con nombres de productos
+          const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
+          const descripcionBase = `Compra #${t.referencia_id} - ${nombres}`
 
           for (const item of items) {
             const subtotalItem = item.cantidad * item.precio_compra
@@ -89,7 +92,9 @@ export async function GET(request: Request) {
               retencion: retencionTotal * proporcional,
               ica: icaTotal * proporcional,
               total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
-              item: itemCounter++
+              item: itemCounter++,
+              // También guardamos la descripción resumida en un campo extra para mostrar en la vista general
+              descripcion_resumida: descripcionBase
             })
           }
         } else {
@@ -106,7 +111,7 @@ export async function GET(request: Request) {
           })
         }
       } else if (t.referencia_tipo === 'venta' && t.referencia_id) {
-        // 🔥 Expandir ventas en items
+        // 🔥 Expandir ventas en items y construir descripción con productos
         const { data: items, error: itemsErr } = await supabase
           .from('sale_items')
           .select('*, productos(id, nombre)')
@@ -133,6 +138,10 @@ export async function GET(request: Request) {
           const retencionTotal = t.retencion || 0
           const icaTotal = t.ica || 0
           const subtotalTotal = items.reduce((sum, i) => sum + (i.quantity * i.price_at_sale), 0)
+          // Construir descripción con nombres de productos
+          const nombres = items.map(i => i.productos?.nombre || 'Producto').join(', ')
+          const metodo = t.metodo_pago || ''
+          const descripcionBase = `Venta #${t.referencia_id} - ${metodo} - ${nombres}`
 
           for (const item of items) {
             const subtotalItem = item.quantity * item.price_at_sale
@@ -148,7 +157,8 @@ export async function GET(request: Request) {
               retencion: retencionTotal * proporcional,
               ica: icaTotal * proporcional,
               total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
-              item: itemCounter++
+              item: itemCounter++,
+              descripcion_resumida: descripcionBase
             })
           }
         } else {
@@ -166,10 +176,16 @@ export async function GET(request: Request) {
         }
       } else {
         // Transacciones no compra/venta (ej: créditos, abonos, gastos operativos)
-        // Mejorar descripción
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
-          desc = `Crédito #${t.referencia_id} - ${t.cliente || 'Cliente'}`
+          // Obtener nombre del cliente desde la transacción o desde el crédito
+          const { data: credito } = await supabase
+            .from('creditos')
+            .select('cliente')
+            .eq('id', t.referencia_id)
+            .single()
+          const cliente = credito?.cliente || 'Cliente'
+          desc = `Crédito #${t.referencia_id} - ${cliente}`
         } else if (t.referencia_tipo === 'abono') {
           desc = `Abono a crédito #${t.referencia_id}`
         } else if (t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras') {
@@ -177,7 +193,6 @@ export async function GET(request: Request) {
         } else if (t.tipo === 'ingreso' && t.categorias_contables?.nombre === 'Cuentas por Cobrar') {
           desc = `Crédito - ${t.descripcion || ''}`
         }
-        // Para transacciones de tipo 'gasto_operativo', usamos el concepto
         if (t.categorias_contables?.nombre === 'Gastos Operativos') {
           desc = t.descripcion || 'Gasto operativo'
         }
@@ -191,7 +206,8 @@ export async function GET(request: Request) {
           retencion: 0,
           ica: 0,
           item: itemCounter++,
-          descripcion: desc
+          descripcion: desc,
+          descripcion_resumida: desc
         })
       }
     }
@@ -206,9 +222,8 @@ export async function GET(request: Request) {
     const desglosePagos: Record<string, number> = {}
     expandedData.filter(t => t.tipo === 'ingreso').forEach(t => {
       let metodo = t.metodo_pago || 'Otro'
-      // Unificar "Otros" y "Otro"
       if (metodo === 'Otro') metodo = 'Otros'
-      if (metodo === 'Confirmado') metodo = 'Otros' // Corregir método de pago incorrecto
+      if (metodo === 'Confirmado') metodo = 'Otros'
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || 0)
     })
 
