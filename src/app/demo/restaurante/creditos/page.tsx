@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
+import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react", Edit;
 
 interface Credito {
   id: string;
@@ -151,6 +151,7 @@ export default function CreditosPage() {
     </div>
   );
 }
+
 
 
 

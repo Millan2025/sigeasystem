@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Usar fecha enviada desde frontend (en formato YYYY-MM-DD) o fallback a UTC
     const hoy = fecha || new Date().toISOString().split('T')[0]
     const fechaFin = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    const obs = observaciones || `Tel: ${telefono || ''} - Dir: ${direccion || ''}`
+    const obs = observaciones || ""
 
     const { data: credito, error } = await supabase
       .from('creditos')
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         fecha_inicio: hoy,
         fecha_fin: fechaFin,
         estado: 'pendiente',
-        observaciones: obs,
+        observaciones: observaciones || "",
         telefono: telefono || null,
         direccion: direccion || null
       })
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
-    const { id, monto_abono } = body
+    const { id, monto_abono, observaciones, telefono, direccion } = body
 
     if (!id || !monto_abono) {
       return NextResponse.json(
@@ -141,6 +141,9 @@ export async function PUT(request: Request) {
       estado,
       updated_at: new Date().toISOString()
     }
+    if (body.observaciones !== undefined) updateData.observaciones = body.observaciones
+    if (body.telefono !== undefined) updateData.telefono = body.telefono
+    if (body.direccion !== undefined) updateData.direccion = body.direccion
     if (estado === 'pagado') {
       updateData.fecha_fin = new Date().toISOString().split('T')[0]
     }
@@ -189,4 +192,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
+
 
