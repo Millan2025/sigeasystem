@@ -94,7 +94,7 @@ export default function CreditosPage() {
                   <th className="text-left p-2 text-stone-700">Pagado</th>
                   <th className="text-left p-2 text-stone-700">Saldo</th>
                   <th className="text-left p-2 text-stone-700">Estado</th>
-                  <th className="text-left p-2 text-stone-700">Fecha</th>
+                  <th className="text-left p-2 text-stone-700">Observaciones</th><th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Acción</th>
                 </tr>
               </thead>
@@ -116,7 +116,7 @@ export default function CreditosPage() {
                         {c.estado}
                       </span>
                     </td>
-                    <td className="p-2 text-stone-600">{new Date(c.fecha_inicio).toLocaleDateString()}</td>
+                    <td className="p-2 text-stone-600">{c.observaciones || "-"}</td><td className="p-2 text-stone-600">{new Date(c.fecha_inicio).toLocaleDateString()}</td>
                     <td className="p-2">
                       {c.estado === "pendiente" && (
                         <div className="flex items-center gap-2">
@@ -154,6 +154,7 @@ export default function CreditosPage() {
     </div>
   );
 }
+
 
 
 
