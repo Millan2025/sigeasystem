@@ -170,13 +170,13 @@ export default function CreditosPage() {
                         <div className="flex items-center gap-1">
                           <input
                             type="number"
-                            placeholder="Abono"
-                            className="w-16 border border-stone-300 rounded p-1 text-sm text-stone-800"
+                            placeholder="$"
+                            className="w-12 border border-stone-300 rounded p-0.5 text-xs text-stone-800"
                             onChange={(e) => setAbono({ id: c.id, monto: parseFloat(e.target.value) || 0 })}
                           />
                           <button
                             onClick={() => registrarAbono(c.id)}
-                            className="p-1 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+                            className="p-0.5 bg-emerald-500 text-white rounded hover:bg-emerald-600"
                           >
                             <CheckCircle className="w-4 h-4" />
                           </button>
@@ -256,4 +256,5 @@ export default function CreditosPage() {
     </div>
   );
 }
+
 
