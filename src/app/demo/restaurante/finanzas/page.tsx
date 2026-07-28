@@ -359,7 +359,7 @@ export default function FinanzasPage() {
                   <th className="text-left p-2 text-stone-700">Retención</th>
                   <th className="text-left p-2 text-stone-700">ICA</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
-                  <th className="text-left p-2 text-stone-700">Acciones</th>
+                  <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
                 </tr>
               </thead>
                             <tbody>
@@ -382,7 +382,7 @@ export default function FinanzasPage() {
                     <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-800 font-bold">${(t.total || t.total_con_impuestos || 0).toLocaleString()}</td>
-                    <td className="p-2 flex gap-2">
+                    <td className="p-2 flex gap-2 whitespace-nowrap">
                       <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
                       <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
                     </td>
@@ -493,6 +493,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 

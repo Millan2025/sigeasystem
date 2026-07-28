@@ -42,11 +42,11 @@ export async function GET(request: Request) {
     const { data, error } = await query
     if (error) throw error
 
-    // Expandir transacciones de compra en items
     const expandedData: any[] = []
     let itemCounter = 1
 
     for (const t of data || []) {
+      // Si es compra o venta, expandir en items
       if (t.referencia_tipo === 'compra' && t.referencia_id) {
         const { data: items, error: itemsErr } = await supabase
           .from('compra_items')
@@ -63,7 +63,8 @@ export async function GET(request: Request) {
             iva: 0,
             retencion: 0,
             ica: 0,
-            item: itemCounter++
+            item: itemCounter++,
+            descripcion: `Compra #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Compras'}`
           })
           continue
         }
@@ -100,10 +101,87 @@ export async function GET(request: Request) {
             iva: 0,
             retencion: 0,
             ica: 0,
-            item: itemCounter++
+            item: itemCounter++,
+            descripcion: `Compra #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Compras'}`
+          })
+        }
+      } else if (t.referencia_tipo === 'venta' && t.referencia_id) {
+        // 🔥 Expandir ventas en items
+        const { data: items, error: itemsErr } = await supabase
+          .from('sale_items')
+          .select('*, productos(id, nombre)')
+          .eq('sale_id', t.referencia_id)
+
+        if (itemsErr) {
+          console.error('Error al obtener items de venta:', itemsErr)
+          expandedData.push({
+            ...t,
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            item: itemCounter++,
+            descripcion: `Venta #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Ventas'}`
+          })
+          continue
+        }
+
+        if (items && items.length > 0) {
+          const ivaTotal = t.impuesto || 0
+          const retencionTotal = t.retencion || 0
+          const icaTotal = t.ica || 0
+          const subtotalTotal = items.reduce((sum, i) => sum + (i.quantity * i.price_at_sale), 0)
+
+          for (const item of items) {
+            const subtotalItem = item.quantity * item.price_at_sale
+            const proporcional = subtotalTotal > 0 ? subtotalItem / subtotalTotal : 0
+
+            expandedData.push({
+              ...t,
+              descripcion: item.productos?.nombre || 'Producto',
+              cantidad: item.quantity,
+              precio_unitario: item.price_at_sale,
+              subtotal: subtotalItem,
+              iva: ivaTotal * proporcional,
+              retencion: retencionTotal * proporcional,
+              ica: icaTotal * proporcional,
+              total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
+              item: itemCounter++
+            })
+          }
+        } else {
+          expandedData.push({
+            ...t,
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            item: itemCounter++,
+            descripcion: `Venta #${t.referencia_id} - ${t.categorias_contables?.nombre || 'Ventas'}`
           })
         }
       } else {
+        // Transacciones no compra/venta (ej: créditos, abonos, gastos operativos)
+        // Mejorar descripción
+        let desc = t.descripcion || ''
+        if (t.referencia_tipo === 'credito') {
+          desc = `Crédito #${t.referencia_id} - ${t.cliente || 'Cliente'}`
+        } else if (t.referencia_tipo === 'abono') {
+          desc = `Abono a crédito #${t.referencia_id}`
+        } else if (t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras') {
+          desc = `Compra - ${t.descripcion || ''}`
+        } else if (t.tipo === 'ingreso' && t.categorias_contables?.nombre === 'Cuentas por Cobrar') {
+          desc = `Crédito - ${t.descripcion || ''}`
+        }
+        // Para transacciones de tipo 'gasto_operativo', usamos el concepto
+        if (t.categorias_contables?.nombre === 'Gastos Operativos') {
+          desc = t.descripcion || 'Gasto operativo'
+        }
+
         expandedData.push({
           ...t,
           cantidad: 1,
@@ -112,12 +190,13 @@ export async function GET(request: Request) {
           iva: 0,
           retencion: 0,
           ica: 0,
-          item: itemCounter++
+          item: itemCounter++,
+          descripcion: desc
         })
       }
     }
 
-    // Calcular resumen básico
+    // Recalcular resumen
     const ingresos = expandedData.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
     const egresos = expandedData.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
     const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0)
@@ -126,16 +205,17 @@ export async function GET(request: Request) {
 
     const desglosePagos: Record<string, number> = {}
     expandedData.filter(t => t.tipo === 'ingreso').forEach(t => {
-      const metodo = t.metodo_pago || 'Otro'
+      let metodo = t.metodo_pago || 'Otro'
+      // Unificar "Otros" y "Otro"
+      if (metodo === 'Otro') metodo = 'Otros'
+      if (metodo === 'Confirmado') metodo = 'Otros' // Corregir método de pago incorrecto
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || 0)
     })
 
-    // 🔥 NUEVO: Calcular costo de ventas (egresos de Compras)
     const costo_ventas = expandedData
       .filter(t => t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras')
       .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
 
-    // 🔥 Obtener gastos operativos desde la tabla gastos_operativos
     let gastos_operativos = 0
     try {
       const { data: gastosData, error: gastosErr } = await supabase
@@ -281,6 +361,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
