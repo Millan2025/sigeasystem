@@ -14,6 +14,8 @@ interface Credito {
   estado: string;
   fecha_inicio: string;
   observaciones: string;
+  telefono?: string;
+  direccion?: string;
   tenant_id: string;
 }
 
@@ -149,6 +151,7 @@ export default function CreditosPage() {
     </div>
   );
 }
+
 
 
 
