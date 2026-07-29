@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-// Formateador de fecha manual (sin conversiÃ³n UTC)
+// Formateador de fecha manual (sin conversión UTC)
 const formatDate = (fechaStr: string) => {
   if (!fechaStr) return "-";
   const partes = fechaStr.split("-");
@@ -49,16 +49,7 @@ export default function FinanzasPage() {
   const [showModalCategoria, setShowImportModalCategoria] = useState(false);
   const [showModalPeriodo, setShowImportModalPeriodo] = useState(false);
   const [filtros, setFiltros] = useState({ start: "", end: "", tipo: "", categoria: "", periodo: "" });
-  const [pagina, setPagina] = useState(1);
-  const [totalPaginas, setTotalPaginas] = useState(1);
-  const [totalRegistros, setTotalRegistros] = useState(0);
-  const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
-  const [mostrarDetalle, setMostrarDetalle] = useState(false);const [pagina, setPagina] = useState(1);
-  const [totalPaginas, setTotalPaginas] = useState(1);
-  const [totalRegistros, setTotalRegistros] = useState(0);
-  const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
-  const [mostrarDetalle, setMostrarDetalle] = useState(false);
-const [editando, setEditando] = useState<any>(null);
+  const [editando, setEditando] = useState<any>(null);
   const [formTransaccion, setFormTransaccion] = useState({
     tipo: "ingreso",
     monto: 0,
@@ -72,6 +63,13 @@ const [editando, setEditando] = useState<any>(null);
   const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
   const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
 
+  // Paginación y modal
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
+  const [mostrarDetalle, setMostrarDetalle] = useState(false);
+
   const cargarDatos = async () => {
     setLoading(true);
     // 1. Transacciones y resumen
@@ -81,21 +79,21 @@ const [editando, setEditando] = useState<any>(null);
     if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
     if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
     if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
+    url += `&page=${pagina}&pageSize=50`;
 
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      // Calcular pÃ¡ginas: si hay menos de 50, es la Ãºltima; si no, asumimos que hay mÃ¡s
+      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
+      // Calcular páginas (si la API no devuelve total, lo estimamos)
       const total = data.data?.length || 0;
       setTotalRegistros(total);
       if (total < 50) setTotalPaginas(pagina);
-      else setTotalPaginas(pagina + 1); // aÃºn no sabemos el total exacto, pero podemos incrementar
-      // Una mejora serÃ­a que la API devuelva el total, pero por ahora funciona
-      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
+      else setTotalPaginas(pagina + 1);
     }
 
-    // 2. Cuentas por Cobrar (saldos pendientes de crÃ©ditos)
+    // 2. Cuentas por Cobrar (saldos pendientes de créditos)
     const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
     const creditosData = await creditosRes.json();
     if (creditosData.success) {
@@ -105,7 +103,7 @@ const [editando, setEditando] = useState<any>(null);
       setCuentasPorCobrar(pendientes);
     }
 
-    // 3. Cuentas por Pagar (pendiente de implementar compras a crÃ©dito)
+    // 3. Cuentas por Pagar (pendiente de implementar compras a crédito)
     try {
       const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
       const comprasData = await comprasRes.json();
@@ -119,7 +117,7 @@ const [editando, setEditando] = useState<any>(null);
       setCuentasPorPagar(0);
     }
 
-    // 4. CategorÃ­as y perÃ­odos
+    // 4. Categorías y períodos
     const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
@@ -133,12 +131,9 @@ const [editando, setEditando] = useState<any>(null);
 
   useEffect(() => {
     cargarDatos();
-  }, [tenantId, filtros]);
+  }, [tenantId, filtros, pagina]);
 
-  const cambiarPagina = (nuevaPagina: number) => {
-    setPagina(nuevaPagina);
-  };
-
+  // Resetear página cuando cambian los filtros
   useEffect(() => {
     setPagina(1);
   }, [filtros]);
@@ -146,11 +141,6 @@ const [editando, setEditando] = useState<any>(null);
   const cambiarPagina = (nuevaPagina: number) => {
     setPagina(nuevaPagina);
   };
-
-  // Resetear pÃ¡gina cuando cambian los filtros
-  useEffect(() => {
-    setPagina(1);
-  }, [filtros]);
 
   // CRUD transacciones
   const guardarTransaccion = async () => {
@@ -185,7 +175,7 @@ const [editando, setEditando] = useState<any>(null);
   };
 
   const eliminarTransaccion = async (id: string) => {
-    if (!confirm("Â¿Eliminar esta transacciÃ³n?")) return;
+    if (!confirm("¿Eliminar esta transacción?")) return;
     const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -219,14 +209,14 @@ const [editando, setEditando] = useState<any>(null);
       "#": t.item || '',
       "Fecha": formatDate(t.fecha),
       "Tipo": t.tipo,
-      "CategorÃ­a": t.categorias_contables?.nombre || '',
-      "DescripciÃ³n": t.descripcion_resumida || t.descripcion || '',
-      "MÃ©todo de Pago": t.metodo_pago || '',
+      "Categoría": t.categorias_contables?.nombre || '',
+      "Descripción": t.descripcion_resumida || t.descripcion || '',
+      "Método de Pago": t.metodo_pago || '',
       "Cantidad": t.cantidad ?? 1,
       "Precio Unitario": t.precio_unitario ?? 0,
       "Subtotal": t.subtotal ?? 0,
       "IVA": t.iva || 0,
-      "RetenciÃ³n": t.retencion || 0,
+      "Retención": t.retencion || 0,
       "ICA": t.ica || 0,
       "Total": t.total ?? t.total_con_impuestos ?? 0,
     }));
@@ -247,7 +237,7 @@ const [editando, setEditando] = useState<any>(null);
     if (data.success) {
       setFormCategoria({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
       cargarDatos();
-      alert("CategorÃ­a agregada");
+      alert("Categoría agregada");
     } else {
       alert(data.error);
     }
@@ -263,7 +253,7 @@ const [editando, setEditando] = useState<any>(null);
     if (data.success) {
       setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
       cargarDatos();
-      alert("PerÃ­odo creado");
+      alert("Período creado");
     } else {
       alert(data.error);
     }
@@ -310,7 +300,7 @@ const [editando, setEditando] = useState<any>(null);
       }
     } else if (tipo === "anual") {
       periodos.push({
-        nombre: `AÃ±o ${year}`,
+        nombre: `Año ${year}`,
         fecha_inicio: `${year}-01-01`,
         fecha_fin: `${year}-12-31`,
         tipo: "anual",
@@ -324,7 +314,7 @@ const [editando, setEditando] = useState<any>(null);
       });
     });
     cargarDatos();
-    alert(`PerÃ­odos ${tipo} generados correctamente`);
+    alert(`Períodos ${tipo} generados correctamente`);
   };
 
   return (
@@ -354,21 +344,21 @@ const [editando, setEditando] = useState<any>(null);
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Registrar nuevo movimiento"
         >
-          <Plus className="w-4 h-4" /> Nueva TransacciÃ³n
+          <Plus className="w-4 h-4" /> Nueva Transacción
         </button>
         <button
           onClick={() => setShowImportModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Plan de cuentas"
         >
-          <BookOpen className="w-4 h-4" /> CategorÃ­as
+          <BookOpen className="w-4 h-4" /> Categorías
         </button>
         <button
           onClick={() => setShowImportModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="PerÃ­odos fiscales"
+          title="Períodos fiscales"
         >
-          <Calendar className="w-4 h-4" /> PerÃ­odos
+          <Calendar className="w-4 h-4" /> Períodos
         </button>
         <button
           onClick={exportarExcel}
@@ -419,10 +409,10 @@ const [editando, setEditando] = useState<any>(null);
           </div>
         </div>
 
-        {/* Desglose por mÃ©todo de pago */}
+        {/* Desglose por método de pago */}
         {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-            <h3 className="font-semibold text-stone-800 mb-2">Desglose por MÃ©todo de Pago</h3>
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose por Método de Pago</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
@@ -448,11 +438,11 @@ const [editando, setEditando] = useState<any>(null);
               <option value="egreso">Egresos</option>
             </select>
             <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todas las categorÃ­as</option>
+              <option value="">Todas las categorías</option>
               {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
             </select>
             <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todos los perÃ­odos</option>
+              <option value="">Todos los períodos</option>
               {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
             </select>
           </div>
@@ -462,20 +452,20 @@ const [editando, setEditando] = useState<any>(null);
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[1000px]">
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">#</th>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Tipo</th>
-                  <th className="text-left p-2 text-stone-700">CategorÃ­a</th>
-                  <th className="text-left p-2 text-stone-700">DescripciÃ³n</th>
-                  <th className="text-left p-2 text-stone-700">MÃ©todo de Pago</th>
+                  <th className="text-left p-2 text-stone-700">Categoría</th>
+                  <th className="text-left p-2 text-stone-700">Descripción</th>
+                  <th className="text-left p-2 text-stone-700">Método de Pago</th>
                   <th className="text-left p-2 text-stone-700">Cantidad</th>
                   <th className="text-left p-2 text-stone-700">Precio Unit.</th>
                   <th className="text-left p-2 text-stone-700">Subtotal</th>
                   <th className="text-left p-2 text-stone-700">IVA</th>
-                  <th className="text-left p-2 text-stone-700">RetenciÃ³n</th>
+                  <th className="text-left p-2 text-stone-700">Retención</th>
                   <th className="text-left p-2 text-stone-700">ICA</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
                   <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
@@ -483,7 +473,7 @@ const [editando, setEditando] = useState<any>(null);
               </thead>
               <tbody>
                 {transacciones.map((t: any) => (
-                  <tr key={t.id} className="border-b border-stone-100">
+                  <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
                     <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
                     <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
                     <td className="p-2">
@@ -511,8 +501,8 @@ const [editando, setEditando] = useState<any>(null);
                     <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
                     <td className="p-2 flex gap-2 whitespace-nowrap">
-                      <button onClick={() => editarTransaccion(t)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
-                      <button onClick={() => eliminarTransaccion(t.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
                     </td>
                   </tr>
                 ))}
@@ -521,13 +511,67 @@ const [editando, setEditando] = useState<any>(null);
             </table>
           </div>
         </div>
+
+        {/* Botones de paginación */}
+        <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
+          <div className="text-sm text-stone-600">
+            Mostrando hasta {transacciones.length} registros (página {pagina})
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => cambiarPagina(pagina - 1)}
+              disabled={pagina <= 1}
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => cambiarPagina(pagina + 1)}
+              disabled={transacciones.length < 50}
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Modal TransacciÃ³n */}
+      {/* Modal de Detalle */}
+      {mostrarDetalle && movimientoSeleccionado && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-stone-800">Detalle del Movimiento</h3>
+              <button onClick={() => setMostrarDetalle(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">#</span><span>{movimientoSeleccionado.item || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Fecha</span><span>{formatDate(movimientoSeleccionado.fecha)}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Tipo</span><span className="capitalize">{movimientoSeleccionado.tipo}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Categoría</span><span>{movimientoSeleccionado.categorias_contables?.nombre || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Descripción</span><span>{movimientoSeleccionado.descripcion || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Descripción Resumida</span><span>{movimientoSeleccionado.descripcion_resumida || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Método de Pago</span><span>{movimientoSeleccionado.metodo_pago || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Cantidad</span><span>{movimientoSeleccionado.cantidad ?? 1}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Precio Unitario</span><span>${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Subtotal</span><span>${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">IVA</span><span>${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Retención</span><span>${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">ICA</span><span>${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setMostrarDetalle(false)} className="bg-stone-200 text-stone-800 px-6 py-2 rounded-xl hover:bg-stone-300">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Transacción */}
       {showModalTransaccion && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃ³n" : "Nueva TransacciÃ³n"}</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar Transacción" : "Nueva Transacción"}</h3>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-stone-700">Tipo</label>
@@ -541,14 +585,14 @@ const [editando, setEditando] = useState<any>(null);
                 <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">CategorÃ­a contable</label>
+                <label className="block text-sm font-medium text-stone-700">Categoría contable</label>
                 <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">Seleccionar...</option>
                   {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">DescripciÃ³n</label>
+                <label className="block text-sm font-medium text-stone-700">Descripción</label>
                 <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
@@ -560,18 +604,18 @@ const [editando, setEditando] = useState<any>(null);
                 <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">RetenciÃ³n</label>
+                <label className="block text-sm font-medium text-stone-700">Retención</label>
                 <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">MÃ©todo de pago</label>
+                <label className="block text-sm font-medium text-stone-700">Método de pago</label>
                 <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">No aplica</option>
                   <option value="Efectivo">Efectivo</option>
                   <option value="Nequi">Nequi</option>
                   <option value="Bancolombia">Bancolombia</option>
                   <option value="Daviplata">Daviplata</option>
-                  <option value="CrÃ©dito">CrÃ©dito</option>
+                  <option value="Crédito">Crédito</option>
                 </select>
               </div>
             </div>
@@ -583,7 +627,7 @@ const [editando, setEditando] = useState<any>(null);
         </div>
       )}
 
-      {/* Modal CategorÃ­as */}
+      {/* Modal Categorías */}
       {showModalCategoria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -598,31 +642,31 @@ const [editando, setEditando] = useState<any>(null);
                   <span className="text-xs text-stone-600">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃ­as</p>}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorías</p>}
             </div>
             <div className="mt-4 border-t pt-4">
               <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
               <div className="space-y-2">
-                <input type="text" placeholder="CÃ³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <input type="text" placeholder="Código (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <select value={formCategoria.tipo} onChange={(e) => setFormCategoria({...formCategoria, tipo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm">
                   <option value="ingreso">Ingreso</option>
                   <option value="egreso">Egreso</option>
                   <option value="costo">Costo</option>
                 </select>
-                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃ­a</button>
+                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar Categoría</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal PerÃ­odos */}
+      {/* Modal Períodos */}
       {showModalPeriodo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">PerÃ­odos Fiscales</h3>
+              <h3 className="text-lg font-bold text-stone-800">Períodos Fiscales</h3>
               <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
@@ -632,10 +676,10 @@ const [editando, setEditando] = useState<any>(null);
                   <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
-              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃ­odos.</p>}
+              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay períodos.</p>}
             </div>
             <div>
-              <h4 className="font-medium text-stone-700 mb-2">Generar perÃ­odos automÃ¡ticos</h4>
+              <h4 className="font-medium text-stone-700 mb-2">Generar períodos automáticos</h4>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
                 <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
@@ -643,14 +687,14 @@ const [editando, setEditando] = useState<any>(null);
                 <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
               </div>
               <div className="mt-4 border-t pt-4">
-                <h4 className="font-medium text-stone-700 mb-2">Crear perÃ­odo manual</h4>
+                <h4 className="font-medium text-stone-700 mb-2">Crear período manual</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <div className="flex gap-2">
                     <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                     <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   </div>
-                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃ­odo</button>
+                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear Período</button>
                 </div>
               </div>
             </div>
