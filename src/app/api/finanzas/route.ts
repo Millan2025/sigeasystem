@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       }
     }
 
-        // Paginaci髇 (l韒ite de 50 registros por p醙ina)
+        // Paginaci贸n (l铆mite de 50 registros por p谩gina)
     const page = parseInt(url.searchParams.get('page') || '1');
     const pageSize = parseInt(url.searchParams.get('pageSize') || '50');
     const start = (page - 1) * pageSize;
@@ -156,9 +156,9 @@ export async function GET(request: Request) {
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
           const { data: credito } = await supabase.from('creditos').select('cliente').eq('id', t.referencia_id).single()
-          desc = `Cr閐ito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
+          desc = `Cr茅dito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
         } else if (t.referencia_tipo === 'abono') {
-          desc = `Abono a cr閐ito #${t.referencia_id}`
+          desc = `Abono a cr茅dito #${t.referencia_id}`
         } else if (t.categorias_contables?.nombre === 'Gastos Operativos') {
           desc = t.descripcion || 'Gasto operativo'
         }
@@ -201,7 +201,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: crear transacci髇
+// POST: crear transacci贸n
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -242,7 +242,7 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT: actualizar transacci髇
+// PUT: actualizar transacci贸n
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
@@ -283,7 +283,7 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE: eliminar transacci髇
+// DELETE: eliminar transacci贸n
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url)
@@ -302,7 +302,7 @@ export async function DELETE(request: Request) {
       .eq('id', id)
 
     if (error) throw error
-    return NextResponse.json({ success: true, message: 'Transacci髇 eliminada' })
+    return NextResponse.json({ success: true, message: 'Transacci贸n eliminada' })
   } catch (error: any) {
     console.error('? Error DELETE /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
