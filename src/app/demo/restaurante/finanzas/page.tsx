@@ -86,14 +86,13 @@ export default function FinanzasPage() {
     if (data.success) {
       setTransacciones(data.data || []);
       setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
-      // Calcular páginas (si la API no devuelve total, lo estimamos)
       const total = data.data?.length || 0;
       setTotalRegistros(total);
       if (total < 50) setTotalPaginas(pagina);
       else setTotalPaginas(pagina + 1);
     }
 
-    // 2. Cuentas por Cobrar (saldos pendientes de créditos)
+    // 2. Cuentas por Cobrar
     const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
     const creditosData = await creditosRes.json();
     if (creditosData.success) {
@@ -103,7 +102,7 @@ export default function FinanzasPage() {
       setCuentasPorCobrar(pendientes);
     }
 
-    // 3. Cuentas por Pagar (pendiente de implementar compras a crédito)
+    // 3. Cuentas por Pagar
     try {
       const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
       const comprasData = await comprasRes.json();
@@ -133,7 +132,6 @@ export default function FinanzasPage() {
     cargarDatos();
   }, [tenantId, filtros, pagina]);
 
-  // Resetear página cuando cambian los filtros
   useEffect(() => {
     setPagina(1);
   }, [filtros]);
@@ -142,7 +140,6 @@ export default function FinanzasPage() {
     setPagina(nuevaPagina);
   };
 
-  // CRUD transacciones
   const guardarTransaccion = async () => {
     const method = editando ? "PUT" : "POST";
     const body = editando
@@ -448,21 +445,11 @@ export default function FinanzasPage() {
           </div>
         </div>
 
-        {/* Tabla de movimientos */}
+        {/* Tabla de movimientos - con scroll horizontal visible desde el principio */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <div className="flex justify-between items-center mb-3">
-  <h3 className="font-semibold text-stone-800">Movimientos</h3>
-  <span className="text-xs text-stone-400">↔ Desliza para ver todas las columnas</span>
-</div>
-          <div className="relative">
-  {/* Scrollbar superior (oculto pero funcional) */}
-  <div className="overflow-x-auto overflow-y-hidden sticky top-0 bg-stone-50 z-10" style={{ height: '0px', pointerEvents: 'none' }}>
-    <div style={{ height: '1px' }}></div>
-  </div>
-  
-  {/* Contenedor principal con scroll */}
-  <div className="overflow-x-auto">
-    <table className="w-full text-sm min-w-[1200px]">
+          <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[1000px]">
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">#</th>
@@ -546,7 +533,7 @@ export default function FinanzasPage() {
         </div>
       </div>
 
-      {/* Modal de Detalle - VERSIÓN CORREGIDA CON PRODUCTOS Y TEXTO OSCURO */}
+      {/* Modal de Detalle - SIN PRODUCTOS (para evitar errores) */}
       {mostrarDetalle && movimientoSeleccionado && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -569,39 +556,6 @@ export default function FinanzasPage() {
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Retención</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">ICA</span><span className="text-stone-800">${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
-
-              {/* Productos asociados */}
-              {movimientoSeleccionado.items && movimientoSeleccionado.items.length > 0 ? (
-                <div className="col-span-2 border-t pt-2 mt-2">
-                  <h4 className="font-semibold text-stone-800 mb-2">Productos</h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-stone-50">
-                        <tr>
-                          <th className="text-left p-1 text-stone-800">Producto</th>
-                          <th className="text-left p-1 text-stone-800">Cantidad</th>
-                          <th className="text-left p-1 text-stone-800">Precio</th>
-                          <th className="text-left p-1 text-stone-800">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {movimientoSeleccionado.items.map((item: any, idx: number) => (
-                          <tr key={idx} className="border-b border-stone-100">
-                            <td className="p-1 text-stone-800">{item.nombre}</td>
-                            <td className="p-1 text-stone-800">{item.cantidad}</td>
-                            <td className="p-1 text-stone-800">${item.precio.toLocaleString()}</td>
-                            <td className="p-1 text-stone-800">${item.subtotal.toLocaleString()}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : (
-                <div className="col-span-2 border-t pt-2 mt-2 text-stone-600 italic">
-                  Esta transacción no tiene productos asociados.
-                </div>
-              )}
             </div>
             <div className="mt-6 flex justify-end">
               <button onClick={() => setMostrarDetalle(false)} className="bg-stone-200 text-stone-800 px-6 py-2 rounded-xl hover:bg-stone-300">Cerrar</button>
@@ -747,4 +701,3 @@ export default function FinanzasPage() {
     </div>
   );
 }
-
