@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       }
     }
 
-        // Paginación (límite de 50 registros por página)
+        // PaginaciÃ³n (lÃ­mite de 50 registros por pÃ¡gina)
     const page = parseInt(url.searchParams.get('page') || '1');
     const pageSize = parseInt(url.searchParams.get('pageSize') || '50');
     const start = (page - 1) * pageSize;
@@ -156,13 +156,25 @@ export async function GET(request: Request) {
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
           const { data: credito } = await supabase.from('creditos').select('cliente').eq('id', t.referencia_id).single()
-          desc = `Crédito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
+          desc = `CrÃ©dito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
         } else if (t.referencia_tipo === 'abono') {
-          desc = `Abono a crédito #${t.referencia_id}`
+          desc = `Abono a crÃ©dito #${t.referencia_id}`
         } else if (t.categorias_contables?.nombre === 'Gastos Operativos') {
           desc = t.descripcion || 'Gasto operativo'
         }
-        expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: desc, descripcion_resumida: desc })
+        expandedData.push({
+            ...t,
+            cantidad: 1,
+            precio_unitario: t.monto,
+            subtotal: t.monto,
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            item: itemCounter++,
+            descripcion: desc,
+            descripcion_resumida: desc,
+            items: []
+          })
       }
     }
 
@@ -201,7 +213,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: crear transacción
+// POST: crear transacciÃ³n
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -242,7 +254,7 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT: actualizar transacción
+// PUT: actualizar transacciÃ³n
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
@@ -283,7 +295,7 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE: eliminar transacción
+// DELETE: eliminar transacciÃ³n
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url)
@@ -302,12 +314,13 @@ export async function DELETE(request: Request) {
       .eq('id', id)
 
     if (error) throw error
-    return NextResponse.json({ success: true, message: 'Transacción eliminada' })
+    return NextResponse.json({ success: true, message: 'TransacciÃ³n eliminada' })
   } catch (error: any) {
     console.error('? Error DELETE /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 
