@@ -446,70 +446,72 @@ export default function FinanzasPage() {
         </div>
 
         {/* Tabla de movimientos - con scroll horizontal visible desde el principio */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
-          <div className="overflow-x-auto"><div style="min-width: 1200px; border: 2px solid #3b82f6; border-radius: 8px; padding: 4px;"><div className="border-2 border-blue-400 rounded-lg p-1" style="min-width: 1200px;">
-            <table className="w-full text-sm" style="min-width: 1200px; display: table;">
-              <thead className="bg-stone-50">
-                <tr>
-                  <th className="text-left p-2 text-stone-700">#</th>
-                  <th className="text-left p-2 text-stone-700">Fecha</th>
-                  <th className="text-left p-2 text-stone-700">Tipo</th>
-                  <th className="text-left p-2 text-stone-700">Categoría</th>
-                  <th className="text-left p-2 text-stone-700">Descripción</th>
-                  <th className="text-left p-2 text-stone-700">Método de Pago</th>
-                  <th className="text-left p-2 text-stone-700">Cantidad</th>
-                  <th className="text-left p-2 text-stone-700">Precio Unit.</th>
-                  <th className="text-left p-2 text-stone-700">Subtotal</th>
-                  <th className="text-left p-2 text-stone-700">IVA</th>
-                  <th className="text-left p-2 text-stone-700">Retención</th>
-                  <th className="text-left p-2 text-stone-700">ICA</th>
-                  <th className="text-left p-2 text-stone-700">Total</th>
-                  <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transacciones.map((t: any) => (
-                  <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
-                    <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
-                    <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
-                    <td className="p-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                        {t.tipo}
-                      </span>
-                    </td>
-                    <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
-                    <td className="p-2 text-stone-600">
-                      <span title={t.descripcion_resumida || t.descripcion}>
-                        {t.descripcion || '-'}
-                      </span>
-                      {t.descripcion_resumida && t.descripcion_resumida !== t.descripcion && (
-                        <span className="text-xs text-stone-400 block truncate max-w-xs" title={t.descripcion_resumida}>
-                          ({t.descripcion_resumida})
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
-                    <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
-                    <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
-                    <td className="p-2 flex gap-2 whitespace-nowrap">
-                      <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
-                    </td>
-                  </tr>
-                ))}
-                {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
+<div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+  <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
+  <div className="overflow-x-auto" style={{ border: '2px solid #3b82f6', borderRadius: '8px', padding: '4px', minWidth: '100%' }}>
+    <div style={{ minWidth: '1200px' }}>
+      <table className="w-full text-sm" style={{ minWidth: '1200px' }}>
+        <thead className="bg-stone-50">
+          <tr>
+            <th className="text-left p-2 text-stone-700">#</th>
+            <th className="text-left p-2 text-stone-700">Fecha</th>
+            <th className="text-left p-2 text-stone-700">Tipo</th>
+            <th className="text-left p-2 text-stone-700">Categoría</th>
+            <th className="text-left p-2 text-stone-700">Descripción</th>
+            <th className="text-left p-2 text-stone-700">Método de Pago</th>
+            <th className="text-left p-2 text-stone-700">Cantidad</th>
+            <th className="text-left p-2 text-stone-700">Precio Unit.</th>
+            <th className="text-left p-2 text-stone-700">Subtotal</th>
+            <th className="text-left p-2 text-stone-700">IVA</th>
+            <th className="text-left p-2 text-stone-700">Retención</th>
+            <th className="text-left p-2 text-stone-700">ICA</th>
+            <th className="text-left p-2 text-stone-700">Total</th>
+            <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transacciones.map((t: any) => (
+            <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
+              <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
+              <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
+              <td className="p-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  {t.tipo}
+                </span>
+              </td>
+              <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
+              <td className="p-2 text-stone-600">
+                <span title={t.descripcion_resumida || t.descripcion}>
+                  {t.descripcion || '-'}
+                </span>
+                {t.descripcion_resumida && t.descripcion_resumida !== t.descripcion && (
+                  <span className="text-xs text-stone-400 block truncate max-w-xs" title={t.descripcion_resumida}>
+                    ({t.descripcion_resumida})
+                  </span>
+                )}
+              </td>
+              <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
+              <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
+              <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
+              <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
+              <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
+              <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+              <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+              <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
+              <td className="p-2 flex gap-2 whitespace-nowrap">
+                <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+              </td>
+            </tr>
+          ))}
+          {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-        {/* Botones de paginación */}
+      {/* Botones de paginación */}
         <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
           <div className="text-sm text-stone-600">
             Mostrando hasta {transacciones.length} registros (página {pagina})
@@ -701,5 +703,6 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
