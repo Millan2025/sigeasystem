@@ -374,25 +374,25 @@ export default function FinanzasPage() {
         {/* Resumen principal */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-700">Ingresos</p>
+            <p className="text-sm text-stone-900">Ingresos</p>
             <p className="text-2xl font-bold text-emerald-600">${resumen.ingresos.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-700">Egresos</p>
+            <p className="text-sm text-stone-900">Egresos</p>
             <p className="text-2xl font-bold text-red-600">${resumen.egresos.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-700">Saldo</p>
+            <p className="text-sm text-stone-900">Saldo</p>
             <p className={`text-2xl font-bold ${resumen.saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               ${resumen.saldo.toLocaleString()}
             </p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-700">Impuestos</p>
+            <p className="text-sm text-stone-900">Impuestos</p>
             <p className="text-2xl font-bold text-yellow-600">${resumen.impuestos.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-700">Retenciones</p>
+            <p className="text-sm text-stone-900">Retenciones</p>
             <p className="text-2xl font-bold text-orange-600">${resumen.retenciones.toLocaleString()}</p>
           </div>
         </div>
@@ -416,7 +416,7 @@ export default function FinanzasPage() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
-                  <p className="text-xs text-stone-700">{metodo}</p>
+                  <p className="text-xs text-stone-900">{metodo}</p>
                   <p className="text-sm font-bold text-stone-800">${monto.toLocaleString()}</p>
                 </div>
               ))}
@@ -427,7 +427,7 @@ export default function FinanzasPage() {
         {/* Filtros */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
           <div className="flex flex-wrap gap-3 items-center">
-            <Filter className="w-4 h-4 text-stone-700" />
+            <Filter className="w-4 h-4 text-stone-900" />
             <span className="text-sm font-medium text-stone-900">Filtros:</span>
             <input type="date" value={filtros.start} onChange={(e) => setFiltros({ ...filtros, start: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
             <span className="text-stone-800">-</span>
@@ -506,7 +506,7 @@ export default function FinanzasPage() {
                     </td>
                   </tr>
                 ))}
-                {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-700">No hay movimientos</td></tr>}
+                {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-900">No hay movimientos</td></tr>}
               </tbody>
             </table>
           </div>
@@ -568,10 +568,10 @@ export default function FinanzasPage() {
                     <table className="w-full text-sm">
                       <thead className="bg-stone-50">
                         <tr>
-                          <th className="text-left p-1 text-stone-700">Producto</th>
-                          <th className="text-left p-1 text-stone-700">Cantidad</th>
-                          <th className="text-left p-1 text-stone-700">Precio</th>
-                          <th className="text-left p-1 text-stone-700">Subtotal</th>
+                          <th className="text-left p-1 text-stone-900">Producto</th>
+                          <th className="text-left p-1 text-stone-900">Cantidad</th>
+                          <th className="text-left p-1 text-stone-900">Precio</th>
+                          <th className="text-left p-1 text-stone-900">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -588,7 +588,7 @@ export default function FinanzasPage() {
                   </div>
                 </div>
               ) : (
-                <div className="col-span-2 border-t pt-2 mt-2 text-stone-500 italic">
+                <div className="col-span-2 border-t pt-2 mt-2 text-stone-900 italic">
                   Esta transacción no tiene productos asociados.
                 </div>
               )}
@@ -676,11 +676,11 @@ export default function FinanzasPage() {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {categorias.map((c: any) => (
                 <div key={c.id} className="flex justify-between items-center border-b py-1">
-                  <span className="text-stone-800"><span className="font-mono text-xs text-stone-700">{c.codigo}</span> {c.nombre}</span>
+                  <span className="text-stone-800"><span className="font-mono text-xs text-stone-900">{c.codigo}</span> {c.nombre}</span>
                   <span className="text-xs text-stone-800">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-700 text-sm">No hay categorÃ­as</p>}
+              {categorias.length === 0 && <p className="text-stone-900 text-sm">No hay categorÃ­as</p>}
             </div>
             <div className="mt-4 border-t pt-4">
               <h4 className="font-medium text-stone-900 mb-2">Agregar nueva</h4>
@@ -711,10 +711,10 @@ export default function FinanzasPage() {
               {periodos.map((p: any) => (
                 <div key={p.id} className="flex justify-between border-b py-1 text-sm">
                   <span className="text-stone-800">{p.nombre}</span>
-                  <span className="text-stone-700">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
+                  <span className="text-stone-900">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
-              {periodos.length === 0 && <p className="text-stone-700 text-sm">No hay perÃ­odos.</p>}
+              {periodos.length === 0 && <p className="text-stone-900 text-sm">No hay perÃ­odos.</p>}
             </div>
             <div>
               <h4 className="font-medium text-stone-900 mb-2">Generar perÃ­odos automÃ¡ticos</h4>
@@ -742,4 +742,5 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
