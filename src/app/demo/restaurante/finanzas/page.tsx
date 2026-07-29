@@ -448,7 +448,7 @@ export default function FinanzasPage() {
         {/* Tabla de movimientos - con scroll horizontal visible desde el principio */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
-          <div className="overflow-x-auto"><div className="border-2 border-blue-400 rounded-lg p-1" style="min-width: 1200px;">
+          <div className="overflow-x-auto"><div style="min-width: 1200px; border: 2px solid #3b82f6; border-radius: 8px; padding: 4px;"><div className="border-2 border-blue-400 rounded-lg p-1" style="min-width: 1200px;">
             <table className="w-full text-sm" style="min-width: 1200px; display: table;">
               <thead className="bg-stone-50">
                 <tr>
@@ -701,4 +701,5 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
