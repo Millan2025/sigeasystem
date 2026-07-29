@@ -450,9 +450,19 @@ export default function FinanzasPage() {
 
         {/* Tabla de movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[1000px]">
+          <div className="flex justify-between items-center mb-3">
+  <h3 className="font-semibold text-stone-800">Movimientos</h3>
+  <span className="text-xs text-stone-400">↔ Desliza para ver todas las columnas</span>
+</div>
+          <div className="relative">
+  {/* Scrollbar superior (oculto pero funcional) */}
+  <div className="overflow-x-auto overflow-y-hidden sticky top-0 bg-stone-50 z-10" style={{ height: '0px', pointerEvents: 'none' }}>
+    <div style={{ height: '1px' }}></div>
+  </div>
+  
+  {/* Contenedor principal con scroll */}
+  <div className="overflow-x-auto">
+    <table className="w-full text-sm min-w-[1200px]">
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">#</th>
@@ -737,3 +747,4 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
