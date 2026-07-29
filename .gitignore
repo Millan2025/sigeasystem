@@ -46,3 +46,10 @@ next-env.d.ts
 *.zip
 sigea_backup_*.zip
 backup_*.zip
+
+# Backups y ZIP
+*.zip
+sigea_backup_*
+backup_*
+*.7z
+*.rar
