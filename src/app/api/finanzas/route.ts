@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       }
     }
 
-        // PaginaciÃ³n (lÃ­mite de 50 registros por pÃ¡gina)
+    // Paginación (50 registros por página)
     const page = parseInt(url.searchParams.get('page') || '1');
     const pageSize = parseInt(url.searchParams.get('pageSize') || '50');
     const start = (page - 1) * pageSize;
@@ -52,14 +52,46 @@ export async function GET(request: Request) {
     const saleIds = data?.filter(t => t.referencia_tipo === 'venta' && t.referencia_id).map(t => t.referencia_id) || []
     const compraIds = data?.filter(t => t.referencia_tipo === 'compra' && t.referencia_id).map(t => t.referencia_id) || []
 
-    // Obtener todos los items de ventas de una vez
+    // Obtener todos los items de ventas de una vez (intentando con sale_id y venta_id)
     let saleItemsMap: Record<string, any[]> = {}
     if (saleIds.length > 0) {
-      const { data: saleItems } = await supabase
+      // Intentar con 'sale_id'
+      let { data: saleItems } = await supabase
         .from('sale_items')
         .select('*, productos(id, nombre)')
         .in('sale_id', saleIds)
-      if (saleItems) {
+      
+      // Si no hay, intentar con 'venta_id'
+      if (!saleItems || saleItems.length === 0) {
+        const { data: items } = await supabase
+          .from('sale_items')
+          .select('*, productos(id, nombre)')
+          .in('venta_id', saleIds)
+        saleItems = items
+      }
+
+      // Si aún no hay, obtener productos directamente de la tabla 'ventas'
+      if (!saleItems || saleItems.length === 0) {
+        // Consultar la tabla ventas con sus productos (asumiendo relación venta_productos)
+        const { data: ventasConProductos } = await supabase
+          .from('ventas')
+          .select('id, venta_productos(productos(id, nombre), cantidad, precio)')
+          .in('id', saleIds)
+        
+        if (ventasConProductos) {
+          ventasConProductos.forEach((v: any) => {
+            if (v.venta_productos && v.venta_productos.length > 0) {
+              saleItemsMap[v.id] = v.venta_productos.map((vp: any) => ({
+                ...vp,
+                quantity: vp.cantidad,
+                price_at_sale: vp.precio,
+                productos: vp.productos || { nombre: 'Producto' }
+              }))
+            }
+          })
+        }
+      } else {
+        // Construir el map normalmente
         saleItems.forEach(item => {
           if (!saleItemsMap[item.sale_id]) saleItemsMap[item.sale_id] = []
           saleItemsMap[item.sale_id].push(item)
@@ -67,7 +99,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // Obtener todos los items de compras de una vez
+    // Obtener todos los items de compras de una vez (similar)
     let compraItemsMap: Record<string, any[]> = {}
     if (compraIds.length > 0) {
       const { data: compraItems } = await supabase
@@ -93,7 +125,7 @@ export async function GET(request: Request) {
       if (esVenta) {
         const items = saleItemsMap[t.referencia_id] || []
         if (items.length === 0) {
-          expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: `Venta #${t.referencia_id}` })
+          expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: `Venta #${t.referencia_id}`, descripcion_resumida: `Venta #${t.referencia_id}`, items: [] })
           continue
         }
         const ivaTotal = t.impuesto || 0
@@ -118,20 +150,19 @@ export async function GET(request: Request) {
             ica: icaTotal * proporcional,
             total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
             item: itemCounter++,
-            descripcion_resumida: descripcionBase
-          ,
-  items: items.map(i => ({
-    nombre: i.productos?.nombre || 'Producto',
-    cantidad: i.quantity,
-    precio: i.price_at_sale,
-    subtotal: i.quantity * i.price_at_sale
-  }))
-})
+            descripcion_resumida: descripcionBase,
+            items: items.map(i => ({
+              nombre: i.productos?.nombre || 'Producto',
+              cantidad: i.quantity,
+              precio: i.price_at_sale,
+              subtotal: i.quantity * i.price_at_sale
+            }))
+          })
         }
       } else if (esCompra) {
         const items = compraItemsMap[t.referencia_id] || []
         if (items.length === 0) {
-          expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: `Compra #${t.referencia_id}` })
+          expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: `Compra #${t.referencia_id}`, descripcion_resumida: `Compra #${t.referencia_id}`, items: [] })
           continue
         }
         const subtotalTotal = items.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0)
@@ -155,40 +186,27 @@ export async function GET(request: Request) {
             ica: icaTotal * proporcional,
             total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
             item: itemCounter++,
-            descripcion_resumida: descripcionBase
-          ,
-  items: items.map(i => ({
-    nombre: i.productos?.nombre || 'Producto',
-    cantidad: i.quantity,
-    precio: i.price_at_sale,
-    subtotal: i.quantity * i.price_at_sale
-  }))
-})
+            descripcion_resumida: descripcionBase,
+            items: items.map(i => ({
+              nombre: i.productos?.nombre || 'Producto',
+              cantidad: i.cantidad,
+              precio: i.precio_compra,
+              subtotal: i.cantidad * i.precio_compra
+            }))
+          })
         }
       } else {
         // Otras transacciones
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
           const { data: credito } = await supabase.from('creditos').select('cliente').eq('id', t.referencia_id).single()
-          desc = `CrÃ©dito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
+          desc = `Crédito #${t.referencia_id} - ${credito?.cliente || 'Cliente'}`
         } else if (t.referencia_tipo === 'abono') {
-          desc = `Abono a crÃ©dito #${t.referencia_id}`
+          desc = `Abono a crédito #${t.referencia_id}`
         } else if (t.categorias_contables?.nombre === 'Gastos Operativos') {
           desc = t.descripcion || 'Gasto operativo'
         }
-        expandedData.push({
-            ...t,
-            cantidad: 1,
-            precio_unitario: t.monto,
-            subtotal: t.monto,
-            iva: 0,
-            retencion: 0,
-            ica: 0,
-            item: itemCounter++,
-            descripcion: desc,
-            descripcion_resumida: desc,
-            items: []
-          })
+        expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: desc, descripcion_resumida: desc, items: [] })
       }
     }
 
@@ -222,12 +240,12 @@ export async function GET(request: Request) {
       resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos, costo_ventas, gastos_operativos, utilidad_bruta, utilidad_neta }
     })
   } catch (error: any) {
-    console.error('? Error GET /api/finanzas:', error)
+    console.error('❌ Error GET /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// POST: crear transacciÃ³n
+// POST: crear transacción
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -263,12 +281,12 @@ export async function POST(request: Request) {
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('? Error POST /api/finanzas:', error)
+    console.error('❌ Error POST /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// PUT: actualizar transacciÃ³n
+// PUT: actualizar transacción
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
@@ -295,7 +313,6 @@ export async function PUT(request: Request) {
         retencion: retencion || 0,
         total_con_impuestos,
         metodo_pago: metodo_pago || null
-        // updated_at eliminado porque la columna no existe
       })
       .eq('id', id)
       .select('*, categorias_contables(*)')
@@ -304,12 +321,12 @@ export async function PUT(request: Request) {
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('? Error PUT /api/finanzas:', error)
+    console.error('❌ Error PUT /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// DELETE: eliminar transacciÃ³n
+// DELETE: eliminar transacción
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url)
@@ -328,24 +345,9 @@ export async function DELETE(request: Request) {
       .eq('id', id)
 
     if (error) throw error
-    return NextResponse.json({ success: true, message: 'TransacciÃ³n eliminada' })
+    return NextResponse.json({ success: true, message: 'Transacción eliminada' })
   } catch (error: any) {
-    console.error('? Error DELETE /api/finanzas:', error)
+    console.error('❌ Error DELETE /api/finanzas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
