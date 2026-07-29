@@ -119,7 +119,14 @@ export async function GET(request: Request) {
             total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
             item: itemCounter++,
             descripcion_resumida: descripcionBase
-          })
+          ,
+  items: items.map(i => ({
+    nombre: i.productos?.nombre || 'Producto',
+    cantidad: i.quantity,
+    precio: i.price_at_sale,
+    subtotal: i.quantity * i.price_at_sale
+  }))
+})
         }
       } else if (esCompra) {
         const items = compraItemsMap[t.referencia_id] || []
@@ -149,7 +156,14 @@ export async function GET(request: Request) {
             total: subtotalItem + (ivaTotal * proporcional) - (retencionTotal * proporcional) - (icaTotal * proporcional),
             item: itemCounter++,
             descripcion_resumida: descripcionBase
-          })
+          ,
+  items: items.map(i => ({
+    nombre: i.productos?.nombre || 'Producto',
+    cantidad: i.quantity,
+    precio: i.price_at_sale,
+    subtotal: i.quantity * i.price_at_sale
+  }))
+})
         }
       } else {
         // Otras transacciones
@@ -320,6 +334,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
 
 
 

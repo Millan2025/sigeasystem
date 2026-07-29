@@ -324,7 +324,7 @@ export default function FinanzasPage() {
         <h1 className="text-xl font-bold text-stone-800">Finanzas - {negocioSlug}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl" title="Actualizar datos">
-          <RefreshCw className="w-5 h-5 text-stone-700" />
+          <RefreshCw className="w-5 h-5 text-stone-900" />
         </button>
         <button
           onClick={() => {
@@ -362,7 +362,7 @@ export default function FinanzasPage() {
         </button>
         <button
           onClick={exportarExcel}
-          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-900 bg-emerald-50"
           title="Exportar a Excel"
         >
           <Download className="w-5 h-5" />
@@ -374,25 +374,25 @@ export default function FinanzasPage() {
         {/* Resumen principal */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-500">Ingresos</p>
+            <p className="text-sm text-stone-700">Ingresos</p>
             <p className="text-2xl font-bold text-emerald-600">${resumen.ingresos.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-500">Egresos</p>
+            <p className="text-sm text-stone-700">Egresos</p>
             <p className="text-2xl font-bold text-red-600">${resumen.egresos.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-500">Saldo</p>
+            <p className="text-sm text-stone-700">Saldo</p>
             <p className={`text-2xl font-bold ${resumen.saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               ${resumen.saldo.toLocaleString()}
             </p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-500">Impuestos</p>
+            <p className="text-sm text-stone-700">Impuestos</p>
             <p className="text-2xl font-bold text-yellow-600">${resumen.impuestos.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-            <p className="text-sm text-stone-500">Retenciones</p>
+            <p className="text-sm text-stone-700">Retenciones</p>
             <p className="text-2xl font-bold text-orange-600">${resumen.retenciones.toLocaleString()}</p>
           </div>
         </div>
@@ -416,7 +416,7 @@ export default function FinanzasPage() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
-                  <p className="text-xs text-stone-500">{metodo}</p>
+                  <p className="text-xs text-stone-700">{metodo}</p>
                   <p className="text-sm font-bold text-stone-800">${monto.toLocaleString()}</p>
                 </div>
               ))}
@@ -427,10 +427,10 @@ export default function FinanzasPage() {
         {/* Filtros */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
           <div className="flex flex-wrap gap-3 items-center">
-            <Filter className="w-4 h-4 text-stone-500" />
-            <span className="text-sm font-medium text-stone-700">Filtros:</span>
+            <Filter className="w-4 h-4 text-stone-700" />
+            <span className="text-sm font-medium text-stone-900">Filtros:</span>
             <input type="date" value={filtros.start} onChange={(e) => setFiltros({ ...filtros, start: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
-            <span className="text-stone-600">-</span>
+            <span className="text-stone-800">-</span>
             <input type="date" value={filtros.end} onChange={(e) => setFiltros({ ...filtros, end: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
             <select value={filtros.tipo} onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
               <option value="">Todos los tipos</option>
@@ -455,34 +455,34 @@ export default function FinanzasPage() {
             <table className="w-full text-sm min-w-[1000px]">
               <thead className="bg-stone-50">
                 <tr>
-                  <th className="text-left p-2 text-stone-700">#</th>
-                  <th className="text-left p-2 text-stone-700">Fecha</th>
-                  <th className="text-left p-2 text-stone-700">Tipo</th>
-                  <th className="text-left p-2 text-stone-700">CategorÃ­a</th>
-                  <th className="text-left p-2 text-stone-700">DescripciÃ³n</th>
-                  <th className="text-left p-2 text-stone-700">MÃ©todo de Pago</th>
-                  <th className="text-left p-2 text-stone-700">Cantidad</th>
-                  <th className="text-left p-2 text-stone-700">Precio Unit.</th>
-                  <th className="text-left p-2 text-stone-700">Subtotal</th>
-                  <th className="text-left p-2 text-stone-700">IVA</th>
-                  <th className="text-left p-2 text-stone-700">RetenciÃ³n</th>
-                  <th className="text-left p-2 text-stone-700">ICA</th>
-                  <th className="text-left p-2 text-stone-700">Total</th>
-                  <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
+                  <th className="text-left p-2 text-stone-900">#</th>
+                  <th className="text-left p-2 text-stone-900">Fecha</th>
+                  <th className="text-left p-2 text-stone-900">Tipo</th>
+                  <th className="text-left p-2 text-stone-900">CategorÃ­a</th>
+                  <th className="text-left p-2 text-stone-900">DescripciÃ³n</th>
+                  <th className="text-left p-2 text-stone-900">MÃ©todo de Pago</th>
+                  <th className="text-left p-2 text-stone-900">Cantidad</th>
+                  <th className="text-left p-2 text-stone-900">Precio Unit.</th>
+                  <th className="text-left p-2 text-stone-900">Subtotal</th>
+                  <th className="text-left p-2 text-stone-900">IVA</th>
+                  <th className="text-left p-2 text-stone-900">RetenciÃ³n</th>
+                  <th className="text-left p-2 text-stone-900">ICA</th>
+                  <th className="text-left p-2 text-stone-900">Total</th>
+                  <th className="text-left p-2 text-stone-900 whitespace-nowrap">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {transacciones.map((t: any) => (
                   <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
-                    <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
+                    <td className="p-2 text-stone-800 text-center">{t.item || '-'}</td>
                     <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
                     <td className="p-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                         {t.tipo}
                       </span>
                     </td>
-                    <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
-                    <td className="p-2 text-stone-600">
+                    <td className="p-2 text-stone-800">{t.categorias_contables?.nombre || '-'}</td>
+                    <td className="p-2 text-stone-800">
                       <span title={t.descripcion_resumida || t.descripcion}>
                         {t.descripcion || '-'}
                       </span>
@@ -492,21 +492,21 @@ export default function FinanzasPage() {
                         </span>
                       )}
                     </td>
-                    <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
+                    <td className="p-2 text-stone-800">{t.metodo_pago || '-'}</td>
                     <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
                     <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
-                    <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-800">${(t.iva || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-800">${(t.retencion || 0).toLocaleString()}</td>
+                    <td className="p-2 text-stone-800">${(t.ica || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
                     <td className="p-2 flex gap-2 whitespace-nowrap">
-                      <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-800" /></button>
                       <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
                     </td>
                   </tr>
                 ))}
-                {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
+                {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-700">No hay movimientos</td></tr>}
               </tbody>
             </table>
           </div>
@@ -514,21 +514,21 @@ export default function FinanzasPage() {
 
         {/* Botones de paginaciÃ³n */}
         <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
-          <div className="text-sm text-stone-600">
+          <div className="text-sm text-stone-800">
             Mostrando hasta {transacciones.length} registros (pÃ¡gina {pagina})
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => cambiarPagina(pagina - 1)}
               disabled={pagina <= 1}
-              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
             >
               Anterior
             </button>
             <button
               onClick={() => cambiarPagina(pagina + 1)}
               disabled={transacciones.length < 50}
-              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
             >
               Siguiente
             </button>
@@ -545,48 +545,57 @@ export default function FinanzasPage() {
               <button onClick={() => setMostrarDetalle(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">#</span><span>{movimientoSeleccionado.item || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Fecha</span><span>{formatDate(movimientoSeleccionado.fecha)}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Tipo</span><span className="capitalize">{movimientoSeleccionado.tipo}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">CategorÃ­a</span><span>{movimientoSeleccionado.categorias_contables?.nombre || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">DescripciÃ³n</span><span>{movimientoSeleccionado.descripcion || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">DescripciÃ³n Resumida</span><span>{movimientoSeleccionado.descripcion_resumida || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">MÃ©todo de Pago</span><span>{movimientoSeleccionado.metodo_pago || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Cantidad</span><span>{movimientoSeleccionado.cantidad ?? 1}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Precio Unitario</span><span>${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Subtotal</span><span>${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">IVA</span><span>${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">RetenciÃ³n</span><span>${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">ICA</span><span>${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-600">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span>{movimientoSeleccionado.item || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Fecha</span><span>{formatDate(movimientoSeleccionado.fecha)}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Tipo</span><span className="capitalize">{movimientoSeleccionado.tipo}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃ­a</span><span>{movimientoSeleccionado.categorias_contables?.nombre || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃ³n</span><span>{movimientoSeleccionado.descripcion || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃ³n Resumida</span><span>{movimientoSeleccionado.descripcion_resumida || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃ©todo de Pago</span><span>{movimientoSeleccionado.metodo_pago || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Cantidad</span><span>{movimientoSeleccionado.cantidad ?? 1}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Precio Unitario</span><span>${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Subtotal</span><span>${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">IVA</span><span>${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃ³n</span><span>${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">ICA</span><span>${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
 
               {/* Productos asociados */}
-              {movimientoSeleccionado.items && movimientoSeleccionado.items.length > 0 && (
+              {movimientoSeleccionado.items && movimientoSeleccionado.items.length > 0 ? (
                 <div className="col-span-2 border-t pt-2 mt-2">
-                  <h4 className="font-semibold text-stone-700 mb-2">Productos</h4>
+                  <h4 className="font-semibold text-stone-800 mb-2">Productos</h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-stone-50">
                         <tr>
-                          <th className="text-left p-1 text-stone-600">Producto</th>
-                          <th className="text-left p-1 text-stone-600">Cantidad</th>
-                          <th className="text-left p-1 text-stone-600">Precio</th>
-                          <th className="text-left p-1 text-stone-600">Subtotal</th>
+                          <th className="text-left p-1 text-stone-700">Producto</th>
+                          <th className="text-left p-1 text-stone-700">Cantidad</th>
+                          <th className="text-left p-1 text-stone-700">Precio</th>
+                          <th className="text-left p-1 text-stone-700">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody>
                         {movimientoSeleccionado.items.map((item: any, idx: number) => (
                           <tr key={idx} className="border-b border-stone-100">
-                            <td className="p-1">{item.nombre}</td>
-                            <td className="p-1">{item.cantidad}</td>
-                            <td className="p-1">${item.precio.toLocaleString()}</td>
-                            <td className="p-1">${item.subtotal.toLocaleString()}</td>
+                            <td className="p-1 text-stone-800">{item.nombre}</td>
+                            <td className="p-1 text-stone-800">{item.cantidad}</td>
+                            <td className="p-1 text-stone-800">${item.precio.toLocaleString()}</td>
+                            <td className="p-1 text-stone-800">${item.subtotal.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
+              ) : (
+                <div className="col-span-2 border-t pt-2 mt-2 text-stone-500 italic">
+                  Esta transacción no tiene productos asociados.
+                </div>
+              )}
+
+              {/* Productos asociados */}
+              {movimientoSeleccionado.items && movimientoSeleccionado.items.length > 0 && (
+                
               )}
             </div>
             <div className="mt-6 flex justify-end">
@@ -603,41 +612,41 @@ export default function FinanzasPage() {
             <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃ³n" : "Nueva TransacciÃ³n"}</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">Tipo</label>
+                <label className="block text-sm font-medium text-stone-900">Tipo</label>
                 <select value={formTransaccion.tipo} onChange={(e) => setFormTransaccion({ ...formTransaccion, tipo: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="ingreso">Ingreso</option>
                   <option value="egreso">Egreso</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Monto</label>
+                <label className="block text-sm font-medium text-stone-900">Monto</label>
                 <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">CategorÃ­a contable</label>
+                <label className="block text-sm font-medium text-stone-900">CategorÃ­a contable</label>
                 <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">Seleccionar...</option>
                   {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">DescripciÃ³n</label>
+                <label className="block text-sm font-medium text-stone-900">DescripciÃ³n</label>
                 <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Fecha</label>
+                <label className="block text-sm font-medium text-stone-900">Fecha</label>
                 <input type="date" value={formTransaccion.fecha} onChange={(e) => setFormTransaccion({ ...formTransaccion, fecha: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Impuesto</label>
+                <label className="block text-sm font-medium text-stone-900">Impuesto</label>
                 <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">RetenciÃ³n</label>
+                <label className="block text-sm font-medium text-stone-900">RetenciÃ³n</label>
                 <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">MÃ©todo de pago</label>
+                <label className="block text-sm font-medium text-stone-900">MÃ©todo de pago</label>
                 <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">No aplica</option>
                   <option value="Efectivo">Efectivo</option>
@@ -649,7 +658,7 @@ export default function FinanzasPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowImportModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
+              <button onClick={() => setShowImportModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-900">Cancelar</button>
               <button onClick={guardarTransaccion} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all duration-200 text-white rounded-xl font-bold">Guardar</button>
             </div>
           </div>
@@ -662,19 +671,19 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">Plan de Cuentas</h3>
-              <button onClick={() => setShowImportModalCategoria(false)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setShowImportModalCategoria(false)}><X className="w-5 h-5 text-stone-900" /></button>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {categorias.map((c: any) => (
                 <div key={c.id} className="flex justify-between items-center border-b py-1">
-                  <span className="text-stone-800"><span className="font-mono text-xs text-stone-500">{c.codigo}</span> {c.nombre}</span>
-                  <span className="text-xs text-stone-600">{c.tipo}</span>
+                  <span className="text-stone-800"><span className="font-mono text-xs text-stone-700">{c.codigo}</span> {c.nombre}</span>
+                  <span className="text-xs text-stone-800">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃ­as</p>}
+              {categorias.length === 0 && <p className="text-stone-700 text-sm">No hay categorÃ­as</p>}
             </div>
             <div className="mt-4 border-t pt-4">
-              <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
+              <h4 className="font-medium text-stone-900 mb-2">Agregar nueva</h4>
               <div className="space-y-2">
                 <input type="text" placeholder="CÃ³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
@@ -696,19 +705,19 @@ export default function FinanzasPage() {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-stone-800">PerÃ­odos Fiscales</h3>
-              <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
+              <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-900" /></button>
             </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
               {periodos.map((p: any) => (
                 <div key={p.id} className="flex justify-between border-b py-1 text-sm">
                   <span className="text-stone-800">{p.nombre}</span>
-                  <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
+                  <span className="text-stone-700">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
-              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃ­odos.</p>}
+              {periodos.length === 0 && <p className="text-stone-700 text-sm">No hay perÃ­odos.</p>}
             </div>
             <div>
-              <h4 className="font-medium text-stone-700 mb-2">Generar perÃ­odos automÃ¡ticos</h4>
+              <h4 className="font-medium text-stone-900 mb-2">Generar perÃ­odos automÃ¡ticos</h4>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
                 <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
@@ -716,7 +725,7 @@ export default function FinanzasPage() {
                 <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
               </div>
               <div className="mt-4 border-t pt-4">
-                <h4 className="font-medium text-stone-700 mb-2">Crear perÃ­odo manual</h4>
+                <h4 className="font-medium text-stone-900 mb-2">Crear perÃ­odo manual</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <div className="flex gap-2">
@@ -733,3 +742,4 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
