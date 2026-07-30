@@ -87,7 +87,7 @@ export default function FinanzasPage() {
       setTransacciones(data.data || []);
       const nuevoResumen = data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} };
 console.log('📊 Actualizando resumen con:', nuevoResumen);
-setResumen(nuevoResumen);
+// setResumen(nuevoResumen);
       const total = data.data?.length || 0;
       setTotalRegistros(total);
       if (total < 50) setTotalPaginas(pagina);
@@ -711,6 +711,7 @@ useEffect(() => {
     </div>
   );
 }
+
 
 
 
