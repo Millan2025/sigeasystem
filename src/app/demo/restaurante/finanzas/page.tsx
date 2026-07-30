@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-// Formateador de fecha manual (sin conversión UTC)
+// Formateador de fecha manual
 const formatDate = (fechaStr: string) => {
   if (!fechaStr) return "-";
   const partes = fechaStr.split("-");
@@ -63,123 +63,130 @@ export default function FinanzasPage() {
   const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
   const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
 
-  // Paginación y modal
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
+  // FUNCIÓN PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
+  const calcularResumenManual = (transacciones: any[]) => {
+    const ingresos = transacciones
+      .filter((t: any) => t.tipo === "ingreso")
+      .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const egresos = transacciones
+      .filter((t: any) => t.tipo === "egreso")
+      .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const saldo = ingresos - egresos;
+    const impuestos = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+    const retenciones = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+    
+    const desglosePagos: Record<string, number> = {};
+    transacciones.filter((t: any) => t.tipo === "ingreso").forEach((t: any) => {
+      let metodo = t.metodo_pago || "Otro";
+      if (metodo === "Otro" || metodo === "Confirmado") metodo = "Otros";
+      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
+    });
+    
+    console.log("📊 Cálculo manual (frontend) - igual que Reportes:", {
+      ingresos,
+      egresos,
+      saldo,
+      impuestos,
+      retenciones,
+      desglosePagos,
+    });
+    
+    return { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos };
+  };
+
+  // USEFFECT PARA RECALCULAR AUTOMÁTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
+  useEffect(() => {
+    if (transacciones.length > 0) {
+      const nuevoResumen = calcularResumenManual(transacciones);
+      setResumen(nuevoResumen);
+    } else {
+      // Si no hay transacciones, resetear a cero
+      setResumen({
+        ingresos: 0,
+        egresos: 0,
+        saldo: 0,
+        impuestos: 0,
+        retenciones: 0,
+        desglosePagos: {},
+      });
+    }
+  }, [transacciones]);
+
   const cargarDatos = async () => {
     setLoading(true);
-    // 1. Transacciones y resumen
-    let url = `/api/finanzas?tenant=${tenantId}`;
-    if (filtros.start) url += `&start=${filtros.start}`;
-    if (filtros.end) url += `&end=${filtros.end}`;
-    if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
-    if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
-    if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
-    url += `&page=${pagina}&pageSize=50`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.success) {
-  // Guardar transacciones
-  const transacciones = data.data || [];
-  setTransacciones(transacciones);
-  
-  // Calcular resumen manualmente (igual que en Reportes) con tipos explícitos
-  const ingresosCalc = transacciones
-    .filter((t: any) => t.tipo === 'ingreso')
-    .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
-  
-  const egresosCalc = transacciones
-    .filter((t: any) => t.tipo === 'egreso')
-    .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
-  
-  const saldoCalc = ingresosCalc - egresosCalc;
-  const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
-  const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
-  
-  const desglosePagosCalc: Record<string, number> = {};
-  transacciones.filter((t: any) => t.tipo === 'ingreso').forEach((t: any) => {
-    let metodo = t.metodo_pago || 'Otro';
-    if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
-    desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
-  });
-  
-  console.log('📊 Cálculo manual (frontend) - igual que Reportes:', {
-    ingresosCalc,
-    egresosCalc,
-    saldoCalc,
-    impuestosCalc,
-    retencionesCalc,
-    desglosePagosCalc
-  });
-  
-  setResumen({
-    ingresos: ingresosCalc,
-    egresos: egresosCalc,
-    saldo: saldoCalc,
-    impuestos: impuestosCalc,
-    retenciones: retencionesCalc,
-    desglosePagos: desglosePagosCalc
-  });
-  
-  // Paginación
-  const total = transacciones.length;
-  setTotalRegistros(total);
-  if (total < 50) setTotalPaginas(pagina);
-  else setTotalPaginas(pagina + 1);
-}
-
-    // 2. Cuentas por Cobrar
-    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
-    const creditosData = await creditosRes.json();
-    if (creditosData.success) {
-      const pendientes = creditosData.data
-        .filter((c: any) => c.estado === "pendiente")
-        .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
-      setCuentasPorCobrar(pendientes);
-    }
-
-    // 3. Cuentas por Pagar
     try {
-      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
-      const comprasData = await comprasRes.json();
-      if (comprasData.success) {
-        const pendientes = comprasData.data
-          .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
-          .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
-        setCuentasPorPagar(pendientes);
+      let url = `/api/finanzas?tenant=${tenantId}`;
+      if (filtros.start) url += `&start=${filtros.start}`;
+      if (filtros.end) url += `&end=${filtros.end}`;
+      if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
+      if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
+      if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
+      url += `&page=${pagina}&pageSize=50`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (data.success) {
+        const transacciones = data.data || [];
+        setTransacciones(transacciones);
+        
+        // Paginación
+        const total = transacciones.length;
+        setTotalRegistros(total);
+        if (total < 50) setTotalPaginas(pagina);
+        else setTotalPaginas(pagina + 1);
       }
-    } catch (e) {
-      setCuentasPorPagar(0);
+
+      // 2. Cuentas por Cobrar
+      const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
+      const creditosData = await creditosRes.json();
+      if (creditosData.success) {
+        const pendientes = creditosData.data
+          .filter((c: any) => c.estado === "pendiente")
+          .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
+        setCuentasPorCobrar(pendientes);
+      }
+
+      // 3. Cuentas por Pagar
+      try {
+        const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+        const comprasData = await comprasRes.json();
+        if (comprasData.success) {
+          const pendientes = comprasData.data
+            .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
+            .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+          setCuentasPorPagar(pendientes);
+        }
+      } catch (e) {
+        setCuentasPorPagar(0);
+      }
+
+      // 4. Categorías y períodos
+      const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
+      const catData = await catRes.json();
+      if (catData.success) setCategorias(catData.data || []);
+
+      const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
+      const perData = await perRes.json();
+      if (perData.success) setPeriodos(perData.data || []);
+
+    } catch (error) {
+      console.error("❌ Error al cargar datos:", error);
     }
-
-    // 4. Categorías y períodos
-    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
-    const catData = await catRes.json();
-    if (catData.success) setCategorias(catData.data || []);
-
-    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
-    const perData = await perRes.json();
-    if (perData.success) setPeriodos(perData.data || []);
-
     setLoading(false);
   };
 
   useEffect(() => {
     cargarDatos();
   }, [tenantId, filtros, pagina]);
-
-// Recalcular resumen cuando cambian las transacciones (para mantener consistencia)
-
-
-// Depuración: mostrar resumen cada vez que cambie
-useEffect(() => {
-  console.log('🔄 Resumen actualizado:', resumen);
-}, [resumen]);
 
   useEffect(() => {
     setPagina(1);
@@ -252,12 +259,12 @@ useEffect(() => {
       return;
     }
     const data = transacciones.map((t: any) => ({
-      "#": t.item || '',
+      "#": t.item || "",
       "Fecha": formatDate(t.fecha),
       "Tipo": t.tipo,
-      "Categoría": t.categorias_contables?.nombre || '',
-      "Descripción": t.descripcion_resumida || t.descripcion || '',
-      "Método de Pago": t.metodo_pago || '',
+      "Categoría": t.categorias_contables?.nombre || "",
+      "Descripción": t.descripcion_resumida || t.descripcion || "",
+      "Método de Pago": t.metodo_pago || "",
       "Cantidad": t.cantidad ?? 1,
       "Precio Unitario": t.precio_unitario ?? 0,
       "Subtotal": t.subtotal ?? 0,
@@ -315,8 +322,8 @@ useEffect(() => {
         end.setDate(end.getDate() - 1);
         periodos.push({
           nombre: `Bimestre ${i+1} - ${year}`,
-          fecha_inicio: start.toISOString().split('T')[0],
-          fecha_fin: end.toISOString().split('T')[0],
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
           tipo: "bimestral",
         });
       }
@@ -327,8 +334,8 @@ useEffect(() => {
         end.setDate(end.getDate() - 1);
         periodos.push({
           nombre: `Trimestre ${i+1} - ${year}`,
-          fecha_inicio: start.toISOString().split('T')[0],
-          fecha_fin: end.toISOString().split('T')[0],
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
           tipo: "trimestral",
         });
       }
@@ -339,8 +346,8 @@ useEffect(() => {
         end.setDate(end.getDate() - 1);
         periodos.push({
           nombre: `Semestre ${i+1} - ${year}`,
-          fecha_inicio: start.toISOString().split('T')[0],
-          fecha_fin: end.toISOString().split('T')[0],
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
           tipo: "semestral",
         });
       }
@@ -429,7 +436,7 @@ useEffect(() => {
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
             <p className="text-sm text-stone-500">Saldo</p>
-            <p className={`text-2xl font-bold ${resumen.saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-2xl font-bold ${resumen.saldo >= 0 ? "text-emerald-600" : "text-red-600"}`}>
               ${resumen.saldo.toLocaleString()}
             </p>
           </div>
@@ -494,74 +501,74 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Tabla de movimientos - con scroll horizontal visible desde el principio */}
-<div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+        {/* Tabla de movimientos */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
           <div className="text-xs text-stone-400 mb-2">💡 Desliza horizontalmente → para ver todas las columnas</div>
           <div className="overflow-x-auto" style={{ height: "420px", overflowY: "auto", border: "2px solid #3b82f6", borderRadius: "8px", padding: "4px" }}>
-    <div style={{ minWidth: '1200px' }}>
-      <table className="w-full text-sm" style={{ minWidth: '1200px' }}>
-        <thead className="bg-stone-50">
-          <tr>
-            <th className="text-left p-2 text-stone-700">#</th>
-            <th className="text-left p-2 text-stone-700">Fecha</th>
-            <th className="text-left p-2 text-stone-700">Tipo</th>
-            <th className="text-left p-2 text-stone-700">Categoría</th>
-            <th className="text-left p-2 text-stone-700">Descripción</th>
-            <th className="text-left p-2 text-stone-700">Método de Pago</th>
-            <th className="text-left p-2 text-stone-700">Cantidad</th>
-            <th className="text-left p-2 text-stone-700">Precio Unit.</th>
-            <th className="text-left p-2 text-stone-700">Subtotal</th>
-            <th className="text-left p-2 text-stone-700">IVA</th>
-            <th className="text-left p-2 text-stone-700">Retención</th>
-            <th className="text-left p-2 text-stone-700">ICA</th>
-            <th className="text-left p-2 text-stone-700">Total</th>
-            <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transacciones.map((t: any) => (
-            <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
-              <td className="p-2 text-stone-600 text-center">{t.item || '-'}</td>
-              <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
-              <td className="p-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                  {t.tipo}
-                </span>
-              </td>
-              <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || '-'}</td>
-              <td className="p-2 text-stone-600">
-                <span title={t.descripcion_resumida || t.descripcion}>
-                  {t.descripcion || '-'}
-                </span>
-                {t.descripcion_resumida && t.descripcion_resumida !== t.descripcion && (
-                  <span className="text-xs text-stone-400 block truncate max-w-xs" title={t.descripcion_resumida}>
-                    ({t.descripcion_resumida})
-                  </span>
-                )}
-              </td>
-              <td className="p-2 text-stone-600">{t.metodo_pago || '-'}</td>
-              <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
-              <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
-              <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
-              <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
-              <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
-              <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
-              <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
-              <td className="p-2 flex gap-2 whitespace-nowrap">
-                <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
-                <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
-              </td>
-            </tr>
-          ))}
-          {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+            <div style={{ minWidth: "1200px" }}>
+              <table className="w-full text-sm" style={{ minWidth: "1200px" }}>
+                <thead className="bg-stone-50">
+                  <tr>
+                    <th className="text-left p-2 text-stone-700">#</th>
+                    <th className="text-left p-2 text-stone-700">Fecha</th>
+                    <th className="text-left p-2 text-stone-700">Tipo</th>
+                    <th className="text-left p-2 text-stone-700">Categoría</th>
+                    <th className="text-left p-2 text-stone-700">Descripción</th>
+                    <th className="text-left p-2 text-stone-700">Método de Pago</th>
+                    <th className="text-left p-2 text-stone-700">Cantidad</th>
+                    <th className="text-left p-2 text-stone-700">Precio Unit.</th>
+                    <th className="text-left p-2 text-stone-700">Subtotal</th>
+                    <th className="text-left p-2 text-stone-700">IVA</th>
+                    <th className="text-left p-2 text-stone-700">Retención</th>
+                    <th className="text-left p-2 text-stone-700">ICA</th>
+                    <th className="text-left p-2 text-stone-700">Total</th>
+                    <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transacciones.map((t: any) => (
+                    <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
+                      <td className="p-2 text-stone-600 text-center">{t.item || "-"}</td>
+                      <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === "ingreso" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                          {t.tipo}
+                        </span>
+                      </td>
+                      <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || "-"}</td>
+                      <td className="p-2 text-stone-600">
+                        <span title={t.descripcion_resumida || t.descripcion}>
+                          {t.descripcion || "-"}
+                        </span>
+                        {t.descripcion_resumida && t.descripcion_resumida !== t.descripcion && (
+                          <span className="text-xs text-stone-400 block truncate max-w-xs" title={t.descripcion_resumida}>
+                            ({t.descripcion_resumida})
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-2 text-stone-600">{t.metodo_pago || "-"}</td>
+                      <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
+                      <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
+                      <td className="p-2 flex gap-2 whitespace-nowrap">
+                        <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-      {/* Botones de paginación */}
+        {/* Botones de paginación */}
         <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
           <div className="text-sm text-stone-600">
             Mostrando hasta {transacciones.length} registros (página {pagina})
@@ -585,7 +592,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Modal de Detalle - SIN PRODUCTOS (para evitar errores) */}
+      {/* Modal de Detalle */}
       {mostrarDetalle && movimientoSeleccionado && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -594,13 +601,13 @@ useEffect(() => {
               <button onClick={() => setMostrarDetalle(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span className="text-stone-800">{movimientoSeleccionado.item || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span className="text-stone-800">{movimientoSeleccionado.item || "-"}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Fecha</span><span className="text-stone-800">{formatDate(movimientoSeleccionado.fecha)}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Tipo</span><span className="capitalize text-stone-800">{movimientoSeleccionado.tipo}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Categoría</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Descripción</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Descripción Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || '-'}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Método de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || '-'}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Categoría</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Descripción</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Descripción Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Método de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Cantidad</span><span className="text-stone-800">{movimientoSeleccionado.cantidad ?? 1}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Precio Unitario</span><span className="text-stone-800">${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Subtotal</span><span className="text-stone-800">${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
@@ -753,15 +760,3 @@ useEffect(() => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
