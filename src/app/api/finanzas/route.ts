@@ -206,13 +206,13 @@ export async function GET(request: Request) {
         } else if (t.categorias_contables?.nombre === 'Gastos Operativos') {
           desc = t.descripcion || 'Gasto operativo'
         }
-        expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: desc, descripcion_resumida: desc, items: [] })
+        expandedData.push({ ...t, cantidad: 1, precio_unitario: t.monto, subtotal: t.monto, total: t.monto, iva: 0, retencion: 0, ica: 0, item: itemCounter++, descripcion: desc, descripcion_resumida: desc, items: [] })
       }
     }
 
     // Recalcular resumen
-    const ingresos = expandedData.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
-    const egresos = expandedData.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
+    const ingresos = expandedData.filter(t => t.tipo === "ingreso").reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0)
+    const egresos = expandedData.filter(t => t.tipo === "egreso").reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0)
     const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0)
     const retenciones = expandedData.reduce((sum, t) => sum + (t.retencion || 0), 0)
     const saldo = ingresos - egresos
@@ -351,3 +351,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
