@@ -111,6 +111,31 @@ export default function PedidosPage() {
       alert("Error de conexión");
     }
   };
+  const cancelarPedido = async (id: string) => {
+    if (!confirm('¿Estás seguro de cancelar este pedido? Se revertirá inventario y finanzas.')) return;
+    
+    try {
+      const res = await fetch(`/api/pedidos/${id}/cancelar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          motivo: 'Cancelado por usuario',
+          usuario_id: 'sistema'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje('✅ Pedido cancelado exitosamente');
+        setTimeout(() => setMensaje(''), 5000);
+        cargarPedidos(true);
+      } else {
+        alert('❌ Error: ' + (data.error || 'Error al cancelar'));
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ Error al cancelar pedido');
+    }
+  };
 
   const getEstadoInfo = (estado: string) => {
     return ESTADOS[estado as keyof typeof ESTADOS] || ESTADOS.pendiente;
@@ -208,6 +233,14 @@ export default function PedidosPage() {
                     >
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
                     </button>
+			                    {(pedido.estado === 'pendiente' || pedido.estado === 'pagado') && (
+                      <button
+                        onClick={() => cancelarPedido(pedido.id)}
+                        className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full hover:bg-red-200"
+                      >
+                        <X className="w-3 h-3 inline mr-1" /> Cancelar
+                      </button>
+                    )}
 
                     {/* Botón Marcar como Pagado (solo si está pendiente) */}
                     {pedido.estado === 'pendiente' && (
