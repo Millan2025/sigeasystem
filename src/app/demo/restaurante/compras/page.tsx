@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
@@ -61,7 +61,7 @@ interface Producto {
 export default function ComprasPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
 
@@ -1005,6 +1005,7 @@ export default function ComprasPage() {
     </div>
   );
 }
+
 
 
 

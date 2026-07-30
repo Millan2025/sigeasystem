@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import { ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
@@ -17,7 +17,7 @@ interface Producto {
 
 export default function TiendaPage() {
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
 
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -328,5 +328,6 @@ export default function TiendaPage() {
     </div>
   );
 }
+
 
 

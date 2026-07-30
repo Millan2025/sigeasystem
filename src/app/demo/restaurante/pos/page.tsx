@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { ShoppingCart, Minus, Plus, Trash2, X, Scale, Search, Share2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useSearchParams } from "next/navigation";
@@ -33,7 +33,7 @@ interface CartItem {
 
 export default function POSPage() {
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
 
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -586,6 +586,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
     </div>
   );
 }
+
 
 
 

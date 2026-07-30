@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
@@ -38,7 +38,7 @@ interface Asistencia {
 export default function PersonalPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
 
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
@@ -384,6 +384,7 @@ export default function PersonalPage() {
     </div>
   );
 }
+
 
 
 

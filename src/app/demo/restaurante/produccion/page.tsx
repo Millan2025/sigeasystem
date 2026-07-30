@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useRef } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
@@ -61,7 +61,7 @@ interface Orden {
 export default function ProduccionPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -764,6 +764,7 @@ export default function ProduccionPage() {
     </div>
   );
 }
+
 
 
 

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
@@ -9,7 +9,7 @@ import * as XLSX from "xlsx";
 export default function ReportesPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
   const [ventas, setVentas] = useState<any[]>([]);
@@ -229,6 +229,7 @@ export default function ReportesPage() {
     </div>
   );
 }
+
 
 
 

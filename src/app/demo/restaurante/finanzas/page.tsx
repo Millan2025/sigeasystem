@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useMemo } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
@@ -28,7 +28,7 @@ const formatDate = (fechaStr: string) => {
 export default function FinanzasPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
   const [transacciones, setTransacciones] = useState<any[]>([]);
@@ -816,6 +816,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 

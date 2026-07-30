@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import { RefreshCw, Eye, ShoppingBag, X, CheckCircle, Trash2 } from "lucide-react";
@@ -38,7 +38,7 @@ const LISTA_ESTADOS = ["pendiente", "pagado", "confirmado", "preparando", "en_ca
 
 export default function PedidosPage() {
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -332,6 +332,7 @@ export default function PedidosPage() {
     </div>
   );
 }
+
 
 
 
