@@ -390,3 +390,5 @@ export default function PersonalPage() {
 
 
 // Forzar commit 2026-07-30 16:55:11
+
+// Forzar commit 2026-07-30 17:04:57
