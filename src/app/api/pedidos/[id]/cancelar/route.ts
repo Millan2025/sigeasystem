@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -15,7 +15,7 @@ export async function POST(
     const body = await request.json()
     const { motivo, usuario_id } = body
 
-    console.log(🔍 Cancelando pedido ...)
+    console.log(`🔍 Cancelando pedido ${id}...`)
 
     const { data: pedido, error: pedidoError } = await supabase
       .from('pedidos')
@@ -69,7 +69,7 @@ export async function POST(
             producto_id: item.producto_id,
             tipo: 'entrada',
             cantidad: item.cantidad,
-            motivo: Reversión de pedido #,
+            motivo: `Reversión de pedido #${id}`,
             tenant_id: pedido.tenant_id,
             created_at: new Date().toISOString()
           })
@@ -103,7 +103,7 @@ export async function POST(
           tipo: 'egreso',
           monto: pedido.total,
           categoria_contable_id: categoria?.id || null,
-          descripcion: Reversión de pedido # - ,
+          descripcion: `Reversión de pedido #${id} - ${motivo || 'Cancelación'}`,
           fecha: new Date().toISOString().split('T')[0],
           tenant_id: pedido.tenant_id,
           referencia_tipo: 'cancelacion',
