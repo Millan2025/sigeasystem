@@ -922,5 +922,3 @@ export default function InventarioPage() {
 
 
 
-
-
