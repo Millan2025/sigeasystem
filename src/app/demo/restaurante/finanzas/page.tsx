@@ -71,7 +71,11 @@ export default function FinanzasPage() {
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   const cargarDatos = async () => {
-    setLoading(true);
+  // AbortController para cancelar peticiones anteriores
+  const abortController = new AbortController();
+  const signal = abortController.signal;
+  
+  setLoading(true);
     // 1. Transacciones y resumen
     let url = `/api/finanzas?tenant=${tenantId}`;
     if (filtros.start) url += `&start=${filtros.start}`;
@@ -95,7 +99,7 @@ console.log('📊 Actualizando resumen con:', nuevoResumen);
     }
 
     // 2. Cuentas por Cobrar
-    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
+    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`, { signal });
     const creditosData = await creditosRes.json();
     if (creditosData.success) {
       const pendientes = creditosData.data
@@ -106,7 +110,7 @@ console.log('📊 Actualizando resumen con:', nuevoResumen);
 
     // 3. Cuentas por Pagar
     try {
-      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`, { signal });
       const comprasData = await comprasRes.json();
       if (comprasData.success) {
         const pendientes = comprasData.data
@@ -119,11 +123,11 @@ console.log('📊 Actualizando resumen con:', nuevoResumen);
     }
 
     // 4. Categorías y períodos
-    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
+    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`, { signal });
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
 
-    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
+    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`, { signal });
     const perData = await perRes.json();
     if (perData.success) setPeriodos(perData.data || []);
 
@@ -131,8 +135,20 @@ console.log('📊 Actualizando resumen con:', nuevoResumen);
   };
 
   useEffect(() => {
-    cargarDatos();
-  }, [tenantId, filtros, pagina]);
+  let isMounted = true;
+  const abortController = new AbortController();
+  
+  const fetchData = async () => {
+    await cargarDatos();
+  };
+  
+  fetchData();
+  
+  return () => {
+    isMounted = false;
+    abortController.abort();
+  };
+}, [tenantId, filtros, pagina]);
 
 // Depuración: mostrar resumen cada vez que cambie
 useEffect(() => {
@@ -711,6 +727,7 @@ useEffect(() => {
     </div>
   );
 }
+
 
 
 
