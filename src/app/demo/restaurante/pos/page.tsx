@@ -595,3 +595,4 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
 
 
 
+
