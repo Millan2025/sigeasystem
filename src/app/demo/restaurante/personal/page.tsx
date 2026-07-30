@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useTenant } from "@/hooks/useTenant";
 import { useState, useEffect } from "react";

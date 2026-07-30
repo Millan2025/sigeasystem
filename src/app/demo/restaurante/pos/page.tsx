@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 `nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { ShoppingCart, Minus, Plus, Trash2, X, Scale, Search, Share2 } from "lucide-react";
