@@ -71,11 +71,7 @@ export default function FinanzasPage() {
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   const cargarDatos = async () => {
-  // AbortController para cancelar peticiones anteriores
-  const abortController = new AbortController();
-  const signal = abortController.signal;
-  
-  setLoading(true);
+    setLoading(true);
     // 1. Transacciones y resumen
     let url = `/api/finanzas?tenant=${tenantId}`;
     if (filtros.start) url += `&start=${filtros.start}`;
@@ -89,20 +85,7 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      // Calcular ingresos y egresos directamente desde las transacciones (como en reportes)
-      const transacciones = data.data || [];
-      const ingresosCalc = transacciones.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
-      const egresosCalc = transacciones.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
-      const saldoCalc = ingresosCalc - egresosCalc;
-      console.log('📊 Cálculo manual (reportes):', { ingresosCalc, egresosCalc, saldoCalc });
-      const nuevoResumen = {
-        ingresos: ingresosCalc,
-        egresos: egresosCalc,
-        saldo: saldoCalc,
-        impuestos: data.resumen?.impuestos || 0,
-        retenciones: data.resumen?.retenciones || 0,
-        desglosePagos: data.resumen?.desglosePagos || {}
-      };
+      const nuevoResumen = data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} };
 console.log('📊 Actualizando resumen con:', nuevoResumen);
 setResumen(nuevoResumen);
       const total = data.data?.length || 0;
@@ -112,7 +95,7 @@ setResumen(nuevoResumen);
     }
 
     // 2. Cuentas por Cobrar
-    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`, { signal });
+    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
     const creditosData = await creditosRes.json();
     if (creditosData.success) {
       const pendientes = creditosData.data
@@ -123,7 +106,7 @@ setResumen(nuevoResumen);
 
     // 3. Cuentas por Pagar
     try {
-      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`, { signal });
+      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
       const comprasData = await comprasRes.json();
       if (comprasData.success) {
         const pendientes = comprasData.data
@@ -136,11 +119,11 @@ setResumen(nuevoResumen);
     }
 
     // 4. Categorías y períodos
-    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`, { signal });
+    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
 
-    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`, { signal });
+    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
     const perData = await perRes.json();
     if (perData.success) setPeriodos(perData.data || []);
 
@@ -148,20 +131,8 @@ setResumen(nuevoResumen);
   };
 
   useEffect(() => {
-  let isMounted = true;
-  const abortController = new AbortController();
-  
-  const fetchData = async () => {
-    await cargarDatos();
-  };
-  
-  fetchData();
-  
-  return () => {
-    isMounted = false;
-    abortController.abort();
-  };
-}, [tenantId, filtros, pagina]);
+    cargarDatos();
+  }, [tenantId, filtros, pagina]);
 
 // Depuración: mostrar resumen cada vez que cambie
 useEffect(() => {
@@ -740,11 +711,6 @@ useEffect(() => {
     </div>
   );
 }
-
-
-
-
-
 
 
 
