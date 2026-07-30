@@ -85,7 +85,9 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
+      const nuevoResumen = data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} };
+console.log('📊 Actualizando resumen con:', nuevoResumen);
+setResumen(nuevoResumen);
       const total = data.data?.length || 0;
       setTotalRegistros(total);
       if (total < 50) setTotalPaginas(pagina);
@@ -131,6 +133,11 @@ export default function FinanzasPage() {
   useEffect(() => {
     cargarDatos();
   }, [tenantId, filtros, pagina]);
+
+// Depuración: mostrar resumen cada vez que cambie
+useEffect(() => {
+  console.log('🔄 Resumen actualizado:', resumen);
+}, [resumen]);
 
   useEffect(() => {
     setPagina(1);
@@ -704,6 +711,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
