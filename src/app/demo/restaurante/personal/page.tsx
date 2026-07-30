@@ -1,7 +1,6 @@
 "use client";
 
-import { useTenant } from "@/hooks/useTenant";
-import { useState, useEffect } from "react";
+`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
@@ -45,7 +44,7 @@ export default function PersonalPage() {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [asistencias, setAsistencias] = useState<Asistencia[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<Empleado | null>(null);
   const [form, setForm] = useState<Partial<Empleado>>({
     nombre: "",
@@ -58,6 +57,7 @@ export default function PersonalPage() {
   });
   const [filtro, setFiltro] = useState<string>("todos");
 
+  // Cargar datos desde localStorage
   const cargarDatos = () => {
     setLoading(true);
     const keyEmpleados = `empleados_${tenantId}`;
@@ -68,8 +68,8 @@ export default function PersonalPage() {
         setEmpleados(JSON.parse(storedEmpleados));
       } else {
         const ejemplos: Empleado[] = [
-          { id: "EMP-001", nombre: "Juan Pérez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
-          { id: "EMP-002", nombre: "María Gómez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
+          { id: "EMP-001", nombre: "Juan PÃƒÂ©rez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
+          { id: "EMP-002", nombre: "MarÃƒÂ­a GÃƒÂ³mez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
         ];
         setEmpleados(ejemplos);
         localStorage.setItem(keyEmpleados, JSON.stringify(ejemplos));
@@ -103,6 +103,7 @@ export default function PersonalPage() {
     localStorage.setItem(`asistencias_${tenantId}`, JSON.stringify(nuevas));
   };
 
+  // CRUD Empleados
   const guardarEmpleado = () => {
     if (!form.nombre || !form.rol) {
       alert("Nombre y rol son obligatorios");
@@ -125,22 +126,23 @@ export default function PersonalPage() {
       nuevos = [...empleados, nuevo];
     }
     guardarEmpleados(nuevos);
-    setShowModal(false);
+    setShowImportModal(false);
     setEditando(null);
     setForm({ nombre: "", telefono: "", email: "", rol: "mesero", salario_base: 0, fecha_contratacion: new Date().toISOString().split("T")[0], activo: true });
   };
 
   const eliminarEmpleado = (id: string) => {
-    if (!confirm("¿Eliminar este empleado?")) return;
+    if (!confirm("Ã‚Â¿Eliminar este empleado?")) return;
     guardarEmpleados(empleados.filter((e) => e.id !== id));
   };
 
   const editarEmpleado = (emp: Empleado) => {
     setEditando(emp);
     setForm(emp);
-    setShowModal(true);
+    setShowImportModal(true);
   };
 
+  // Registrar asistencia
   const registrarAsistencia = (empleado_id: string) => {
     const hoy = new Date().toISOString().split("T")[0];
     const ahora = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
@@ -186,7 +188,7 @@ export default function PersonalPage() {
             onClick={() => {
               setEditando(null);
               setForm({ nombre: "", telefono: "", email: "", rol: "mesero", salario_base: 0, fecha_contratacion: new Date().toISOString().split("T")[0], activo: true });
-              setShowModal(true);
+              setShowImportModal(true);
             }}
             className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           >
@@ -229,7 +231,7 @@ export default function PersonalPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-3 text-stone-700">Nombre</th>
-                  <th className="text-left p-3 text-stone-700">Teléfono</th>
+                  <th className="text-left p-3 text-stone-700">TelÃƒÂ©fono</th>
                   <th className="text-left p-3 text-stone-700">Rol</th>
                   <th className="text-left p-3 text-stone-700">Salario</th>
                   <th className="text-left p-3 text-stone-700">Estado</th>
@@ -265,10 +267,10 @@ export default function PersonalPage() {
                             Check-in
                           </button>
                         ) : tieneCheckOut ? (
-                          <span className="text-xs text-stone-500">✅ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
+                          <span className="text-xs text-stone-500">Ã¢Å“â€¦ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-blue-600">⏳ {asistenciaHoy?.hora_entrada}</span>
+                            <span className="text-xs text-blue-600">Ã¢ÂÂ³ {asistenciaHoy?.hora_entrada}</span>
                             <button onClick={() => registrarAsistencia(emp.id)} className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full hover:bg-orange-600">
                               Check-out
                             </button>
@@ -308,7 +310,7 @@ export default function PersonalPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Teléfono</label>
+                <label className="block text-sm font-medium text-stone-700">TelÃƒÂ©fono</label>
                 <input
                   type="text"
                   value={form.telefono || ""}
@@ -351,7 +353,7 @@ export default function PersonalPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Fecha Contratación</label>
+                <label className="block text-sm font-medium text-stone-700">Fecha ContrataciÃƒÂ³n</label>
                 <input
                   type="date"
                   value={form.fecha_contratacion || new Date().toISOString().split("T")[0]}
@@ -369,7 +371,7 @@ export default function PersonalPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">
+              <button onClick={() => setShowImportModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">
                 Cancelar
               </button>
               <button onClick={guardarEmpleado} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">
@@ -382,3 +384,6 @@ export default function PersonalPage() {
     </div>
   );
 }
+
+
+
