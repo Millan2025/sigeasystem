@@ -85,38 +85,8 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      // Calcular ingresos y egresos manualmente (igual que en Reportes)
-const transacciones = data.data || [];
-const ingresosCalc = transacciones
-  .filter((t: any) => t.tipo === 'ingreso')
-  .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || 0), 0);
-const egresosCalc = transacciones
-  .filter((t: any) => t.tipo === 'egreso')
-  .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || 0), 0);
-
-const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
-const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
-
-// Desglose de pagos manual
-const desglosePagosCalc: Record<string, number> = {};
-transacciones
-  .filter((t: any) => t.tipo === 'ingreso')
-  .forEach((t: any) => {
-    let metodo = t.metodo_pago || 'Otro';
-    if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
-    desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (t.total || t.total_con_impuestos || 0);
-  });
-
-const nuevoResumen = {
-  ingresos: ingresosCalc,
-  egresos: egresosCalc,
-  saldo: saldoCalc,
-  impuestos: impuestosCalc,
-  retenciones: retencionesCalc,
-  desglosePagos: desglosePagosCalc,
-};
-
-console.log('📊 Cálculo manual (reportes):', nuevoResumen);
+      const nuevoResumen = data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} };
+console.log('📊 Actualizando resumen con:', nuevoResumen);
 setResumen(nuevoResumen);
       const total = data.data?.length || 0;
       setTotalRegistros(total);
@@ -741,8 +711,6 @@ useEffect(() => {
     </div>
   );
 }
-
-
 
 
 
