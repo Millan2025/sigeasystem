@@ -103,22 +103,7 @@ export default function FinanzasPage() {
   };
 
   // USEFFECT PARA RECALCULAR AUTOMÁTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
-  useEffect(() => {
-    if (transacciones.length > 0) {
-      const nuevoResumen = calcularResumenManual(transacciones);
-      setResumen(nuevoResumen);
-    } else {
-      // Si no hay transacciones, resetear a cero
-      setResumen({
-        ingresos: 0,
-        egresos: 0,
-        saldo: 0,
-        impuestos: 0,
-        retenciones: 0,
-        desglosePagos: {},
-      });
-    }
-  }, [transacciones]);
+  
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -760,3 +745,4 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
