@@ -38,7 +38,7 @@ const LISTA_ESTADOS = ["pendiente", "pagado", "confirmado", "preparando", "en_ca
 
 export default function PedidosPage() {
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,31 +109,6 @@ export default function PedidosPage() {
       }
     } catch (e) {
       alert("Error de conexión");
-    }
-  };
-  const cancelarPedido = async (id: string) => {
-    if (!confirm('¿Estás seguro de cancelar este pedido? Se revertirá inventario y finanzas.')) return;
-    
-    try {
-      const res = await fetch(`/api/pedidos/${id}/cancelar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          motivo: 'Cancelado por usuario',
-          usuario_id: 'sistema'
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMensaje('✅ Pedido cancelado exitosamente');
-        setTimeout(() => setMensaje(''), 5000);
-        cargarPedidos(true);
-      } else {
-        alert('❌ Error: ' + (data.error || 'Error al cancelar'));
-      }
-    } catch (error) {
-      console.error(error);
-      alert('❌ Error al cancelar pedido');
     }
   };
 
@@ -233,14 +208,6 @@ export default function PedidosPage() {
                     >
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
                     </button>
-			                    {(pedido.estado === 'pendiente' || pedido.estado === 'pagado') && (
-                      <button
-                        onClick={() => cancelarPedido(pedido.id)}
-                        className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full hover:bg-red-200"
-                      >
-                        <X className="w-3 h-3 inline mr-1" /> Cancelar
-                      </button>
-                    )}
 
                     {/* Botón Marcar como Pagado (solo si está pendiente) */}
                     {pedido.estado === 'pendiente' && (
@@ -332,11 +299,6 @@ export default function PedidosPage() {
     </div>
   );
 }
-
-
-
-
-
 
 
 

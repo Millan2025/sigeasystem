@@ -28,7 +28,7 @@ const formatDate = (fechaStr: string) => {
 export default function FinanzasPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const { tenant: tenantId } = useTenant();;
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
   const [transacciones, setTransacciones] = useState<any[]>([]);
@@ -816,5 +816,6 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
