@@ -106,68 +106,139 @@ export default function FinanzasPage() {
   
 
   const cargarDatos = async () => {
-    setLoading(true);
-    try {
-      let url = `/api/finanzas?tenant=${tenantId}`;
-      if (filtros.start) url += `&start=${filtros.start}`;
-      if (filtros.end) url += `&end=${filtros.end}`;
-      if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
-      if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
-      if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
-      url += `&page=${pagina}&pageSize=50`;
+  setLoading(true);
+  try {
+    // 1. Obtener transacciones (Finanzas) - para la tabla
+    let url = `/api/finanzas?tenant=${tenantId}`;
+    if (filtros.start) url += `&start=${filtros.start}`;
+    if (filtros.end) url += `&end=${filtros.end}`;
+    if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
+    if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
+    if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
+    url += `&page=${pagina}&pageSize=50`;
 
-      const res = await fetch(url);
-      const data = await res.json();
+    const resFinanzas = await fetch(url);
+    const dataFinanzas = await resFinanzas.json();
+    
+    if (dataFinanzas.success) {
+      const transacciones = dataFinanzas.data || [];
+      setTransacciones(transacciones);
       
-      if (data.success) {
-        const transacciones = data.data || [];
-        setTransacciones(transacciones);
-        
-        // Paginación
-        const total = transacciones.length;
-        setTotalRegistros(total);
-        if (total < 50) setTotalPaginas(pagina);
-        else setTotalPaginas(pagina + 1);
-      }
-
-      // 2. Cuentas por Cobrar
-      const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
-      const creditosData = await creditosRes.json();
-      if (creditosData.success) {
-        const pendientes = creditosData.data
-          .filter((c: any) => c.estado === "pendiente")
-          .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
-        setCuentasPorCobrar(pendientes);
-      }
-
-      // 3. Cuentas por Pagar
-      try {
-        const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
-        const comprasData = await comprasRes.json();
-        if (comprasData.success) {
-          const pendientes = comprasData.data
-            .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
-            .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
-          setCuentasPorPagar(pendientes);
-        }
-      } catch (e) {
-        setCuentasPorPagar(0);
-      }
-
-      // 4. Categorías y períodos
-      const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
-      const catData = await catRes.json();
-      if (catData.success) setCategorias(catData.data || []);
-
-      const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
-      const perData = await perRes.json();
-      if (perData.success) setPeriodos(perData.data || []);
-
-    } catch (error) {
-      console.error("❌ Error al cargar datos:", error);
+      // Paginación
+      const total = transacciones.length;
+      setTotalRegistros(total);
+      if (total < 50) setTotalPaginas(pagina);
+      else setTotalPaginas(pagina + 1);
     }
-    setLoading(false);
-  };
+
+    // 2. Obtener Ventas (para ingresos reales)
+    let urlVentas = `/api/ventas?tenant=${tenantId}`;
+    if (filtros.start) urlVentas += `&start=${filtros.start}`;
+    if (filtros.end) urlVentas += `&end=${filtros.end}`;
+    
+    console.log('🔍 Fetching Ventas:', urlVentas);
+    const resVentas = await fetch(urlVentas);
+    const dataVentas = await resVentas.json();
+    console.log('✅ Ventas response:', dataVentas.data?.length || 0, 'registros');
+    
+    let totalVentas = 0;
+    if (dataVentas.success) {
+      totalVentas = dataVentas.data.reduce((sum: number, v: any) => sum + (v.total || 0), 0);
+      console.log('💰 Total ventas:', totalVentas);
+    }
+
+    // 3. Obtener Compras (para egresos reales)
+    let urlCompras = `/api/compras?tenant=${tenantId}`;
+    if (filtros.start) urlCompras += `&start=${filtros.start}`;
+    if (filtros.end) urlCompras += `&end=${filtros.end}`;
+    
+    console.log('🔍 Fetching Compras:', urlCompras);
+    const resCompras = await fetch(urlCompras);
+    const dataCompras = await resCompras.json();
+    console.log('✅ Compras response:', dataCompras.data?.length || 0, 'registros');
+    
+    let totalCompras = 0;
+    if (dataCompras.success) {
+      totalCompras = dataCompras.data.reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+      console.log('💰 Total compras:', totalCompras);
+    }
+
+    // 4. Calcular resumen REAL (igual que Reportes)
+    const ingresosCalc = totalVentas; // Ingresos desde Ventas
+    const egresosCalc = totalCompras; // Egresos desde Compras
+    const saldoCalc = ingresosCalc - egresosCalc;
+    
+    // Impuestos y retenciones desde transacciones (para mantener consistencia)
+    const transacciones = dataFinanzas.success ? (dataFinanzas.data || []) : [];
+    const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+    const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+    
+    // Desglose por método de pago desde ventas
+    const desglosePagosCalc: Record<string, number> = {};
+    if (dataVentas.success) {
+      dataVentas.data.forEach((v: any) => {
+        let metodo = v.metodo_pago || 'Otro';
+        if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+        desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (v.total || 0);
+      });
+    }
+    
+    console.log('📊 Cálculo REAL (desde Ventas/Compras) - igual que Reportes:', {
+      ingresosCalc,
+      egresosCalc,
+      saldoCalc,
+      impuestosCalc,
+      retencionesCalc,
+      desglosePagosCalc
+    });
+    
+    setResumen({
+      ingresos: ingresosCalc,
+      egresos: egresosCalc,
+      saldo: saldoCalc,
+      impuestos: impuestosCalc,
+      retenciones: retencionesCalc,
+      desglosePagos: desglosePagosCalc
+    });
+
+    // 5. Cuentas por Cobrar
+    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
+    const creditosData = await creditosRes.json();
+    if (creditosData.success) {
+      const pendientes = creditosData.data
+        .filter((c: any) => c.estado === "pendiente")
+        .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
+      setCuentasPorCobrar(pendientes);
+    }
+
+    // 6. Cuentas por Pagar
+    try {
+      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+      const comprasData = await comprasRes.json();
+      if (comprasData.success) {
+        const pendientes = comprasData.data
+          .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
+          .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+        setCuentasPorPagar(pendientes);
+      }
+    } catch (e) {
+      setCuentasPorPagar(0);
+    }
+
+    // 7. Categorías y períodos
+    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
+    const catData = await catRes.json();
+    if (catData.success) setCategorias(catData.data || []);
+
+    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
+    const perData = await perRes.json();
+    if (perData.success) setPeriodos(perData.data || []);
+
+  } catch (error) {
+    console.error('❌ Error al cargar datos:', error);
+  }
+  setLoading(false);
+};
 
   useEffect(() => {
     cargarDatos();
@@ -745,4 +816,5 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
