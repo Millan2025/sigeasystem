@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 `nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";

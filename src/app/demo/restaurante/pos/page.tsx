@@ -53,17 +53,17 @@ export default function POSPage() {
   });
 
   const cargarProductos = () => {
-    console.log("Ã°Å¸â€Â POS: Cargando productos con tenant:", tenantId);
+    console.log("ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â POS: Cargando productos con tenant:", tenantId);
     fetch(`/api/products?tenant=${tenantId}`)
       .then((r) => r.json())
       .then((d) => {
-        console.log("Ã°Å¸â€œÂ¦ POS: Productos recibidos:", d.data?.length || 0);
+        console.log("ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦ POS: Productos recibidos:", d.data?.length || 0);
         if (d.success && d.data.length > 0) {
           setProductos(
             d.data.map((p: any) => ({
               id: p.id,
               nombre: p.nombre,
-              icono: p.icono || "Ã°Å¸â€œÂ¦",
+              icono: p.icono || "ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦",
               imagen_url: p.imagen_url || null,
               precio: p.precio || 0,
               stock: p.stock || 0,
@@ -74,10 +74,10 @@ export default function POSPage() {
             }))
           );
         } else {
-          console.warn("Ã¢Å¡Â Ã¯Â¸Â POS: No se recibieron productos o la respuesta no fue exitosa");
+          console.warn("ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â POS: No se recibieron productos o la respuesta no fue exitosa");
         }
       })
-      .catch((err) => console.error("Ã¢ÂÅ’ POS: Error al cargar productos:", err));
+      .catch((err) => console.error("ÃƒÂ¢Ã‚ÂÃ…â€™ POS: Error al cargar productos:", err));
   };
 
   useEffect(() => {
@@ -154,10 +154,10 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
   };
 
   const pay = async (metodo: string) => {
-    console.log('Ã°Å¸Å½Â¯ pay called with metodo:', metodo);
+    console.log('ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¯ pay called with metodo:', metodo);
     if (cart.length === 0) return;
 
-    if (metodo === "CrÃƒÂ©dito") {
+    if (metodo === "CrÃƒÆ’Ã‚Â©dito") {
       setShowCreditoModal(true);
       return;
     }
@@ -172,7 +172,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
         };
       });
 
-      console.log("Ã°Å¸â€œÂ¤ Enviando fetch a /api/ventas con body:", {
+      console.log("ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¤ Enviando fetch a /api/ventas con body:", {
         tenant_id: tenantId,
         metodo_pago: metodo,
         total: totalPrecio,
@@ -191,7 +191,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
       });
       const data = await res.json();
       if (data.success) {
-        setMsg("Ã¢Å“â€¦ Venta #" + data.data.venta.id + " registrada - $" + totalPrecio.toLocaleString());
+        setMsg("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Venta #" + data.data.venta.id + " registrada - $" + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
         setShowCart(false);
@@ -201,7 +201,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
         alert("Error al registrar venta: " + data.error);
       }
     } catch (error) {
-      alert("Error de conexiÃƒÂ³n");
+      alert("Error de conexiÃƒÆ’Ã‚Â³n");
     }
   };
 
@@ -214,7 +214,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
       // Obtener fecha local en formato YYYY-MM-DD
       const fechaLocal = new Date().toLocaleDateString('en-CA');
       
-      // 1. Crear el crÃƒÂ©dito (enviando fecha local)
+      // 1. Crear el crÃƒÆ’Ã‚Â©dito (enviando fecha local)
       const res = await fetch("/api/creditos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -222,8 +222,8 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
       });
       const data = await res.json();
       if (data.success) {
-        setMsg("Ã¢Å“â€¦ CrÃƒÂ©dito registrado - $" + totalPrecio.toLocaleString());
-        // 2. Descontar stock y registrar venta (como crÃƒÂ©dito)
+        setMsg("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ CrÃƒÆ’Ã‚Â©dito registrado - $" + totalPrecio.toLocaleString());
+        // 2. Descontar stock y registrar venta (como crÃƒÆ’Ã‚Â©dito)
         const items = cart.map((item) => ({
           producto_id: item.id,
           cantidad: item.cantidad,
@@ -235,16 +235,16 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             tenant_id: tenantId,
-            metodo_pago: "CrÃƒÂ©dito",
+            metodo_pago: "CrÃƒÆ’Ã‚Â©dito",
             total: totalPrecio,
             items: items,
           }),
         });
         const ventaData = await ventaRes.json();
         if (!ventaData.success) {
-          console.warn("Ã¢Å¡Â Ã¯Â¸Â Venta de crÃƒÂ©dito no registrada:", ventaData.error);
+          console.warn("ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Venta de crÃƒÆ’Ã‚Â©dito no registrada:", ventaData.error);
         } else {
-          console.log("Ã¢Å“â€¦ Venta de crÃƒÂ©dito registrada, stock descontado");
+          console.log("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Venta de crÃƒÆ’Ã‚Â©dito registrada, stock descontado");
         }
         setCart([]);
         setShowPay(false);
@@ -254,10 +254,10 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
         cargarProductos();
         setTimeout(() => setMsg(""), 4000);
       } else {
-        alert("Error al registrar crÃƒÂ©dito: " + data.error);
+        alert("Error al registrar crÃƒÆ’Ã‚Â©dito: " + data.error);
       }
     } catch (error) {
-      alert("Error de conexiÃƒÂ³n");
+      alert("Error de conexiÃƒÆ’Ã‚Â³n");
     }
   };
 
@@ -353,7 +353,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
               </button>
             </div>
             {cart.length === 0 ? (
-              <p className="text-stone-500 text-center py-4">Carrito vacÃƒÂ­o</p>
+              <p className="text-stone-500 text-center py-4">Carrito vacÃƒÆ’Ã‚Â­o</p>
             ) : (
               <>
                 {cart.map((item, idx) => (
@@ -438,7 +438,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
               <button onClick={() => pay("Nequi")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Nequi</button>
               <button onClick={() => pay("Bancolombia")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Bancolombia</button>
               <button onClick={() => pay("Daviplata")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Daviplata</button>
-              <button onClick={() => pay("CrÃƒÂ©dito")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">CrÃƒÂ©dito</button>
+              <button onClick={() => pay("CrÃƒÆ’Ã‚Â©dito")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">CrÃƒÆ’Ã‚Â©dito</button>
               <button onClick={() => pay("Otros")} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Otros</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cancelar</button>
@@ -487,11 +487,11 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
         </div>
       )}
 
-      {/* Modal CrÃƒÂ©dito */}
+      {/* Modal CrÃƒÆ’Ã‚Â©dito */}
       {showCreditoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar CrÃƒÂ©dito</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar CrÃƒÆ’Ã‚Â©dito</h3>
             <p className="text-sm text-stone-600 mb-4">Total: ${totalPrecio.toLocaleString()}</p>
             <div className="space-y-3">
                             <input
@@ -509,14 +509,14 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
               />
               <input
                 type="text"
-                placeholder="TelÃƒÂ©fono"
+                placeholder="TelÃƒÆ’Ã‚Â©fono"
                 value={creditoData.telefono}
                 onChange={(e) => setCreditoData({ ...creditoData, telefono: e.target.value })}
                 className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
               />
               <input
                 type="text"
-                placeholder="DirecciÃƒÂ³n"
+                placeholder="DirecciÃƒÆ’Ã‚Â³n"
                 value={creditoData.direccion}
                 onChange={(e) => setCreditoData({ ...creditoData, direccion: e.target.value })}
                 className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
@@ -558,7 +558,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
                 rel="noopener noreferrer"
                 className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition"
               >
-                <span className="text-xl">Ã°Å¸â€™Â°</span> POS Vendedor
+                <span className="text-xl">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â°</span> POS Vendedor
               </a>
               <a
                 href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== "undefined" ? window.location.origin : ""}/demo/${negocioSlug}/tienda`}
@@ -566,7 +566,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
                 rel="noopener noreferrer"
                 className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition"
               >
-                <span className="text-xl">Ã°Å¸â€ºâ€™</span> Tienda Clientes
+                <span className="text-xl">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂºÃ¢â‚¬â„¢</span> Tienda Clientes
               </a>
               <a
                 href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== "undefined" ? window.location.origin : ""}/repartidor`}
@@ -574,7 +574,7 @@ p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
                 rel="noopener noreferrer"
                 className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition"
               >
-                <span className="text-xl">Ã°Å¸â€ºÂµ</span> App Repartidor
+                <span className="text-xl">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂºÃ‚Âµ</span> App Repartidor
               </a>
             </div>
             <button onClick={() => setShowShareModal(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">

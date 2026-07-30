@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 `nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";

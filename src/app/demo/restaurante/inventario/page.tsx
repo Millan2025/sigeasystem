@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 `nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -395,8 +395,11 @@ export default function InventarioPage() {
         }
 
         alert(
-          `✅ Productos importados: ${importados}\n` +
-          (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
+          `✅ Productos importados: ${importados}
+` +
+          (errores.length > 0 ? `❌ Errores: ${errores.length}
+${errores.join("
+")}` : "")
         );
         cargarDatos(true);
         recargarProductos();
