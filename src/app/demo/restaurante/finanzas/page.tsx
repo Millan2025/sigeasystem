@@ -134,6 +134,39 @@ setResumen(nuevoResumen);
     cargarDatos();
   }, [tenantId, filtros, pagina]);
 
+// Recalcular resumen cuando cambian las transacciones (para mantener consistencia)
+useEffect(() => {
+  if (transacciones.length > 0) {
+    const ingresosCalc = transacciones
+      .filter(t => t.tipo === 'ingreso')
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const egresosCalc = transacciones
+      .filter(t => t.tipo === 'egreso')
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const saldoCalc = ingresosCalc - egresosCalc;
+    const impuestosCalc = transacciones.reduce((sum, t) => sum + (t.iva || 0), 0);
+    const retencionesCalc = transacciones.reduce((sum, t) => sum + (t.retencion || 0), 0);
+    
+    const desglosePagosCalc: Record<string, number> = {};
+    transacciones.filter(t => t.tipo === 'ingreso').forEach(t => {
+      let metodo = t.metodo_pago || 'Otro';
+      if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+      desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
+    });
+    
+    setResumen({
+      ingresos: ingresosCalc,
+      egresos: egresosCalc,
+      saldo: saldoCalc,
+      impuestos: impuestosCalc,
+      retenciones: retencionesCalc,
+      desglosePagos: desglosePagosCalc
+    });
+  }
+}, [transacciones]);
+
 // Depuración: mostrar resumen cada vez que cambie
 useEffect(() => {
   console.log('🔄 Resumen actualizado:', resumen);
@@ -711,6 +744,7 @@ useEffect(() => {
     </div>
   );
 }
+
 
 
 
