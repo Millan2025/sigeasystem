@@ -89,7 +89,20 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      const nuevoResumen = data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} };
+      // Calcular ingresos y egresos directamente desde las transacciones (como en reportes)
+      const transacciones = data.data || [];
+      const ingresosCalc = transacciones.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
+      const egresosCalc = transacciones.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
+      const saldoCalc = ingresosCalc - egresosCalc;
+      console.log('📊 Cálculo manual (reportes):', { ingresosCalc, egresosCalc, saldoCalc });
+      const nuevoResumen = {
+        ingresos: ingresosCalc,
+        egresos: egresosCalc,
+        saldo: saldoCalc,
+        impuestos: data.resumen?.impuestos || 0,
+        retenciones: data.resumen?.retenciones || 0,
+        desglosePagos: data.resumen?.desglosePagos || {}
+      };
 console.log('📊 Actualizando resumen con:', nuevoResumen);
 setResumen(nuevoResumen);
       const total = data.data?.length || 0;
@@ -727,6 +740,7 @@ useEffect(() => {
     </div>
   );
 }
+
 
 
 
