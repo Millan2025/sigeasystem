@@ -1,9 +1,10 @@
 ﻿"use client";
 
-`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import { RefreshCw, Eye, ShoppingBag, X, CheckCircle, Trash2 } from "lucide-react";
+import { useTenant } from "@/hooks/useTenant";
 
 interface PedidoItem {
   producto_id: string;
@@ -111,9 +112,9 @@ export default function PedidosPage() {
       alert("Error de conexión");
     }
   };
+
   const cancelarPedido = async (id: string) => {
     if (!confirm('¿Estás seguro de cancelar este pedido? Se revertirá inventario y finanzas.')) return;
-    
     try {
       const res = await fetch(`/api/pedidos/${id}/cancelar`, {
         method: 'POST',
@@ -233,7 +234,8 @@ export default function PedidosPage() {
                     >
                       <Eye className="w-3 h-3 inline mr-1" /> Detalle
                     </button>
-			                    {(pedido.estado === 'pendiente' || pedido.estado === 'pagado') && (
+
+                    {(pedido.estado === 'pendiente' || pedido.estado === 'pagado') && (
                       <button
                         onClick={() => cancelarPedido(pedido.id)}
                         className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full hover:bg-red-200"
@@ -242,7 +244,6 @@ export default function PedidosPage() {
                       </button>
                     )}
 
-                    {/* Botón Marcar como Pagado (solo si está pendiente) */}
                     {pedido.estado === 'pendiente' && (
                       <button
                         onClick={() => cambiarEstado(pedido.id, 'pagado')}
@@ -252,7 +253,6 @@ export default function PedidosPage() {
                       </button>
                     )}
 
-                    {/* Botón Confirmar (solo si está pagado) */}
                     {pedido.estado === 'pagado' && (
                       <button
                         onClick={() => confirmarPedido(pedido.id)}
@@ -262,13 +262,12 @@ export default function PedidosPage() {
                       </button>
                     )}
 
-                    {/* Botones de estados futuros (excepto pagado y confirmado) */}
                     {LISTA_ESTADOS.map((estado) => {
                       const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
                       const idxNuevo = LISTA_ESTADOS.indexOf(estado);
                       if (idxNuevo <= idxActual) return null;
                       if (estado === 'pagado') return null;
-                      if (estado === 'confirmado') return null; // Confirmado se maneja con el botón especial
+                      if (estado === 'confirmado') return null;
                       const info = ESTADOS[estado as keyof typeof ESTADOS];
                       return (
                         <button
@@ -332,16 +331,3 @@ export default function PedidosPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
