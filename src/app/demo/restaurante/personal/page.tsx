@@ -68,8 +68,8 @@ export default function PersonalPage() {
         setEmpleados(JSON.parse(storedEmpleados));
       } else {
         const ejemplos: Empleado[] = [
-          { id: "EMP-001", nombre: "Juan PÃƒÂ©rez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
-          { id: "EMP-002", nombre: "MarÃƒÂ­a GÃƒÂ³mez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
+          { id: "EMP-001", nombre: "Juan PÃƒÆ’Ã‚Â©rez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
+          { id: "EMP-002", nombre: "MarÃƒÆ’Ã‚Â­a GÃƒÆ’Ã‚Â³mez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
         ];
         setEmpleados(ejemplos);
         localStorage.setItem(keyEmpleados, JSON.stringify(ejemplos));
@@ -132,7 +132,7 @@ export default function PersonalPage() {
   };
 
   const eliminarEmpleado = (id: string) => {
-    if (!confirm("Ã‚Â¿Eliminar este empleado?")) return;
+    if (!confirm("Ãƒâ€šÃ‚Â¿Eliminar este empleado?")) return;
     guardarEmpleados(empleados.filter((e) => e.id !== id));
   };
 
@@ -231,7 +231,7 @@ export default function PersonalPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-3 text-stone-700">Nombre</th>
-                  <th className="text-left p-3 text-stone-700">TelÃƒÂ©fono</th>
+                  <th className="text-left p-3 text-stone-700">TelÃƒÆ’Ã‚Â©fono</th>
                   <th className="text-left p-3 text-stone-700">Rol</th>
                   <th className="text-left p-3 text-stone-700">Salario</th>
                   <th className="text-left p-3 text-stone-700">Estado</th>
@@ -267,10 +267,10 @@ export default function PersonalPage() {
                             Check-in
                           </button>
                         ) : tieneCheckOut ? (
-                          <span className="text-xs text-stone-500">Ã¢Å“â€¦ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
+                          <span className="text-xs text-stone-500">ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-blue-600">Ã¢ÂÂ³ {asistenciaHoy?.hora_entrada}</span>
+                            <span className="text-xs text-blue-600">ÃƒÂ¢Ã‚ÂÃ‚Â³ {asistenciaHoy?.hora_entrada}</span>
                             <button onClick={() => registrarAsistencia(emp.id)} className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full hover:bg-orange-600">
                               Check-out
                             </button>
@@ -310,7 +310,7 @@ export default function PersonalPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">TelÃƒÂ©fono</label>
+                <label className="block text-sm font-medium text-stone-700">TelÃƒÆ’Ã‚Â©fono</label>
                 <input
                   type="text"
                   value={form.telefono || ""}
@@ -353,7 +353,7 @@ export default function PersonalPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Fecha ContrataciÃƒÂ³n</label>
+                <label className="block text-sm font-medium text-stone-700">Fecha ContrataciÃƒÆ’Ã‚Â³n</label>
                 <input
                   type="date"
                   value={form.fecha_contratacion || new Date().toISOString().split("T")[0]}
