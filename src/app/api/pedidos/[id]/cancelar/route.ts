@@ -17,7 +17,6 @@ export async function POST(
 
     console.log(`🔍 Cancelando pedido ${id}...`)
 
-    // 1. Obtener el pedido con sus items
     const { data: pedido, error: pedidoError } = await supabase
       .from('pedidos')
       .select('*, items')
@@ -34,32 +33,27 @@ export async function POST(
 
     console.log(`📦 Pedido encontrado: ${pedido.id}, estado actual: ${pedido.estado}`)
 
-    // 2. VALIDAR ESTADO - IMPEDIR CANCELACIONES MÚLTIPLES
     if (pedido.estado === 'cancelado') {
-      console.warn(`⚠️ El pedido ${id} ya está cancelado. No se permite reversión.`)
+      console.warn(`⚠️ El pedido ${id} ya está cancelado.`)
       return NextResponse.json(
-        { success: false, error: 'El pedido ya está cancelado. No se puede cancelar de nuevo.' },
+        { success: false, error: 'El pedido ya está cancelado' },
         { status: 400 }
       )
     }
 
     if (pedido.estado === 'entregado' || pedido.estado === 'despachado') {
-      console.warn(`⚠️ El pedido ${id} ya está ${pedido.estado}. No se puede cancelar.`)
       return NextResponse.json(
         { success: false, error: `No se puede cancelar un pedido en estado "${pedido.estado}"` },
         { status: 400 }
       )
     }
 
-    // 3. ACTUALIZAR ESTADO A 'cancelado' PRIMERO (para evitar reversiones duplicadas)
+    // Actualizar estado a 'cancelado' (sin columnas que no existen)
     console.log('🔄 Actualizando estado a "cancelado"...')
     const { error: updateError } = await supabase
       .from('pedidos')
       .update({
         estado: 'cancelado',
-        cancelado_en: new Date().toISOString(),
-        cancelado_por: usuario_id || 'sistema',
-        motivo_cancelacion: motivo || 'Cancelado por usuario',
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -73,7 +67,7 @@ export async function POST(
     }
     console.log('✅ Estado actualizado a "cancelado"')
 
-    // 4. Revertir inventario (sumar stock) solo si el pedido NO es crédito
+    // Revertir inventario (solo si no es crédito)
     const esCredito = pedido.metodo_pago === 'Crédito'
     if (!esCredito && pedido.items && pedido.items.length > 0) {
       console.log('🔄 Revertiendo inventario...')
@@ -88,7 +82,7 @@ export async function POST(
 
         if (prodErr) {
           console.error(`❌ Error al obtener producto ${item.producto_id}:`, prodErr)
-          continue // Continuar con otros items en lugar de fallar todo
+          continue
         }
 
         const nuevoStock = (producto?.stock || 0) + item.cantidad
@@ -118,7 +112,7 @@ export async function POST(
       }
     }
 
-    // 5. Revertir finanzas (si existe transacción)
+    // Revertir finanzas
     console.log('🔄 Revertiendo finanzas...')
     const { data: transaccion } = await supabase
       .from('transacciones')
@@ -129,17 +123,10 @@ export async function POST(
 
     if (transaccion) {
       console.log(`   Transacción encontrada: ${transaccion.id}, eliminando...`)
-      const { error: deleteError } = await supabase
+      await supabase
         .from('transacciones')
         .delete()
         .eq('id', transaccion.id)
-
-      if (deleteError) {
-        console.error('❌ Error al eliminar transacción:', deleteError)
-        // No interrumpimos el flujo, pero lo logueamos
-      } else {
-        console.log('   ✅ Transacción eliminada')
-      }
     } else {
       console.log('   ℹ️ No se encontró transacción, creando egreso compensatorio...')
       const { data: categoria } = await supabase
@@ -176,7 +163,7 @@ export async function POST(
   } catch (error: any) {
     console.error('❌ Error al cancelar pedido:', error)
     return NextResponse.json(
-      { success: false, error: error.message || 'Error interno del servidor' },
+      { success: false, error: error.message || 'Error interno' },
       { status: 500 }
     )
   }
