@@ -84,15 +84,54 @@ export default function FinanzasPage() {
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
-      setTransacciones(data.data || []);
-      const nuevoResumen = data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} };
-console.log('📊 Actualizando resumen con:', nuevoResumen);
-setResumen(nuevoResumen);
-      const total = data.data?.length || 0;
-      setTotalRegistros(total);
-      if (total < 50) setTotalPaginas(pagina);
-      else setTotalPaginas(pagina + 1);
-    }
+  // Guardar transacciones
+  const transacciones = data.data || [];
+  setTransacciones(transacciones);
+  
+  // Calcular resumen manualmente (igual que en Reportes)
+  const ingresosCalc = transacciones
+    .filter(t => t.tipo === 'ingreso')
+    .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+  
+  const egresosCalc = transacciones
+    .filter(t => t.tipo === 'egreso')
+    .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+  
+  const saldoCalc = ingresosCalc - egresosCalc;
+  const impuestosCalc = transacciones.reduce((sum, t) => sum + (t.iva || 0), 0);
+  const retencionesCalc = transacciones.reduce((sum, t) => sum + (t.retencion || 0), 0);
+  
+  const desglosePagosCalc: Record<string, number> = {};
+  transacciones.filter(t => t.tipo === 'ingreso').forEach(t => {
+    let metodo = t.metodo_pago || 'Otro';
+    if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+    desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
+  });
+  
+  console.log('📊 Cálculo manual (frontend) - igual que Reportes:', {
+    ingresosCalc,
+    egresosCalc,
+    saldoCalc,
+    impuestosCalc,
+    retencionesCalc,
+    desglosePagosCalc
+  });
+  
+  setResumen({
+    ingresos: ingresosCalc,
+    egresos: egresosCalc,
+    saldo: saldoCalc,
+    impuestos: impuestosCalc,
+    retenciones: retencionesCalc,
+    desglosePagos: desglosePagosCalc
+  });
+  
+  // Paginación
+  const total = transacciones.length;
+  setTotalRegistros(total);
+  if (total < 50) setTotalPaginas(pagina);
+  else setTotalPaginas(pagina + 1);
+}
 
     // 2. Cuentas por Cobrar
     const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
@@ -135,37 +174,7 @@ setResumen(nuevoResumen);
   }, [tenantId, filtros, pagina]);
 
 // Recalcular resumen cuando cambian las transacciones (para mantener consistencia)
-useEffect(() => {
-  if (transacciones.length > 0) {
-    const ingresosCalc = transacciones
-      .filter(t => t.tipo === 'ingreso')
-      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
-    
-    const egresosCalc = transacciones
-      .filter(t => t.tipo === 'egreso')
-      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
-    
-    const saldoCalc = ingresosCalc - egresosCalc;
-    const impuestosCalc = transacciones.reduce((sum, t) => sum + (t.iva || 0), 0);
-    const retencionesCalc = transacciones.reduce((sum, t) => sum + (t.retencion || 0), 0);
-    
-    const desglosePagosCalc: Record<string, number> = {};
-    transacciones.filter(t => t.tipo === 'ingreso').forEach(t => {
-      let metodo = t.metodo_pago || 'Otro';
-      if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
-      desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
-    });
-    
-    setResumen({
-      ingresos: ingresosCalc,
-      egresos: egresosCalc,
-      saldo: saldoCalc,
-      impuestos: impuestosCalc,
-      retenciones: retencionesCalc,
-      desglosePagos: desglosePagosCalc
-    });
-  }
-}, [transacciones]);
+
 
 // Depuración: mostrar resumen cada vez que cambie
 useEffect(() => {
@@ -744,6 +753,7 @@ useEffect(() => {
     </div>
   );
 }
+
 
 
 
