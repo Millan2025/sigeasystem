@@ -1,9 +1,7 @@
-﻿"use client";
+﻿import DemoInventarioPage from "@/app/demo/restaurante/inventario/page";
 
-import DemoInventarioPage from "@/app/demo/restaurante/inventario/page";
-import { useSearchParams } from "next/navigation";
-
-export default function SlugInventarioPage() {
-  const searchParams = useSearchParams();
-  return <DemoInventarioPage searchParams={searchParams} />;
+export default function SlugDemoInventarioPage() {
+  return <DemoInventarioPage />;
 }
+
+// Forzar deploy 2026-07-31 16:56:23
