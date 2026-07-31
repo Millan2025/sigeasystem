@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -47,7 +47,7 @@ interface BusinessConfig {
   plan: string;
 }
 
-export default function NegocioHome({ negocioSlug }: { negocioSlug?: string }) {
+export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { negocioSlug?: string; tenantId?: string }) {
   const router = useRouter();
   const supabase = createClient();
   const [config, setConfig] = useState<BusinessConfig | null>(null);
@@ -58,7 +58,7 @@ export default function NegocioHome({ negocioSlug }: { negocioSlug?: string }) {
 
   useEffect(() => {
     const loadData = async () => {
-      const tenant = await getTenantId();
+      const tenant = tenantIdProp || await getTenantId();
       setTenantId(tenant);
 
       if (tenant) {
