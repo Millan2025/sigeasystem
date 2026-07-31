@@ -70,7 +70,7 @@ import { useTenant } from "@/hooks/useTenant";
   const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
-  // FUNCIÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œN PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
+  // FUNCIÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“N PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
   const calcularResumenManual = (transacciones: any[]) => {
     const ingresos = transacciones
       .filter((t: any) => t.tipo === "ingreso")
@@ -91,7 +91,7 @@ import { useTenant } from "@/hooks/useTenant";
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
     });
     
-    console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â  CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lculo manual (frontend) - igual que Reportes:", {
+    console.log("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â  CÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lculo manual (frontend) - igual que Reportes:", {
       ingresos,
       egresos,
       saldo,
@@ -103,7 +103,7 @@ import { useTenant } from "@/hooks/useTenant";
     return { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos };
   };
 
-  // USEFFECT PARA RECALCULAR AUTOMÃƒÆ’Ã†â€™Ãƒâ€šÃ‚ÂTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
+  // USEFFECT PARA RECALCULAR AUTOMÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
   
 
   const cargarDatos = async () => {
@@ -125,7 +125,7 @@ import { useTenant } from "@/hooks/useTenant";
       const transacciones = dataFinanzas.data || [];
       setTransacciones(transacciones);
       
-      // PaginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+      // PaginaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
       const total = transacciones.length;
       setTotalRegistros(total);
       if (total < 50) setTotalPaginas(pagina);
@@ -137,15 +137,15 @@ import { useTenant } from "@/hooks/useTenant";
     if (filtros.start) urlVentas += `&start=${filtros.start}`;
     if (filtros.end) urlVentas += `&end=${filtros.end}`;
     
-    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â Fetching Ventas:', urlVentas);
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Fetching Ventas:', urlVentas);
     const resVentas = await fetch(urlVentas);
     const dataVentas = await resVentas.json();
-    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Ventas response:', dataVentas.data?.length || 0, 'registros');
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ Ventas response:', dataVentas.data?.length || 0, 'registros');
     
     let totalVentas = 0;
     if (dataVentas.success) {
       totalVentas = dataVentas.data.reduce((sum: number, v: any) => sum + (v.total || 0), 0);
-      console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â° Total ventas:', totalVentas);
+      console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° Total ventas:', totalVentas);
     }
 
     // 3. Obtener Compras (para egresos reales)
@@ -153,15 +153,15 @@ import { useTenant } from "@/hooks/useTenant";
     if (filtros.start) urlCompras += `&start=${filtros.start}`;
     if (filtros.end) urlCompras += `&end=${filtros.end}`;
     
-    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â Fetching Compras:', urlCompras);
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â Fetching Compras:', urlCompras);
     const resCompras = await fetch(urlCompras);
     const dataCompras = await resCompras.json();
-    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Compras response:', dataCompras.data?.length || 0, 'registros');
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ Compras response:', dataCompras.data?.length || 0, 'registros');
     
     let totalCompras = 0;
     if (dataCompras.success) {
       totalCompras = dataCompras.data.reduce((sum: number, c: any) => sum + (c.total || 0), 0);
-      console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â° Total compras:', totalCompras);
+      console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° Total compras:', totalCompras);
     }
 
     // 4. Calcular resumen REAL (igual que Reportes)
@@ -174,7 +174,7 @@ import { useTenant } from "@/hooks/useTenant";
     const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
     const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
     
-    // Desglose for mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago desde ventas
+    // Desglose for mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de pago desde ventas
     const desglosePagosCalc: Record<string, number> = {};
     if (dataVentas.success) {
       dataVentas.data.forEach((v: any) => {
@@ -184,7 +184,7 @@ import { useTenant } from "@/hooks/useTenant";
       });
     }
     
-    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â  CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lculo REAL (desde Ventas/Compras) - igual que Reportes:', {
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â  CÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lculo REAL (desde Ventas/Compras) - igual que Reportes:', {
       ingresosCalc,
       egresosCalc,
       saldoCalc,
@@ -226,7 +226,7 @@ import { useTenant } from "@/hooks/useTenant";
       setCuentasPorPagar(0);
     }
 
-    // 7. CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as y perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos
+    // 7. CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as y perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos
     const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
@@ -236,7 +236,7 @@ import { useTenant } from "@/hooks/useTenant";
     if (perData.success) setPeriodos(perData.data || []);
 
   } catch (error) {
-    console.error('ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Error al cargar datos:', error);
+    console.error('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Error al cargar datos:', error);
   }
   setLoading(false);
 };
@@ -285,7 +285,7 @@ import { useTenant } from "@/hooks/useTenant";
   };
 
   const eliminarTransaccion = async (id: string) => {
-    if (!confirm("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿Eliminar esta transacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n?")) return;
+    if (!confirm("ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿Eliminar esta transacciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n?")) return;
     const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -319,14 +319,14 @@ import { useTenant } from "@/hooks/useTenant";
       "#": t.item || "",
       "Fecha": formatDate(t.fecha),
       "Tipo": t.tipo,
-      "CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a": t.categorias_contables?.nombre || "",
-      "DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n": t.descripcion_resumida || t.descripcion || "",
-      "MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago": t.metodo_pago || "",
+      "CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a": t.categorias_contables?.nombre || "",
+      "DescripciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n": t.descripcion_resumida || t.descripcion || "",
+      "MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de Pago": t.metodo_pago || "",
       "Cantidad": t.cantidad ?? 1,
       "Precio Unitario": t.precio_unitario ?? 0,
       "Subtotal": t.subtotal ?? 0,
       "IVA": t.iva || 0,
-      "RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n": t.retencion || 0,
+      "RetenciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n": t.retencion || 0,
       "ICA": t.ica || 0,
       "Total": t.total ?? t.total_con_impuestos ?? 0,
     }));
@@ -347,7 +347,7 @@ import { useTenant } from "@/hooks/useTenant";
     if (data.success) {
       setFormCategoria({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
       cargarDatos();
-      alert("CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a agregada");
+      alert("CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a agregada");
     } else {
       alert(data.error);
     }
@@ -363,7 +363,7 @@ import { useTenant } from "@/hooks/useTenant";
     if (data.success) {
       setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
       cargarDatos();
-      alert("PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo creado");
+      alert("PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo creado");
     } else {
       alert(data.error);
     }
@@ -410,7 +410,7 @@ import { useTenant } from "@/hooks/useTenant";
       }
     } else if (tipo === "anual") {
       periodos.push({
-        nombre: `AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±o ${year}`,
+        nombre: `AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±o ${year}`,
         fecha_inicio: `${year}-01-01`,
         fecha_fin: `${year}-12-31`,
         tipo: "anual",
@@ -424,7 +424,7 @@ import { useTenant } from "@/hooks/useTenant";
       });
     });
     cargarDatos();
-    alert(`PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos ${tipo} generados correctamente`);
+    alert(`PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos ${tipo} generados correctamente`);
   };
 
   return (
@@ -454,21 +454,21 @@ import { useTenant } from "@/hooks/useTenant";
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Registrar nuevo movimiento"
         >
-          <Plus className="w-4 h-4" /> Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+          <Plus className="w-4 h-4" /> Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
         </button>
         <button
           onClick={() => setShowImportModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Plan de cuentas"
         >
-          <BookOpen className="w-4 h-4" /> CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as
+          <BookOpen className="w-4 h-4" /> CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as
         </button>
         <button
           onClick={() => setShowImportModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos fiscales"
+          title="PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos fiscales"
         >
-          <Calendar className="w-4 h-4" /> PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos
+          <Calendar className="w-4 h-4" /> PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos
         </button>
         <button
           onClick={exportarExcel}
@@ -519,10 +519,10 @@ import { useTenant } from "@/hooks/useTenant";
           </div>
         </div>
 
-        {/* Desglose for mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago */}
+        {/* Desglose for mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de pago */}
         {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-            <h3 className="font-semibold text-stone-800 mb-2">Desglose for MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</h3>
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose for MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de Pago</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
@@ -548,11 +548,11 @@ import { useTenant } from "@/hooks/useTenant";
               <option value="egreso">Egresos</option>
             </select>
             <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todas las categorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as</option>
+              <option value="">Todas las categorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as</option>
               {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
             </select>
             <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todos los perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos</option>
+              <option value="">Todos los perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos</option>
               {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
             </select>
           </div>
@@ -561,7 +561,7 @@ import { useTenant } from "@/hooks/useTenant";
         {/* Tabla de movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
-          <div className="text-xs text-stone-400 mb-2">ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¡ Desliza horizontalmente ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ para ver todas las columnas</div>
+          <div className="text-xs text-stone-400 mb-2">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ Desliza horizontalmente ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ para ver todas las columnas</div>
           <div className="overflow-x-auto" style={{ height: "420px", overflowY: "auto", border: "2px solid #3b82f6", borderRadius: "8px", padding: "4px" }}>
             <div style={{ minWidth: "1200px" }}>
               <table className="w-full text-sm" style={{ minWidth: "1200px" }}>
@@ -570,14 +570,14 @@ import { useTenant } from "@/hooks/useTenant";
                     <th className="text-left p-2 text-stone-700">#</th>
                     <th className="text-left p-2 text-stone-700">Fecha</th>
                     <th className="text-left p-2 text-stone-700">Tipo</th>
-                    <th className="text-left p-2 text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</th>
-                    <th className="text-left p-2 text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</th>
-                    <th className="text-left p-2 text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</th>
+                    <th className="text-left p-2 text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a</th>
+                    <th className="text-left p-2 text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de Pago</th>
                     <th className="text-left p-2 text-stone-700">Cantidad</th>
                     <th className="text-left p-2 text-stone-700">Precio Unit.</th>
                     <th className="text-left p-2 text-stone-700">Subtotal</th>
                     <th className="text-left p-2 text-stone-700">IVA</th>
-                    <th className="text-left p-2 text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</th>
                     <th className="text-left p-2 text-stone-700">ICA</th>
                     <th className="text-left p-2 text-stone-700">Total</th>
                     <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
@@ -625,10 +625,10 @@ import { useTenant } from "@/hooks/useTenant";
           </div>
         </div>
 
-        {/* Botones de paginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n */}
+        {/* Botones de paginaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n */}
         <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
           <div className="text-sm text-stone-600">
-            Mostrando hasta {transacciones.length} registros (pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡gina {pagina})
+            Mostrando hasta {transacciones.length} registros (pÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡gina {pagina})
           </div>
           <div className="flex gap-2">
             <button
@@ -661,15 +661,15 @@ import { useTenant } from "@/hooks/useTenant";
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span className="text-stone-800">{movimientoSeleccionado.item || "-"}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Fecha</span><span className="text-stone-800">{formatDate(movimientoSeleccionado.fecha)}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Tipo</span><span className="capitalize text-stone-800">{movimientoSeleccionado.tipo}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Cantidad</span><span className="text-stone-800">{movimientoSeleccionado.cantidad ?? 1}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Precio Unitario</span><span className="text-stone-800">${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Subtotal</span><span className="text-stone-800">${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">IVA</span><span className="text-stone-800">${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">ICA</span><span className="text-stone-800">${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
             </div>
@@ -680,11 +680,11 @@ import { useTenant } from "@/hooks/useTenant";
         </div>
       )}
 
-      {/* Modal TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n */}
+      {/* Modal TransacciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n */}
       {showModalTransaccion && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n" : "Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n"}</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n" : "Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n"}</h3>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-stone-700">Tipo</label>
@@ -698,14 +698,14 @@ import { useTenant } from "@/hooks/useTenant";
                 <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a contable</label>
+                <label className="block text-sm font-medium text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a contable</label>
                 <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">Seleccionar...</option>
                   {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</label>
+                <label className="block text-sm font-medium text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</label>
                 <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
@@ -717,18 +717,18 @@ import { useTenant } from "@/hooks/useTenant";
                 <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</label>
+                <label className="block text-sm font-medium text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</label>
                 <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago</label>
+                <label className="block text-sm font-medium text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©todo de pago</label>
                 <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">No aplica</option>
                   <option value="Efectivo">Efectivo</option>
                   <option value="Nequi">Nequi</option>
                   <option value="Bancolombia">Bancolombia</option>
                   <option value="Daviplata">Daviplata</option>
-                  <option value="CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito">CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito</option>
+                  <option value="CrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dito">CrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dito</option>
                 </select>
               </div>
             </div>
@@ -740,7 +740,7 @@ import { useTenant } from "@/hooks/useTenant";
         </div>
       )}
 
-      {/* Modal CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as */}
+      {/* Modal CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as */}
       {showModalCategoria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -755,31 +755,31 @@ import { useTenant } from "@/hooks/useTenant";
                   <span className="text-xs text-stone-600">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as</p>}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as</p>}
             </div>
             <div className="mt-4 border-t pt-4">
               <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
               <div className="space-y-2">
-                <input type="text" placeholder="CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <input type="text" placeholder="CÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <select value={formCategoria.tipo} onChange={(e) => setFormCategoria({...formCategoria, tipo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm">
                   <option value="ingreso">Ingreso</option>
                   <option value="egreso">Egreso</option>
                   <option value="costo">Costo</option>
                 </select>
-                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</button>
+                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos */}
+      {/* Modal PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos */}
       {showModalPeriodo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos Fiscales</h3>
+              <h3 className="text-lg font-bold text-stone-800">PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos Fiscales</h3>
               <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
@@ -789,10 +789,10 @@ import { useTenant } from "@/hooks/useTenant";
                   <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
-              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos.</p>}
+              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos.</p>}
             </div>
             <div>
-              <h4 className="font-medium text-stone-700 mb-2">Generar perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos automÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ticos</h4>
+              <h4 className="font-medium text-stone-700 mb-2">Generar perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odos automÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ticos</h4>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
                 <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
@@ -800,14 +800,14 @@ import { useTenant } from "@/hooks/useTenant";
                 <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
               </div>
               <div className="mt-4 border-t pt-4">
-                <h4 className="font-medium text-stone-700 mb-2">Crear perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo manual</h4>
+                <h4 className="font-medium text-stone-700 mb-2">Crear perÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo manual</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <div className="flex gap-2">
                     <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                     <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   </div>
-                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo</button>
+                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­odo</button>
                 </div>
               </div>
             </div>
