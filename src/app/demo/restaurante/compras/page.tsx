@@ -1,422 +1,284 @@
 "use client";
 
-`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
   RefreshCw,
-  ShoppingBag,
-  Download,
   Plus,
   Edit,
   Trash2,
-  Search,
+  Download,
+  Filter,
+  Calendar,
+  BookOpen,
   X,
 } from "lucide-react";
 import * as XLSX from "xlsx";
-
-const estadoInicialForm = {
-  nombre: "",
-  categoria: "",
-  precio: 0,
-  precio_compra: 0,
-  stock: 0,
-  stock_minimo: 0,
-  stock_maximo: 0,
-  proveedor: "",
-  observaciones: "",
-  unidad: "unidad",
-  tipo_unidad: "unidad",
-  sku: "",
-  descripcion: "",
-  fecha_caducidad: "",
-  ubicacion: "",
-  imagen_url: "",
-  exento_iva: false,
-};
-
-interface Producto {
-  id: string;
-  nombre: string;
-  sku?: string;
-  precio?: number;
-  precio_compra?: number;
-  stock_minimo?: number;
-  stock_maximo?: number;
-  proveedor?: string;
-  observaciones?: string;
-  unidad?: string;
-  tipo_unidad?: string;
-  descripcion?: string;
-  fecha_caducidad?: string;
-  ubicacion?: string;
-  imagen_url?: string;
-  categoria?: string;
-  stock?: number;
-  exento_iva?: boolean;
-}
-
+import { useTenant } from "@/hooks/useTenant";
 export default function ComprasPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
-
-  const [productos, setProductos] = useState<Producto[]>([]);
+  const [transacciones, setTransacciones] = useState<any[]>([]);
+  const [resumen, setResumen] = useState({
+    ingresos: 0,
+    egresos: 0,
+    saldo: 0,
+    impuestos: 0,
+    retenciones: 0,
+    desglosePagos: {} as Record<string, number>,
+  });
+  const [cuentasPorCobrar, setCuentasPorCobrar] = useState(0);
+  const [cuentasPorPagar, setCuentasPorPagar] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [filtroProveedor, setFiltroProveedor] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [seleccionados, setSeleccionados] = useState<string[]>([]);
-  const [stockMap, setStockMap] = useState<Record<string, number>>({});
-  const [proveedor, setProveedor] = useState("");
-  const [metodoPago, setMetodoPago] = useState("contado");
-  const [mensaje, setMensaje] = useState("");
-
-  const [ivaPorcentaje, setIvaPorcentaje] = useState(19);
-  const [retencionPorcentaje, setRetencionPorcentaje] = useState(2.5);
-  const [icaPorcentaje, setIcaPorcentaje] = useState(0.5);
-
-  const [resumenContable, setResumenContable] = useState({
-    subtotal: 0,
-    iva: 0,
-    retencion: 0,
-    ica: 0,
-    total: 0,
-  });
-  // FunciÃ³n para recalcular resumen desde los items del modal
-  const recalcularResumenDesdeItems = (items: { cantidad: number; precio_compra: number; exento_iva?: boolean }[]) => {
-    let subtotal = 0;
-    let ivaTotal = 0;
-
-    items.forEach(item => {
-      const subtotalItem = item.cantidad * item.precio_compra;
-      subtotal += subtotalItem;
-      if (!item.exento_iva) {
-        ivaTotal += subtotalItem * (ivaPorcentaje / 100);
-      }
-    });
-
-    const retencion = subtotal * (retencionPorcentaje / 100);
-    const ica = subtotal * (icaPorcentaje / 100);
-    const total = subtotal + ivaTotal - retencion - ica;
-
-    setResumenContable({ subtotal, iva: ivaTotal, retencion, ica, total });
-  };
-
-
-  const [showModal, setShowImportModal] = useState(false);
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [periodos, setPeriodos] = useState<any[]>([]);
+  const [showModalTransaccion, setShowImportModalTransaccion] = useState(false);
+  const [showModalCategoria, setShowImportModalCategoria] = useState(false);
+  const [showModalPeriodo, setShowImportModalPeriodo] = useState(false);
+  const [filtros, setFiltros] = useState({ start: "", end: "", tipo: "", categoria: "", periodo: "" });
   const [editando, setEditando] = useState<any>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [form, setForm] = useState({ ...estadoInicialForm });
-
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [confirmData, setConfirmData] = useState<{
-    items: { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva?: boolean }[];
-    proveedor: string;
-    metodo_pago: string;
-    total: number;
-  }>({
-    items: [],
-    proveedor: "",
-    metodo_pago: "contado",
-    total: 0,
+  const [formTransaccion, setFormTransaccion] = useState({
+    tipo: "ingreso",
+    monto: 0,
+    categoria_contable_id: "",
+    descripcion: "",
+    fecha: new Date().toLocaleDateString("in-CA"),
+    impuesto: 0,
+    retencion: 0,
+    metodo_pago: "",
   });
+  const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
+  const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
 
-  const actualizarResumenContable = () => {
-    if (seleccionados.length === 0) {
-      setResumenContable({ subtotal: 0, iva: 0, retencion: 0, ica: 0, total: 0 });
-      return;
-    }
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
+  const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
-    let subtotal = 0;
-    let ivaTotal = 0;
-
-    seleccionados.forEach((id) => {
-      const p = productos.find((prod) => prod.id === id);
-      if (!p) return;
-      const stockActual = stockMap[p.id] ?? 0;
-      const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
-      if (cantidad <= 0) return;
-      const precioCompra = p.precio_compra || 0;
-      const subtotalProducto = cantidad * precioCompra;
-      subtotal += subtotalProducto;
-
-      if (!p.exento_iva) {
-        ivaTotal += subtotalProducto * (ivaPorcentaje / 100);
-      }
+  // FUNCIÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œN PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
+  const calcularResumenManual = (transacciones: any[]) => {
+    const ingresos = transacciones
+      .filter((t: any) => t.tipo === "ingreso")
+      .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const egresos = transacciones
+      .filter((t: any) => t.tipo === "egreso")
+      .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const saldo = ingresos - egresos;
+    const impuestos = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+    const retenciones = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+    
+    const desglosePagos: Record<string, number> = {};
+    transacciones.filter((t: any) => t.tipo === "ingreso").forEach((t: any) => {
+      let metodo = t.metodo_pago || "Otro";
+      if (metodo === "Otro" || metodo === "Confirmado") metodo = "Otros";
+      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
     });
-
-    const retencion = subtotal * (retencionPorcentaje / 100);
-    const ica = subtotal * (icaPorcentaje / 100);
-    const total = subtotal + ivaTotal - retencion - ica;
-
-    setResumenContable({ subtotal, iva: ivaTotal, retencion, ica, total });
+    
+    console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â  CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lculo manual (frontend) - igual que Reportes:", {
+      ingresos,
+      egresos,
+      saldo,
+      impuestos,
+      retenciones,
+      desglosePagos,
+    });
+    
+    return { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos };
   };
 
-  useEffect(() => {
-    actualizarResumenContable();
-  }, [seleccionados, productos, stockMap, ivaPorcentaje, retencionPorcentaje, icaPorcentaje]);
+  // USEFFECT PARA RECALCULAR AUTOMÃƒÆ’Ã†â€™Ãƒâ€šÃ‚ÂTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
+  
 
   const cargarDatos = async () => {
-    setLoading(true);
-    const url = `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`;
-    const resProd = await fetch(url);
-    const dataProd = await resProd.json();
-    if (dataProd.success) setProductos(dataProd.data || []);
+  setLoading(true);
+  try {
+    // 1. Obtener transacciones (Finanzas) - para la tabla
+    let url = `/api/finanzas?tenant=${tenantId}`;
+    if (filtros.start) url += `&start=${filtros.start}`;
+    if (filtros.end) url += `&end=${filtros.end}`;
+    if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
+    if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
+    if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
+    url += `&page=${pagina}&pageSize=50`;
 
-    const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
-    const dataStock = await resStock.json();
-    if (dataStock.success) {
-      const map: Record<string, number> = {};
-      dataStock.data.forEach((s: any) => {
-        map[s.id] = s.stock_actual;
-      });
-      setStockMap(map);
+    const resFinanzas = await fetch(url);
+    const dataFinanzas = await resFinanzas.json();
+    
+    if (dataFinanzas.success) {
+      const transacciones = dataFinanzas.data || [];
+      setTransacciones(transacciones);
+      
+      // PaginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+      const total = transacciones.length;
+      setTotalRegistros(total);
+      if (total < 50) setTotalPaginas(pagina);
+      else setTotalPaginas(pagina + 1);
     }
-    setLoading(false);
-    setMensaje("");
-  };
+
+    // 2. Obtener Ventas (para ingresos reales)
+    let urlVentas = `/api/ventas?tenant=${tenantId}`;
+    if (filtros.start) urlVentas += `&start=${filtros.start}`;
+    if (filtros.end) urlVentas += `&end=${filtros.end}`;
+    
+    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â Fetching Ventas:', urlVentas);
+    const resVentas = await fetch(urlVentas);
+    const dataVentas = await resVentas.json();
+    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Ventas response:', dataVentas.data?.length || 0, 'registros');
+    
+    let totalVentas = 0;
+    if (dataVentas.success) {
+      totalVentas = dataVentas.data.reduce((sum: number, v: any) => sum + (v.total || 0), 0);
+      console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â° Total ventas:', totalVentas);
+    }
+
+    // 3. Obtener Compras (para egresos reales)
+    let urlCompras = `/api/compras?tenant=${tenantId}`;
+    if (filtros.start) urlCompras += `&start=${filtros.start}`;
+    if (filtros.end) urlCompras += `&end=${filtros.end}`;
+    
+    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â Fetching Compras:', urlCompras);
+    const resCompras = await fetch(urlCompras);
+    const dataCompras = await resCompras.json();
+    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Compras response:', dataCompras.data?.length || 0, 'registros');
+    
+    let totalCompras = 0;
+    if (dataCompras.success) {
+      totalCompras = dataCompras.data.reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+      console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â° Total compras:', totalCompras);
+    }
+
+    // 4. Calcular resumen REAL (igual que Reportes)
+    const ingresosCalc = totalVentas; // Ingresos desde Ventas
+    const egresosCalc = totalCompras; // Egresos desde Compras
+    const saldoCalc = ingresosCalc - egresosCalc;
+    
+    // Impuestos y retenciones desde transacciones (para mantener consistencia)
+    const transacciones = dataFinanzas.success ? (dataFinanzas.data || []) : [];
+    const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+    const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+    
+    // Desglose for mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago desde ventas
+    const desglosePagosCalc: Record<string, number> = {};
+    if (dataVentas.success) {
+      dataVentas.data.forEach((v: any) => {
+        let metodo = v.metodo_pago || 'Otro';
+        if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+        desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (v.total || 0);
+      });
+    }
+    
+    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â  CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lculo REAL (desde Ventas/Compras) - igual que Reportes:', {
+      ingresosCalc,
+      egresosCalc,
+      saldoCalc,
+      impuestosCalc,
+      retencionesCalc,
+      desglosePagosCalc
+    });
+    
+    setResumen({
+      ingresos: ingresosCalc,
+      egresos: egresosCalc,
+      saldo: saldoCalc,
+      impuestos: impuestosCalc,
+      retenciones: retencionesCalc,
+      desglosePagos: desglosePagosCalc
+    });
+
+    // 5. Cuentas for Cobrar
+    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
+    const creditosData = await creditosRes.json();
+    if (creditosData.success) {
+      const pendientes = creditosData.data
+        .filter((c: any) => c.estado === "pendiente")
+        .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
+      setCuentasPorCobrar(pendientes);
+    }
+
+    // 6. Cuentas for Pagar
+    try {
+      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+      const comprasData = await comprasRes.json();
+      if (comprasData.success) {
+        const pendientes = comprasData.data
+          .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
+          .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+        setCuentasPorPagar(pendientes);
+      }
+    } catch (e) {
+      setCuentasPorPagar(0);
+    }
+
+    // 7. CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as y perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos
+    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
+    const catData = await catRes.json();
+    if (catData.success) setCategorias(catData.data || []);
+
+    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
+    const perData = await perRes.json();
+    if (perData.success) setPeriodos(perData.data || []);
+
+  } catch (error) {
+    console.error('ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Error al cargar datos:', error);
+  }
+  setLoading(false);
+};
 
   useEffect(() => {
     cargarDatos();
-  }, [tenantId, categoriaNegocio]);
+  }, [tenantId, filtros, pagina]);
 
-  const proveedores = [...new Set(productos.map((p) => p.proveedor).filter(Boolean))];
+  useEffect(() => {
+    setPagina(1);
+  }, [filtros]);
 
-  const productosFiltrados = productos.filter((p) => {
-    if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
-    if (searchTerm && !p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !(p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))) return false;
-    return true;
-  });
-
-  const toggleSeleccion = (id: string) => {
-    setSeleccionados((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+  const cambiarPagina = (nuevaPagina: number) => {
+    setPagina(nuevaPagina);
   };
 
-  const prepararConfirmacion = () => {
-    if (seleccionados.length === 0) {
-      alert("Selecciona al menos un producto.");
-      return;
-    }
-
-    const items = seleccionados.map((id) => {
-      const p = productos.find((prod) => prod.id === id);
-      if (!p) return null;
-      const stockActual = stockMap[p.id] ?? 0;
-      const cantidad = Math.max((p.stock_maximo || 0) - stockActual, 0);
-      if (cantidad === 0) return null;
-      return {
-        producto_id: p.id,
-        cantidad: cantidad,
-        precio_compra: p.precio_compra || 0,
-        nombre: p.nombre,
-        exento_iva: p.exento_iva || false,
-      };
-    }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva: boolean }[];
-
-    if (items.length === 0) {
-      alert("Todos los productos seleccionados ya tienen stock mÃ¡ximo.");
-      return;
-    }
-
-    const total = items.reduce((sum, item) => sum + (item.cantidad * item.precio_compra), 0);
-
-    setConfirmData({
-      items,
-      proveedor: proveedor || "Proveedor general",
-      metodo_pago: metodoPago,
-      total,
-    });
-    setShowConfirmModal(true);
-  };
-
-  const confirmarCompra = async () => {
-    // Recalcular impuestos con los datos actuales del modal
-    let subtotal = 0;
-    let ivaTotal = 0;
-
-    confirmData.items.forEach((item) => {
-      const subtotalItem = item.cantidad * item.precio_compra;
-      subtotal += subtotalItem;
-      if (!item.exento_iva) {
-        ivaTotal += subtotalItem * (ivaPorcentaje / 100);
-      }
-    });
-
-    const retencion = subtotal * (retencionPorcentaje / 100);
-    const ica = subtotal * (icaPorcentaje / 100);
-    const totalFinal = subtotal + ivaTotal - retencion - ica;
-
-    const mensajeConfirmacion = `
-      ðŸ“‹ Resumen de la compra:
-      â€¢ Subtotal: $${subtotal.toLocaleString()}
-      â€¢ IVA: $${ivaTotal.toLocaleString()}
-      â€¢ RetenciÃ³n: -$${retencion.toLocaleString()}
-      â€¢ ICA: -$${ica.toLocaleString()}
-      â€¢ Total a pagar: $${totalFinal.toLocaleString()}
-
-      Â¿Confirmas esta compra?
-    `;
-
-    if (!confirm(mensajeConfirmacion)) {
-      return;
-    }
-
-    const body = {
-      tenant_id: tenantId,
-      proveedor: confirmData.proveedor,
-      metodo_pago: confirmData.metodo_pago,
-      fecha: new Date().toISOString().split("T")[0],
-            items: confirmData.items.map((item) => ({
-        producto_id: item.producto_id,
-        cantidad: item.cantidad,
-        precio_compra: item.precio_compra,
-        nombre: item.nombre, // para la descripciÃ³n
-      })),
-      subtotal: subtotal,
-      iva: ivaTotal,
-      retencion: retencion,
-      ica: ica,
-      total_con_impuestos: totalFinal,
-    };
-
-    try {
-      const res = await fetch("/api/compras", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMensaje(`âœ… Compra #${data.data.compra.id} registrada exitosamente. Total: $${totalFinal.toLocaleString()}`);
-        setSeleccionados([]);
-        setShowConfirmModal(false);
-        cargarDatos();
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (error) {
-      alert("Error de conexiÃ³n");
-    }
-  };
-
-  const generarOrdenCompra = () => {
-    if (seleccionados.length === 0) {
-      alert("Selecciona al menos un producto.");
-      return;
-    }
-
-    const data = seleccionados.map((id) => {
-      const p = productos.find((prod) => prod.id === id);
-      if (!p) return null;
-      const stockActual = stockMap[p.id] ?? 0;
-      return {
-        Producto: p.nombre,
-        SKU: p.sku || "",
-        "Stock Actual": stockActual,
-        "MÃ¡ximo Requerido": p.stock_maximo || 0,
-        "Cantidad a Comprar": Math.max((p.stock_maximo || 0) - stockActual, 0),
-        Proveedor: p.proveedor || "",
-        "Precio Compra": p.precio_compra || 0,
-        Observaciones: p.observaciones || "",
-      };
-    }).filter(Boolean);
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
-    XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
-    alert(`ðŸ“¦ Orden de compra generada con ${data.length} productos.`);
-  };
-
-  const descargarInventarioCompleto = () => {
-    const data = productos.map((p) => ({
-      Nombre: p.nombre,
-      SKU: p.sku || "",
-      "Stock Actual": stockMap[p.id] ?? 0,
-      "Stock MÃ­nimo": p.stock_minimo || 0,
-      "Stock MÃ¡ximo": p.stock_maximo || 0,
-      Unidad: p.unidad || "",
-      Proveedor: p.proveedor || "",
-      "Precio Venta": p.precio || 0,
-      "Precio Compra": p.precio_compra || 0,
-      Observaciones: p.observaciones || "",
-      Imagen: p.imagen_url || "",
-      "Exento IVA": p.exento_iva ? "SÃ­" : "No",
-    }));
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(wb, ws, "Inventario");
-    XLSX.writeFile(wb, `inventario_completo_${negocioSlug}.xlsx`);
-  };
-
-  const subirImagen = async () => {
-    if (!imageFile) return;
-    setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", imageFile);
-    formData.append("tenant_id", tenantId);
-    try {
-      const res = await fetch("/api/upload/product-image", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setForm((prev) => ({ ...prev, imagen_url: data.url }));
-        setImageFile(null);
-        alert("âœ… Imagen subida correctamente");
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (e) {
-      alert("Error de conexiÃ³n");
-    }
-    setUploadingImage(false);
-  };
-
-  const guardarProducto = async () => {
-    const url = "/api/products";
+  const guardarTransaccion = async () => {
     const method = editando ? "PUT" : "POST";
+    const body = editando
+      ? { ...formTransaccion, id: editando.id, tenant_id: tenantId }
+      : { ...formTransaccion, tenant_id: tenantId };
 
-    let body: any = { ...form, tenant_id: tenantId };
-    if (editando) body.id = editando.id;
-
-    if (body.fecha_caducidad === "") body.fecha_caducidad = null;
-
-    body.precio = parseFloat(body.precio) || 0;
-    body.precio_compra = parseFloat(body.precio_compra) || 0;
-    body.stock = parseInt(body.stock) || 0;
-    body.stock_minimo = parseInt(body.stock_minimo) || 0;
-    body.stock_maximo = parseInt(body.stock_maximo) || 0;
-
-    const res = await fetch(url, {
+    const res = await fetch("/api/finanzas", {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     const data = await res.json();
     if (data.success) {
-      setShowImportModal(false);
+      setShowImportModalTransaccion(false);
       setEditando(null);
-      setForm({ ...estadoInicialForm });
-      setImageFile(null);
+      setFormTransaccion({
+        tipo: "ingreso",
+        monto: 0,
+        categoria_contable_id: "",
+        descripcion: "",
+        fecha: new Date().toLocaleDateString("in-CA"),
+        impuesto: 0,
+        retencion: 0,
+        metodo_pago: "",
+      });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
     }
   };
 
-  const eliminarProducto = async (id: string) => {
-    if (!confirm("Â¿Eliminar este producto?")) return;
-    const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
+  const eliminarTransaccion = async (id: string) => {
+    if (!confirm("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿Eliminar esta transacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n?")) return;
+    const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
       cargarDatos();
@@ -425,579 +287,521 @@ export default function ComprasPage() {
     }
   };
 
-  const editarProducto = (p: any) => {
-    setEditando(p);
-    setForm({
-      nombre: p.nombre || "",
-      categoria: p.categoria || "",
-      precio: p.precio || 0,
-      precio_compra: p.precio_compra || 0,
-      stock: p.stock || 0,
-      stock_minimo: p.stock_minimo || 0,
-      stock_maximo: p.stock_maximo || 0,
-      proveedor: p.proveedor || "",
-      observaciones: p.observaciones || "",
-      unidad: p.unidad || "unidad",
-      tipo_unidad: p.tipo_unidad || "unidad",
-      sku: p.sku || "",
-      descripcion: p.descripcion || "",
-      fecha_caducidad: p.fecha_caducidad || "",
-      ubicacion: p.ubicacion || "",
-      imagen_url: p.imagen_url || "",
-      exento_iva: p.exento_iva || false,
+  const editarTransaccion = (t: any) => {
+    setEditando(t);
+    setFormTransaccion({
+      tipo: t.tipo,
+      monto: t.monto,
+      categoria_contable_id: t.categoria_contable_id || "",
+      descripcion: t.descripcion || "",
+      fecha: t.fecha,
+      impuesto: t.impuesto || 0,
+      retencion: t.retencion || 0,
+      metodo_pago: t.metodo_pago || "",
     });
-    setShowImportModal(true);
+    setShowImportModalTransaccion(true);
+  };
+
+  const exportarExcel = () => {
+    if (transacciones.length === 0) {
+      alert("No hay datos para exportar.");
+      return;
+    }
+    const data = transacciones.map((t: any) => ({
+      "#": t.item || "",
+      "Fecha": formatDate(t.fecha),
+      "Tipo": t.tipo,
+      "CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a": t.categorias_contables?.nombre || "",
+      "DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n": t.descripcion_resumida || t.descripcion || "",
+      "MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago": t.metodo_pago || "",
+      "Cantidad": t.cantidad ?? 1,
+      "Precio Unitario": t.precio_unitario ?? 0,
+      "Subtotal": t.subtotal ?? 0,
+      "IVA": t.iva || 0,
+      "RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n": t.retencion || 0,
+      "ICA": t.ica || 0,
+      "Total": t.total ?? t.total_con_impuestos ?? 0,
+    }));
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Finanzas");
+    ws["!cols"] = Object.keys(data[0]).map(() => ({ wch: 20 }));
+    XLSX.writeFile(wb, `finanzas_${negocioSlug}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const agregarCategoria = async () => {
+    const res = await fetch("/api/categorias-contables", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formCategoria, tenant_id: tenantId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setFormCategoria({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
+      cargarDatos();
+      alert("CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a agregada");
+    } else {
+      alert(data.error);
+    }
+  };
+
+  const crearPeriodo = async () => {
+    const res = await fetch("/api/periodos-fiscales", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formPeriodo, tenant_id: tenantId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
+      cargarDatos();
+      alert("PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo creado");
+    } else {
+      alert(data.error);
+    }
+  };
+
+  const generarPeriodosAutomaticos = (tipo: string) => {
+    const year = new Date().getFullYear();
+    let periodos = [];
+    if (tipo === "bimestral") {
+      for (let i = 0; i < 6; i++) {
+        const start = new Date(year, i * 2, 1);
+        const end = new Date(year, i * 2 + 2, 1);
+        end.setDate(end.getDate() - 1);
+        periodos.push({
+          nombre: `Bimestre ${i+1} - ${year}`,
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
+          tipo: "bimestral",
+        });
+      }
+    } else if (tipo === "trimestral") {
+      for (let i = 0; i < 4; i++) {
+        const start = new Date(year, i * 3, 1);
+        const end = new Date(year, i * 3 + 3, 1);
+        end.setDate(end.getDate() - 1);
+        periodos.push({
+          nombre: `Trimestre ${i+1} - ${year}`,
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
+          tipo: "trimestral",
+        });
+      }
+    } else if (tipo === "semestral") {
+      for (let i = 0; i < 2; i++) {
+        const start = new Date(year, i * 6, 1);
+        const end = new Date(year, i * 6 + 6, 1);
+        end.setDate(end.getDate() - 1);
+        periodos.push({
+          nombre: `Semestre ${i+1} - ${year}`,
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
+          tipo: "semestral",
+        });
+      }
+    } else if (tipo === "anual") {
+      periodos.push({
+        nombre: `AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±o ${year}`,
+        fecha_inicio: `${year}-01-01`,
+        fecha_fin: `${year}-12-31`,
+        tipo: "anual",
+      });
+    }
+    periodos.forEach(async (p) => {
+      await fetch("/api/periodos-fiscales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...p, tenant_id: tenantId, cerrado: false }),
+      });
+    });
+    cargarDatos();
+    alert(`PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos ${tipo} generados correctamente`);
   };
 
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-black">Compras</h1>
+        <h1 className="text-xl font-bold text-stone-800">Finanzas - {negocioSlug}</h1>
         <div className="flex-1"></div>
-        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5 text-black" />
-        </button>
-        <button
-          onClick={descargarInventarioCompleto}
-          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-black"
-          title="Descargar inventario completo"
-        >
-          <Download className="w-5 h-5" />
-          <span className="text-xs hidden sm:inline">Exportar Inv.</span>
-        </button>
-        <button
-          onClick={generarOrdenCompra}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
-        >
-          <ShoppingBag className="w-4 h-4" /> Generar Orden
-        </button>
-        <button
-          onClick={prepararConfirmacion}
-          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" /> Registrar Compra
+        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl" title="Actualizar datos">
+          <RefreshCw className="w-5 h-5 text-stone-700" />
         </button>
         <button
           onClick={() => {
             setEditando(null);
-            setForm({ ...estadoInicialForm });
-            setShowImportModal(true);
+            setFormTransaccion({
+              tipo: "ingreso",
+              monto: 0,
+              categoria_contable_id: "",
+              descripcion: "",
+              fecha: new Date().toLocaleDateString("in-CA"),
+              impuesto: 0,
+              retencion: 0,
+              metodo_pago: "",
+            });
+            setShowImportModalTransaccion(true);
           }}
-          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1"
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="Registrar nuevo movimiento"
         >
-          <Plus className="w-4 h-4" /> Nuevo Producto
+          <Plus className="w-4 h-4" /> Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+        </button>
+        <button
+          onClick={() => setShowImportModalCategoria(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="Plan de cuentas"
+        >
+          <BookOpen className="w-4 h-4" /> CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as
+        </button>
+        <button
+          onClick={() => setShowImportModalPeriodo(true)}
+          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos fiscales"
+        >
+          <Calendar className="w-4 h-4" /> PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos
+        </button>
+        <button
+          onClick={exportarExcel}
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
+          title="Exportar a Excel"
+        >
+          <Download className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Exportar</span>
         </button>
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {mensaje && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 mb-4 text-black font-bold">
-            {mensaje}
+        {/* Resumen principal */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Ingresos</p>
+            <p className="text-2xl font-bold text-emerald-600">${resumen.ingresos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Egresos</p>
+            <p className="text-2xl font-bold text-red-600">${resumen.egresos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Saldo</p>
+            <p className={`text-2xl font-bold ${resumen.saldo >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+              ${resumen.saldo.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Impuestos</p>
+            <p className="text-2xl font-bold text-yellow-600">${resumen.impuestos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Retenciones</p>
+            <p className="text-2xl font-bold text-orange-600">${resumen.retenciones.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Cuentas for Cobrar / Pagar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-2xl p-4 shadow-sm border border-blue-200 text-center">
+            <p className="text-sm text-blue-700">Cuentas for Cobrar</p>
+            <p className="text-2xl font-bold text-blue-600">${cuentasPorCobrar.toLocaleString()}</p>
+          </div>
+          <div className="bg-orange-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
+            <p className="text-sm text-orange-700">Cuentas for Pagar</p>
+            <p className="text-2xl font-bold text-orange-600">${cuentasPorPagar.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Desglose for mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago */}
+        {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose for MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
+                <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
+                  <p className="text-xs text-stone-500">{metodo}</p>
+                  <p className="text-sm font-bold text-stone-800">${monto.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Filtros */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
-          <h3 className="font-semibold text-black mb-2">âš–ï¸ ConfiguraciÃ³n contable</h3>
-          <div className="flex flex-wrap gap-4">
-            <div>
-              <label className="block text-xs text-black">IVA (%)</label>
-              <input
-                type="number"
-                value={ivaPorcentaje}
-                onChange={(e) => setIvaPorcentaje(parseFloat(e.target.value) || 0)}
-                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
-                step="0.1"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-black">RetenciÃ³n (%)</label>
-              <input
-                type="number"
-                value={retencionPorcentaje}
-                onChange={(e) => setRetencionPorcentaje(parseFloat(e.target.value) || 0)}
-                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
-                step="0.1"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-black">ICA (%)</label>
-              <input
-                type="number"
-                value={icaPorcentaje}
-                onChange={(e) => setIcaPorcentaje(parseFloat(e.target.value) || 0)}
-                className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
-                step="0.1"
-              />
-            </div>
+          <div className="flex flex-wrap gap-3 items-center">
+            <Filter className="w-4 h-4 text-stone-500" />
+            <span className="text-sm font-medium text-stone-700">Filtros:</span>
+            <input type="date" value={filtros.start} onChange={(e) => setFiltros({ ...filtros, start: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
+            <span className="text-stone-600">-</span>
+            <input type="date" value={filtros.end} onChange={(e) => setFiltros({ ...filtros, end: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
+            <select value={filtros.tipo} onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
+              <option value="">Todos los tipos</option>
+              <option value="ingreso">Ingresos</option>
+              <option value="egreso">Egresos</option>
+            </select>
+            <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
+              <option value="">Todas las categorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as</option>
+              {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
+            </select>
+            <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
+              <option value="">Todos los perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos</option>
+              {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
+            </select>
           </div>
         </div>
 
-        {seleccionados.length > 0 && (
-          <div className="bg-blue-100 border border-blue-300 rounded-2xl p-4 mb-4">
-            <h4 className="font-semibold text-black mb-2">ðŸ“Š Resumen de la compra</h4>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
-              <div>
-                <span className="text-black">Subtotal</span>
-                <p className="font-bold text-black">${resumenContable.subtotal.toLocaleString()}</p>
-              </div>
-              <div>
-                <span className="text-black">IVA</span>
-                <p className="font-bold text-black">${resumenContable.iva.toLocaleString()}</p>
-              </div>
-              <div>
-                <span className="text-black">RetenciÃ³n</span>
-                <p className="font-bold text-black">-${resumenContable.retencion.toLocaleString()}</p>
-              </div>
-              <div>
-                <span className="text-black">ICA</span>
-                <p className="font-bold text-black">-${resumenContable.ica.toLocaleString()}</p>
-              </div>
-              <div>
-                <span className="text-black font-bold">Total a pagar</span>
-                <p className="font-bold text-black">${resumenContable.total.toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-3 items-center mb-4">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
-            <input
-              type="text"
-              placeholder="Buscar for nombre o SKU..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-black placeholder-black"
-            />
-          </div>
-
-          <select
-            value={filtroProveedor}
-            onChange={(e) => setFiltroProveedor(e.target.value)}
-            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
-          >
-            <option value="">Todos los proveedores</option>
-            {proveedores.map((prov) => (
-              <option key={prov} value={prov}>
-                {prov}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            placeholder="Proveedor de esta compra"
-            value={proveedor}
-            onChange={(e) => setProveedor(e.target.value)}
-            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black placeholder-black flex-1 min-w-[150px]"
-          />
-          <select
-            value={metodoPago}
-            onChange={(e) => setMetodoPago(e.target.value)}
-            className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
-          >
-            <option value="contado">Contado</option>
-            <option value="credito">CrÃ©dito</option>
-          </select>
-        </div>
-
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-stone-50">
-              <tr>
-                <th className="p-2 text-left text-black">Seleccionar</th>
-                <th className="p-2 text-left text-black">SKU</th>
-                <th className="p-2 text-left text-black">Nombre</th>
-                <th className="p-2 text-left text-black">Stock actual</th>
-                <th className="p-2 text-left text-black">MÃ­nimo</th>
-                <th className="p-2 text-left text-black">MÃ¡ximo</th>
-                <th className="p-2 text-left text-black">Proveedor</th>
-                <th className="p-2 text-left text-black">Precio Venta</th>
-                <th className="p-2 text-left text-black">Precio Compra</th>
-                <th className="p-2 text-left text-black">Exento IVA</th>
-                <th className="p-2 text-left text-black">Estado</th>
-                <th className="p-2 text-left text-black">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productosFiltrados.map((p) => {
-                const stockActual = stockMap[p.id] ?? 0;
-                const esCritico = stockActual < (p.stock_minimo || 0);
-                const estaMaximo = stockActual >= (p.stock_maximo || 999999);
-                return (
-                  <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2">
-                      <input
-                        type="checkbox"
-                        checked={seleccionados.includes(p.id)}
-                        onChange={() => toggleSeleccion(p.id)}
-                        className="w-4 h-4"
-                      />
-                    </td>
-                    <td className="p-2 text-black font-mono text-xs">{p.sku || "-"}</td>
-                    <td className="p-2 text-black font-bold">{p.nombre}</td>
-                    <td className="p-2 font-bold text-black">{stockActual}</td>
-                    <td className="p-2 text-black">{p.stock_minimo || 0}</td>
-                    <td className="p-2 text-black">{p.stock_maximo || 0}</td>
-                    <td className="p-2 text-black">{p.proveedor || "-"}</td>
-                    <td className="p-2 text-black">${p.precio?.toLocaleString()}</td>
-                    <td className="p-2 text-black">${(p.precio_compra || 0).toLocaleString()}</td>
-                    <td className="p-2 text-black">{p.exento_iva ? "SÃ­" : "No"}</td>
-                    <td className="p-2">
-                      {esCritico ? (
-                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
-                          for debajo
-                        </span>
-                      ) : estaMaximo ? (
-                        <span className="px-2 py-1 bg-emerald-100 text-black rounded-full text-xs font-bold">
-                          MÃ¡ximo
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
-                          OK
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-2 flex gap-2">
-                      <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
-                        <Edit className="w-4 h-4 text-black" />
-                      </button>
-                      <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 rounded">
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </td>
+        {/* Tabla de movimientos */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+          <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
+          <div className="text-xs text-stone-400 mb-2">ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¡ Desliza horizontalmente ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ para ver todas las columnas</div>
+          <div className="overflow-x-auto" style={{ height: "420px", overflowY: "auto", border: "2px solid #3b82f6", borderRadius: "8px", padding: "4px" }}>
+            <div style={{ minWidth: "1200px" }}>
+              <table className="w-full text-sm" style={{ minWidth: "1200px" }}>
+                <thead className="bg-stone-50">
+                  <tr>
+                    <th className="text-left p-2 text-stone-700">#</th>
+                    <th className="text-left p-2 text-stone-700">Fecha</th>
+                    <th className="text-left p-2 text-stone-700">Tipo</th>
+                    <th className="text-left p-2 text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</th>
+                    <th className="text-left p-2 text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</th>
+                    <th className="text-left p-2 text-stone-700">Cantidad</th>
+                    <th className="text-left p-2 text-stone-700">Precio Unit.</th>
+                    <th className="text-left p-2 text-stone-700">Subtotal</th>
+                    <th className="text-left p-2 text-stone-700">IVA</th>
+                    <th className="text-left p-2 text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">ICA</th>
+                    <th className="text-left p-2 text-stone-700">Total</th>
+                    <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
                   </tr>
-                );
-              })}
-              {productosFiltrados.length === 0 && (
-                <tr>
-                  <td colSpan={12} className="p-4 text-center text-black">
-                    No hay productos para este negocio
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {transacciones.map((t: any) => (
+                    <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
+                      <td className="p-2 text-stone-600 text-center">{t.item || "-"}</td>
+                      <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === "ingreso" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                          {t.tipo}
+                        </span>
+                      </td>
+                      <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || "-"}</td>
+                      <td className="p-2 text-stone-600">
+                        <span title={t.descripcion_resumida || t.descripcion}>
+                          {t.descripcion || "-"}
+                        </span>
+                        {t.descripcion_resumida && t.descripcion_resumida !== t.descripcion && (
+                          <span className="text-xs text-stone-400 block truncate max-w-xs" title={t.descripcion_resumida}>
+                            ({t.descripcion_resumida})
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-2 text-stone-600">{t.metodo_pago || "-"}</td>
+                      <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
+                      <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
+                      <td className="p-2 flex gap-2 whitespace-nowrap">
+                        <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de paginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n */}
+        <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
+          <div className="text-sm text-stone-600">
+            Mostrando hasta {transacciones.length} registros (pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡gina {pagina})
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => cambiarPagina(pagina - 1)}
+              disabled={pagina <= 1}
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => cambiarPagina(pagina + 1)}
+              disabled={transacciones.length < 50}
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Modal CRUD de producto */}
-      {showModal && (
+      {/* Modal de Detalle */}
+      {mostrarDetalle && movimientoSeleccionado && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-black mb-4">
-              {editando ? `Editar producto: ${editando.nombre}` : "Nuevo Producto"}
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-bold text-black">Imagen del producto</label>
-                {form.imagen_url && (
-                  <div className="mb-2">
-                    <img src={form.imagen_url} alt="Producto" className="w-24 h-24 object-cover rounded-xl" />
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setImageFile(e.target.files[0]);
-                    }
-                  }}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-black"
-                />
-                {imageFile && (
-                  <button
-                    type="button"
-                    onClick={subirImagen}
-                    disabled={uploadingImage}
-                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
-                  >
-                    {uploadingImage ? "Subiendo..." : "Subir imagen"}
-                  </button>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-black">SKU</label>
-                <input
-                  type="text"
-                  value={form.sku}
-                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Nombre *</label>
-                <input
-                  type="text"
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">DescripciÃ³n</label>
-                <input
-                  type="text"
-                  value={form.descripcion}
-                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">CategorÃ­a *</label>
-                <input
-                  type="text"
-                  value={form.categoria}
-                  onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Precio Venta</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={form.precio}
-                  onChange={(e) => setForm({ ...form, precio: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Precio Compra</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={form.precio_compra}
-                  onChange={(e) => setForm({ ...form, precio_compra: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Stock actual</label>
-                <input
-                  type="text"
-                  value={stockMap[editando?.id] ?? 0}
-                  disabled
-                  className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-black"
-                />
-                <p className="text-xs text-black mt-1">El stock se calcula automÃ¡ticamente</p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Stock mÃ­nimo</label>
-                <input
-                  type="number"
-                  value={form.stock_minimo}
-                  onChange={(e) => setForm({ ...form, stock_minimo: parseInt(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Stock mÃ¡ximo</label>
-                <input
-                  type="number"
-                  value={form.stock_maximo}
-                  onChange={(e) => setForm({ ...form, stock_maximo: parseInt(e.target.value) || 0 })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Proveedor</label>
-                <input
-                  type="text"
-                  value={form.proveedor}
-                  onChange={(e) => setForm({ ...form, proveedor: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Observaciones</label>
-                <input
-                  type="text"
-                  value={form.observaciones}
-                  onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Unidad</label>
-                <input
-                  type="text"
-                  value={form.unidad}
-                  onChange={(e) => setForm({ ...form, unidad: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Tipo de unidad</label>
-                <select
-                  value={form.tipo_unidad}
-                  onChange={(e) => setForm({ ...form, tipo_unidad: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                >
-                  <option value="unidad">Unidad</option>
-                  <option value="kilogramo">Kilogramo</option>
-                  <option value="gramo">Gramo</option>
-                  <option value="libra">Libra</option>
-                  <option value="litro">Litro</option>
-                  <option value="mililitro">Mililitro</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">Fecha de caducidad</label>
-                <input
-                  type="date"
-                  value={form.fecha_caducidad}
-                  onChange={(e) => setForm({ ...form, fecha_caducidad: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">UbicaciÃ³n in almacÃ©n</label>
-                <input
-                  type="text"
-                  value={form.ubicacion}
-                  onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={form.exento_iva || false}
-                  onChange={(e) => setForm({ ...form, exento_iva: e.target.checked })}
-                  className="w-4 h-4 rounded border-stone-300"
-                />
-                <label className="text-sm font-bold text-black">Exento de IVA</label>
-              </div>
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-stone-800">Detalle del Movimiento</h3>
+              <button onClick={() => setMostrarDetalle(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={guardarProducto}
-                disabled={uploadingImage}
-                className={`flex-1 py-2 rounded-xl text-white ${uploadingImage ? 'bg-stone-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'}`}
-              >
-                {uploadingImage ? 'Subiendo imagen...' : 'Guardar'}
-              </button>
+            <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span className="text-stone-800">{movimientoSeleccionado.item || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Fecha</span><span className="text-stone-800">{formatDate(movimientoSeleccionado.fecha)}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Tipo</span><span className="capitalize text-stone-800">{movimientoSeleccionado.tipo}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Cantidad</span><span className="text-stone-800">{movimientoSeleccionado.cantidad ?? 1}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Precio Unitario</span><span className="text-stone-800">${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Subtotal</span><span className="text-stone-800">${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">IVA</span><span className="text-stone-800">${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">ICA</span><span className="text-stone-800">${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setMostrarDetalle(false)} className="bg-stone-200 text-stone-800 px-6 py-2 rounded-xl hover:bg-stone-300">Cerrar</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de ConfirmaciÃ³n de Compra */}
-      {showConfirmModal && (
+      {/* Modal TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n */}
+      {showModalTransaccion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n" : "Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n"}</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Tipo</label>
+                <select value={formTransaccion.tipo} onChange={(e) => setFormTransaccion({ ...formTransaccion, tipo: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Monto</label>
+                <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a contable</label>
+                <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="">Seleccionar...</option>
+                  {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</label>
+                <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Fecha</label>
+                <input type="date" value={formTransaccion.fecha} onChange={(e) => setFormTransaccion({ ...formTransaccion, fecha: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Impuesto</label>
+                <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</label>
+                <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago</label>
+                <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="">No aplica</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Nequi">Nequi</option>
+                  <option value="Bancolombia">Bancolombia</option>
+                  <option value="Daviplata">Daviplata</option>
+                  <option value="CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito">CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowImportModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
+              <button onClick={guardarTransaccion} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all duration-200 text-white rounded-xl font-bold">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as */}
+      {showModalCategoria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-black">Confirmar Compra</h3>
-              <button onClick={() => setShowConfirmModal(false)} className="p-1 hover:bg-stone-100 rounded">
-                <X className="w-5 h-5 text-black" />
-              </button>
+              <h3 className="text-lg font-bold text-stone-800">Plan de Cuentas</h3>
+              <button onClick={() => setShowImportModalCategoria(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-bold text-black">Proveedor</label>
-                <input
-                  type="text"
-                  value={confirmData.proveedor}
-                  onChange={(e) => setConfirmData({ ...confirmData, proveedor: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-black">MÃ©todo de Pago</label>
-                <select
-                  value={confirmData.metodo_pago}
-                  onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-black"
-                >
-                  <option value="contado">Contado</option>
-                  <option value="credito">CrÃ©dito</option>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {categorias.map((c: any) => (
+                <div key={c.id} className="flex justify-between items-center border-b py-1">
+                  <span className="text-stone-800"><span className="font-mono text-xs text-stone-500">{c.codigo}</span> {c.nombre}</span>
+                  <span className="text-xs text-stone-600">{c.tipo}</span>
+                </div>
+              ))}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as</p>}
+            </div>
+            <div className="mt-4 border-t pt-4">
+              <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
+              <div className="space-y-2">
+                <input type="text" placeholder="CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <select value={formCategoria.tipo} onChange={(e) => setFormCategoria({...formCategoria, tipo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm">
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                  <option value="costo">Costo</option>
                 </select>
-              </div>
-
-              <div className="border-t pt-3 mt-3">
-                <h4 className="font-semibold text-black mb-2">Productos</h4>
-                <div className="space-y-3 max-h-48 overflow-y-auto">
-                  {confirmData.items.map((item, idx) => (
-                    <div key={idx} className="flex flex-col border-b border-stone-100 py-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-black font-bold">{item.nombre}</span>
-                      </div>
-                      <div className="flex items-center justify-between mt-1 gap-2">
-                        <div className="flex items-center gap-2">
-                          <label className="text-sm text-black">Cantidad:</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={item.cantidad}
-                            onChange={(e) => {
-                              const newItems = [...confirmData.items];
-                              newItems[idx].cantidad = parseInt(e.target.value) || 0;
-                              const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                              setConfirmData({ ...confirmData, items: newItems, total });
-                            }}
-                            className="w-16 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-black">Precio:</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.precio_compra}
-                                          onChange={(e) => {
-                const newItems = [...confirmData.items];
-                newItems[idx].precio_compra = parseFloat(e.target.value) || 0;
-                const total = newItems.reduce((sum, i) => sum + (i.cantidad * i.precio_compra), 0);
-                setConfirmData({ ...confirmData, items: newItems, total });
-                // Recalcular resumen contable
-                recalcularResumenDesdeItems(newItems);
-              }}
-                            className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-black"
-                          />
-                        </div>
-                        <span className="font-bold text-black">
-                          ${(item.cantidad * item.precio_compra).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t">
-                  <span className="text-black">Total</span>
-                  <span className="text-black font-bold">${confirmData.total.toLocaleString()}</span>
-                </div>
-                <p className="text-xs text-black mt-1">
-                  * Los impuestos (IVA, retenciÃ³n, ICA) se calcularÃ¡n al confirmar.
-                </p>
+                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-black"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarCompra}
-                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
-              >
-                Confirmar Compra
-              </button>
+      {/* Modal PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos */}
+      {showModalPeriodo && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos Fiscales</h3>
+              <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
+              {periodos.map((p: any) => (
+                <div key={p.id} className="flex justify-between border-b py-1 text-sm">
+                  <span className="text-stone-800">{p.nombre}</span>
+                  <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
+                </div>
+              ))}
+              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos.</p>}
+            </div>
+            <div>
+              <h4 className="font-medium text-stone-700 mb-2">Generar perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos automÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ticos</h4>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
+                <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
+                <button onClick={() => generarPeriodosAutomaticos("semestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Semestres</button>
+                <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
+              </div>
+              <div className="mt-4 border-t pt-4">
+                <h4 className="font-medium text-stone-700 mb-2">Crear perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo manual</h4>
+                <div className="space-y-2">
+                  <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <div className="flex gap-2">
+                    <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                    <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  </div>
+                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1010,4 +814,6 @@ export default function ComprasPage() {
 
 
 
+// Forzar deploy 2026-07-30 19:03:38
 
+// Forzar deploy 2026-07-30 19:10:44
