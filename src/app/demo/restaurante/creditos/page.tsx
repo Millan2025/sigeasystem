@@ -6,7 +6,7 @@ import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, CheckCircle, Edit, X } from "lucide-react";
 
-interface Credito {
+`nimport { useTenant } from "@/hooks/useTenant";`ninterface Credito {
   id: string;
   responsable: string;
   valor_total: number;

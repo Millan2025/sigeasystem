@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
-import {
+`nimport { useTenant } from "@/hooks/useTenant";`nimport {
   ArrowLeft,
   RefreshCw,
   ShoppingBag,
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const estadoInicialForm = {
+`nimport { useTenant } from "@/hooks/useTenant";`nconst estadoInicialForm = {
   nombre: "",
   categoria: "",
   precio: 0,
