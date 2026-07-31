@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { ArrowLeft,  useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, TrendingUp, DollarSign, Calculator, FileText, Link2, Building } from 'lucide-react'
+import { ArrowLeft,  ArrowLeft, Download, TrendingUp, DollarSign, Calculator, FileText, Link2, Building } from 'lucide-react'
 
 const libroDiario = [
   { fecha: '2025-06-14', concepto: 'Venta mostrador', ingreso: 450000, egreso: 0, cuenta: 'Ingresos operacionales' },
@@ -60,7 +60,7 @@ export default function FinanzasPage() {
           </div>
         )}
         {tab === 'cierre' && (
-          <div className="bg-white rounded-2xl p-5 border"><h3 className="font-bold text-stone-800 mb-4">Cierre de Caja</h3><p className="text-sm mb-2">Ventas hoy: <span className="font-bold">${ventasHoy.toLocaleString()}</span></p><label className="block text-sm font-bold text-stone-700 mb-2">Efectivo contado</label><input type="number" value={efectivoContado} onChange={e => setEfectivoContado(e.target.value)} className="w-full p-4 text-center bg-stone-100 rounded-2xl mb-3" /><button onClick={() => { const d = Number(efectivoContado) - ventasHoy * 0.65; setResultadoCierre(d > -1000 && d < 1000 ? '✅ Cuadre correcto' : '⚠️ Descuadre: $' + Math.abs(d).toLocaleString()) }} className="w-full bg-stone-800 text-white rounded-2xl py-4 font-bold">Calcular Cuadre</button>{resultadoCierre && <p className="mt-3 text-sm font-bold">{resultadoCierre}</p>}</div>
+          <div className="bg-white rounded-2xl p-5 border"><h3 className="font-bold text-stone-800 mb-4">Cierre de Caja</h3><p className="text-sm mb-2">Ventas hoy: <span className="font-bold">${ventasHoy.toLocaleString()}</span></p><label className="block text-sm font-bold text-stone-700 mb-2">Efectivo contado</label><input type="number" value={efectivoContado} onChange={e => setEfectivoContado(e.target.value)} className="w-full p-4 text-center bg-stone-100 rounded-2xl mb-3" /><button onClick={() => { const d = Number(efectivoContado) - ventasHoy * 0.65; setResultadoCierre(d > -1000 && d < 1000 ? 'âœ… Cuadre correcto' : 'âš ï¸ Descuadre: $' + Math.abs(d).toLocaleString()) }} className="w-full bg-stone-800 text-white rounded-2xl py-4 font-bold">Calcular Cuadre</button>{resultadoCierre && <p className="mt-3 text-sm font-bold">{resultadoCierre}</p>}</div>
         )}
       </div>
     </div>
