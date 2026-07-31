@@ -49,7 +49,7 @@ export default function CreditosPage() {
 
   const registrarAbono = async (id: string) => {
     if (!abono || abono.monto <= 0) {
-      alert("Ingrese un monto válido");
+      alert("Ingrese un monto vÃ¡lido");
       return;
     }
     const res = await fetch("/api/creditos", {
@@ -94,12 +94,12 @@ export default function CreditosPage() {
         setShowEditModal(false);
         setEditando(null);
         cargarCreditos();
-        alert("✅ Datos actualizados");
+        alert("âœ… Datos actualizados");
       } else {
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexión");
+      alert("Error de conexiÃ³n");
     }
   };
 
@@ -111,7 +111,7 @@ export default function CreditosPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800">Créditos - {negocioSlug || "negocioSlug"}</h1>
+        <h1 className="text-xl font-bold text-stone-800">CrÃ©ditos - {negocioSlug || "negocioSlug"}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarCreditos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -125,21 +125,21 @@ export default function CreditosPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Listado de créditos</h3>
+          <h3 className="font-semibold text-stone-800 mb-3">Listado de crÃ©ditos</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
-                  <th className="text-left p-2 text-stone-700">Teléfono</th>
-                  <th className="text-left p-2 text-stone-700">Dirección</th>
+                  <th className="text-left p-2 text-stone-700">TelÃ©fono</th>
+                  <th className="text-left p-2 text-stone-700">DirecciÃ³n</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
                   <th className="text-left p-2 text-stone-700">Pagado</th>
                   <th className="text-left p-2 text-stone-700">Saldo</th>
                   <th className="text-left p-2 text-stone-700">Estado</th>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Observaciones</th>
-                  <th className="text-left p-2 text-stone-700">Acción</th>
+                  <th className="text-left p-2 text-stone-700">AcciÃ³n</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,7 +188,7 @@ export default function CreditosPage() {
                 {creditos.length === 0 && (
                   <tr>
                     <td colSpan={10} className="p-4 text-center text-stone-500">
-                      No hay créditos
+                      No hay crÃ©ditos
                     </td>
                   </tr>
                 )}
@@ -208,7 +208,7 @@ export default function CreditosPage() {
             </div>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">Teléfono</label>
+                <label className="block text-sm font-medium text-stone-700">TelÃ©fono</label>
                 <input
                   type="text"
                   value={editData.telefono}
@@ -217,7 +217,7 @@ export default function CreditosPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Dirección</label>
+                <label className="block text-sm font-medium text-stone-700">DirecciÃ³n</label>
                 <input
                   type="text"
                   value={editData.direccion}
