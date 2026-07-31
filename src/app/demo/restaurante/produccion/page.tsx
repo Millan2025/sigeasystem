@@ -1,766 +1,811 @@
 "use client";
 
-`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation"; import BackButton from "@/components/BackButton";
+import { useState, useEffect, useMemo } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
-  ShoppingCart,
-  Package,
-  Calendar,
-  Clock,
-  CheckCircle,
-  Truck,
-  Bell,
   RefreshCw,
   Plus,
-  Store,
-  ClipboardList,
-  TrendingUp,
+  Edit,
+  Trash2,
+  Download,
+  Filter,
+  Calendar,
+  BookOpen,
   X,
 } from "lucide-react";
-
-// ============================================
-// CONFIGURACIÃ“N DE NEGOCIOS
-// ============================================
-// ============================================
-// TIPOS Y ESTADOS
-// ============================================
-const TIPOS_ORDEN = {
-  pedido_tienda: { label: "Pedido Tienda", icon: Store, color: "bg-blue-100 text-blue-700 border-blue-300" },
-  pedido_pos: { label: "Pedido POS", icon: ShoppingCart, color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
-  surtir_vitrina: { label: "Surtir Vitrina", icon: Package, color: "bg-amber-100 text-amber-700 border-amber-300" },
-  produccion_planificada: { label: "ProducciÃ³n Planificada", icon: Calendar, color: "bg-purple-100 text-purple-700 border-purple-300" },
-};
-
-const ESTADOS = {
-  pendiente: { label: "Pendiente", icon: Clock, color: "bg-yellow-100 text-yellow-700" },
-  en_produccion: { label: "in ProducciÃ³n", icon: RefreshCw, color: "bg-blue-100 text-blue-700" },
-  finalizado: { label: "Finalizado", icon: CheckCircle, color: "bg-emerald-100 text-emerald-700" },
-  entregado: { label: "Entregado", icon: Truck, color: "bg-stone-100 text-stone-600" },
-};
-
-const ESTADOS_ORDEN = ["pendiente", "en_produccion", "finalizado", "entregado"];
-
-interface Orden {
-  id: string;
-  pedido_id?: string;
-  tipo: keyof typeof TIPOS_ORDEN;
-  estado: keyof typeof ESTADOS;
-  productos: { nombre: string; cantidad: number; unidad: string }[];
-  nota: string;
-  creado_por: string;
-  creado_en: string;
-  actualizado_en: string;
-  producido_por?: string;
-}
-
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
-export default function ProduccionPage() {
+import * as XLSX from "xlsx";
+import { useTenant } from "@/hooks/useTenant";
+export default function es-CO.TextInfo.ToTitleCase(produccion)Page() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [transacciones, setTransacciones] = useState<any[]>([]);
+  const [resumen, setResumen] = useState({
+    ingresos: 0,
+    egresos: 0,
+    saldo: 0,
+    impuestos: 0,
+    retenciones: 0,
+    desglosePagos: {} as Record<string, number>,
+  });
+  const [cuentasPorCobrar, setCuentasPorCobrar] = useState(0);
+  const [cuentasPorPagar, setCuentasPorPagar] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [periodos, setPeriodos] = useState<any[]>([]);
+  const [showModalTransaccion, setShowImportModalTransaccion] = useState(false);
+  const [showModalCategoria, setShowImportModalCategoria] = useState(false);
+  const [showModalPeriodo, setShowImportModalPeriodo] = useState(false);
+  const [filtros, setFiltros] = useState({ start: "", end: "", tipo: "", categoria: "", periodo: "" });
+  const [editando, setEditando] = useState<any>(null);
+  const [formTransaccion, setFormTransaccion] = useState({
+    tipo: "ingreso",
+    monto: 0,
+    categoria_contable_id: "",
+    descripcion: "",
+    fecha: new Date().toLocaleDateString("in-CA"),
+    impuesto: 0,
+    retencion: 0,
+    metodo_pago: "",
+  });
+  const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
+  const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
 
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
+  const [mostrarDetalle, setMostrarDetalle] = useState(false);
+
+  // FUNCIÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œN PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
+  const calcularResumenManual = (transacciones: any[]) => {
+    const ingresos = transacciones
+      .filter((t: any) => t.tipo === "ingreso")
+      .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const egresos = transacciones
+      .filter((t: any) => t.tipo === "egreso")
+      .reduce((sum: number, t: any) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    
+    const saldo = ingresos - egresos;
+    const impuestos = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+    const retenciones = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+    
+    const desglosePagos: Record<string, number> = {};
+    transacciones.filter((t: any) => t.tipo === "ingreso").forEach((t: any) => {
+      let metodo = t.metodo_pago || "Otro";
+      if (metodo === "Otro" || metodo === "Confirmado") metodo = "Otros";
+      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
+    });
+    
+    console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â  CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lculo manual (frontend) - igual que Reportes:", {
+      ingresos,
+      egresos,
+      saldo,
+      impuestos,
+      retenciones,
+      desglosePagos,
+    });
+    
+    return { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos };
+  };
+
+  // USEFFECT PARA RECALCULAR AUTOMÃƒÆ’Ã†â€™Ãƒâ€šÃ‚ÂTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
   
 
-  const esRestaurante = negocioSlug === "restaurante";
+  const cargarDatos = async () => {
+  setLoading(true);
+  try {
+    // 1. Obtener transacciones (Finanzas) - para la tabla
+    let url = `/api/finanzas?tenant=${tenantId}`;
+    if (filtros.start) url += `&start=${filtros.start}`;
+    if (filtros.end) url += `&end=${filtros.end}`;
+    if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
+    if (filtros.categoria) url += `&categoria=${filtros.categoria}`;
+    if (filtros.periodo) url += `&periodo=${filtros.periodo}`;
+    url += `&page=${pagina}&pageSize=50`;
 
-  // ========== ESTADO DE Ã“RDENES ==========
-  const [ordenes, setOrdenes] = useState<Orden[]>([]);
-  const [loadingOrdenes, setLoadingOrdenes] = useState(true);
-  const [showModalOrden, setShowImportModalOrden] = useState(false);
-  const [nuevaOrden, setNuevaOrden] = useState<Partial<Orden>>({
-    tipo: "pedido_pos",
-    productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
-    nota: "",
-  });
-  const [filtroEstado, setFiltroEstado] = useState<string>("todos");
-  const [vista, setVista] = useState<"admin" | "productor">("admin");
-  const [notificacion, setNotificacion] = useState<string | null>(null);
-  const [contadorNuevas, setContadorNuevas] = useState(0);
+    const resFinanzas = await fetch(url);
+    const dataFinanzas = await resFinanzas.json();
+    
+    if (dataFinanzas.success) {
+      const transacciones = dataFinanzas.data || [];
+      setTransacciones(transacciones);
+      
+      // PaginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+      const total = transacciones.length;
+      setTotalRegistros(total);
+      if (total < 50) setTotalPaginas(pagina);
+      else setTotalPaginas(pagina + 1);
+    }
 
-  // ========== JORNADA (localStorage) ==========
-  const [jornada, setJornada] = useState<any[]>([]);
-  const [loadingJornada, setLoadingJornada] = useState(true);
-  const [fechaJornada, setFechaJornada] = useState(new Date().toISOString().split("T")[0]);
-  const [showModalJornada, setShowImportModalJornada] = useState(false);
-  const [formJornada, setFormJornada] = useState<{ producto_id: string; cantidad: number }[]>([]);
-  const [productos, setProductos] = useState<any[]>([]);
-  const [resumenJornada, setResumenJornada] = useState({ planificado: 0, vendido: 0, restante: 0 });
+    // 2. Obtener Ventas (para ingresos reales)
+    let urlVentas = `/api/ventas?tenant=${tenantId}`;
+    if (filtros.start) urlVentas += `&start=${filtros.start}`;
+    if (filtros.end) urlVentas += `&end=${filtros.end}`;
+    
+    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â Fetching Ventas:', urlVentas);
+    const resVentas = await fetch(urlVentas);
+    const dataVentas = await resVentas.json();
+    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Ventas response:', dataVentas.data?.length || 0, 'registros');
+    
+    let totalVentas = 0;
+    if (dataVentas.success) {
+      totalVentas = dataVentas.data.reduce((sum: number, v: any) => sum + (v.total || 0), 0);
+      console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â° Total ventas:', totalVentas);
+    }
 
-  const [tab, setTab] = useState<"ordenes" | "jornada">("ordenes");
+    // 3. Obtener Compras (para egresos reales)
+    let urlCompras = `/api/compras?tenant=${tenantId}`;
+    if (filtros.start) urlCompras += `&start=${filtros.start}`;
+    if (filtros.end) urlCompras += `&end=${filtros.end}`;
+    
+    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â Fetching Compras:', urlCompras);
+    const resCompras = await fetch(urlCompras);
+    const dataCompras = await resCompras.json();
+    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Compras response:', dataCompras.data?.length || 0, 'registros');
+    
+    let totalCompras = 0;
+    if (dataCompras.success) {
+      totalCompras = dataCompras.data.reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+      console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â° Total compras:', totalCompras);
+    }
 
-  // ============================================
-  // CARGA DE Ã“RDENES (desde Supabase)
-  // ============================================
-  const cargarOrdenes = async () => {
-    setLoadingOrdenes(true);
+    // 4. Calcular resumen REAL (igual que Reportes)
+    const ingresosCalc = totalVentas; // Ingresos desde Ventas
+    const egresosCalc = totalCompras; // Egresos desde Compras
+    const saldoCalc = ingresosCalc - egresosCalc;
+    
+    // Impuestos y retenciones desde transacciones (para mantener consistencia)
+    const transacciones = dataFinanzas.success ? (dataFinanzas.data || []) : [];
+    const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+    const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+    
+    // Desglose for mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago desde ventas
+    const desglosePagosCalc: Record<string, number> = {};
+    if (dataVentas.success) {
+      dataVentas.data.forEach((v: any) => {
+        let metodo = v.metodo_pago || 'Otro';
+        if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+        desglosePagosCalc[metodo] = (desglosePagosCalc[metodo] || 0) + (v.total || 0);
+      });
+    }
+    
+    console.log('ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â  CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lculo REAL (desde Ventas/Compras) - igual que Reportes:', {
+      ingresosCalc,
+      egresosCalc,
+      saldoCalc,
+      impuestosCalc,
+      retencionesCalc,
+      desglosePagosCalc
+    });
+    
+    setResumen({
+      ingresos: ingresosCalc,
+      egresos: egresosCalc,
+      saldo: saldoCalc,
+      impuestos: impuestosCalc,
+      retenciones: retencionesCalc,
+      desglosePagos: desglosePagosCalc
+    });
+
+    // 5. Cuentas for Cobrar
+    const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
+    const creditosData = await creditosRes.json();
+    if (creditosData.success) {
+      const pendientes = creditosData.data
+        .filter((c: any) => c.estado === "pendiente")
+        .reduce((sum: number, c: any) => sum + (c.saldo_pendiente || 0), 0);
+      setCuentasPorCobrar(pendientes);
+    }
+
+    // 6. Cuentas for Pagar
     try {
-      const res = await fetch(`/api/ordenes-produccion?tenant=${tenantId}`);
-      const data = await res.json();
-      if (data.success) {
-        setOrdenes(data.data || []);
-        const nuevas = data.data.filter(
-          (o: Orden) => o.estado === "pendiente" && new Date(o.creado_en) > new Date(Date.now() - 60000)
-        ).length;
-        setContadorNuevas(nuevas);
+      const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+      const comprasData = await comprasRes.json();
+      if (comprasData.success) {
+        const pendientes = comprasData.data
+          .filter((c: any) => c.metodo_pago === "credito" && c.estado !== "pagado")
+          .reduce((sum: number, c: any) => sum + (c.total || 0), 0);
+        setCuentasPorPagar(pendientes);
       }
     } catch (e) {
-      setOrdenes([]);
+      setCuentasPorPagar(0);
     }
-    setLoadingOrdenes(false);
+
+    // 7. CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as y perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos
+    const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
+    const catData = await catRes.json();
+    if (catData.success) setCategorias(catData.data || []);
+
+    const perRes = await fetch(`/api/periodos-fiscales?tenant=${tenantId}`);
+    const perData = await perRes.json();
+    if (perData.success) setPeriodos(perData.data || []);
+
+  } catch (error) {
+    console.error('ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Error al cargar datos:', error);
+  }
+  setLoading(false);
+};
+
+  useEffect(() => {
+    cargarDatos();
+  }, [tenantId, filtros, pagina]);
+
+  useEffect(() => {
+    setPagina(1);
+  }, [filtros]);
+
+  const cambiarPagina = (nuevaPagina: number) => {
+    setPagina(nuevaPagina);
   };
 
-  // ============================================
-  // CARGA DE JORNADA (localStorage)
-  // ============================================
-  const cargarJornada = () => {
-    if (!esRestaurante) return;
-    setLoadingJornada(true);
-    try {
-      const key = `jornada_${tenantId}_${fechaJornada}`;
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setJornada(parsed);
-        const planificado = parsed.reduce((s: number, j: any) => s + j.cantidad_planificada, 0);
-        const vendido = parsed.reduce((s: number, j: any) => s + j.cantidad_vendida, 0);
-        setResumenJornada({ planificado, vendido, restante: planificado - vendido });
-      } else {
-        setJornada([]);
-        setResumenJornada({ planificado: 0, vendido: 0, restante: 0 });
-      }
-    } catch (e) {
-      setJornada([]);
-    }
-    setLoadingJornada(false);
-  };
+  const guardarTransaccion = async () => {
+    const method = editando ? "PUT" : "POST";
+    const body = editando
+      ? { ...formTransaccion, id: editando.id, tenant_id: tenantId }
+      : { ...formTransaccion, tenant_id: tenantId };
 
-  const cargarProductos = async () => {
-    const res = await fetch(`/api/products?tenant=${tenantId}`);
+    const res = await fetch("/api/finanzas", {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
     const data = await res.json();
-    if (data.success) setProductos(data.data || []);
+    if (data.success) {
+      setShowImportModalTransaccion(false);
+      setEditando(null);
+      setFormTransaccion({
+        tipo: "ingreso",
+        monto: 0,
+        categoria_contable_id: "",
+        descripcion: "",
+        fecha: new Date().toLocaleDateString("in-CA"),
+        impuesto: 0,
+        retencion: 0,
+        metodo_pago: "",
+      });
+      cargarDatos();
+    } else {
+      alert(data.error || "Error al guardar");
+    }
   };
 
-  // ============================================
-  // EFECTOS
-  // ============================================
-  useEffect(() => {
-    audioRef.current = new Audio("/notification.mp3");
-    cargarOrdenes();
-    if (esRestaurante) {
-      cargarProductos();
-      cargarJornada();
+  const eliminarTransaccion = async (id: string) => {
+    if (!confirm("ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿Eliminar esta transacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n?")) return;
+    const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.success) {
+      cargarDatos();
+    } else {
+      alert(data.error || "Error al eliminar");
     }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [tenantId]);
+  };
 
-  useEffect(() => {
-    if (esRestaurante) cargarJornada();
-  }, [fechaJornada]);
+  const editarTransaccion = (t: any) => {
+    setEditando(t);
+    setFormTransaccion({
+      tipo: t.tipo,
+      monto: t.monto,
+      categoria_contable_id: t.categoria_contable_id || "",
+      descripcion: t.descripcion || "",
+      fecha: t.fecha,
+      impuesto: t.impuesto || 0,
+      retencion: t.retencion || 0,
+      metodo_pago: t.metodo_pago || "",
+    });
+    setShowImportModalTransaccion(true);
+  };
 
-  // ============================================
-  // CREAR ORDEN (POST a Supabase)
-  // ============================================
-  const crearOrden = async () => {
-    if (!nuevaOrden.productos || nuevaOrden.productos.length === 0) {
-      alert("Agrega al menos un producto.");
+  const exportarExcel = () => {
+    if (transacciones.length === 0) {
+      alert("No hay datos para exportar.");
       return;
     }
+    const data = transacciones.map((t: any) => ({
+      "#": t.item || "",
+      "Fecha": formatDate(t.fecha),
+      "Tipo": t.tipo,
+      "CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a": t.categorias_contables?.nombre || "",
+      "DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n": t.descripcion_resumida || t.descripcion || "",
+      "MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago": t.metodo_pago || "",
+      "Cantidad": t.cantidad ?? 1,
+      "Precio Unitario": t.precio_unitario ?? 0,
+      "Subtotal": t.subtotal ?? 0,
+      "IVA": t.iva || 0,
+      "RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n": t.retencion || 0,
+      "ICA": t.ica || 0,
+      "Total": t.total ?? t.total_con_impuestos ?? 0,
+    }));
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Finanzas");
+    ws["!cols"] = Object.keys(data[0]).map(() => ({ wch: 20 }));
+    XLSX.writeFile(wb, `finanzas_${negocioSlug}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
 
-    const body = {
-      tenant_id: tenantId,
-      tipo: nuevaOrden.tipo || "pedido_pos",
-      productos: nuevaOrden.productos.map((p) => ({
-        nombre: p.nombre || "Producto",
-        cantidad: p.cantidad || 1,
-        unidad: p.unidad || "unidad",
-      })),
-      nota: nuevaOrden.nota || "",
-      creado_por: "Admin",
-    };
+  const agregarCategoria = async () => {
+    const res = await fetch("/api/categorias-contables", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formCategoria, tenant_id: tenantId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setFormCategoria({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
+      cargarDatos();
+      alert("CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a agregada");
+    } else {
+      alert(data.error);
+    }
+  };
 
-    try {
-      const res = await fetch("/api/ordenes-produccion", {
+  const crearPeriodo = async () => {
+    const res = await fetch("/api/periodos-fiscales", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formPeriodo, tenant_id: tenantId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
+      cargarDatos();
+      alert("PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo creado");
+    } else {
+      alert(data.error);
+    }
+  };
+
+  const generarPeriodosAutomaticos = (tipo: string) => {
+    const year = new Date().getFullYear();
+    let periodos = [];
+    if (tipo === "bimestral") {
+      for (let i = 0; i < 6; i++) {
+        const start = new Date(year, i * 2, 1);
+        const end = new Date(year, i * 2 + 2, 1);
+        end.setDate(end.getDate() - 1);
+        periodos.push({
+          nombre: `Bimestre ${i+1} - ${year}`,
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
+          tipo: "bimestral",
+        });
+      }
+    } else if (tipo === "trimestral") {
+      for (let i = 0; i < 4; i++) {
+        const start = new Date(year, i * 3, 1);
+        const end = new Date(year, i * 3 + 3, 1);
+        end.setDate(end.getDate() - 1);
+        periodos.push({
+          nombre: `Trimestre ${i+1} - ${year}`,
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
+          tipo: "trimestral",
+        });
+      }
+    } else if (tipo === "semestral") {
+      for (let i = 0; i < 2; i++) {
+        const start = new Date(year, i * 6, 1);
+        const end = new Date(year, i * 6 + 6, 1);
+        end.setDate(end.getDate() - 1);
+        periodos.push({
+          nombre: `Semestre ${i+1} - ${year}`,
+          fecha_inicio: start.toISOString().split("T")[0],
+          fecha_fin: end.toISOString().split("T")[0],
+          tipo: "semestral",
+        });
+      }
+    } else if (tipo === "anual") {
+      periodos.push({
+        nombre: `AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±o ${year}`,
+        fecha_inicio: `${year}-01-01`,
+        fecha_fin: `${year}-12-31`,
+        tipo: "anual",
+      });
+    }
+    periodos.forEach(async (p) => {
+      await fetch("/api/periodos-fiscales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...p, tenant_id: tenantId, cerrado: false }),
       });
-      const data = await res.json();
-      if (data.success) {
-        if (audioRef.current) {
-          audioRef.current.play().catch(() => {});
-        }
-        setContadorNuevas((prev) => prev + 1);
-        setNotificacion(`ðŸ“¢ Nueva orden #${data.data.id.slice(0, 6)}`);
-        setTimeout(() => setNotificacion(null), 5000);
-        setShowImportModalOrden(false);
-        setNuevaOrden({
-          tipo: "pedido_pos",
-          productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
-          nota: "",
-        });
-        cargarOrdenes();
-      } else {
-        alert("Error al crear orden: " + data.error);
-      }
-    } catch (e) {
-      alert("Error de conexiÃ³n");
-    }
+    });
+    cargarDatos();
+    alert(`PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos ${tipo} generados correctamente`);
   };
 
-  // ============================================
-  // CAMBIAR ESTADO (PUT a Supabase)
-  // ============================================
-  const cambiarEstado = async (id: string, nuevoEstado: keyof typeof ESTADOS) => {
-    const orden = ordenes.find((o) => o.id === id);
-    if (!orden) return;
-
-    const idxActual = ESTADOS_ORDEN.indexOf(orden.estado);
-    const idxNuevo = ESTADOS_ORDEN.indexOf(nuevoEstado);
-    if (idxNuevo <= idxActual) return;
-
-    try {
-      const res = await fetch("/api/ordenes-produccion", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          estado: nuevoEstado,
-          producido_por: nuevoEstado === "entregado" ? "Productor" : undefined,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        cargarOrdenes();
-        // if la orden llega a finalizado o entregado, se podrÃ­a actualizar el pedido relacionado (opcional)
-      } else {
-        alert("Error al actualizar estado: " + data.error);
-      }
-    } catch (e) {
-      alert("Error de conexiÃ³n");
-    }
-  };
-
-  // ============================================
-  // JORNADA (sin cambios)
-  // ============================================
-  const guardarJornada = (nuevaJornada: any[]) => {
-    const key = `jornada_${tenantId}_${fechaJornada}`;
-    localStorage.setItem(key, JSON.stringify(nuevaJornada));
-    setJornada(nuevaJornada);
-    const planificado = nuevaJornada.reduce((s: number, j: any) => s + j.cantidad_planificada, 0);
-    const vendido = nuevaJornada.reduce((s: number, j: any) => s + j.cantidad_vendida, 0);
-    setResumenJornada({ planificado, vendido, restante: planificado - vendido });
-  };
-
-  const agregarProductoJornada = () => {
-    setFormJornada([...formJornada, { producto_id: "", cantidad: 1 }]);
-  };
-
-  const actualizarJornada = (idx: number, campo: string, valor: any) => {
-    const nuevo = [...formJornada];
-    nuevo[idx] = { ...nuevo[idx], [campo]: valor };
-    setFormJornada(nuevo);
-  };
-
-  const eliminarJornada = (idx: number) => {
-    setFormJornada(formJornada.filter((_, i) => i !== idx));
-  };
-
-  const guardarPlanificacion = () => {
-    if (formJornada.length === 0) return;
-    const nuevaJornada = formJornada.map((f) => ({
-      producto_id: f.producto_id,
-      cantidad_planificada: f.cantidad,
-      cantidad_vendida: 0,
-    }));
-    guardarJornada(nuevaJornada);
-    setShowImportModalJornada(false);
-    setFormJornada([]);
-  };
-
-  // ============================================
-  // FILTROS
-  // ============================================
-  const ordenesFiltradas = ordenes.filter((o) => {
-    if (filtroEstado === "todos") return true;
-    return o.estado === filtroEstado;
-  });
-
-  // ============================================
-  // RENDER (igual que antes, solo cambia origen de datos)
-  // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Cabecera */}
-      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-20">
+      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800 flex-1">
-          ProducciÃ³n - {negocioSlug}
-        </h1>
-
-        <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1">
-          <button
-            onClick={() => setTab("ordenes")}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-              tab === "ordenes" ? "bg-white shadow-sm text-stone-800" : "text-stone-600 hover:bg-stone-200"
-            }`}
-          >
-            Ã“rdenes
-          </button>
-          {esRestaurante && (
-            <button
-              onClick={() => setTab("jornada")}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                tab === "jornada" ? "bg-white shadow-sm text-stone-800" : "text-stone-600 hover:bg-stone-200"
-              }`}
-            >
-              Jornada
-            </button>
-          )}
-        </div>
-
-        {tab === "ordenes" && (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-stone-500">Vista:</span>
-              <button
-                onClick={() => setVista("admin")}
-                className={`px-3 py-1 rounded-xl text-sm font-medium ${
-                  vista === "admin" ? "bg-emerald-500 text-white" : "bg-stone-200 text-stone-700"
-                }`}
-              >
-                Admin
-              </button>
-              <button
-                onClick={() => setVista("productor")}
-                className={`px-3 py-1 rounded-xl text-sm font-medium ${
-                  vista === "productor" ? "bg-blue-500 text-white" : "bg-stone-200 text-stone-700"
-                }`}
-              >
-                Productor
-              </button>
-            </div>
-            <button onClick={() => cargarOrdenes()} className="p-2 hover:bg-stone-100 rounded-xl">
-              <RefreshCw className="w-5 h-5 text-stone-700" />
-            </button>
-            <button
-              onClick={() => setShowImportModalOrden(true)}
-              className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" /> Nueva Orden
-            </button>
-            <div className="relative">
-              <Bell className={`w-6 h-6 ${contadorNuevas > 0 ? "text-red-500" : "text-stone-400"}`} />
-              {contadorNuevas > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
-                  {contadorNuevas}
-                </span>
-              )}
-            </div>
-          </>
-        )}
-
-        {tab === "jornada" && (
-          <>
-            <input
-              type="date"
-              value={fechaJornada}
-              onChange={(e) => setFechaJornada(e.target.value)}
-              className="border border-stone-300 rounded-xl px-3 py-1 text-sm"
-            />
-            <button
-              onClick={() => {
-                setFormJornada([]);
-                setShowImportModalJornada(true);
-              }}
-              className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" /> Planificar
-            </button>
-          </>
-        )}
+        <h1 className="text-xl font-bold text-stone-800">Finanzas - {negocioSlug}</h1>
+        <div className="flex-1"></div>
+        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl" title="Actualizar datos">
+          <RefreshCw className="w-5 h-5 text-stone-700" />
+        </button>
+        <button
+          onClick={() => {
+            setEditando(null);
+            setFormTransaccion({
+              tipo: "ingreso",
+              monto: 0,
+              categoria_contable_id: "",
+              descripcion: "",
+              fecha: new Date().toLocaleDateString("in-CA"),
+              impuesto: 0,
+              retencion: 0,
+              metodo_pago: "",
+            });
+            setShowImportModalTransaccion(true);
+          }}
+          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="Registrar nuevo movimiento"
+        >
+          <Plus className="w-4 h-4" /> Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
+        </button>
+        <button
+          onClick={() => setShowImportModalCategoria(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="Plan de cuentas"
+        >
+          <BookOpen className="w-4 h-4" /> CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as
+        </button>
+        <button
+          onClick={() => setShowImportModalPeriodo(true)}
+          className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
+          title="PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos fiscales"
+        >
+          <Calendar className="w-4 h-4" /> PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos
+        </button>
+        <button
+          onClick={exportarExcel}
+          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
+          title="Exportar a Excel"
+        >
+          <Download className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Exportar</span>
+        </button>
       </header>
 
-      {notificacion && (
-        <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium animate-pulse">
-          {notificacion}
-        </div>
-      )}
-
       <div className="p-4 max-w-7xl mx-auto">
-        {tab === "ordenes" && (
-          <>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <button
-                onClick={() => setFiltroEstado("todos")}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                  filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white text-stone-700 border border-stone-300"
-                }`}
-              >
-                Todos
-              </button>
-              {ESTADOS_ORDEN.map((estado) => {
-                const info = ESTADOS[estado as keyof typeof ESTADOS];
-                return (
-                  <button
-                    key={estado}
-                    onClick={() => setFiltroEstado(estado)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                      filtroEstado === estado
-                        ? `${info.color} border-2 border-current`
-                        : "bg-white text-stone-700 border border-stone-300"
-                    }`}
-                  >
-                    {info.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {loadingOrdenes ? (
-              <div className="text-center py-12 text-stone-500">Cargando Ã³rdenes...</div>
-            ) : ordenesFiltradas.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
-                <ClipboardList className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-                <p className="text-stone-500">No hay Ã³rdenes in este estado.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {ordenesFiltradas.map((orden) => {
-                  const TipoIcon = TIPOS_ORDEN[orden.tipo].icon;
-                  const EstadoIcon = ESTADOS[orden.estado].icon;
-                  const estadoInfo = ESTADOS[orden.estado];
-                  const tipoInfo = TIPOS_ORDEN[orden.tipo];
-
-                  return (
-                    <div
-                      key={orden.id}
-                      className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <span className="font-bold text-stone-800">#{orden.id.slice(0, 6)}</span>
-                          {orden.pedido_id && (
-                            <span className="text-xs text-stone-400 ml-2">Pedido: {orden.pedido_id.slice(0, 6)}</span>
-                          )}
-                        </div>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${tipoInfo.color}`}>
-                          <TipoIcon className="w-3 h-3 inline mr-1" />
-                          {tipoInfo.label}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1 mb-2">
-                        {orden.productos.map((p, i) => (
-                          <div key={i} className="text-sm text-stone-700">
-                            {p.cantidad} Ã— {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
-                          </div>
-                        ))}
-                      </div>
-
-                      {orden.nota && (
-                        <p className="text-xs text-stone-500 mb-2">ðŸ“ {orden.nota}</p>
-                      )}
-
-                      <div className="flex items-center justify-between text-xs text-stone-400">
-                        <span>ðŸ“… {new Date(orden.creado_en).toLocaleString()}</span>
-                        <span className={`px-2 py-0.5 rounded-full ${estadoInfo.color}`}>
-                          <EstadoIcon className="w-3 h-3 inline mr-1" />
-                          {estadoInfo.label}
-                        </span>
-                      </div>
-
-                      {vista === "productor" && orden.estado !== "entregado" && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {ESTADOS_ORDEN.map((estado) => {
-                            const idxActual = ESTADOS_ORDEN.indexOf(orden.estado);
-                            const idxNuevo = ESTADOS_ORDEN.indexOf(estado);
-                            if (idxNuevo <= idxActual) return null;
-                            const info = ESTADOS[estado as keyof typeof ESTADOS];
-                            return (
-                              <button
-                                key={estado}
-                                onClick={() => cambiarEstado(orden.id, estado as keyof typeof ESTADOS)}
-                                className={`text-xs px-2 py-1 rounded-full ${info.color} hover:opacity-80 transition`}
-                              >
-                                {info.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {vista === "admin" && (
-                        <div className="mt-3 text-xs text-stone-400">
-                          {orden.producido_por && <span>ðŸ‘¤ {orden.producido_por}</span>}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        {tab === "jornada" && esRestaurante && (
-          <>
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-                <p className="text-sm text-stone-500">Planificado</p>
-                <p className="text-2xl font-bold text-blue-600">{resumenJornada.planificado}</p>
-              </div>
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-                <p className="text-sm text-stone-500">Vendido</p>
-                <p className="text-2xl font-bold text-emerald-600">{resumenJornada.vendido}</p>
-              </div>
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
-                <p className="text-sm text-stone-500">Restante</p>
-                <p className={`text-2xl font-bold ${resumenJornada.restante > 0 ? "text-amber-600" : "text-stone-400"}`}>
-                  {resumenJornada.restante}
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-              <h3 className="font-semibold text-stone-800 mb-3">Detalle de Jornada</h3>
-              {loadingJornada ? (
-                <div className="text-center py-8 text-stone-500">Cargando...</div>
-              ) : jornada.length === 0 ? (
-                <div className="text-center py-8 text-stone-500">No hay producciÃ³n planificada para esta fecha</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-stone-50">
-                      <tr>
-                        <th className="text-left p-2 text-stone-700">Producto</th>
-                        <th className="text-left p-2 text-stone-700">Planificado</th>
-                        <th className="text-left p-2 text-stone-700">Vendido</th>
-                        <th className="text-left p-2 text-stone-700">Restante</th>
-                        <th className="text-left p-2 text-stone-700">Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {jornada.map((j: any) => {
-                        const restante = j.cantidad_planificada - j.cantidad_vendida;
-                        const estado = restante === 0 ? "Agotado" : restante < 5 ? "Poco" : "Disponible";
-                        const color =
-                          restante === 0 ? "text-red-600" : restante < 5 ? "text-amber-600" : "text-emerald-600";
-                        return (
-                          <tr key={j.producto_id} className="border-b border-stone-100">
-                            <td className="p-2 text-stone-800">
-                              {productos.find((p) => p.id === j.producto_id)?.nombre || "Producto"}
-                            </td>
-                            <td className="p-2 text-stone-800">{j.cantidad_planificada}</td>
-                            <td className="p-2 text-stone-800">{j.cantidad_vendida}</td>
-                            <td className={`p-2 font-medium ${color}`}>{restante}</td>
-                            <td className="p-2">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  restante === 0
-                                    ? "bg-red-100 text-red-700"
-                                    : restante < 5
-                                    ? "bg-amber-100 text-amber-700"
-                                    : "bg-emerald-100 text-emerald-700"
-                                }`}
-                              >
-                                {estado}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Modal Nueva Orden */}
-      {showModalOrden && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">Nueva Orden de ProducciÃ³n</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Tipo de orden</label>
-                <select
-                  value={nuevaOrden.tipo}
-                  onChange={(e) =>
-                    setNuevaOrden({ ...nuevaOrden, tipo: e.target.value as keyof typeof TIPOS_ORDEN })
-                  }
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                >
-                  {Object.entries(TIPOS_ORDEN).map(([key, { label }]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Productos</label>
-                {(nuevaOrden.productos || []).map((p, idx) => (
-                  <div key={idx} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Nombre"
-                      value={p.nombre}
-                      onChange={(e) => {
-                        const prod = [...(nuevaOrden.productos || [])];
-                        prod[idx].nombre = e.target.value;
-                        setNuevaOrden({ ...nuevaOrden, productos: prod });
-                      }}
-                      className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Cant."
-                      value={p.cantidad}
-                      onChange={(e) => {
-                        const prod = [...(nuevaOrden.productos || [])];
-                        prod[idx].cantidad = parseInt(e.target.value) || 1;
-                        setNuevaOrden({ ...nuevaOrden, productos: prod });
-                      }}
-                      className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Unidad"
-                      value={p.unidad}
-                      onChange={(e) => {
-                        const prod = [...(nuevaOrden.productos || [])];
-                        prod[idx].unidad = e.target.value || "unidad";
-                        setNuevaOrden({ ...nuevaOrden, productos: prod });
-                      }}
-                      className="w-20 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                    />
-                    <button
-                      onClick={() => {
-                        const prod = nuevaOrden.productos || [];
-                        if (prod.length <= 1) return;
-                        setNuevaOrden({
-                          ...nuevaOrden,
-                          productos: prod.filter((_, i) => i !== idx),
-                        });
-                      }}
-                      className="text-red-500 hover:bg-red-50 rounded-xl p-2"
-                    >
-                      Ã—
-                    </button>
-                  </div>
-                ))}
-                <button
-                  onClick={() => {
-                    setNuevaOrden({
-                      ...nuevaOrden,
-                      productos: [...(nuevaOrden.productos || []), { nombre: "", cantidad: 1, unidad: "unidad" }],
-                    });
-                  }}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  + Agregar producto
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Nota</label>
-                <textarea
-                  value={nuevaOrden.nota}
-                  onChange={(e) => setNuevaOrden({ ...nuevaOrden, nota: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  rows={2}
-                  placeholder="Instrucciones adicionales..."
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowImportModalOrden(false)}
-                className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={crearOrden}
-                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
-              >
-                Crear Orden
-              </button>
-            </div>
+        {/* Resumen principal */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Ingresos</p>
+            <p className="text-2xl font-bold text-emerald-600">${resumen.ingresos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Egresos</p>
+            <p className="text-2xl font-bold text-red-600">${resumen.egresos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Saldo</p>
+            <p className={`text-2xl font-bold ${resumen.saldo >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+              ${resumen.saldo.toLocaleString()}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Impuestos</p>
+            <p className="text-2xl font-bold text-yellow-600">${resumen.impuestos.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 text-center">
+            <p className="text-sm text-stone-500">Retenciones</p>
+            <p className="text-2xl font-bold text-orange-600">${resumen.retenciones.toLocaleString()}</p>
           </div>
         </div>
-      )}
 
-      {/* Modal Jornada */}
-      {showModalJornada && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">Planificar Jornada</h3>
-              <button onClick={() => setShowImportModalJornada(false)}><X className="w-5 h-5 text-stone-700" /></button>
-            </div>
-            <div className="space-y-3">
-              {formJornada.map((f, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <select
-                    value={f.producto_id}
-                    onChange={(e) => actualizarJornada(idx, "producto_id", e.target.value)}
-                    className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                  >
-                    <option value="">Seleccionar plato</option>
-                    {productos.map((p: any) => (
-                      <option key={p.id} value={p.id}>{p.nombre}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    min="1"
-                    value={f.cantidad}
-                    onChange={(e) => actualizarJornada(idx, "cantidad", parseInt(e.target.value) || 1)}
-                    className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                  />
-                  <button onClick={() => eliminarJornada(idx)} className="text-red-500 hover:bg-red-50 rounded-xl p-2">
-                    Ã—
-                  </button>
+        {/* Cuentas for Cobrar / Pagar */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-2xl p-4 shadow-sm border border-blue-200 text-center">
+            <p className="text-sm text-blue-700">Cuentas for Cobrar</p>
+            <p className="text-2xl font-bold text-blue-600">${cuentasPorCobrar.toLocaleString()}</p>
+          </div>
+          <div className="bg-orange-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
+            <p className="text-sm text-orange-700">Cuentas for Pagar</p>
+            <p className="text-2xl font-bold text-orange-600">${cuentasPorPagar.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Desglose for mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago */}
+        {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose for MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
+                <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
+                  <p className="text-xs text-stone-500">{metodo}</p>
+                  <p className="text-sm font-bold text-stone-800">${monto.toLocaleString()}</p>
                 </div>
               ))}
-              <button
-                onClick={agregarProductoJornada}
-                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                + Agregar plato
-              </button>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowImportModalJornada(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">
-                Cancelar
-              </button>
-              <button onClick={guardarPlanificacion} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">
-                Guardar Jornada
-              </button>
+          </div>
+        )}
+
+        {/* Filtros */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
+          <div className="flex flex-wrap gap-3 items-center">
+            <Filter className="w-4 h-4 text-stone-500" />
+            <span className="text-sm font-medium text-stone-700">Filtros:</span>
+            <input type="date" value={filtros.start} onChange={(e) => setFiltros({ ...filtros, start: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
+            <span className="text-stone-600">-</span>
+            <input type="date" value={filtros.end} onChange={(e) => setFiltros({ ...filtros, end: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800" />
+            <select value={filtros.tipo} onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
+              <option value="">Todos los tipos</option>
+              <option value="ingreso">Ingresos</option>
+              <option value="egreso">Egresos</option>
+            </select>
+            <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
+              <option value="">Todas las categorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as</option>
+              {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
+            </select>
+            <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
+              <option value="">Todos los perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos</option>
+              {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
+            </select>
+          </div>
+        </div>
+
+        {/* Tabla de movimientos */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
+          <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
+          <div className="text-xs text-stone-400 mb-2">ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¡ Desliza horizontalmente ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ para ver todas las columnas</div>
+          <div className="overflow-x-auto" style={{ height: "420px", overflowY: "auto", border: "2px solid #3b82f6", borderRadius: "8px", padding: "4px" }}>
+            <div style={{ minWidth: "1200px" }}>
+              <table className="w-full text-sm" style={{ minWidth: "1200px" }}>
+                <thead className="bg-stone-50">
+                  <tr>
+                    <th className="text-left p-2 text-stone-700">#</th>
+                    <th className="text-left p-2 text-stone-700">Fecha</th>
+                    <th className="text-left p-2 text-stone-700">Tipo</th>
+                    <th className="text-left p-2 text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</th>
+                    <th className="text-left p-2 text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</th>
+                    <th className="text-left p-2 text-stone-700">Cantidad</th>
+                    <th className="text-left p-2 text-stone-700">Precio Unit.</th>
+                    <th className="text-left p-2 text-stone-700">Subtotal</th>
+                    <th className="text-left p-2 text-stone-700">IVA</th>
+                    <th className="text-left p-2 text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">ICA</th>
+                    <th className="text-left p-2 text-stone-700">Total</th>
+                    <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transacciones.map((t: any) => (
+                    <tr key={t.id} className="border-b border-stone-100 cursor-pointer hover:bg-stone-50" onClick={() => { setMovimientoSeleccionado(t); setMostrarDetalle(true); }}>
+                      <td className="p-2 text-stone-600 text-center">{t.item || "-"}</td>
+                      <td className="p-2 text-stone-800">{formatDate(t.fecha)}</td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.tipo === "ingreso" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                          {t.tipo}
+                        </span>
+                      </td>
+                      <td className="p-2 text-stone-600">{t.categorias_contables?.nombre || "-"}</td>
+                      <td className="p-2 text-stone-600">
+                        <span title={t.descripcion_resumida || t.descripcion}>
+                          {t.descripcion || "-"}
+                        </span>
+                        {t.descripcion_resumida && t.descripcion_resumida !== t.descripcion && (
+                          <span className="text-xs text-stone-400 block truncate max-w-xs" title={t.descripcion_resumida}>
+                            ({t.descripcion_resumida})
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-2 text-stone-600">{t.metodo_pago || "-"}</td>
+                      <td className="p-2 text-stone-800 font-medium">{t.cantidad ?? 1}</td>
+                      <td className="p-2 text-stone-800 font-medium">${(t.precio_unitario ?? 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-800 font-medium">${(t.subtotal ?? 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.iva || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.retencion || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-600">${(t.ica || 0).toLocaleString()}</td>
+                      <td className="p-2 text-stone-800 font-bold">${(t.total ?? t.total_con_impuestos ?? 0).toLocaleString()}</td>
+                      <td className="p-2 flex gap-2 whitespace-nowrap">
+                        <button onClick={(e) => { e.stopPropagation(); editarTransaccion(t); }} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4 text-stone-600" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); eliminarTransaccion(t.id); }} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {transacciones.length === 0 && <tr><td colSpan={14} className="p-4 text-center text-stone-500">No hay movimientos</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de paginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n */}
+        <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
+          <div className="text-sm text-stone-600">
+            Mostrando hasta {transacciones.length} registros (pÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡gina {pagina})
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => cambiarPagina(pagina - 1)}
+              disabled={pagina <= 1}
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => cambiarPagina(pagina + 1)}
+              disabled={transacciones.length < 50}
+              className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-stone-50"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal de Detalle */}
+      {mostrarDetalle && movimientoSeleccionado && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-stone-800">Detalle del Movimiento</h3>
+              <button onClick={() => setMostrarDetalle(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span className="text-stone-800">{movimientoSeleccionado.item || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Fecha</span><span className="text-stone-800">{formatDate(movimientoSeleccionado.fecha)}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Tipo</span><span className="capitalize text-stone-800">{movimientoSeleccionado.tipo}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Cantidad</span><span className="text-stone-800">{movimientoSeleccionado.cantidad ?? 1}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Precio Unitario</span><span className="text-stone-800">${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Subtotal</span><span className="text-stone-800">${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">IVA</span><span className="text-stone-800">${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">ICA</span><span className="text-stone-800">${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setMostrarDetalle(false)} className="bg-stone-200 text-stone-800 px-6 py-2 rounded-xl hover:bg-stone-300">Cerrar</button>
             </div>
           </div>
         </div>
       )}
 
-      <audio ref={audioRef} src="/notification.mp3" />
+      {/* Modal TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n */}
+      {showModalTransaccion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n" : "Nueva TransacciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n"}</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Tipo</label>
+                <select value={formTransaccion.tipo} onChange={(e) => setFormTransaccion({ ...formTransaccion, tipo: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Monto</label>
+                <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a contable</label>
+                <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="">Seleccionar...</option>
+                  {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">DescripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</label>
+                <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Fecha</label>
+                <input type="date" value={formTransaccion.fecha} onChange={(e) => setFormTransaccion({ ...formTransaccion, fecha: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Impuesto</label>
+                <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">RetenciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</label>
+                <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©todo de pago</label>
+                <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
+                  <option value="">No aplica</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Nequi">Nequi</option>
+                  <option value="Bancolombia">Bancolombia</option>
+                  <option value="Daviplata">Daviplata</option>
+                  <option value="CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito">CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dito</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowImportModalTransaccion(false)} className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700">Cancelar</button>
+              <button onClick={guardarTransaccion} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all duration-200 text-white rounded-xl font-bold">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as */}
+      {showModalCategoria && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Plan de Cuentas</h3>
+              <button onClick={() => setShowImportModalCategoria(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {categorias.map((c: any) => (
+                <div key={c.id} className="flex justify-between items-center border-b py-1">
+                  <span className="text-stone-800"><span className="font-mono text-xs text-stone-500">{c.codigo}</span> {c.nombre}</span>
+                  <span className="text-xs text-stone-600">{c.tipo}</span>
+                </div>
+              ))}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as</p>}
+            </div>
+            <div className="mt-4 border-t pt-4">
+              <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
+              <div className="space-y-2">
+                <input type="text" placeholder="CÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <select value={formCategoria.tipo} onChange={(e) => setFormCategoria({...formCategoria, tipo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm">
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                  <option value="costo">Costo</option>
+                </select>
+                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos */}
+      {showModalPeriodo && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos Fiscales</h3>
+              <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
+              {periodos.map((p: any) => (
+                <div key={p.id} className="flex justify-between border-b py-1 text-sm">
+                  <span className="text-stone-800">{p.nombre}</span>
+                  <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
+                </div>
+              ))}
+              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos.</p>}
+            </div>
+            <div>
+              <h4 className="font-medium text-stone-700 mb-2">Generar perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odos automÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ticos</h4>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
+                <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
+                <button onClick={() => generarPeriodosAutomaticos("semestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Semestres</button>
+                <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
+              </div>
+              <div className="mt-4 border-t pt-4">
+                <h4 className="font-medium text-stone-700 mb-2">Crear perÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo manual</h4>
+                <div className="space-y-2">
+                  <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <div className="flex gap-2">
+                    <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                    <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  </div>
+                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­odo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -769,7 +814,6 @@ export default function ProduccionPage() {
 
 
 
+// Forzar deploy 2026-07-30 19:03:38
 
-
-
-
+// Forzar deploy 2026-07-30 19:10:44
