@@ -822,3 +822,5 @@ export default function FinanzasPage() {
 
 
 // Forzar deploy 2026-07-30 19:03:38
+
+// Forzar deploy 2026-07-30 19:10:44
