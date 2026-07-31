@@ -4,11 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
-`nconst formatDate = (fechaStr: string) => {
-  if (!fechaStr) return "-";
-  const partes = fechaStr.split("-");
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
-};`nimport {
+import {
   ArrowLeft,
   RefreshCw,
   Plus,
@@ -23,6 +19,10 @@ import Link from "next/link";
 import * as XLSX from "xlsx";
 import { useTenant } from "@/hooks/useTenant";
 `nconst formatDate = (fechaStr: string) => {
+  if (!fechaStr) return "-";
+  const partes = fechaStr.split("-");
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+};`n`nconst formatDate = (fechaStr: string) => {
   if (!fechaStr) return "-";
   const partes = fechaStr.split("-");
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
