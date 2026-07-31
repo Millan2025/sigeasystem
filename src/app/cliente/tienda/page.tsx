@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { Search, Star, Clock, ShoppingCart, Plus, Minus, X, MapPin, Phone } from 'lucide-react'

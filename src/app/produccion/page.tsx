@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -45,10 +45,12 @@ export default function ProduccionPage() {
   const totalProducidos = productos.reduce((s, p) => s + (p.stock || 0), 0)
 
   function descargarCompras() {
-    let csv = '\uFEFFProducto,Cantidad a producir,Ingredientes\n'
+    let csv = '\uFEFFProducto,Cantidad a producir,Ingredientes
+'
     productos.forEach(p => {
       const cant = cantidadProducir[p.id] || 0
-      csv += `${p.nombre},${cant},${p.proveedor || 'Sin ingredientes'}\n`
+      csv += `${p.nombre},${cant},${p.proveedor || 'Sin ingredientes'}
+`
     })
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'produccion.csv'; a.click()

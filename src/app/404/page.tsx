@@ -1,4 +1,4 @@
-﻿export default function Custom404() {
+export default function Custom404() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">

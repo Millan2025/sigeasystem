@@ -1,4 +1,4 @@
-﻿import NegocioHome from "@/components/NegocioHome";
+import NegocioHome from "@/components/NegocioHome";
 
 export default function tiendaPage() {
   return <NegocioHome negocioSlug="tienda" />;

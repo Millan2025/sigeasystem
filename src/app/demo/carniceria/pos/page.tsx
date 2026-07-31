@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { ShoppingCart, DollarSign, Package, Users, Truck, BarChart3, TrendingUp, ChefHat, Phone, X, ArrowRight } from 'lucide-react'

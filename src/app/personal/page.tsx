@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -135,7 +135,10 @@ export default function PersonalPage() {
       [c.nombre, c.apellido, c.email, c.telefono || "", c.cargo || "",
        c.fecha_contratacion || "", c.salario?.toString() || "0", c.estado || "activo", c.observaciones || ""].join(";")
     );
-    const csv = "\uFEFF" + headers.join("\n") + "\n" + rows.join("\n");
+    const csv = "\uFEFF" + headers.join("
+") + "
+" + rows.join("
+");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");

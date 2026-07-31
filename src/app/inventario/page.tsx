@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -56,8 +56,10 @@ export default function InventarioPage() {
   function getAlertaTexto(dias: number) { return dias <= 1 ? 'URGENTE' : dias <= 2 ? 'Pedir ya' : 'OK' }
 
   function descargarInventario() {
-    let csv = '\uFEFFSKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR\n'
-    filtrados.forEach((p: ProductoInv) => { csv += (p.id || '') + ';' + p.nombre + ';' + p.precio + ';' + p.costo + ';' + p.stock + ';' + (p.esPeso ? 'SI' : 'NO') + ';' + (p.unidad || 'unidad') + ';' + (p.precioPorKg || '') + ';' + p.categoria + ';' + p.proveedor + '\n' })
+    let csv = '\uFEFFSKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR
+'
+    filtrados.forEach((p: ProductoInv) => { csv += (p.id || '') + ';' + p.nombre + ';' + p.precio + ';' + p.costo + ';' + p.stock + ';' + (p.esPeso ? 'SI' : 'NO') + ';' + (p.unidad || 'unidad') + ';' + (p.precioPorKg || '') + ';' + p.categoria + ';' + p.proveedor + '
+' })
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob); const a = document.createElement('a')
     a.href = url; a.download = 'inventario_' + new Date().toISOString().split('T')[0] + '.csv'; a.click()

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -24,8 +24,10 @@ export default function FinanzasPage() {
   const utilidadHoy = ventasHoy - 180000 - 85000 - 45000
 
   function descargarExcel() {
-    let csv = '\uFEFFFecha,Concepto,Cuenta,Ingreso,Egreso\n'
-    libroDiario.forEach(l => { csv += l.fecha + ',' + l.concepto + ',' + l.cuenta + ',' + l.ingreso + ',' + l.egreso + '\n' })
+    let csv = '\uFEFFFecha,Concepto,Cuenta,Ingreso,Egreso
+'
+    libroDiario.forEach(l => { csv += l.fecha + ',' + l.concepto + ',' + l.cuenta + ',' + l.ingreso + ',' + l.egreso + '
+' })
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'libro_diario.csv'; a.click()
   }

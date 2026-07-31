@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -15,7 +15,10 @@ export default function ReportesPage() {
   useEffect(() => { fetch('/api/sales').then(r => r.json()).then(d => { if (d.success && d.totales) { setVentasHoy(d.totales.total || 0); setTransacciones(d.totales.count || 0) } }).catch(() => {}) }, [])
 
   function descargarExcel() {
-    let csv = '\uFEFFProducto,Unidades,Total\nPan Aliñado,140,700000\nCafé Tinto,225,405000\nCroissant,60,192000'
+    let csv = '\uFEFFProducto,Unidades,Total
+Pan Aliñado,140,700000
+Café Tinto,225,405000
+Croissant,60,192000'
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = 'reporte.csv'; a.click()
   }
