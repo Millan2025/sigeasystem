@@ -86,7 +86,7 @@ export default function ComprasPage() {
     ica: 0,
     total: 0,
   });
-  // Función para recalcular resumen desde los items del modal
+  // FunciÃ³n para recalcular resumen desde los items del modal
   const recalcularResumenDesdeItems = (items: { cantidad: number; precio_compra: number; exento_iva?: boolean }[]) => {
     let subtotal = 0;
     let ivaTotal = 0;
@@ -221,7 +221,7 @@ export default function ComprasPage() {
     }).filter(Boolean) as { producto_id: string; cantidad: number; precio_compra: number; nombre: string; exento_iva: boolean }[];
 
     if (items.length === 0) {
-      alert("Todos los productos seleccionados ya tienen stock máximo.");
+      alert("Todos los productos seleccionados ya tienen stock mÃ¡ximo.");
       return;
     }
 
@@ -254,14 +254,14 @@ export default function ComprasPage() {
     const totalFinal = subtotal + ivaTotal - retencion - ica;
 
     const mensajeConfirmacion = `
-      📋 Resumen de la compra:
-      • Subtotal: $${subtotal.toLocaleString()}
-      • IVA: $${ivaTotal.toLocaleString()}
-      • Retención: -$${retencion.toLocaleString()}
-      • ICA: -$${ica.toLocaleString()}
-      • Total a pagar: $${totalFinal.toLocaleString()}
+      ðŸ“‹ Resumen de la compra:
+      â€¢ Subtotal: $${subtotal.toLocaleString()}
+      â€¢ IVA: $${ivaTotal.toLocaleString()}
+      â€¢ RetenciÃ³n: -$${retencion.toLocaleString()}
+      â€¢ ICA: -$${ica.toLocaleString()}
+      â€¢ Total a pagar: $${totalFinal.toLocaleString()}
 
-      ¿Confirmas esta compra?
+      Â¿Confirmas esta compra?
     `;
 
     if (!confirm(mensajeConfirmacion)) {
@@ -277,7 +277,7 @@ export default function ComprasPage() {
         producto_id: item.producto_id,
         cantidad: item.cantidad,
         precio_compra: item.precio_compra,
-        nombre: item.nombre, // para la descripción
+        nombre: item.nombre, // para la descripciÃ³n
       })),
       subtotal: subtotal,
       iva: ivaTotal,
@@ -294,7 +294,7 @@ export default function ComprasPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente. Total: $${totalFinal.toLocaleString()}`);
+        setMensaje(`âœ… Compra #${data.data.compra.id} registrada exitosamente. Total: $${totalFinal.toLocaleString()}`);
         setSeleccionados([]);
         setShowConfirmModal(false);
         cargarDatos();
@@ -302,7 +302,7 @@ export default function ComprasPage() {
         alert("Error: " + data.error);
       }
     } catch (error) {
-      alert("Error de conexión");
+      alert("Error de conexiÃ³n");
     }
   };
 
@@ -320,7 +320,7 @@ export default function ComprasPage() {
         Producto: p.nombre,
         SKU: p.sku || "",
         "Stock Actual": stockActual,
-        "Máximo Requerido": p.stock_maximo || 0,
+        "MÃ¡ximo Requerido": p.stock_maximo || 0,
         "Cantidad a Comprar": Math.max((p.stock_maximo || 0) - stockActual, 0),
         Proveedor: p.proveedor || "",
         "Precio Compra": p.precio_compra || 0,
@@ -332,7 +332,7 @@ export default function ComprasPage() {
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
     XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
-    alert(`📦 Orden de compra generada con ${data.length} productos.`);
+    alert(`ðŸ“¦ Orden de compra generada con ${data.length} productos.`);
   };
 
   const descargarInventarioCompleto = () => {
@@ -340,15 +340,15 @@ export default function ComprasPage() {
       Nombre: p.nombre,
       SKU: p.sku || "",
       "Stock Actual": stockMap[p.id] ?? 0,
-      "Stock Mínimo": p.stock_minimo || 0,
-      "Stock Máximo": p.stock_maximo || 0,
+      "Stock MÃ­nimo": p.stock_minimo || 0,
+      "Stock MÃ¡ximo": p.stock_maximo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
       "Precio Venta": p.precio || 0,
       "Precio Compra": p.precio_compra || 0,
       Observaciones: p.observaciones || "",
       Imagen: p.imagen_url || "",
-      "Exento IVA": p.exento_iva ? "Sí" : "No",
+      "Exento IVA": p.exento_iva ? "SÃ­" : "No",
     }));
 
     const wb = XLSX.utils.book_new();
@@ -372,12 +372,12 @@ export default function ComprasPage() {
       if (data.success) {
         setForm((prev) => ({ ...prev, imagen_url: data.url }));
         setImageFile(null);
-        alert("✅ Imagen subida correctamente");
+        alert("âœ… Imagen subida correctamente");
       } else {
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexión");
+      alert("Error de conexiÃ³n");
     }
     setUploadingImage(false);
   };
@@ -415,7 +415,7 @@ export default function ComprasPage() {
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm("¿Eliminar este producto?")) return;
+    if (!confirm("Â¿Eliminar este producto?")) return;
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -498,7 +498,7 @@ export default function ComprasPage() {
         )}
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4">
-          <h3 className="font-semibold text-black mb-2">⚖️ Configuración contable</h3>
+          <h3 className="font-semibold text-black mb-2">âš–ï¸ ConfiguraciÃ³n contable</h3>
           <div className="flex flex-wrap gap-4">
             <div>
               <label className="block text-xs text-black">IVA (%)</label>
@@ -511,7 +511,7 @@ export default function ComprasPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-black">Retención (%)</label>
+              <label className="block text-xs text-black">RetenciÃ³n (%)</label>
               <input
                 type="number"
                 value={retencionPorcentaje}
@@ -535,7 +535,7 @@ export default function ComprasPage() {
 
         {seleccionados.length > 0 && (
           <div className="bg-blue-100 border border-blue-300 rounded-2xl p-4 mb-4">
-            <h4 className="font-semibold text-black mb-2">📊 Resumen de la compra</h4>
+            <h4 className="font-semibold text-black mb-2">ðŸ“Š Resumen de la compra</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
               <div>
                 <span className="text-black">Subtotal</span>
@@ -546,7 +546,7 @@ export default function ComprasPage() {
                 <p className="font-bold text-black">${resumenContable.iva.toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-black">Retención</span>
+                <span className="text-black">RetenciÃ³n</span>
                 <p className="font-bold text-black">-${resumenContable.retencion.toLocaleString()}</p>
               </div>
               <div>
@@ -566,7 +566,7 @@ export default function ComprasPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
             <input
               type="text"
-              placeholder="Buscar por nombre o SKU..."
+              placeholder="Buscar for nombre o SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-xl text-sm text-black placeholder-black"
@@ -599,7 +599,7 @@ export default function ComprasPage() {
             className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-black"
           >
             <option value="contado">Contado</option>
-            <option value="credito">Crédito</option>
+            <option value="credito">CrÃ©dito</option>
           </select>
         </div>
 
@@ -611,8 +611,8 @@ export default function ComprasPage() {
                 <th className="p-2 text-left text-black">SKU</th>
                 <th className="p-2 text-left text-black">Nombre</th>
                 <th className="p-2 text-left text-black">Stock actual</th>
-                <th className="p-2 text-left text-black">Mínimo</th>
-                <th className="p-2 text-left text-black">Máximo</th>
+                <th className="p-2 text-left text-black">MÃ­nimo</th>
+                <th className="p-2 text-left text-black">MÃ¡ximo</th>
                 <th className="p-2 text-left text-black">Proveedor</th>
                 <th className="p-2 text-left text-black">Precio Venta</th>
                 <th className="p-2 text-left text-black">Precio Compra</th>
@@ -644,15 +644,15 @@ export default function ComprasPage() {
                     <td className="p-2 text-black">{p.proveedor || "-"}</td>
                     <td className="p-2 text-black">${p.precio?.toLocaleString()}</td>
                     <td className="p-2 text-black">${(p.precio_compra || 0).toLocaleString()}</td>
-                    <td className="p-2 text-black">{p.exento_iva ? "Sí" : "No"}</td>
+                    <td className="p-2 text-black">{p.exento_iva ? "SÃ­" : "No"}</td>
                     <td className="p-2">
                       {esCritico ? (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
-                          Por debajo
+                          for debajo
                         </span>
                       ) : estaMaximo ? (
                         <span className="px-2 py-1 bg-emerald-100 text-black rounded-full text-xs font-bold">
-                          Máximo
+                          MÃ¡ximo
                         </span>
                       ) : (
                         <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
@@ -739,7 +739,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-black">Descripción</label>
+                <label className="block text-sm font-bold text-black">DescripciÃ³n</label>
                 <input
                   type="text"
                   value={form.descripcion}
@@ -748,7 +748,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-black">Categoría *</label>
+                <label className="block text-sm font-bold text-black">CategorÃ­a *</label>
                 <input
                   type="text"
                   value={form.categoria}
@@ -784,10 +784,10 @@ export default function ComprasPage() {
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-black"
                 />
-                <p className="text-xs text-black mt-1">El stock se calcula automáticamente</p>
+                <p className="text-xs text-black mt-1">El stock se calcula automÃ¡ticamente</p>
               </div>
               <div>
-                <label className="block text-sm font-bold text-black">Stock mínimo</label>
+                <label className="block text-sm font-bold text-black">Stock mÃ­nimo</label>
                 <input
                   type="number"
                   value={form.stock_minimo}
@@ -796,7 +796,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-black">Stock máximo</label>
+                <label className="block text-sm font-bold text-black">Stock mÃ¡ximo</label>
                 <input
                   type="number"
                   value={form.stock_maximo}
@@ -856,7 +856,7 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-black">Ubicación en almacén</label>
+                <label className="block text-sm font-bold text-black">UbicaciÃ³n in almacÃ©n</label>
                 <input
                   type="text"
                   value={form.ubicacion}
@@ -893,7 +893,7 @@ export default function ComprasPage() {
         </div>
       )}
 
-      {/* Modal de Confirmación de Compra */}
+      {/* Modal de ConfirmaciÃ³n de Compra */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -915,14 +915,14 @@ export default function ComprasPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-black">Método de Pago</label>
+                <label className="block text-sm font-bold text-black">MÃ©todo de Pago</label>
                 <select
                   value={confirmData.metodo_pago}
                   onChange={(e) => setConfirmData({ ...confirmData, metodo_pago: e.target.value })}
                   className="w-full border border-stone-300 rounded-xl p-2 text-black"
                 >
                   <option value="contado">Contado</option>
-                  <option value="credito">Crédito</option>
+                  <option value="credito">CrÃ©dito</option>
                 </select>
               </div>
 
@@ -980,7 +980,7 @@ export default function ComprasPage() {
                   <span className="text-black font-bold">${confirmData.total.toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-black mt-1">
-                  * Los impuestos (IVA, retención, ICA) se calcularán al confirmar.
+                  * Los impuestos (IVA, retenciÃ³n, ICA) se calcularÃ¡n al confirmar.
                 </p>
               </div>
             </div>

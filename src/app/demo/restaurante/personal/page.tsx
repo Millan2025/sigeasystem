@@ -43,7 +43,7 @@ export default function PersonalPage() {
   const negocioSlug = searchParams.get("slug") || "restaurante";
 
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
-  const [asistencias, setAsistencias] = useState<Asistencia[]>([]);
+  const [aasistencias, setAasistencias] = useState<Asistencia[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<Empleado | null>(null);
@@ -61,31 +61,31 @@ export default function PersonalPage() {
   // Cargar datos desde localStorage
   const cargarDatos = () => {
     setLoading(true);
-    const keyEmpleados = empleados_;
-    const keyAsistencias = sistencias_;
+    const keyEmpleados = `empleados_${tenantId}`;
+    const keyAasistencias = asistencias_;
     try {
       const storedEmpleados = localStorage.getItem(keyEmpleados);
       if (storedEmpleados) {
         setEmpleados(JSON.parse(storedEmpleados));
       } else {
         const ejemplos: Empleado[] = [
-          { id: "EMP-001", nombre: "Juan Pérez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
-          { id: "EMP-002", nombre: "María Gómez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
+          { id: "EMP-001", nombre: "Juan PÃ©rez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
+          { id: "EMP-002", nombre: "MarÃ­a GÃ³mez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
         ];
         setEmpleados(ejemplos);
         localStorage.setItem(keyEmpleados, JSON.stringify(ejemplos));
       }
 
-      const storedAsistencias = localStorage.getItem(keyAsistencias);
-      if (storedAsistencias) {
-        setAsistencias(JSON.parse(storedAsistencias));
+      const storedAasistencias = localStorage.getItem(keyAasistencias);
+      if (storedAasistencias) {
+        setAasistencias(JSON.parse(storedAasistencias));
       } else {
-        setAsistencias([]);
-        localStorage.setItem(keyAsistencias, JSON.stringify([]));
+        setAasistencias([]);
+        localStorage.setItem(keyAasistencias, JSON.stringify([]));
       }
     } catch (e) {
       setEmpleados([]);
-      setAsistencias([]);
+      setAasistencias([]);
     }
     setLoading(false);
   };
@@ -99,9 +99,9 @@ export default function PersonalPage() {
     localStorage.setItem(empleados_, JSON.stringify(nuevos));
   };
 
-  const guardarAsistencias = (nuevas: Asistencia[]) => {
-    setAsistencias(nuevas);
-    localStorage.setItem(sistencias_, JSON.stringify(nuevas));
+  const guardarAasistencias = (nuevas: Asistencia[]) => {
+    setAasistencias(nuevas);
+    localStorage.setItem(asistencias_, JSON.stringify(nuevas));
   };
 
   // CRUD Empleados
@@ -133,7 +133,7 @@ export default function PersonalPage() {
   };
 
   const eliminarEmpleado = (id: string) => {
-    if (!confirm("¿Eliminar este empleado?")) return;
+    if (!confirm("Â¿Eliminar este empleado?")) return;
     guardarEmpleados(empleados.filter((e) => e.id !== id));
   };
 
@@ -147,14 +147,14 @@ export default function PersonalPage() {
   const registrarAsistencia = (empleado_id: string) => {
     const hoy = new Date().toISOString().split("T")[0];
     const ahora = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const asistenciaExistente = asistencias.find(
+    const asistenciaExistente = aasistencias.find(
       (a) => a.empleado_id === empleado_id && a.fecha === hoy && a.hora_salida === null
     );
     if (asistenciaExistente) {
-      const actualizadas = asistencias.map((a) =>
+      const actualizadas = aasistencias.map((a) =>
         a.id === asistenciaExistente.id ? { ...a, hora_salida: ahora } : a
       );
-      guardarAsistencias(actualizadas);
+      guardarAasistencias(actualizadas);
     } else {
       const nueva: Asistencia = {
         id: ASIS-,
@@ -163,7 +163,7 @@ export default function PersonalPage() {
         hora_entrada: ahora,
         hora_salida: null,
       };
-      guardarAsistencias([...asistencias, nueva]);
+      guardarAasistencias([...aasistencias, nueva]);
     }
   };
 
@@ -232,7 +232,7 @@ export default function PersonalPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-3 text-stone-700">Nombre</th>
-                  <th className="text-left p-3 text-stone-700">Teléfono</th>
+                  <th className="text-left p-3 text-stone-700">TelÃ©fono</th>
                   <th className="text-left p-3 text-stone-700">Rol</th>
                   <th className="text-left p-3 text-stone-700">Salario</th>
                   <th className="text-left p-3 text-stone-700">Estado</th>
@@ -243,7 +243,7 @@ export default function PersonalPage() {
               <tbody>
                 {empleadosFiltrados.map((emp) => {
                   const hoy = new Date().toISOString().split("T")[0];
-                  const asistenciaHoy = asistencias.find(
+                  const asistenciaHoy = aasistencias.find(
                     (a) => a.empleado_id === emp.id && a.fecha === hoy
                   );
                   const tieneCheckIn = !!asistenciaHoy;
@@ -268,10 +268,10 @@ export default function PersonalPage() {
                             Check-in
                           </button>
                         ) : tieneCheckOut ? (
-                          <span className="text-xs text-stone-500">✅ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
+                          <span className="text-xs text-stone-500">âœ… {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-blue-600">⏳ {asistenciaHoy?.hora_entrada}</span>
+                            <span className="text-xs text-blue-600">â³ {asistenciaHoy?.hora_entrada}</span>
                             <button onClick={() => registrarAsistencia(emp.id)} className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full hover:bg-orange-600">
                               Check-out
                             </button>
@@ -311,7 +311,7 @@ export default function PersonalPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Teléfono</label>
+                <label className="block text-sm font-medium text-stone-700">TelÃ©fono</label>
                 <input
                   type="text"
                   value={form.telefono || ""}
@@ -354,7 +354,7 @@ export default function PersonalPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Fecha Contratación</label>
+                <label className="block text-sm font-medium text-stone-700">Fecha ContrataciÃ³n</label>
                 <input
                   type="date"
                   value={form.fecha_contratacion || new Date().toISOString().split("T")[0]}

@@ -25,7 +25,7 @@ export default function ProductosAdminPage() {
     unidad: 'unidad',
     tipo_unidad: 'unidad',
     venta_por_peso: false,
-    icono: '📦'
+    icono: 'ðŸ“¦'
   });
 
   const cargarProductos = () => {
@@ -56,7 +56,7 @@ export default function ProductosAdminPage() {
     if (data.success) {
       setShowImportModal(false);
       setEditing(null);
-      setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' });
+      setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: 'ðŸ“¦' });
       cargarProductos();
     } else {
       alert(data.error || 'Error al guardar');
@@ -64,7 +64,7 @@ export default function ProductosAdminPage() {
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm('¿Eliminar este producto?')) return;
+    if (!confirm('Â¿Eliminar este producto?')) return;
     const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
@@ -84,7 +84,7 @@ export default function ProductosAdminPage() {
       unidad: p.unidad || 'unidad',
       tipo_unidad: p.tipo_unidad || 'unidad',
       venta_por_peso: p.venta_por_peso || false,
-      icono: p.icono || '📦'
+      icono: p.icono || 'ðŸ“¦'
     });
     setShowImportModal(true);
   };
@@ -98,7 +98,7 @@ export default function ProductosAdminPage() {
         <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5" />
         </button>
-        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' }); setShowImportModal(true); }}
+        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: 'ðŸ“¦' }); setShowImportModal(true); }}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
           <Plus className="w-4 h-4" /> Nuevo
         </button>
@@ -112,24 +112,24 @@ export default function ProductosAdminPage() {
                 <tr>
                   <th className="text-left p-2">Icono</th>
                   <th className="text-left p-2">Nombre</th>
-                  <th className="text-left p-2">Categoría</th>
+                  <th className="text-left p-2">CategorÃ­a</th>
                   <th className="text-left p-2">Precio</th>
                   <th className="text-left p-2">Stock</th>
                   <th className="text-left p-2">Unidad</th>
-                  <th className="text-left p-2">Venta por peso</th>
+                  <th className="text-left p-2">Venta for peso</th>
                   <th className="text-left p-2">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {productos.map((p: any) => (
                   <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2 text-2xl">{p.icono || '📦'}</td>
+                    <td className="p-2 text-2xl">{p.icono || 'ðŸ“¦'}</td>
                     <td className="p-2 font-medium">{p.nombre}</td>
                     <td className="p-2 text-stone-700">{p.categoria}</td>
                     <td className="p-2">${p.precio?.toLocaleString()}</td>
                     <td className="p-2">{p.stock}</td>
                     <td className="p-2 text-stone-700">{p.tipo_unidad}</td>
-                    <td className="p-2">{p.venta_por_peso ? '✅' : '❌'}</td>
+                    <td className="p-2">{p.venta_por_peso ? 'âœ…' : 'âŒ'}</td>
                     <td className="p-2 flex gap-2">
                       <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4" /></button>
                       <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 text-red-500 rounded"><Trash2 className="w-4 h-4" /></button>
@@ -153,7 +153,7 @@ export default function ProductosAdminPage() {
                 <input type="text" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
+                <label className="block text-sm font-medium text-stone-700">CategorÃ­a *</label>
                 <input type="text" value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2" />
               </div>
               <div>
@@ -177,7 +177,7 @@ export default function ProductosAdminPage() {
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" checked={form.venta_por_peso} onChange={e => setForm({...form, venta_por_peso: e.target.checked})} />
-                <label className="text-sm font-medium text-stone-700">Venta por peso</label>
+                <label className="text-sm font-medium text-stone-700">Venta for peso</label>
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700">Icono (emoji)</label>

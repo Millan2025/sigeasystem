@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -373,13 +373,13 @@ export default function InventarioPage() {
                 stock_maximo: parseInt(stock_maximo) || 0,
                 unidad: unidad?.trim() || "unidad",
                 tipo_unidad: tipo_unidad?.trim() || "unidad",
-                venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "si",
+                venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "if",
                 proveedor: proveedor?.trim() || "",
                 observaciones: observaciones?.trim() || "",
                 fecha_caducidad: fecha_caducidad?.trim() || null,
                 ubicacion: ubicacion?.trim() || "",
                 imagen_url: imagen_url?.trim() || null,
-                exento_iva: exento_iva === true || exento_iva === "true" || exento_iva === "si",
+                exento_iva: exento_iva === true || exento_iva === "true" || exento_iva === "if",
                 tenant_id: tenantId,
               }),
             });
@@ -395,8 +395,11 @@ export default function InventarioPage() {
         }
 
         alert(
-          `✅ Productos importados: ${importados}\n` +
-          (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
+          `✅ Productos importados: ${importados}
+` +
+          (errores.length > 0 ? `❌ Errores: ${errores.length}
+${errores.join("
+")}` : "")
         );
         cargarDatos(true);
         recargarProductos();
@@ -493,7 +496,7 @@ export default function InventarioPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <input
                 type="text"
-                placeholder="Buscar por SKU o nombre..."
+                placeholder="Buscar for SKU o nombre..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
@@ -873,7 +876,7 @@ export default function InventarioPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Ubicación en almacén</label>
+                <label className="block text-sm font-medium text-stone-700">Ubicación in almacén</label>
                 <input
                   type="text"
                   value={formProducto.ubicacion}

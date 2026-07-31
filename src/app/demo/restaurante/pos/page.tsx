@@ -54,7 +54,7 @@ export default function POSPage() {
     cargarProductos();
   }, [tenantId]);
 
-  // Categorías
+  // CategorÃ­as
   const categorias = ["Todo", ...new Set(productos.map((p) => p.categoria))];
 
   // Productos filtrados
@@ -145,16 +145,16 @@ export default function POSPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("✅ Venta procesada correctamente");
+        alert("âœ… Venta procesada correctamente");
         setCarrito([]);
         setShowCheckout(false);
         setClienteNombre("");
         cargarProductos();
       } else {
-        alert("❌ Error: " + data.error);
+        alert("âŒ Error: " + data.error);
       }
     } catch (error) {
-      alert("❌ Error al procesar la venta");
+      alert("âŒ Error al procesar la venta");
     }
   };
 
@@ -175,7 +175,7 @@ export default function POSPage() {
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Búsqueda y categorías */}
+        {/* BÃºsqueda y categorÃ­as */}
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -226,7 +226,7 @@ export default function POSPage() {
                   {p.imagen_url ? (
                     <img src={p.imagen_url} alt={p.nombre} className="h-16 w-16 object-cover rounded" />
                   ) : (
-                    "📦"
+                    "ðŸ“¦"
                   )}
                 </div>
                 <h3 className="font-semibold text-stone-800 text-sm leading-tight">{p.nombre}</h3>
@@ -252,11 +252,11 @@ export default function POSPage() {
                   value={pesoGramos}
                   onChange={(e) => setPesoGramos(Number(e.target.value))}
                   className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  placeholder="Ingresa el peso en gramos"
+                  placeholder="Ingresa el peso in gramos"
                 />
               </div>
               <div className="text-sm text-stone-600">
-                Precio por kg: 
+                Precio for kg: 
                 <br />
                 Total aproximado: 
               </div>
@@ -297,7 +297,7 @@ export default function POSPage() {
                   </div>
                 </div>
               ))}
-              {carrito.length === 0 && <p className="text-center text-stone-500">Carrito vacío</p>}
+              {carrito.length === 0 && <p className="text-center text-stone-500">Carrito vacÃ­o</p>}
             </div>
 
             <div className="border-t pt-3">
@@ -319,7 +319,7 @@ export default function POSPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Método de pago</label>
+                <label className="block text-sm font-medium text-stone-700">MÃ©todo de pago</label>
                 <select
                   value={metodoPago}
                   onChange={(e) => setMetodoPago(e.target.value)}
@@ -329,7 +329,7 @@ export default function POSPage() {
                   <option value="Nequi">Nequi</option>
                   <option value="Bancolombia">Bancolombia</option>
                   <option value="Daviplata">Daviplata</option>
-                  <option value="Crédito">Crédito</option>
+                  <option value="CrÃ©dito">CrÃ©dito</option>
                 </select>
               </div>
             </div>

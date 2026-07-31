@@ -48,7 +48,7 @@ export default function FinanzasPage() {
     monto: 0,
     categoria_contable_id: "",
     descripcion: "",
-    fecha: new Date().toLocaleDateString("en-CA"),
+    fecha: new Date().toLocaleDateString("in-CA"),
     impuesto: 0,
     retencion: 0,
     metodo_pago: "",
@@ -62,7 +62,7 @@ export default function FinanzasPage() {
   const [movimientoSeleccionado, setMovimientoSeleccionado] = useState<any>(null);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
-  // FUNCIÃƒâ€œN PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
+  // FUNCIÃƒÆ’Ã¢â‚¬Å“N PARA CALCULAR RESUMEN MANUALMENTE (IGUAL QUE REPORTES)
   const calcularResumenManual = (transacciones: any[]) => {
     const ingresos = transacciones
       .filter((t: any) => t.tipo === "ingreso")
@@ -83,7 +83,7 @@ export default function FinanzasPage() {
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
     });
     
-    console.log("Ã°Å¸â€œÅ  CÃƒÂ¡lculo manual (frontend) - igual que Reportes:", {
+    console.log("ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â  CÃƒÆ’Ã‚Â¡lculo manual (frontend) - igual que Reportes:", {
       ingresos,
       egresos,
       saldo,
@@ -95,7 +95,7 @@ export default function FinanzasPage() {
     return { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos };
   };
 
-  // USEFFECT PARA RECALCULAR AUTOMÃƒÂTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
+  // USEFFECT PARA RECALCULAR AUTOMÃƒÆ’Ã‚ÂTICAMENTE CUANDO CAMBIAN LAS TRANSACCIONES
   
 
   const cargarDatos = async () => {
@@ -117,7 +117,7 @@ export default function FinanzasPage() {
       const transacciones = dataFinanzas.data || [];
       setTransacciones(transacciones);
       
-      // PaginaciÃƒÂ³n
+      // PaginaciÃƒÆ’Ã‚Â³n
       const total = transacciones.length;
       setTotalRegistros(total);
       if (total < 50) setTotalPaginas(pagina);
@@ -129,15 +129,15 @@ export default function FinanzasPage() {
     if (filtros.start) urlVentas += `&start=${filtros.start}`;
     if (filtros.end) urlVentas += `&end=${filtros.end}`;
     
-    console.log('Ã°Å¸â€Â Fetching Ventas:', urlVentas);
+    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â Fetching Ventas:', urlVentas);
     const resVentas = await fetch(urlVentas);
     const dataVentas = await resVentas.json();
-    console.log('Ã¢Å“â€¦ Ventas response:', dataVentas.data?.length || 0, 'registros');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Ventas response:', dataVentas.data?.length || 0, 'registros');
     
     let totalVentas = 0;
     if (dataVentas.success) {
       totalVentas = dataVentas.data.reduce((sum: number, v: any) => sum + (v.total || 0), 0);
-      console.log('Ã°Å¸â€™Â° Total ventas:', totalVentas);
+      console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â° Total ventas:', totalVentas);
     }
 
     // 3. Obtener Compras (para egresos reales)
@@ -145,15 +145,15 @@ export default function FinanzasPage() {
     if (filtros.start) urlCompras += `&start=${filtros.start}`;
     if (filtros.end) urlCompras += `&end=${filtros.end}`;
     
-    console.log('Ã°Å¸â€Â Fetching Compras:', urlCompras);
+    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â Fetching Compras:', urlCompras);
     const resCompras = await fetch(urlCompras);
     const dataCompras = await resCompras.json();
-    console.log('Ã¢Å“â€¦ Compras response:', dataCompras.data?.length || 0, 'registros');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Compras response:', dataCompras.data?.length || 0, 'registros');
     
     let totalCompras = 0;
     if (dataCompras.success) {
       totalCompras = dataCompras.data.reduce((sum: number, c: any) => sum + (c.total || 0), 0);
-      console.log('Ã°Å¸â€™Â° Total compras:', totalCompras);
+      console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â° Total compras:', totalCompras);
     }
 
     // 4. Calcular resumen REAL (igual que Reportes)
@@ -166,7 +166,7 @@ export default function FinanzasPage() {
     const impuestosCalc = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
     const retencionesCalc = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
     
-    // Desglose por mÃƒÂ©todo de pago desde ventas
+    // Desglose for mÃƒÆ’Ã‚Â©todo de pago desde ventas
     const desglosePagosCalc: Record<string, number> = {};
     if (dataVentas.success) {
       dataVentas.data.forEach((v: any) => {
@@ -176,7 +176,7 @@ export default function FinanzasPage() {
       });
     }
     
-    console.log('Ã°Å¸â€œÅ  CÃƒÂ¡lculo REAL (desde Ventas/Compras) - igual que Reportes:', {
+    console.log('ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â  CÃƒÆ’Ã‚Â¡lculo REAL (desde Ventas/Compras) - igual que Reportes:', {
       ingresosCalc,
       egresosCalc,
       saldoCalc,
@@ -194,7 +194,7 @@ export default function FinanzasPage() {
       desglosePagos: desglosePagosCalc
     });
 
-    // 5. Cuentas por Cobrar
+    // 5. Cuentas for Cobrar
     const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
     const creditosData = await creditosRes.json();
     if (creditosData.success) {
@@ -204,7 +204,7 @@ export default function FinanzasPage() {
       setCuentasPorCobrar(pendientes);
     }
 
-    // 6. Cuentas por Pagar
+    // 6. Cuentas for Pagar
     try {
       const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
       const comprasData = await comprasRes.json();
@@ -218,7 +218,7 @@ export default function FinanzasPage() {
       setCuentasPorPagar(0);
     }
 
-    // 7. CategorÃƒÂ­as y perÃƒÂ­odos
+    // 7. CategorÃƒÆ’Ã‚Â­as y perÃƒÆ’Ã‚Â­odos
     const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
@@ -228,7 +228,7 @@ export default function FinanzasPage() {
     if (perData.success) setPeriodos(perData.data || []);
 
   } catch (error) {
-    console.error('Ã¢ÂÅ’ Error al cargar datos:', error);
+    console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Error al cargar datos:', error);
   }
   setLoading(false);
 };
@@ -265,7 +265,7 @@ export default function FinanzasPage() {
         monto: 0,
         categoria_contable_id: "",
         descripcion: "",
-        fecha: new Date().toLocaleDateString("en-CA"),
+        fecha: new Date().toLocaleDateString("in-CA"),
         impuesto: 0,
         retencion: 0,
         metodo_pago: "",
@@ -277,7 +277,7 @@ export default function FinanzasPage() {
   };
 
   const eliminarTransaccion = async (id: string) => {
-    if (!confirm("Ã‚Â¿Eliminar esta transacciÃƒÂ³n?")) return;
+    if (!confirm("Ãƒâ€šÃ‚Â¿Eliminar esta transacciÃƒÆ’Ã‚Â³n?")) return;
     const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -311,14 +311,14 @@ export default function FinanzasPage() {
       "#": t.item || "",
       "Fecha": formatDate(t.fecha),
       "Tipo": t.tipo,
-      "CategorÃƒÂ­a": t.categorias_contables?.nombre || "",
-      "DescripciÃƒÂ³n": t.descripcion_resumida || t.descripcion || "",
-      "MÃƒÂ©todo de Pago": t.metodo_pago || "",
+      "CategorÃƒÆ’Ã‚Â­a": t.categorias_contables?.nombre || "",
+      "DescripciÃƒÆ’Ã‚Â³n": t.descripcion_resumida || t.descripcion || "",
+      "MÃƒÆ’Ã‚Â©todo de Pago": t.metodo_pago || "",
       "Cantidad": t.cantidad ?? 1,
       "Precio Unitario": t.precio_unitario ?? 0,
       "Subtotal": t.subtotal ?? 0,
       "IVA": t.iva || 0,
-      "RetenciÃƒÂ³n": t.retencion || 0,
+      "RetenciÃƒÆ’Ã‚Â³n": t.retencion || 0,
       "ICA": t.ica || 0,
       "Total": t.total ?? t.total_con_impuestos ?? 0,
     }));
@@ -339,7 +339,7 @@ export default function FinanzasPage() {
     if (data.success) {
       setFormCategoria({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
       cargarDatos();
-      alert("CategorÃƒÂ­a agregada");
+      alert("CategorÃƒÆ’Ã‚Â­a agregada");
     } else {
       alert(data.error);
     }
@@ -355,7 +355,7 @@ export default function FinanzasPage() {
     if (data.success) {
       setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
       cargarDatos();
-      alert("PerÃƒÂ­odo creado");
+      alert("PerÃƒÆ’Ã‚Â­odo creado");
     } else {
       alert(data.error);
     }
@@ -402,7 +402,7 @@ export default function FinanzasPage() {
       }
     } else if (tipo === "anual") {
       periodos.push({
-        nombre: `AÃƒÂ±o ${year}`,
+        nombre: `AÃƒÆ’Ã‚Â±o ${year}`,
         fecha_inicio: `${year}-01-01`,
         fecha_fin: `${year}-12-31`,
         tipo: "anual",
@@ -416,7 +416,7 @@ export default function FinanzasPage() {
       });
     });
     cargarDatos();
-    alert(`PerÃƒÂ­odos ${tipo} generados correctamente`);
+    alert(`PerÃƒÆ’Ã‚Â­odos ${tipo} generados correctamente`);
   };
 
   return (
@@ -436,7 +436,7 @@ export default function FinanzasPage() {
               monto: 0,
               categoria_contable_id: "",
               descripcion: "",
-              fecha: new Date().toLocaleDateString("en-CA"),
+              fecha: new Date().toLocaleDateString("in-CA"),
               impuesto: 0,
               retencion: 0,
               metodo_pago: "",
@@ -446,21 +446,21 @@ export default function FinanzasPage() {
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Registrar nuevo movimiento"
         >
-          <Plus className="w-4 h-4" /> Nueva TransacciÃƒÂ³n
+          <Plus className="w-4 h-4" /> Nueva TransacciÃƒÆ’Ã‚Â³n
         </button>
         <button
           onClick={() => setShowImportModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Plan de cuentas"
         >
-          <BookOpen className="w-4 h-4" /> CategorÃƒÂ­as
+          <BookOpen className="w-4 h-4" /> CategorÃƒÆ’Ã‚Â­as
         </button>
         <button
           onClick={() => setShowImportModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="PerÃƒÂ­odos fiscales"
+          title="PerÃƒÆ’Ã‚Â­odos fiscales"
         >
-          <Calendar className="w-4 h-4" /> PerÃƒÂ­odos
+          <Calendar className="w-4 h-4" /> PerÃƒÆ’Ã‚Â­odos
         </button>
         <button
           onClick={exportarExcel}
@@ -499,22 +499,22 @@ export default function FinanzasPage() {
           </div>
         </div>
 
-        {/* Cuentas por Cobrar / Pagar */}
+        {/* Cuentas for Cobrar / Pagar */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-blue-50 rounded-2xl p-4 shadow-sm border border-blue-200 text-center">
-            <p className="text-sm text-blue-700">Cuentas por Cobrar</p>
+            <p className="text-sm text-blue-700">Cuentas for Cobrar</p>
             <p className="text-2xl font-bold text-blue-600">${cuentasPorCobrar.toLocaleString()}</p>
           </div>
           <div className="bg-orange-50 rounded-2xl p-4 shadow-sm border border-orange-200 text-center">
-            <p className="text-sm text-orange-700">Cuentas por Pagar</p>
+            <p className="text-sm text-orange-700">Cuentas for Pagar</p>
             <p className="text-2xl font-bold text-orange-600">${cuentasPorPagar.toLocaleString()}</p>
           </div>
         </div>
 
-        {/* Desglose por mÃƒÂ©todo de pago */}
+        {/* Desglose for mÃƒÆ’Ã‚Â©todo de pago */}
         {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-            <h3 className="font-semibold text-stone-800 mb-2">Desglose por MÃƒÂ©todo de Pago</h3>
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose for MÃƒÆ’Ã‚Â©todo de Pago</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
@@ -540,11 +540,11 @@ export default function FinanzasPage() {
               <option value="egreso">Egresos</option>
             </select>
             <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todas las categorÃƒÂ­as</option>
+              <option value="">Todas las categorÃƒÆ’Ã‚Â­as</option>
               {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
             </select>
             <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todos los perÃƒÂ­odos</option>
+              <option value="">Todos los perÃƒÆ’Ã‚Â­odos</option>
               {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
             </select>
           </div>
@@ -553,7 +553,7 @@ export default function FinanzasPage() {
         {/* Tabla de movimientos */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <h3 className="font-semibold text-stone-800 mb-3">Movimientos</h3>
-          <div className="text-xs text-stone-400 mb-2">Ã°Å¸â€™Â¡ Desliza horizontalmente Ã¢â€ â€™ para ver todas las columnas</div>
+          <div className="text-xs text-stone-400 mb-2">ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¡ Desliza horizontalmente ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ para ver todas las columnas</div>
           <div className="overflow-x-auto" style={{ height: "420px", overflowY: "auto", border: "2px solid #3b82f6", borderRadius: "8px", padding: "4px" }}>
             <div style={{ minWidth: "1200px" }}>
               <table className="w-full text-sm" style={{ minWidth: "1200px" }}>
@@ -562,14 +562,14 @@ export default function FinanzasPage() {
                     <th className="text-left p-2 text-stone-700">#</th>
                     <th className="text-left p-2 text-stone-700">Fecha</th>
                     <th className="text-left p-2 text-stone-700">Tipo</th>
-                    <th className="text-left p-2 text-stone-700">CategorÃƒÂ­a</th>
-                    <th className="text-left p-2 text-stone-700">DescripciÃƒÂ³n</th>
-                    <th className="text-left p-2 text-stone-700">MÃƒÂ©todo de Pago</th>
+                    <th className="text-left p-2 text-stone-700">CategorÃƒÆ’Ã‚Â­a</th>
+                    <th className="text-left p-2 text-stone-700">DescripciÃƒÆ’Ã‚Â³n</th>
+                    <th className="text-left p-2 text-stone-700">MÃƒÆ’Ã‚Â©todo de Pago</th>
                     <th className="text-left p-2 text-stone-700">Cantidad</th>
                     <th className="text-left p-2 text-stone-700">Precio Unit.</th>
                     <th className="text-left p-2 text-stone-700">Subtotal</th>
                     <th className="text-left p-2 text-stone-700">IVA</th>
-                    <th className="text-left p-2 text-stone-700">RetenciÃƒÂ³n</th>
+                    <th className="text-left p-2 text-stone-700">RetenciÃƒÆ’Ã‚Â³n</th>
                     <th className="text-left p-2 text-stone-700">ICA</th>
                     <th className="text-left p-2 text-stone-700">Total</th>
                     <th className="text-left p-2 text-stone-700 whitespace-nowrap">Acciones</th>
@@ -617,10 +617,10 @@ export default function FinanzasPage() {
           </div>
         </div>
 
-        {/* Botones de paginaciÃƒÂ³n */}
+        {/* Botones de paginaciÃƒÆ’Ã‚Â³n */}
         <div className="flex justify-between items-center mt-6 bg-white p-4 rounded-2xl shadow-sm border border-stone-200">
           <div className="text-sm text-stone-600">
-            Mostrando hasta {transacciones.length} registros (pÃƒÂ¡gina {pagina})
+            Mostrando hasta {transacciones.length} registros (pÃƒÆ’Ã‚Â¡gina {pagina})
           </div>
           <div className="flex gap-2">
             <button
@@ -653,15 +653,15 @@ export default function FinanzasPage() {
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">#</span><span className="text-stone-800">{movimientoSeleccionado.item || "-"}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Fecha</span><span className="text-stone-800">{formatDate(movimientoSeleccionado.fecha)}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Tipo</span><span className="capitalize text-stone-800">{movimientoSeleccionado.tipo}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃƒÂ­a</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÂ³n</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÂ³n Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃƒÂ©todo de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">CategorÃƒÆ’Ã‚Â­a</span><span className="text-stone-800">{movimientoSeleccionado.categorias_contables?.nombre || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã‚Â³n</span><span className="text-stone-800">{movimientoSeleccionado.descripcion || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">DescripciÃƒÆ’Ã‚Â³n Resumida</span><span className="text-stone-800">{movimientoSeleccionado.descripcion_resumida || "-"}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">MÃƒÆ’Ã‚Â©todo de Pago</span><span className="text-stone-800">{movimientoSeleccionado.metodo_pago || "-"}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Cantidad</span><span className="text-stone-800">{movimientoSeleccionado.cantidad ?? 1}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Precio Unitario</span><span className="text-stone-800">${(movimientoSeleccionado.precio_unitario ?? 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Subtotal</span><span className="text-stone-800">${(movimientoSeleccionado.subtotal ?? 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">IVA</span><span className="text-stone-800">${(movimientoSeleccionado.iva || 0).toLocaleString()}</span></div>
-              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃƒÂ³n</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">RetenciÃƒÆ’Ã‚Â³n</span><span className="text-stone-800">${(movimientoSeleccionado.retencion || 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">ICA</span><span className="text-stone-800">${(movimientoSeleccionado.ica || 0).toLocaleString()}</span></div>
               <div className="grid grid-cols-2 gap-2 border-b py-2"><span className="font-semibold text-stone-800">Total</span><span className="font-bold text-emerald-600">${(movimientoSeleccionado.total ?? movimientoSeleccionado.total_con_impuestos ?? 0).toLocaleString()}</span></div>
             </div>
@@ -672,11 +672,11 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* Modal TransacciÃƒÂ³n */}
+      {/* Modal TransacciÃƒÆ’Ã‚Â³n */}
       {showModalTransaccion && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃƒÂ³n" : "Nueva TransacciÃƒÂ³n"}</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar TransacciÃƒÆ’Ã‚Â³n" : "Nueva TransacciÃƒÆ’Ã‚Â³n"}</h3>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-stone-700">Tipo</label>
@@ -690,14 +690,14 @@ export default function FinanzasPage() {
                 <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">CategorÃƒÂ­a contable</label>
+                <label className="block text-sm font-medium text-stone-700">CategorÃƒÆ’Ã‚Â­a contable</label>
                 <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">Seleccionar...</option>
                   {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">DescripciÃƒÂ³n</label>
+                <label className="block text-sm font-medium text-stone-700">DescripciÃƒÆ’Ã‚Â³n</label>
                 <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
@@ -709,18 +709,18 @@ export default function FinanzasPage() {
                 <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">RetenciÃƒÂ³n</label>
+                <label className="block text-sm font-medium text-stone-700">RetenciÃƒÆ’Ã‚Â³n</label>
                 <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">MÃƒÂ©todo de pago</label>
+                <label className="block text-sm font-medium text-stone-700">MÃƒÆ’Ã‚Â©todo de pago</label>
                 <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">No aplica</option>
                   <option value="Efectivo">Efectivo</option>
                   <option value="Nequi">Nequi</option>
                   <option value="Bancolombia">Bancolombia</option>
                   <option value="Daviplata">Daviplata</option>
-                  <option value="CrÃƒÂ©dito">CrÃƒÂ©dito</option>
+                  <option value="CrÃƒÆ’Ã‚Â©dito">CrÃƒÆ’Ã‚Â©dito</option>
                 </select>
               </div>
             </div>
@@ -732,7 +732,7 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* Modal CategorÃƒÂ­as */}
+      {/* Modal CategorÃƒÆ’Ã‚Â­as */}
       {showModalCategoria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -747,31 +747,31 @@ export default function FinanzasPage() {
                   <span className="text-xs text-stone-600">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃƒÂ­as</p>}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorÃƒÆ’Ã‚Â­as</p>}
             </div>
             <div className="mt-4 border-t pt-4">
               <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
               <div className="space-y-2">
-                <input type="text" placeholder="CÃƒÂ³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <input type="text" placeholder="CÃƒÆ’Ã‚Â³digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <select value={formCategoria.tipo} onChange={(e) => setFormCategoria({...formCategoria, tipo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm">
                   <option value="ingreso">Ingreso</option>
                   <option value="egreso">Egreso</option>
                   <option value="costo">Costo</option>
                 </select>
-                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃƒÂ­a</button>
+                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar CategorÃƒÆ’Ã‚Â­a</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal PerÃƒÂ­odos */}
+      {/* Modal PerÃƒÆ’Ã‚Â­odos */}
       {showModalPeriodo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">PerÃƒÂ­odos Fiscales</h3>
+              <h3 className="text-lg font-bold text-stone-800">PerÃƒÆ’Ã‚Â­odos Fiscales</h3>
               <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
@@ -781,10 +781,10 @@ export default function FinanzasPage() {
                   <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
-              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃƒÂ­odos.</p>}
+              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay perÃƒÆ’Ã‚Â­odos.</p>}
             </div>
             <div>
-              <h4 className="font-medium text-stone-700 mb-2">Generar perÃƒÂ­odos automÃƒÂ¡ticos</h4>
+              <h4 className="font-medium text-stone-700 mb-2">Generar perÃƒÆ’Ã‚Â­odos automÃƒÆ’Ã‚Â¡ticos</h4>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
                 <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
@@ -792,14 +792,14 @@ export default function FinanzasPage() {
                 <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
               </div>
               <div className="mt-4 border-t pt-4">
-                <h4 className="font-medium text-stone-700 mb-2">Crear perÃƒÂ­odo manual</h4>
+                <h4 className="font-medium text-stone-700 mb-2">Crear perÃƒÆ’Ã‚Â­odo manual</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <div className="flex gap-2">
                     <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                     <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   </div>
-                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃƒÂ­odo</button>
+                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear PerÃƒÆ’Ã‚Â­odo</button>
                 </div>
               </div>
             </div>

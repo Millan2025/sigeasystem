@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 // ============================================
-// CONFIGURACIÓN DE NEGOCIOS
+// CONFIGURACIÃ“N DE NEGOCIOS
 // ============================================
 // ============================================
 // TIPOS Y ESTADOS
@@ -30,12 +30,12 @@ const TIPOS_ORDEN = {
   pedido_tienda: { label: "Pedido Tienda", icon: Store, color: "bg-blue-100 text-blue-700 border-blue-300" },
   pedido_pos: { label: "Pedido POS", icon: ShoppingCart, color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
   surtir_vitrina: { label: "Surtir Vitrina", icon: Package, color: "bg-amber-100 text-amber-700 border-amber-300" },
-  produccion_planificada: { label: "Producción Planificada", icon: Calendar, color: "bg-purple-100 text-purple-700 border-purple-300" },
+  produccion_planificada: { label: "ProducciÃ³n Planificada", icon: Calendar, color: "bg-purple-100 text-purple-700 border-purple-300" },
 };
 
 const ESTADOS = {
   pendiente: { label: "Pendiente", icon: Clock, color: "bg-yellow-100 text-yellow-700" },
-  en_produccion: { label: "En Producción", icon: RefreshCw, color: "bg-blue-100 text-blue-700" },
+  en_produccion: { label: "in ProducciÃ³n", icon: RefreshCw, color: "bg-blue-100 text-blue-700" },
   finalizado: { label: "Finalizado", icon: CheckCircle, color: "bg-emerald-100 text-emerald-700" },
   entregado: { label: "Entregado", icon: Truck, color: "bg-stone-100 text-stone-600" },
 };
@@ -70,7 +70,7 @@ export default function ProduccionPage() {
 
   const esRestaurante = negocioSlug === "restaurante";
 
-  // ========== ESTADO DE ÓRDENES ==========
+  // ========== ESTADO DE Ã“RDENES ==========
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [loadingOrdenes, setLoadingOrdenes] = useState(true);
   const [showModalOrden, setShowImportModalOrden] = useState(false);
@@ -96,7 +96,7 @@ export default function ProduccionPage() {
   const [tab, setTab] = useState<"ordenes" | "jornada">("ordenes");
 
   // ============================================
-  // CARGA DE ÓRDENES (desde Supabase)
+  // CARGA DE Ã“RDENES (desde Supabase)
   // ============================================
   const cargarOrdenes = async () => {
     setLoadingOrdenes(true);
@@ -202,7 +202,7 @@ export default function ProduccionPage() {
           audioRef.current.play().catch(() => {});
         }
         setContadorNuevas((prev) => prev + 1);
-        setNotificacion(`📢 Nueva orden #${data.data.id.slice(0, 6)}`);
+        setNotificacion(`ðŸ“¢ Nueva orden #${data.data.id.slice(0, 6)}`);
         setTimeout(() => setNotificacion(null), 5000);
         setShowImportModalOrden(false);
         setNuevaOrden({
@@ -215,7 +215,7 @@ export default function ProduccionPage() {
         alert("Error al crear orden: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexión");
+      alert("Error de conexiÃ³n");
     }
   };
 
@@ -243,12 +243,12 @@ export default function ProduccionPage() {
       const data = await res.json();
       if (data.success) {
         cargarOrdenes();
-        // Si la orden llega a finalizado o entregado, se podría actualizar el pedido relacionado (opcional)
+        // if la orden llega a finalizado o entregado, se podrÃ­a actualizar el pedido relacionado (opcional)
       } else {
         alert("Error al actualizar estado: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexión");
+      alert("Error de conexiÃ³n");
     }
   };
 
@@ -307,7 +307,7 @@ export default function ProduccionPage() {
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-20">
         <BackButton />
         <h1 className="text-xl font-bold text-stone-800 flex-1">
-          Producción - {negocioSlug}
+          ProducciÃ³n - {negocioSlug}
         </h1>
 
         <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1">
@@ -317,7 +317,7 @@ export default function ProduccionPage() {
               tab === "ordenes" ? "bg-white shadow-sm text-stone-800" : "text-stone-600 hover:bg-stone-200"
             }`}
           >
-            Órdenes
+            Ã“rdenes
           </button>
           {esRestaurante && (
             <button
@@ -430,11 +430,11 @@ export default function ProduccionPage() {
             </div>
 
             {loadingOrdenes ? (
-              <div className="text-center py-12 text-stone-500">Cargando órdenes...</div>
+              <div className="text-center py-12 text-stone-500">Cargando Ã³rdenes...</div>
             ) : ordenesFiltradas.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
                 <ClipboardList className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-                <p className="text-stone-500">No hay órdenes en este estado.</p>
+                <p className="text-stone-500">No hay Ã³rdenes in este estado.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -465,17 +465,17 @@ export default function ProduccionPage() {
                       <div className="space-y-1 mb-2">
                         {orden.productos.map((p, i) => (
                           <div key={i} className="text-sm text-stone-700">
-                            {p.cantidad} × {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
+                            {p.cantidad} Ã— {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
                           </div>
                         ))}
                       </div>
 
                       {orden.nota && (
-                        <p className="text-xs text-stone-500 mb-2">📝 {orden.nota}</p>
+                        <p className="text-xs text-stone-500 mb-2">ðŸ“ {orden.nota}</p>
                       )}
 
                       <div className="flex items-center justify-between text-xs text-stone-400">
-                        <span>📅 {new Date(orden.creado_en).toLocaleString()}</span>
+                        <span>ðŸ“… {new Date(orden.creado_en).toLocaleString()}</span>
                         <span className={`px-2 py-0.5 rounded-full ${estadoInfo.color}`}>
                           <EstadoIcon className="w-3 h-3 inline mr-1" />
                           {estadoInfo.label}
@@ -504,7 +504,7 @@ export default function ProduccionPage() {
 
                       {vista === "admin" && (
                         <div className="mt-3 text-xs text-stone-400">
-                          {orden.producido_por && <span>👤 {orden.producido_por}</span>}
+                          {orden.producido_por && <span>ðŸ‘¤ {orden.producido_por}</span>}
                         </div>
                       )}
                     </div>
@@ -538,7 +538,7 @@ export default function ProduccionPage() {
               {loadingJornada ? (
                 <div className="text-center py-8 text-stone-500">Cargando...</div>
               ) : jornada.length === 0 ? (
-                <div className="text-center py-8 text-stone-500">No hay producción planificada para esta fecha</div>
+                <div className="text-center py-8 text-stone-500">No hay producciÃ³n planificada para esta fecha</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -594,7 +594,7 @@ export default function ProduccionPage() {
       {showModalOrden && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">Nueva Orden de Producción</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">Nueva Orden de ProducciÃ³n</h3>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-stone-700">Tipo de orden</label>
@@ -661,7 +661,7 @@ export default function ProduccionPage() {
                       }}
                       className="text-red-500 hover:bg-red-50 rounded-xl p-2"
                     >
-                      ×
+                      Ã—
                     </button>
                   </div>
                 ))}
@@ -737,7 +737,7 @@ export default function ProduccionPage() {
                     className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
                   />
                   <button onClick={() => eliminarJornada(idx)} className="text-red-500 hover:bg-red-50 rounded-xl p-2">
-                    ×
+                    Ã—
                   </button>
                 </div>
               ))}
