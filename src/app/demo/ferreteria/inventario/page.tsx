@@ -16,11 +16,11 @@ import {
 import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  panaderia: { titulo: "PanaderÃ­a DoÃ±a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "CarnicerÃ­a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "FerreterÃ­a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
@@ -50,7 +50,7 @@ export default function InventarioPage() {
     observaciones: "",
     unidad: "unidad",
     tipo_unidad: "unidad",
-    icono: "📦",
+    icono: "ðŸ“¦",
     sku: "",
     descripcion: "",
     fecha_caducidad: "",
@@ -142,7 +142,7 @@ export default function InventarioPage() {
         observaciones: "",
         unidad: "unidad",
         tipo_unidad: "unidad",
-        icono: "📦",
+        icono: "ðŸ“¦",
         sku: "",
         descripcion: "",
         fecha_caducidad: "",
@@ -161,16 +161,20 @@ export default function InventarioPage() {
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm("¿Eliminar este producto? También se eliminarán sus movimientos.")) return;
+    if (!confirm("Â¿Eliminar este producto? TambiÃ©n se eliminarÃ¡n sus movimientos.")) return;
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
-      cargarDatos();
-      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success) setProductos(d.data || []);
-        });
+      }, []);
+  useEffect(() => {
+    cargarDatos();
+    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setProductos(d.data || []);
+      })
+      .catch(() => setProductos([]));
+  }, [tenantId]);
     } else {
       alert(data.error || "Error al eliminar");
     }
@@ -190,7 +194,7 @@ export default function InventarioPage() {
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "📦",
+      icono: p.icono || "ðŸ“¦",
       sku: p.sku || "",
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
@@ -208,13 +212,13 @@ export default function InventarioPage() {
     const data = stock.map((p: any) => ({
       SKU: p.sku || "",
       Producto: p.nombre,
-      Descripción: p.descripcion || "",
-      Categoría: p.categoria || "",
+      DescripciÃ³n: p.descripcion || "",
+      CategorÃ­a: p.categoria || "",
       "Stock Actual": p.stock_actual,
-      "Stock Mínimo": p.stock_minimo || 0,
-      "Stock Máximo": p.stock_maximo || 0,
+      "Stock MÃ­nimo": p.stock_minimo || 0,
+      "Stock MÃ¡ximo": p.stock_maximo || 0,
       Unidad: p.unidad || "unidad",
-      Ubicación: p.ubicacion || "",
+      UbicaciÃ³n: p.ubicacion || "",
       "Fecha Caducidad": p.fecha_caducidad || "",
       Observaciones: p.observaciones || "",
     }));
@@ -258,7 +262,7 @@ export default function InventarioPage() {
       "unidad",
       "unidad",
       false,
-      "🍞",
+      "ðŸž",
       "Proveedor XYZ",
       "Producto estrella",
       "2026-07-15",
@@ -317,7 +321,7 @@ export default function InventarioPage() {
                 unidad: unidad?.trim() || "unidad",
                 tipo_unidad: tipo_unidad?.trim() || "unidad",
                 venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "si",
-                icono: icono?.trim() || "📦",
+                icono: icono?.trim() || "ðŸ“¦",
                 proveedor: proveedor?.trim() || "",
                 observaciones: observaciones?.trim() || "",
                 fecha_caducidad: fecha_caducidad?.trim() || null,
@@ -332,23 +336,27 @@ export default function InventarioPage() {
               errores.push(`${nombre}: ${result.error}`);
             }
           } catch (err) {
-            errores.push(`${nombre}: Error de conexión`);
+            errores.push(`${nombre}: Error de conexiÃ³n`);
           }
         }
 
         alert(
-          `✅ Productos importados: ${importados}
+          `âœ… Productos importados: ${importados}
 ` +
-          (errores.length > 0 ? `❌ Errores: ${errores.length}
+          (errores.length > 0 ? `âŒ Errores: ${errores.length}
 ${errores.join("
 ")}` : "")
         );
-        cargarDatos();
-        fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-          .then((r) => r.json())
-          .then((d) => {
-            if (d.success) setProductos(d.data || []);
-          });
+        }, []);
+  useEffect(() => {
+    cargarDatos();
+    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setProductos(d.data || []);
+      })
+      .catch(() => setProductos([]));
+  }, [tenantId]);
         setImportando(false);
       };
       reader.readAsArrayBuffer(file);
@@ -406,7 +414,7 @@ ${errores.join("
               observaciones: "",
               unidad: "unidad",
               tipo_unidad: "unidad",
-              icono: "📦",
+              icono: "ðŸ“¦",
               sku: "",
               descripcion: "",
               fecha_caducidad: "",
@@ -476,7 +484,7 @@ ${errores.join("
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
                   <th className="text-left p-2 text-stone-700">Unidad</th>
-                  <th className="text-left p-2 text-stone-700">Ubicación</th>
+                  <th className="text-left p-2 text-stone-700">UbicaciÃ³n</th>
                   <th className="text-left p-2 text-stone-700">Caducidad</th>
                   <th className="text-left p-2 text-stone-700">Acciones</th>
                 </tr>
@@ -520,7 +528,7 @@ ${errores.join("
         {/* Historial de movimientos (sin cambios) */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-stone-800">Últimos Movimientos</h2>
+            <h2 className="font-semibold text-stone-800">Ãšltimos Movimientos</h2>
             <select
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
@@ -661,7 +669,7 @@ ${errores.join("
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">SKU (Código de Barras)</label>
+                <label className="block text-sm font-medium text-stone-700">SKU (CÃ³digo de Barras)</label>
                 <input
                   type="text"
                   value={formProducto.sku}
@@ -680,7 +688,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Descripción</label>
+                <label className="block text-sm font-medium text-stone-700">DescripciÃ³n</label>
                 <input
                   type="text"
                   value={formProducto.descripcion}
@@ -690,7 +698,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
+                <label className="block text-sm font-medium text-stone-700">CategorÃ­a *</label>
                 <input
                   type="text"
                   value={formProducto.categoria}
@@ -726,10 +734,10 @@ ${errores.join("
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-600 mt-1">El stock se calcula automáticamente</p>
+                <p className="text-xs text-stone-600 mt-1">El stock se calcula automÃ¡ticamente</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
+                <label className="block text-sm font-medium text-stone-700">Stock mÃ­nimo</label>
                 <input
                   type="number"
                   value={formProducto.stock_minimo}
@@ -738,7 +746,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock máximo</label>
+                <label className="block text-sm font-medium text-stone-700">Stock mÃ¡ximo</label>
                 <input
                   type="number"
                   value={formProducto.stock_maximo}
@@ -799,7 +807,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Ubicación en almacén</label>
+                <label className="block text-sm font-medium text-stone-700">UbicaciÃ³n en almacÃ©n</label>
                 <input
                   type="text"
                   value={formProducto.ubicacion}
