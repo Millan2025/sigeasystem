@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -337,11 +337,8 @@ export default function InventarioPage() {
         }
 
         alert(
-          `✅ Productos importados: ${importados}
-` +
-          (errores.length > 0 ? `❌ Errores: ${errores.length}
-${errores.join("
-")}` : "")
+          `✅ Productos importados: ${importados}\n` +
+          (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
         );
         cargarDatos();
         fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)

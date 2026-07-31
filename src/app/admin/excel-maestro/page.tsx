@@ -11,46 +11,26 @@ export default function ExcelMasterPage() {
   function descargarPlantilla() {
     let csv = '\uFEFF'
     // SECCION 1: CONFIGURACION (14 campos)
-    csv += 'SECCION;TIPO_NEGOCIO;NOMBRE_NEGOCIO;LOGO_URL;MODULOS;TELEFONO;DIRECCION;HORARIO_APERTURA;HORARIO_CIERRE;MONEDA;GERENTE;EMAIL;PLAN;FECHA_CREACION
-'
-    csv += 'CONFIG;panaderia;Mi Negocio;https://ejemplo.com/logo.png;pos,inventario,finanzas,produccion,personal,pedidos,reportes,tienda;3001234567;Calle 123 #45-67;06:00;20:00;COP;Nombre Gerente;gerente@email.com;Free;2025-01-01
-
-'
+    csv += 'SECCION;TIPO_NEGOCIO;NOMBRE_NEGOCIO;LOGO_URL;MODULOS;TELEFONO;DIRECCION;HORARIO_APERTURA;HORARIO_CIERRE;MONEDA;GERENTE;EMAIL;PLAN;FECHA_CREACION'\n'
+    csv += 'CONFIG;panaderia;Mi Negocio;https://ejemplo.com/logo.png;pos,inventario,finanzas,produccion,personal,pedidos,reportes,tienda;3001234567;Calle 123 #45-67;06:00;20:00;COP;Nombre Gerente;gerente@email.com;Free;2025-01-01'\n\n'
     // SECCION 2: PRODUCTOS (12 campos)
-    csv += 'SECCION;SKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR;PROVEEDOR_TELEFONO
-'
-    csv += 'PRODUCTO;PAN-001;Pan Aliñado Familiar;5000;1800;50;SI;unidad;;Panaderia;Harinas El Trigo;3001234567
-'
-    csv += 'PRODUCTO;PAN-002;Pan Integral;4500;1600;40;SI;unidad;;Panaderia;Harinas El Trigo;3001234567
-'
-    csv += 'PRODUCTO;BEB-001;Café Tinto 7oz;1800;600;100;NO;unidad;;Bebidas;Café Colombiano;3009876543
-'
-    csv += 'PRODUCTO;VERD-001;Tomate Chonto;0;2500;10;NO;kg;5000;Verduras;Fruver El Campo;3004567890
-'
-    csv += 'PRODUCTO;VERD-002;Aguacate Hass;0;4000;15;NO;kg;8000;Verduras;Fruver El Campo;3004567890
-
-'
+    csv += 'SECCION;SKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEEDOR;PROVEEDOR_TELEFONO'\n'
+    csv += 'PRODUCTO;PAN-001;Pan Aliñado Familiar;5000;1800;50;SI;unidad;;Panaderia;Harinas El Trigo;3001234567'\n'
+    csv += 'PRODUCTO;PAN-002;Pan Integral;4500;1600;40;SI;unidad;;Panaderia;Harinas El Trigo;3001234567'\n'
+    csv += 'PRODUCTO;BEB-001;Café Tinto 7oz;1800;600;100;NO;unidad;;Bebidas;Café Colombiano;3009876543'\n'
+    csv += 'PRODUCTO;VERD-001;Tomate Chonto;0;2500;10;NO;kg;5000;Verduras;Fruver El Campo;3004567890'\n'
+    csv += 'PRODUCTO;VERD-002;Aguacate Hass;0;4000;15;NO;kg;8000;Verduras;Fruver El Campo;3004567890'\n\n'
     // SECCION 3: INGREDIENTES (5 campos)
-    csv += 'SECCION;PRODUCTO_SKU;INGREDIENTE_NOMBRE;CANTIDAD;UNIDAD
-'
-    csv += 'INGREDIENTE;PAN-001;Harina de Trigo;250;g
-'
-    csv += 'INGREDIENTE;PAN-001;Azucar Refinada;30;g
-'
-    csv += 'INGREDIENTE;PAN-001;Mantequilla;50;g
-'
-    csv += 'INGREDIENTE;PAN-001;Huevos;1;unidad
-
-'
+    csv += 'SECCION;PRODUCTO_SKU;INGREDIENTE_NOMBRE;CANTIDAD;UNIDAD'\n'
+    csv += 'INGREDIENTE;PAN-001;Harina de Trigo;250;g'\n'
+    csv += 'INGREDIENTE;PAN-001;Azucar Refinada;30;g'\n'
+    csv += 'INGREDIENTE;PAN-001;Mantequilla;50;g'\n'
+    csv += 'INGREDIENTE;PAN-001;Huevos;1;unidad'\n\n'
     // SECCION 4: EMPLEADOS (6 campos)
-    csv += 'SECCION;NOMBRE;CARGO;SALARIO;HORARIO;AUXILIO_TRANSPORTE
-'
-    csv += 'EMPLEADO;Carlos Gomez;Cajero;1423500;06:00-14:00;SI
-'
-    csv += 'EMPLEADO;Maria Lopez;Panadera;1500000;02:00-10:00;NO
-'
-    csv += 'EMPLEADO;Juan Perez;Repartidor;1300000;08:00-16:00;SI
-'
+    csv += 'SECCION;NOMBRE;CARGO;SALARIO;HORARIO;AUXILIO_TRANSPORTE'\n'
+    csv += 'EMPLEADO;Carlos Gomez;Cajero;1423500;06:00-14:00;SI'\n'
+    csv += 'EMPLEADO;Maria Lopez;Panadera;1500000;02:00-10:00;NO'\n'
+    csv += 'EMPLEADO;Juan Perez;Repartidor;1300000;08:00-16:00;SI'\n'
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -64,8 +44,7 @@ export default function ExcelMasterPage() {
     const reader = new FileReader()
     reader.onload = (ev) => {
       const text = ev.target?.result as string
-      const lines = text.split('
-')
+      const lines = text.split('\n')
       const logs: string[] = []
       let productos = 0, ingredientes = 0, empleados = 0
       

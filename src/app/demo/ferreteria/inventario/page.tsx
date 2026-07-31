@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -16,11 +16,11 @@ import {
 import * as XLSX from "xlsx";
 
 const NEGOCIOS = {
-  panaderia: { titulo: "PanaderÃ­a DoÃ±a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "CarnicerÃ­a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "FerreterÃ­a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
 };
 
@@ -50,7 +50,7 @@ export default function InventarioPage() {
     observaciones: "",
     unidad: "unidad",
     tipo_unidad: "unidad",
-    icono: "ðŸ“¦",
+    icono: "📦",
     sku: "",
     descripcion: "",
     fecha_caducidad: "",
@@ -63,16 +63,14 @@ export default function InventarioPage() {
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoriaNegocio = negocio?.categoria || "";
 
- // Cargar lista de productos para el selector de movimientos
-useEffect(() => {
-  cargarDatos();
-  fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-    .then((r) => r.json())
-    .then((d) => {
-      if (d.success) setProductos(d.data || []);
-    })
-    .catch(() => setProductos([]));
-}, [tenantId, categoriaNegocio]);
+  // Cargar lista de productos para el selector de movimientos
+  useEffect(() => {
+    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setProductos(d.data || []);
+      });
+  }, [tenantId, categoriaNegocio]);
 
   const cargarDatos = () => {
     setLoading(true);
@@ -144,7 +142,7 @@ useEffect(() => {
         observaciones: "",
         unidad: "unidad",
         tipo_unidad: "unidad",
-        icono: "ðŸ“¦",
+        icono: "📦",
         sku: "",
         descripcion: "",
         fecha_caducidad: "",
@@ -163,20 +161,16 @@ useEffect(() => {
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm("Â¿Eliminar este producto? TambiÃ©n se eliminarÃ¡n sus movimientos.")) return;
+    if (!confirm("¿Eliminar este producto? También se eliminarán sus movimientos.")) return;
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
-      }, []);
-  useEffect(() => {
-    cargarDatos();
-    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setProductos(d.data || []);
-      })
-      .catch(() => setProductos([]));
-  }, [tenantId]);
+      cargarDatos();
+      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success) setProductos(d.data || []);
+        });
     } else {
       alert(data.error || "Error al eliminar");
     }
@@ -196,7 +190,7 @@ useEffect(() => {
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "ðŸ“¦",
+      icono: p.icono || "📦",
       sku: p.sku || "",
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
@@ -214,13 +208,13 @@ useEffect(() => {
     const data = stock.map((p: any) => ({
       SKU: p.sku || "",
       Producto: p.nombre,
-      DescripciÃ³n: p.descripcion || "",
-      CategorÃ­a: p.categoria || "",
+      Descripción: p.descripcion || "",
+      Categoría: p.categoria || "",
       "Stock Actual": p.stock_actual,
-      "Stock MÃ­nimo": p.stock_minimo || 0,
-      "Stock MÃ¡ximo": p.stock_maximo || 0,
+      "Stock Mínimo": p.stock_minimo || 0,
+      "Stock Máximo": p.stock_maximo || 0,
       Unidad: p.unidad || "unidad",
-      UbicaciÃ³n: p.ubicacion || "",
+      Ubicación: p.ubicacion || "",
       "Fecha Caducidad": p.fecha_caducidad || "",
       Observaciones: p.observaciones || "",
     }));
@@ -264,7 +258,7 @@ useEffect(() => {
       "unidad",
       "unidad",
       false,
-      "ðŸž",
+      "🍞",
       "Proveedor XYZ",
       "Producto estrella",
       "2026-07-15",
@@ -323,7 +317,7 @@ useEffect(() => {
                 unidad: unidad?.trim() || "unidad",
                 tipo_unidad: tipo_unidad?.trim() || "unidad",
                 venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "si",
-                icono: icono?.trim() || "ðŸ“¦",
+                icono: icono?.trim() || "📦",
                 proveedor: proveedor?.trim() || "",
                 observaciones: observaciones?.trim() || "",
                 fecha_caducidad: fecha_caducidad?.trim() || null,
@@ -338,27 +332,20 @@ useEffect(() => {
               errores.push(`${nombre}: ${result.error}`);
             }
           } catch (err) {
-            errores.push(`${nombre}: Error de conexiÃ³n`);
+            errores.push(`${nombre}: Error de conexión`);
           }
         }
 
         alert(
-          `âœ… Productos importados: ${importados}
-` +
-          (errores.length > 0 ? `âŒ Errores: ${errores.length}
-${errores.join("
-")}` : "")
+          `✅ Productos importados: ${importados}\n` +
+          (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
         );
-        }, []);
-  useEffect(() => {
-    cargarDatos();
-    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setProductos(d.data || []);
-      })
-      .catch(() => setProductos([]));
-  }, [tenantId]);
+        cargarDatos();
+        fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) setProductos(d.data || []);
+          });
         setImportando(false);
       };
       reader.readAsArrayBuffer(file);
@@ -416,7 +403,7 @@ ${errores.join("
               observaciones: "",
               unidad: "unidad",
               tipo_unidad: "unidad",
-              icono: "ðŸ“¦",
+              icono: "📦",
               sku: "",
               descripcion: "",
               fecha_caducidad: "",
@@ -486,7 +473,7 @@ ${errores.join("
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
                   <th className="text-left p-2 text-stone-700">Unidad</th>
-                  <th className="text-left p-2 text-stone-700">UbicaciÃ³n</th>
+                  <th className="text-left p-2 text-stone-700">Ubicación</th>
                   <th className="text-left p-2 text-stone-700">Caducidad</th>
                   <th className="text-left p-2 text-stone-700">Acciones</th>
                 </tr>
@@ -530,7 +517,7 @@ ${errores.join("
         {/* Historial de movimientos (sin cambios) */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-stone-800">Ãšltimos Movimientos</h2>
+            <h2 className="font-semibold text-stone-800">Últimos Movimientos</h2>
             <select
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
@@ -671,7 +658,7 @@ ${errores.join("
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700">SKU (CÃ³digo de Barras)</label>
+                <label className="block text-sm font-medium text-stone-700">SKU (Código de Barras)</label>
                 <input
                   type="text"
                   value={formProducto.sku}
@@ -690,7 +677,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">DescripciÃ³n</label>
+                <label className="block text-sm font-medium text-stone-700">Descripción</label>
                 <input
                   type="text"
                   value={formProducto.descripcion}
@@ -700,7 +687,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">CategorÃ­a *</label>
+                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
                 <input
                   type="text"
                   value={formProducto.categoria}
@@ -736,10 +723,10 @@ ${errores.join("
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-600 mt-1">El stock se calcula automÃ¡ticamente</p>
+                <p className="text-xs text-stone-600 mt-1">El stock se calcula automáticamente</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock mÃ­nimo</label>
+                <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
                 <input
                   type="number"
                   value={formProducto.stock_minimo}
@@ -748,7 +735,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock mÃ¡ximo</label>
+                <label className="block text-sm font-medium text-stone-700">Stock máximo</label>
                 <input
                   type="number"
                   value={formProducto.stock_maximo}
@@ -809,7 +796,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">UbicaciÃ³n en almacÃ©n</label>
+                <label className="block text-sm font-medium text-stone-700">Ubicación en almacén</label>
                 <input
                   type="text"
                   value={formProducto.ubicacion}

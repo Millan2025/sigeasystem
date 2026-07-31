@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
@@ -39,7 +39,7 @@ const estadoInicialForm = {
 export default function InventarioPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();
+  const { tenant: tenantId } = useTenant();;
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
 
@@ -395,11 +395,8 @@ export default function InventarioPage() {
         }
 
         alert(
-          `✅ Productos importados: ${importados}
-` +
-          (errores.length > 0 ? `❌ Errores: ${errores.length}
-${errores.join("
-")}` : "")
+          `✅ Productos importados: ${importados}\n` +
+          (errores.length > 0 ? `❌ Errores: ${errores.length}\n${errores.join("\n")}` : "")
         );
         cargarDatos(true);
         recargarProductos();
@@ -919,8 +916,6 @@ ${errores.join("
     </div>
   );
 }
-
-
 
 
 
