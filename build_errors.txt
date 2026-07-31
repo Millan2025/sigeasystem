@@ -1,0 +1,156 @@
+﻿
+> sigea-system@0.1.0 build
+> next build --webpack
+
+Ôû▓ Next.js 16.2.9 (webpack)
+- Environments: .env.local
+
+node.exe : ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+En C:\Program Files\nodejs\npm.ps1: 29 Carácter: 3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ÔÜá The "middle...leware-to-proxy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: C:\Users\PC\PROYECTOS_IA\sigeasystem\node_modules\next-pwa\register.js
+> [PWA] Service worker: C:\Users\PC\PROYECTOS_IA\sigeasystem\public\sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+Failed to compile.
+
+./src/app/[slug]/personal/page.tsx
+Error:   x Unexpected character '\u{7}'
+    ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\[slug]\personal\page.tsx:65:1]
+ 62 |   const cargarDatos = () => {
+ 63 |     setLoading(true);
+ 64 |     const keyEmpleados = empleados_;
+ 65 |     const keyAsistencias = sistencias_;
+    :                            ^
+ 66 |     try {
+ 67 |       const storedEmpleados = localStorage.getItem(keyEmpleados);
+ 68 |       if (storedEmpleados) {
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/[slug]/personal/page.tsx
+
+./src/app/[slug]/pos/page.tsx
+Error:   x Unknown regular expression flags.
+    ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\[slug]\pos\page.tsx:42:1]
+ 39 |   // Cargar productos
+ 40 |   const cargarProductos = () => {
+ 41 |     setLoading(true);
+ 42 |     fetch(/api/products?tenant=)
+    :           ^^^^^^^^^^^^^
+ 43 |       .then((r) => r.json())
+ 44 |       .then((d) => {
+ 45 |         if (d.success) {
+    `----
+  x Expression expected
+    ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\[slug]\pos\page.tsx:42:1]
+ 39 |   // Cargar productos
+ 40 |   const cargarProductos = () => {
+ 41 |     setLoading(true);
+ 42 |     fetch(/api/products?tenant=)
+    :                                ^
+ 43 |       .then((r) => r.json())
+ 44 |       .then((d) => {
+ 45 |         if (d.success) {
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/[slug]/pos/page.tsx
+
+./src/app/admin/excel-maestro/page.tsx
+Error:   x Expected unicode escape
+    ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\admin\excel-maestro\page.tsx:14:1]
+ 11 |   function descargarPlantilla() {
+ 12 |     let csv = '\uFEFF'
+ 13 |     // SECCION 1: CONFIGURACION (14 campos)
+ 14 |     csv += 'SECCION;TIPO_NEGOCIO;NOMBRE_NEGOCIO;LOGO_URL;MODULOS;TELEFONO;DIRECCION;HORARIO_APERTURA;HORARIO_CIER
+RE;MONEDA;GERENTE;EMAIL;PLAN;FECHA_CREACION'\n'
+    :                                                                                                                  
+                                            ^
+ 15 |     csv += 'CONFIG;panaderia;Mi Negocio;https://ejemplo.com/logo.png;pos,inventario,finanzas,produccion,personal,
+pedidos,reportes,tienda;3001234567;Calle 123 #45-67;06:00;20:00;COP;Nombre 
+Gerente;gerente@email.com;Free;2025-01-01'\n\n'
+ 16 |     // SECCION 2: PRODUCTOS (12 campos)
+ 16 |     csv += 'SECCION;SKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEED
+OR;PROVEEDOR_TELEFONO'\n'
+    `----
+  x Expected ';', '}' or <eof>
+    ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\admin\excel-maestro\page.tsx:14:1]
+ 11 |   function descargarPlantilla() {
+ 12 |     let csv = '\uFEFF'
+ 13 |     // SECCION 1: CONFIGURACION (14 campos)
+ 14 |     csv += 'SECCION;TIPO_NEGOCIO;NOMBRE_NEGOCIO;LOGO_URL;MODULOS;TELEFONO;DIRECCION;HORARIO_APERTURA;HORARIO_CIER
+RE;MONEDA;GERENTE;EMAIL;PLAN;FECHA_CREACION'\n'
+    :     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    :                                                                                 `-- This is the expression part 
+of an expression statement
+ 15 |     csv += 'CONFIG;panaderia;Mi Negocio;https://ejemplo.com/logo.png;pos,inventario,finanzas,produccion,personal,
+pedidos,reportes,tienda;3001234567;Calle 123 #45-67;06:00;20:00;COP;Nombre 
+Gerente;gerente@email.com;Free;2025-01-01'\n\n'
+ 16 |     // SECCION 2: PRODUCTOS (12 campos)
+ 16 |     csv += 'SECCION;SKU;NOMBRE;PRECIO;COSTO;STOCK_INICIAL;ES_RECETA;UNIDAD_MEDIDA;PRECIO_POR_KG;CATEGORIA;PROVEED
+OR;PROVEEDOR_TELEFONO'\n'
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/admin/excel-maestro/page.tsx
+
+./src/app/demo/restaurante/compras/page.tsx
+Error:   x Expected ';', '}' or <eof>
+   ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\demo\restaurante\compras\page.tsx:3:1]
+ 1 | "use client";
+ 2 | 
+ 3 | `nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
+   : ^^^^^^^^^^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   :                         `-- This is the expression part of an expression statement
+ 4 | import { usePathname, useSearchParams } from "next/navigation";
+ 5 | import BackButton from "@/components/BackButton";
+ 6 | import Link from "next/link";
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/demo/restaurante/compras/page.tsx
+
+./src/app/demo/restaurante/creditos/page.tsx
+Error:   x Expected ';', '}' or <eof>
+   ,-[C:\Users\PC\PROYECTOS_IA\sigeasystem\src\app\demo\restaurante\creditos\page.tsx:3:1]
+ 1 | "use client";
+ 2 | 
+ 3 | `nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
+   : ^^^^^^^^^^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   :                         `-- This is the expression part of an expression statement
+ 4 | import { usePathname, useSearchParams } from "next/navigation";
+ 5 | import BackButton from "@/components/BackButton";
+ 6 | import Link from "next/link";
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/demo/restaurante/creditos/page.tsx
+
+
+> Build failed because of webpack errors
