@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
-import {
+`nimport { useTenant } from "@/hooks/useTenant";`nimport {
   ArrowLeft,
   RefreshCw,
   Plus,
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-// Formateador de fecha manual
+`nimport { useTenant } from "@/hooks/useTenant";`n// Formateador de fecha manual
 const formatDate = (fechaStr: string) => {
   if (!fechaStr) return "-";
   const partes = fechaStr.split("-");
@@ -28,7 +28,7 @@ const formatDate = (fechaStr: string) => {
 export default function FinanzasPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();;
+  const { tenant: tenantId } = useTenant();
   const negocioSlug = searchParams.get("slug") || "restaurante";
   const categoriaNegocio = "";
   const [transacciones, setTransacciones] = useState<any[]>([]);
