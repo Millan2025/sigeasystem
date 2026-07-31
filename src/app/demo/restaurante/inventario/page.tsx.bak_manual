@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,20 +16,37 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "PanaderÃ­a DoÃ±a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "CarnicerÃ­a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "FerreterÃ­a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+const estadoInicialForm = {
+  nombre: "",
+  categoria: "",
+  precio: 0,
+  precio_compra: 0,
+  stock: 0,
+  stock_minimo: 0,
+  stock_maximo: 0,
+  proveedor: "",
+  observaciones: "",
+  unidad: "unidad",
+  tipo_unidad: "unidad",
+  sku: "",
+  descripcion: "",
+  fecha_caducidad: "",
+  ubicacion: "",
+  imagen_url: "",
+  exento_iva: false,
 };
 
 export default function InventarioPage() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { tenant: tenantId } = useTenant();;
+  const negocioSlug = searchParams.get("slug") || "restaurante";
+  const categoriaNegocio = "";
+
   const [movimientos, setMovimientos] = useState([]);
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [showMovimientoModal, setShowMovimientoModal] = useState(false);
   const [showProductoModal, setShowProductoModal] = useState(false);
   const [formMovimiento, setFormMovimiento] = useState({ producto_id: "", tipo: "entrada", cantidad: 1, motivo: "" });
@@ -36,65 +54,89 @@ export default function InventarioPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [importando, setImportando] = useState(false);
-
   const [editandoProducto, setEditandoProducto] = useState<any>(null);
-  const [formProducto, setFormProducto] = useState({
-    nombre: "",
-    categoria: "",
-    precio: 0,
-    precio_compra: 0,
-    stock: 0,
-    stock_minimo: 0,
-    stock_maximo: 0,
-    proveedor: "",
-    observaciones: "",
-    unidad: "unidad",
-    tipo_unidad: "unidad",
-    icono: "ðŸ“¦",
-    sku: "",
-    descripcion: "",
-    fecha_caducidad: "",
-    ubicacion: "",
-  });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [formProducto, setFormProducto] = useState({ ...estadoInicialForm });
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[2] || "restaurante";
-  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
-  const categoriaNegocio = negocio?.categoria || "";
-
- // Cargar lista de productos para el selector de movimientos
-useEffect(() => {
-  cargarDatos();
-  fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-    .then((r) => r.json())
-    .then((d) => {
-      if (d.success) setProductos(d.data || []);
-    })
-    .catch(() => setProductos([]));
-}, [tenantId, categoriaNegocio]);
-
-  const cargarDatos = () => {
-    setLoading(true);
-    fetch(`/api/inventory?tenant=${tenantId}&stock=true`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setStock(d.data || []);
+  // Subir imagen (igual que antes)
+  const subirImagen = async () => {
+    if (!imageFile) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("tenant_id", tenantId);
+    try {
+      const res = await fetch("/api/upload/product-image", {
+        method: "POST",
+        body: formData,
       });
-
-    fetch(`/api/inventory?tenant=${tenantId}&limit=100`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setMovimientos(d.data || []);
-        setLoading(false);
-      });
+      const data = await res.json();
+      if (data.success) {
+        setFormProducto((prev) => ({ ...prev, imagen_url: data.url }));
+        setImageFile(null);
+        alert("âœ… Imagen subida correctamente");
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexiÃ³n");
+    }
+    setUploadingImage(false);
   };
 
+  // Cargar productos para selects
   useEffect(() => {
-    cargarDatos();
-  }, [tenantId]);
+    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setProductos(d.data || []);
+      });
+  }, [tenantId, categoriaNegocio]);
 
-  // Movimientos
+  // FunciÃ³n principal para cargar datos
+  const cargarDatos = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    setUpdating(true);
+    try {
+      const [stockRes, movRes] = await Promise.all([
+        fetch(`/api/inventory?tenant=${tenantId}&stock=true`),
+        fetch(`/api/inventory?tenant=${tenantId}&limit=100`),
+      ]);
+      const stockData = await stockRes.json();
+      const movData = await movRes.json();
+      if (stockData.success) setStock(stockData.data || []);
+      if (movData.success) setMovimientos(movData.data || []);
+      setLastUpdate(new Date());
+    } catch (e) {
+      console.error("Error cargando inventario:", e);
+    } finally {
+      if (showLoading) setLoading(false);
+      setUpdating(false);
+    }
+  };
+
+  // Carga inicial y polling cada 10 segundos
+  useEffect(() => {
+    cargarDatos(true);
+    console.log('ðŸ”„ Inventario: Iniciando polling cada 3 segundos');
+    const interval = setInterval(() => {
+        console.log('ðŸ”„ Inventario: Polling ejecutado');
+        cargarDatos(false);
+    }, 3000);
+    // Escuchar evento de actualizaciÃ³n desde pedidos
+    const handleInventoryUpdate = (event: CustomEvent) => {
+        console.log('ðŸ”„ Inventario: Evento inventory-updated recibido', event.detail);
+        cargarDatos(false);
+    };
+    window.addEventListener('inventory-updated', handleInventoryUpdate as EventListener);
+    return () => {
+        clearInterval(interval);
+        window.removeEventListener('inventory-updated', handleInventoryUpdate as EventListener);
+    };
+}, [tenantId]);
+
   const registrarMovimiento = async () => {
     const res = await fetch("/api/inventory", {
       method: "POST",
@@ -108,58 +150,100 @@ useEffect(() => {
     const data = await res.json();
     if (data.success) {
       setShowMovimientoModal(false);
-      cargarDatos();
+      cargarDatos(true);
       setFormMovimiento({ producto_id: "", tipo: "entrada", cantidad: 1, motivo: "" });
     } else {
       alert(data.error || "Error al registrar movimiento");
     }
   };
 
-  // CRUD Productos
   const guardarProducto = async () => {
     const url = "/api/products";
-    const method = editandoProducto ? "PUT" : "POST";
-    const body = editandoProducto
-      ? { ...formProducto, id: editandoProducto.id, tenant_id: tenantId }
-      : { ...formProducto, tenant_id: tenantId };
+
+    if (!editandoProducto) {
+      const body = { ...formProducto, tenant_id: tenantId };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowProductoModal(false);
+        resetFormulario();
+        cargarDatos(true);
+        recargarProductos();
+      } else {
+        alert(data.error || "Error al guardar producto");
+      }
+      return;
+    }
+
+    const cambios: any = { id: editandoProducto.id, tenant_id: tenantId };
+    let hayCambios = false;
+
+    const campos = [
+      "nombre", "categoria", "precio", "precio_compra", "stock",
+      "stock_minimo", "stock_maximo", "proveedor", "observaciones",
+      "unidad", "tipo_unidad", "sku", "descripcion",
+      "fecha_caducidad", "ubicacion", "imagen_url", "exento_iva"
+    ];
+
+    campos.forEach((campo) => {
+      const valorOriginal = (editandoProducto as any)[campo];
+      const valorForm = (formProducto as any)[campo];
+      const originalStr = valorOriginal !== undefined && valorOriginal !== null ? String(valorOriginal) : "";
+      const formStr = valorForm !== undefined && valorForm !== null ? String(valorForm) : "";
+      if (originalStr !== formStr) {
+        if (campo === "imagen_url") {
+          if (valorForm && valorForm !== valorOriginal) {
+            cambios[campo] = valorForm;
+            hayCambios = true;
+          }
+        } else {
+          if (valorForm !== undefined && valorForm !== null && valorForm !== "") {
+            cambios[campo] = valorForm;
+            hayCambios = true;
+          }
+        }
+      }
+    });
+
+    if (!hayCambios) {
+      alert("No se detectaron cambios.");
+      return;
+    }
+
+    console.log("ðŸ“¦ Cambios a enviar (solo campos modificados):", cambios);
 
     const res = await fetch(url, {
-      method,
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(cambios),
     });
     const data = await res.json();
     if (data.success) {
       setShowProductoModal(false);
-      setEditandoProducto(null);
-      setFormProducto({
-        nombre: "",
-        categoria: "",
-        precio: 0,
-        precio_compra: 0,
-        stock: 0,
-        stock_minimo: 0,
-        stock_maximo: 0,
-        proveedor: "",
-        observaciones: "",
-        unidad: "unidad",
-        tipo_unidad: "unidad",
-        icono: "ðŸ“¦",
-        sku: "",
-        descripcion: "",
-        fecha_caducidad: "",
-        ubicacion: "",
-      });
-      cargarDatos();
-      // Recargar lista de productos para el selector
-      fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success) setProductos(d.data || []);
-        });
+      resetFormulario();
+      cargarDatos(true);
+      recargarProductos();
     } else {
       alert(data.error || "Error al guardar producto");
     }
+  };
+
+  const resetFormulario = () => {
+    setEditandoProducto(null);
+    setFormProducto({ ...estadoInicialForm });
+    setImageFile(null);
+  };
+
+  const recargarProductos = () => {
+    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setProductos(d.data || []);
+      });
   };
 
   const eliminarProducto = async (id: string) => {
@@ -167,16 +251,8 @@ useEffect(() => {
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
-      }, []);
-  useEffect(() => {
-    cargarDatos();
-    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setProductos(d.data || []);
-      })
-      .catch(() => setProductos([]));
-  }, [tenantId]);
+      cargarDatos(true);
+      recargarProductos();
     } else {
       alert(data.error || "Error al eliminar");
     }
@@ -185,8 +261,8 @@ useEffect(() => {
   const editarProducto = (p: any) => {
     setEditandoProducto(p);
     setFormProducto({
-      nombre: p.nombre,
-      categoria: p.categoria,
+      nombre: p.nombre || "",
+      categoria: p.categoria || "",
       precio: p.precio || 0,
       precio_compra: p.precio_compra || 0,
       stock: p.stock || 0,
@@ -196,16 +272,16 @@ useEffect(() => {
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "ðŸ“¦",
       sku: p.sku || "",
       descripcion: p.descripcion || "",
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
+      imagen_url: p.imagen_url || "",
+      exento_iva: p.exento_iva || false,
     });
     setShowProductoModal(true);
   };
 
-  // Exportar / Importar
   const exportarInventario = () => {
     if (stock.length === 0) {
       alert("No hay datos para exportar");
@@ -223,6 +299,8 @@ useEffect(() => {
       UbicaciÃ³n: p.ubicacion || "",
       "Fecha Caducidad": p.fecha_caducidad || "",
       Observaciones: p.observaciones || "",
+      Imagen: p.imagen_url || "",
+      "Exento IVA": p.exento_iva ? "SÃ­" : "No",
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -233,42 +311,15 @@ useEffect(() => {
 
   const descargarPlantilla = () => {
     const columnas = [
-      "sku",
-      "nombre",
-      "descripcion",
-      "categoria",
-      "precio",
-      "precio_compra",
-      "stock",
-      "stock_minimo",
-      "stock_maximo",
-      "unidad",
-      "tipo_unidad",
-      "venta_por_peso",
-      "icono",
-      "proveedor",
-      "observaciones",
-      "fecha_caducidad",
-      "ubicacion",
+      "sku", "nombre", "descripcion", "categoria", "precio", "precio_compra",
+      "stock", "stock_minimo", "stock_maximo", "unidad", "tipo_unidad",
+      "venta_por_peso", "proveedor", "observaciones",
+      "fecha_caducidad", "ubicacion", "imagen_url", "exento_iva",
     ];
     const filaEjemplo = [
-      "PAN-001",
-      "Pan de Sal",
-      "Pan tradicional de sal, 250g",
-      "Panaderia",
-      2500,
-      1800,
-      100,
-      10,
-      200,
-      "unidad",
-      "unidad",
-      false,
-      "ðŸž",
-      "Proveedor XYZ",
-      "Producto estrella",
-      "2026-07-15",
-      "Estante A1",
+      "PAN-001", "Pan de Sal", "Pan tradicional de sal, 250g", "Panaderia",
+      2500, 1800, 100, 10, 200, "unidad", "unidad", false, "Proveedor XYZ",
+      "Producto estrella", "2026-07-15", "Estante A1", "", false,
     ];
     const data = [columnas, filaEjemplo];
     const wb = XLSX.utils.book_new();
@@ -303,8 +354,8 @@ useEffect(() => {
           const [
             sku, nombre, descripcion, categoria, precio, precio_compra,
             stock, stock_minimo, stock_maximo, unidad, tipo_unidad,
-            venta_por_peso, icono, proveedor, observaciones,
-            fecha_caducidad, ubicacion
+            venta_por_peso, proveedor, observaciones,
+            fecha_caducidad, ubicacion, imagen_url, exento_iva
           ] = row;
           try {
             const res = await fetch("/api/products", {
@@ -322,12 +373,13 @@ useEffect(() => {
                 stock_maximo: parseInt(stock_maximo) || 0,
                 unidad: unidad?.trim() || "unidad",
                 tipo_unidad: tipo_unidad?.trim() || "unidad",
-                venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "si",
-                icono: icono?.trim() || "ðŸ“¦",
+                venta_por_peso: venta_por_peso === true || venta_por_peso === "true" || venta_por_peso === "if",
                 proveedor: proveedor?.trim() || "",
                 observaciones: observaciones?.trim() || "",
                 fecha_caducidad: fecha_caducidad?.trim() || null,
                 ubicacion: ubicacion?.trim() || "",
+                imagen_url: imagen_url?.trim() || null,
+                exento_iva: exento_iva === true || exento_iva === "true" || exento_iva === "if",
                 tenant_id: tenantId,
               }),
             });
@@ -349,16 +401,8 @@ useEffect(() => {
 ${errores.join("
 ")}` : "")
         );
-        }, []);
-  useEffect(() => {
-    cargarDatos();
-    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setProductos(d.data || []);
-      })
-      .catch(() => setProductos([]));
-  }, [tenantId]);
+        cargarDatos(true);
+        recargarProductos();
         setImportando(false);
       };
       reader.readAsArrayBuffer(file);
@@ -368,7 +412,7 @@ ${errores.join("
     }
   };
 
-  // Filtros
+  // Filtros y render (igual que antes, pero con indicador de actualizaciÃ³n)
   const stockFiltrado = stock.filter((p: any) =>
     p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -387,14 +431,13 @@ ${errores.join("
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
-          <ArrowLeft className="w-5 h-5 text-stone-700" />
-        </Link>
-        <h1 className="text-xl font-bold text-stone-800">Inventario - {negocio?.titulo}</h1>
+        <BackButton />
+        <h1 className="text-xl font-bold text-stone-800">Inventario</h1>
         <div className="flex-1"></div>
-        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5 text-stone-700" />
+        <button onClick={() => cargarDatos(true)} className="p-2 hover:bg-stone-100 rounded-xl" title="Actualizar ahora">
+          <RefreshCw className={`w-5 h-5 text-stone-700 ${updating ? 'animate-spin' : ''}`} />
         </button>
+        {updating && <span className="text-xs text-stone-500">Actualizando...</span>}
         <button
           onClick={() => setShowMovimientoModal(true)}
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -404,24 +447,7 @@ ${errores.join("
         <button
           onClick={() => {
             setEditandoProducto(null);
-            setFormProducto({
-              nombre: "",
-              categoria: "",
-              precio: 0,
-              precio_compra: 0,
-              stock: 0,
-              stock_minimo: 0,
-              stock_maximo: 0,
-              proveedor: "",
-              observaciones: "",
-              unidad: "unidad",
-              tipo_unidad: "unidad",
-              icono: "ðŸ“¦",
-              sku: "",
-              descripcion: "",
-              fecha_caducidad: "",
-              ubicacion: "",
-            });
+            setFormProducto({ ...estadoInicialForm });
             setShowProductoModal(true);
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -463,71 +489,84 @@ ${errores.join("
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Tabla de stock actual con nuevas columnas */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6 overflow-x-auto">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="font-semibold text-stone-800">Stock Actual</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <input
                 type="text"
-                placeholder="Buscar por SKU o nombre..."
+                placeholder="Buscar for SKU o nombre..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
               />
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-stone-50">
-                <tr>
-                  <th className="text-left p-2 text-stone-700">SKU</th>
-                  <th className="text-left p-2 text-stone-700">Producto</th>
-                  <th className="text-left p-2 text-stone-700">Stock</th>
-                  <th className="text-left p-2 text-stone-700">Unidad</th>
-                  <th className="text-left p-2 text-stone-700">UbicaciÃ³n</th>
-                  <th className="text-left p-2 text-stone-700">Caducidad</th>
-                  <th className="text-left p-2 text-stone-700">Acciones</th>
+          <table className="w-full text-sm min-w-[1200px]">
+            <thead className="bg-stone-50">
+              <tr>
+                <th className="text-left p-2 text-stone-700">Imagen</th>
+                <th className="text-left p-2 text-stone-700">SKU</th>
+                <th className="text-left p-2 text-stone-700">Nombre</th>
+                <th className="text-left p-2 text-stone-700">DescripciÃ³n</th>
+                <th className="text-left p-2 text-stone-700">CategorÃ­a</th>
+                <th className="text-left p-2 text-stone-700">Precio</th>
+                <th className="text-left p-2 text-stone-700">Stock</th>
+                <th className="text-left p-2 text-stone-700">Unidad</th>
+                <th className="text-left p-2 text-stone-700">Proveedor</th>
+                <th className="text-left p-2 text-stone-700">UbicaciÃ³n</th>
+                <th className="text-left p-2 text-stone-700">Caducidad</th>
+                <th className="text-left p-2 text-stone-700">Exento IVA</th>
+                <th className="text-left p-2 text-stone-700">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stockFiltrado.map((p: any) => (
+                <tr key={p.id} className="border-b border-stone-100">
+                  <td className="p-2">
+                    {p.imagen_url ? (
+                      <img src={p.imagen_url} alt={p.nombre} className="w-12 h-12 object-cover rounded-lg" />
+                    ) : (
+                      <span className="text-2xl">ðŸ“¦</span>
+                    )}
+                  </td>
+                  <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
+                  <td className="p-2 text-stone-800 font-medium">{p.nombre}</td>
+                  <td className="p-2 text-stone-600 text-xs truncate max-w-xs">{p.descripcion || ""}</td>
+                  <td className="p-2 text-stone-600">{p.categoria || ""}</td>
+                  <td className="p-2 text-stone-800">${p.precio?.toLocaleString()}</td>
+                  <td className="p-2 font-semibold text-stone-800">{p.stock_actual}</td>
+                  <td className="p-2 text-stone-600">{p.unidad || "unidad"}</td>
+                  <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
+                  <td className="p-2 text-stone-600">{p.ubicacion || "-"}</td>
+                  <td className="p-2 text-stone-600">
+                    {p.fecha_caducidad ? new Date(p.fecha_caducidad).toLocaleDateString() : "-"}
+                  </td>
+                  <td className="p-2 text-stone-600">
+                    {p.exento_iva ? "SÃ­" : "No"}
+                  </td>
+                  <td className="p-2 flex gap-2">
+                    <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
+                      <Edit className="w-4 h-4 text-stone-600" />
+                    </button>
+                    <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 rounded">
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {stockFiltrado.map((p: any) => (
-                  <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
-                    <td className="p-2 text-stone-800 font-medium">
-                      <div>{p.nombre}</div>
-                      <div className="text-xs text-stone-600 truncate max-w-xs">{p.descripcion || ""}</div>
-                    </td>
-                    <td className="p-2 font-semibold text-stone-800">{p.stock_actual}</td>
-                    <td className="p-2 text-stone-600">{p.unidad || "unidad"}</td>
-                    <td className="p-2 text-stone-600">{p.ubicacion || "-"}</td>
-                    <td className="p-2 text-stone-600">
-                      {p.fecha_caducidad ? new Date(p.fecha_caducidad).toLocaleDateString() : "-"}
-                    </td>
-                    <td className="p-2 flex gap-2">
-                      <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
-                        <Edit className="w-4 h-4 text-stone-600" />
-                      </button>
-                      <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 rounded">
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {stockFiltrado.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="p-4 text-center text-stone-500">
-                      No hay productos
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              ))}
+              {stockFiltrado.length === 0 && (
+                <tr>
+                  <td colSpan={13} className="p-4 text-center text-stone-500">
+                    No hay productos
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
-        {/* Historial de movimientos (sin cambios) */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-stone-800">Ãšltimos Movimientos</h2>
@@ -588,7 +627,7 @@ ${errores.join("
         </div>
       </div>
 
-      {/* Modal Movimiento (sin cambios) */}
+      {/* Modales (igual que antes) */}
       {showMovimientoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -662,7 +701,6 @@ ${errores.join("
         </div>
       )}
 
-      {/* Modal Producto (con todos los nuevos campos) */}
       {showProductoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -670,6 +708,35 @@ ${errores.join("
               {editandoProducto ? `Editar producto: ${editandoProducto.nombre}` : "Nuevo Producto"}
             </h3>
             <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Imagen del producto</label>
+                {formProducto.imagen_url && (
+                  <div className="mb-2">
+                    <img src={formProducto.imagen_url} alt="Producto" className="w-24 h-24 object-cover rounded-xl" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
+                />
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={subirImagen}
+                    disabled={uploadingImage}
+                    className="mt-2 bg-blue-500 text-white px-4 py-1 rounded-xl text-sm hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {uploadingImage ? "Subiendo..." : "Subir imagen"}
+                  </button>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-stone-700">SKU (CÃ³digo de Barras)</label>
                 <input
@@ -809,7 +876,7 @@ ${errores.join("
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">UbicaciÃ³n en almacÃ©n</label>
+                <label className="block text-sm font-medium text-stone-700">UbicaciÃ³n in almacÃ©n</label>
                 <input
                   type="text"
                   value={formProducto.ubicacion}
@@ -818,15 +885,14 @@ ${errores.join("
                   placeholder="Estante A1, Pasillo 2"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Icono (emoji)</label>
+              <div className="flex items-center gap-2">
                 <input
-                  type="text"
-                  value={formProducto.icono}
-                  onChange={(e) => setFormProducto({ ...formProducto, icono: e.target.value })}
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
-                  maxLength={2}
+                  type="checkbox"
+                  checked={formProducto.exento_iva || false}
+                  onChange={(e) => setFormProducto({ ...formProducto, exento_iva: e.target.checked })}
+                  className="w-4 h-4 rounded border-stone-300"
                 />
+                <label className="text-sm font-medium text-stone-700">Exento de IVA</label>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
@@ -841,9 +907,10 @@ ${errores.join("
               </button>
               <button
                 onClick={guardarProducto}
-                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl"
+                disabled={uploadingImage}
+                className={`flex-1 py-2 rounded-xl text-white ${uploadingImage ? 'bg-stone-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'}`}
               >
-                Guardar
+                {uploadingImage ? 'Subiendo imagen...' : 'Guardar'}
               </button>
             </div>
           </div>
@@ -852,3 +919,8 @@ ${errores.join("
     </div>
   );
 }
+
+
+
+
+
