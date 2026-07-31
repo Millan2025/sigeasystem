@@ -1,0 +1,11 @@
+import NegocioHome from "@/components/NegocioHome";
+
+interface Props {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ tenant?: string }>
+}
+
+export default async function NegocioPage({ params, searchParams }: Props) {
+  const { slug } = await params;
+  return <NegocioHome negocioSlug={slug} />;
+}
