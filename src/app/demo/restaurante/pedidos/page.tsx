@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -31,7 +31,7 @@ const ESTADOS = {
   pagado: { label: "Pagado", color: "bg-green-100 text-green-700" },
   confirmado: { label: "Confirmado", color: "bg-blue-100 text-blue-700" },
   preparando: { label: "Preparando", color: "bg-purple-100 text-purple-700" },
-  en_camino: { label: "in camino", color: "bg-cyan-100 text-cyan-700" },
+  en_camino: { label: "En camino", color: "bg-cyan-100 text-cyan-700" },
   entregado: { label: "Entregado", color: "bg-emerald-100 text-emerald-700" },
 };
 
@@ -81,19 +81,19 @@ export default function PedidosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`âœ… Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
+        setMensaje(`✅ Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
         setTimeout(() => setMensaje(""), 5000);
         cargarPedidos(true);
       } else {
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexiÃ³n");
+      alert("Error de conexión");
     }
   };
 
   const confirmarPedido = async (id: string) => {
-    if (!confirm("Â¿Confirmar este pedido? Se descontarÃ¡ stock y se registrarÃ¡ in finanzas.")) return;
+    if (!confirm("¿Confirmar este pedido? Se descontará stock y se registrará en finanzas.")) return;
     try {
       const res = await fetch(`/api/pedidos/${id}/confirmar`, {
         method: "PUT",
@@ -102,39 +102,39 @@ export default function PedidosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje("âœ… Pedido confirmado correctamente.");
+        setMensaje("✅ Pedido confirmado correctamente.");
         setTimeout(() => setMensaje(""), 5000);
         cargarPedidos(true);
       } else {
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexiÃ³n");
+      alert("Error de conexión");
     }
   };
 
   const cancelarPedido = async (id: string) => {
-    if (!confirm('Â¿EstÃ¡s seguro de cancelar este pedido? Se revertirÃ¡ inventario y finanzas.')) return;
+    if (!confirm('¿Estás seguro de cancelar este pedido? Se revertirá inventario y finanzas.')) return;
     try {
       const res = await fetch(`/api/pedidos/${id}/cancelar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          motivo: 'Cancelado for usuario',
+          motivo: 'Cancelado por usuario',
           usuario_id: 'sistema'
         })
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje('âœ… Pedido cancelado exitosamente');
+        setMensaje('✅ Pedido cancelado exitosamente');
         setTimeout(() => setMensaje(''), 5000);
         cargarPedidos(true);
       } else {
-        alert('âŒ Error: ' + (data.error || 'Error al cancelar'));
+        alert('❌ Error: ' + (data.error || 'Error al cancelar'));
       }
     } catch (error) {
       console.error(error);
-      alert('âŒ Error al cancelar pedido');
+      alert('❌ Error al cancelar pedido');
     }
   };
 
@@ -191,7 +191,7 @@ export default function PedidosPage() {
         ) : pedidosFiltrados.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
             <ShoppingBag className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-            <p className="text-stone-500">No hay pedidos in este estado.</p>
+            <p className="text-stone-500">No hay pedidos en este estado.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -209,21 +209,21 @@ export default function PedidosPage() {
                     </span>
                   </div>
                   <p className="text-sm text-stone-700 font-medium">{pedido.cliente || "Cliente"}</p>
-                  <p className="text-sm text-stone-500">ðŸ“¦ {pedido.items?.length || 0} productos</p>
-                  <p className="text-sm text-stone-500">ðŸ’° ${pedido.total?.toLocaleString()}</p>
+                  <p className="text-sm text-stone-500">📦 {pedido.items?.length || 0} productos</p>
+                  <p className="text-sm text-stone-500">💰 ${pedido.total?.toLocaleString()}</p>
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
-                  {pedido.direccion && <p className="text-xs text-stone-400">ðŸ“ {pedido.direccion}</p>}
-                  {pedido.observaciones && <p className="text-xs text-stone-400">ðŸ“ {pedido.observaciones}</p>}
+                  {pedido.direccion && <p className="text-xs text-stone-400">📍 {pedido.direccion}</p>}
+                  {pedido.observaciones && <p className="text-xs text-stone-400">📝 {pedido.observaciones}</p>}
 
                   <div className="mt-2 text-xs text-stone-600 border-t pt-2">
                     {pedido.items?.slice(0, 2).map((item, idx) => (
                       <div key={idx} className="flex justify-between">
-                        <span>{item.cantidad} Ã— {item.nombre}</span>
+                        <span>{item.cantidad} × {item.nombre}</span>
                         <span>${(item.cantidad * item.precio).toLocaleString()}</span>
                       </div>
                     ))}
                     {pedido.items?.length > 2 && (
-                      <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} mÃ¡s</div>
+                      <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} más</div>
                     )}
                   </div>
 
@@ -299,8 +299,8 @@ export default function PedidosPage() {
             <p className="text-sm text-stone-600">Fecha: {new Date(detallePedido.created_at).toLocaleString()}</p>
             <p className="text-sm text-stone-600">Pago: {detallePedido.metodo_pago}</p>
             <p className="text-sm text-stone-600">Estado: {ESTADOS[detallePedido.estado as keyof typeof ESTADOS]?.label || detallePedido.estado}</p>
-            {detallePedido.direccion && <p className="text-sm text-stone-600">DirecciÃ³n: {detallePedido.direccion}</p>}
-            {detallePedido.telefono && <p className="text-sm text-stone-600">TelÃ©fono: {detallePedido.telefono}</p>}
+            {detallePedido.direccion && <p className="text-sm text-stone-600">Dirección: {detallePedido.direccion}</p>}
+            {detallePedido.telefono && <p className="text-sm text-stone-600">Teléfono: {detallePedido.telefono}</p>}
             {detallePedido.observaciones && <p className="text-sm text-stone-600">Observaciones: {detallePedido.observaciones}</p>}
 
             <div className="mt-3 border-t pt-3">
@@ -308,7 +308,7 @@ export default function PedidosPage() {
               <div className="space-y-1 mt-1">
                 {detallePedido.items?.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm border-b border-stone-100 py-1 items-center">
-                    <span>{item.cantidad} Ã— {item.nombre}</span>
+                    <span>{item.cantidad} × {item.nombre}</span>
                     <span className="text-xs">Unit: ${item.precio?.toLocaleString()}</span>
                     <span className="font-bold">Subtotal: ${(item.cantidad * item.precio).toLocaleString()}</span>
                   </div>
@@ -331,6 +331,3 @@ export default function PedidosPage() {
     </div>
   );
 }
-
-
-
