@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -19,16 +19,22 @@ import {
   ArrowRight,
   ShoppingBag,
   Receipt,
+  MapPin,
+  Mail,
+  Globe,
 } from "lucide-react";
+
+const SLOGAN = "DONDE EL PAN TIENE HISTORIA Y SABOR";
+const SITIO_WEB = "https://mobirisesite.com";
 
 const beneficiosPorModulo: Record<string, { titulo: string; icono: string; beneficios: string[]; color: string }> = {
   pos: { titulo: "Punto de Venta Inteligente", icono: "💰", beneficios: ["Productos por peso", "Cobro: Efectivo, Nequi, Daviplata", "Búsqueda rápida", "Descuento automático de inventario"], color: "bg-emerald-500" },
-  produccion: { titulo: "Producción y Recetas", icono: "🏭", beneficios: ["Fichas técnicas", "Food cost", "Cálculo automático", "Órdenes de producción"], color: "bg-lime-500" },
+  produccion: { titulo: "Producción y Recetas", icono: "🍞", beneficios: ["Fichas técnicas", "Food cost", "Cálculo automático", "Órdenes de producción"], color: "bg-lime-500" },
   inventario: { titulo: "Inventario Inteligente", icono: "📦", beneficios: ["Control de stock", "Alarmas", "Predicción de agotamiento", "Múltiples unidades"], color: "bg-amber-500" },
   personal: { titulo: "Gestión de Personal", icono: "👥", beneficios: ["Registro de empleados", "Control de asistencia", "Nómina", "Desprendible individual"], color: "bg-purple-500" },
   pedidos: { titulo: "Pedidos y Domicilios", icono: "🛵", beneficios: ["Tus clientes compran desde la app", "Notificaciones", "Asignas repartidor", "Seguimiento"], color: "bg-sky-500" },
   reportes: { titulo: "Reportes y Estadísticas", icono: "📈", beneficios: ["Ventas por hora", "Top productos", "Márgenes", "Gráficos"], color: "bg-rose-500" },
-  finanzas: { titulo: "Finanzas y Contabilidad", icono: "🏦", beneficios: ["Estado de Resultados", "Balance General", "Libro Diario", "Cierre de caja"], color: "bg-teal-500" },
+  finanzas: { titulo: "Finanzas y Contabilidad", icono: "🦄", beneficios: ["Estado de Resultados", "Balance General", "Libro Diario", "Cierre de caja"], color: "bg-teal-500" },
   tienda: { titulo: "Tienda Online", icono: "🛒", beneficios: ["Catálogo actualizado", "Búsqueda", "Carrito", "Checkout"], color: "bg-orange-500" },
   compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
   creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
@@ -58,31 +64,28 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
   useEffect(() => {
     const loadData = async () => {
-      const tenant = tenantIdProp || await getTenantId();
+      const tenant = tenantIdProp || (await getTenantId());
       setTenantId(tenant);
 
       if (tenant) {
-        // Cargar configuración del negocio
         const { data: configData } = await supabase
-          .from('business_config')
-          .select('*')
-          .eq('id', tenant)
+          .from("business_config")
+          .select("*")
+          .eq("id", tenant)
           .single();
         setConfig(configData);
 
-        // Cargar ventas de hoy
         try {
-          const res = await fetch(`/api/ventas?tenant=${tenant}&start=${new Date().toISOString().split('T')[0]}`);
+          const res = await fetch(`/api/ventas?tenant=${tenant}&start=${new Date().toISOString().split("T")[0]}`);
           const data = await res.json();
           if (data.success) {
             const total = data.data.reduce((sum: number, v: any) => sum + v.total, 0);
             const transacciones = data.data.length;
-            // Calcular métodos de pago (simplificado)
             const metodos = { efectivo: 0, nequi: 0, daviplata: 0 };
             data.data.forEach((v: any) => {
-              if (v.metodo_pago === 'Efectivo') metodos.efectivo++;
-              else if (v.metodo_pago === 'Nequi') metodos.nequi++;
-              else if (v.metodo_pago === 'Daviplata') metodos.daviplata++;
+              if (v.metodo_pago === "Efectivo") metodos.efectivo++;
+              else if (v.metodo_pago === "Nequi") metodos.nequi++;
+              else if (v.metodo_pago === "Daviplata") metodos.daviplata++;
             });
             const totalMetodos = transacciones || 1;
             setVentasHoy({
@@ -94,14 +97,13 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             });
           }
         } catch (e) {
-          // Si falla, usar datos de demostración
           setVentasHoy({ total: 450000, transacciones: 24, efectivo: 65, nequi: 20, daviplata: 15 });
         }
       }
       setLoading(false);
     };
     loadData();
-  }, [supabase]);
+  }, [supabase, tenantIdProp]);
 
   if (loading) {
     return (
@@ -122,8 +124,8 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     );
   }
 
-  const primaryColor = config.color_principal || '#10B981';
-  const secondaryColor = config.color_secundario || '#059669';
+  const primaryColor = config.color_principal || "#10B981";
+  const secondaryColor = config.color_secundario || "#059669";
 
   const modulos = [
     { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
@@ -140,36 +142,73 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="p-5 text-white" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            {config.logo_url ? (
-              <img src={config.logo_url} alt={config.nombre_negocio} className="w-12 h-12 rounded-full object-cover border-2 border-white" />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">🏪</div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold">{config.nombre_negocio}</h1>
-              <p className="text-white/80 text-sm">{config.direccion} · Tel: {config.telefono}</p>
-              <p className="text-white/70 text-xs">Gerente: {config.gerente}</p>
+      <header
+        className="text-white px-4 py-8 text-center"
+        style={{
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+        }}
+      >
+        <div className="max-w-3xl mx-auto">
+          {config.logo_url ? (
+            <img
+              src={config.logo_url}
+              alt={config.nombre_negocio}
+              className="w-32 h-32 rounded-full object-cover border-4 border-white/30 mx-auto mb-4 shadow-lg"
+            />
+          ) : (
+            <div
+              className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center text-6xl font-bold mx-auto mb-4 shadow-lg border-4 border-white/30"
+              style={{ color: "white" }}
+            >
+              {config.nombre_negocio
+                .split(" ")
+                .map((p) => p[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
             </div>
+          )}
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{config.nombre_negocio}</h1>
+          <p className="text-xl md:text-2xl font-light mt-2 text-white/90 italic">{SLOGAN}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm md:text-base">
+            <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+              <MapPin className="w-4 h-4" /> {config.direccion}
+            </span>
+            <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+              <Phone className="w-4 h-4" /> {config.telefono}
+            </span>
+            {config.correo_contacto && (
+              <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+                <Mail className="w-4 h-4" /> {config.correo_contacto}
+              </span>
+            )}
+            <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+              <Globe className="w-4 h-4" /> {SITIO_WEB}
+            </span>
           </div>
-          <span className="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 backdrop-blur-sm">
-            Plan {config.plan}
-          </span>
+          <div className="mt-6">
+            <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+              Plan {config.plan}
+            </span>
+          </div>
         </div>
       </header>
 
-      <div className="p-4">
-        <div className="rounded-2xl p-6 text-white mb-4" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
+      <div className="p-4 max-w-7xl mx-auto">
+        <div
+          className="rounded-2xl p-6 text-white mb-6"
+          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+        >
           <p className="text-white/80 text-sm">VENTAS DE HOY</p>
           <p className="text-4xl font-bold mt-1">${ventasHoy.total.toLocaleString()}</p>
           <p className="text-sm text-white/80 mt-2">
-            {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata {ventasHoy.daviplata}%
+            {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata{" "}
+            {ventasHoy.daviplata}%
           </p>
         </div>
 
-        <h2 className="font-semibold text-stone-700 mb-3">CONOCE CADA MÓDULO (Toca para ver beneficios)</h2>
+        <h2 className="font-semibold text-stone-700 mb-3 text-center">CONOCE CADA MÓDULO</h2>
+        <p className="text-center text-stone-500 text-sm mb-4">Toca para ver beneficios e ingresar</p>
 
         <div className="grid grid-cols-2 gap-3">
           {modulos.map((m) => (
@@ -186,7 +225,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         </div>
 
         <a
-          href={`https://wa.me/${config.telefono.replace(/-/g, '')}?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System`}
+          href={`https://wa.me/${config.telefono.replace(/-/g, "")}?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System`}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-6 w-full bg-green-500 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-green-600 transition shadow-md"
@@ -228,4 +267,3 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     </div>
   );
 }
-
