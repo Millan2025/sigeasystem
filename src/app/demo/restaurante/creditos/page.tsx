@@ -37,44 +37,44 @@ const ESTADOS = {
 
 const LISTA_ESTADOS = ["pendiente", "pagado", "confirmado", "preparando", "en_camino", "entregado"];
 
-export default function PedidosPage() {
+export default function CreditosPage() {
   const searchParams = useSearchParams();
   const { tenant: tenantId } = useTenant();
 
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [CreditosPage, setCreditosPage] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [detallePedido, setDetallePedido] = useState<Pedido | null>(null);
   const [mensaje, setMensaje] = useState("");
 
-  const cargarPedidos = async (showLoading = true) => {
+  const cargarCreditosPage = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await fetch(`/api/pedidos?tenant=${tenantId}`);
+      const res = await fetch(`/api/CreditosPage?tenant=${tenantId}`);
       const data = await res.json();
-      if (data.success) setPedidos(data.data || []);
-      else setPedidos([]);
+      if (data.success) setCreditosPage(data.data || []);
+      else setCreditosPage([]);
     } catch (e) {
-      setPedidos([]);
+      setCreditosPage([]);
     }
     if (showLoading) setLoading(false);
   };
 
   useEffect(() => {
-    cargarPedidos(true);
-    const interval = setInterval(() => cargarPedidos(false), 10000);
+    cargarCreditosPage(true);
+    const interval = setInterval(() => cargarCreditosPage(false), 10000);
     return () => clearInterval(interval);
   }, [tenantId]);
 
   const cambiarEstado = async (id: string, nuevoEstado: string) => {
-    const pedido = pedidos.find(p => p.id === id);
+    const pedido = CreditosPage.find(p => p.id === id);
     if (!pedido) return;
     const idxActual = LISTA_ESTADOS.indexOf(pedido.estado);
     const idxNuevo = LISTA_ESTADOS.indexOf(nuevoEstado);
     if (idxNuevo <= idxActual) return;
 
     try {
-      const res = await fetch("/api/pedidos", {
+      const res = await fetch("/api/CreditosPage", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, estado: nuevoEstado })
@@ -83,7 +83,7 @@ export default function PedidosPage() {
       if (data.success) {
         setMensaje(`✅ Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
         setTimeout(() => setMensaje(""), 5000);
-        cargarPedidos(true);
+        cargarCreditosPage(true);
       } else {
         alert("Error: " + data.error);
       }
@@ -95,7 +95,7 @@ export default function PedidosPage() {
   const confirmarPedido = async (id: string) => {
     if (!confirm("¿Confirmar este pedido? Se descontará stock y se registrará en finanzas.")) return;
     try {
-      const res = await fetch(`/api/pedidos/${id}/confirmar`, {
+      const res = await fetch(`/api/CreditosPage/${id}/confirmar`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ metodo_pago: "Confirmado" })
@@ -104,7 +104,7 @@ export default function PedidosPage() {
       if (data.success) {
         setMensaje("✅ Pedido confirmado correctamente.");
         setTimeout(() => setMensaje(""), 5000);
-        cargarPedidos(true);
+        cargarCreditosPage(true);
       } else {
         alert("Error: " + data.error);
       }
@@ -116,7 +116,7 @@ export default function PedidosPage() {
   const cancelarPedido = async (id: string) => {
     if (!confirm('¿Estás seguro de cancelar este pedido? Se revertirá inventario y finanzas.')) return;
     try {
-      const res = await fetch(`/api/pedidos/${id}/cancelar`, {
+      const res = await fetch(`/api/CreditosPage/${id}/cancelar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +128,7 @@ export default function PedidosPage() {
       if (data.success) {
         setMensaje('✅ Pedido cancelado exitosamente');
         setTimeout(() => setMensaje(''), 5000);
-        cargarPedidos(true);
+        cargarCreditosPage(true);
       } else {
         alert('❌ Error: ' + (data.error || 'Error al cancelar'));
       }
@@ -142,7 +142,7 @@ export default function PedidosPage() {
     return ESTADOS[estado as keyof typeof ESTADOS] || ESTADOS.pendiente;
   };
 
-  const pedidosFiltrados = pedidos.filter(p => {
+  const CreditosPageFiltrados = CreditosPage.filter(p => {
     if (filtroEstado === "todos") return true;
     return p.estado === filtroEstado;
   });
@@ -151,8 +151,8 @@ export default function PedidosPage() {
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos</h1>
-        <button onClick={() => cargarPedidos(true)} className="p-2 hover:bg-stone-100 rounded-xl">
+        <h1 className="text-xl font-bold text-stone-800 flex-1">CreditosPage</h1>
+        <button onClick={() => cargarCreditosPage(true)} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
         </button>
       </header>
@@ -169,11 +169,11 @@ export default function PedidosPage() {
             onClick={() => setFiltroEstado("todos")}
             className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white text-stone-700 border border-stone-300"}`}
           >
-            Todos ({pedidos.length})
+            Todos ({CreditosPage.length})
           </button>
           {LISTA_ESTADOS.map((estado) => {
             const info = ESTADOS[estado as keyof typeof ESTADOS];
-            const count = pedidos.filter(p => p.estado === estado).length;
+            const count = CreditosPage.filter(p => p.estado === estado).length;
             return (
               <button
                 key={estado}
@@ -188,14 +188,14 @@ export default function PedidosPage() {
 
         {loading ? (
           <div className="text-center py-12 text-stone-500">Cargando...</div>
-        ) : pedidosFiltrados.length === 0 ? (
+        ) : CreditosPageFiltrados.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
             <ShoppingBag className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-            <p className="text-stone-500">No hay pedidos en este estado.</p>
+            <p className="text-stone-500">No hay CreditosPage en este estado.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {pedidosFiltrados.map((pedido) => {
+            {CreditosPageFiltrados.map((pedido) => {
               const estadoInfo = getEstadoInfo(pedido.estado);
               return (
                 <div key={pedido.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 hover:shadow-md transition flex flex-col">

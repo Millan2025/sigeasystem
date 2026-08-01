@@ -1,200 +1,20 @@
 "use client";
 
-`nimport { useTenant } from "@/hooks/useTenant";`nimport { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton";
-import Link from "next/link";
-import { ArrowLeft, Plus, Edit, Trash2, RefreshCw } from "lucide-react";
 
-export default function ProductosAdminPage() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { tenant: tenantId } = useTenant();
-  const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoriaNegocio = "";
-
-  const [productos, setProductos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowImportModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({
-    nombre: '',
-    categoria: '',
-    precio: 0,
-    stock: 0,
-    unidad: 'unidad',
-    tipo_unidad: 'unidad',
-    venta_por_peso: false,
-    icono: 'ðŸ“¦'
-  });
-
-  const cargarProductos = () => {
-    setLoading(true);
-    fetch(`/api/products?tenant=${tenantId}`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.success) setProductos(d.data || []);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    cargarProductos();
-  }, [tenantId]);
-
-  const guardarProducto = async () => {
-    const url = '/api/products';
-    const method = editing ? 'PUT' : 'POST';
-    const body = editing ? { ...form, id: editing } : { ...form, tenant_id: tenantId };
-
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (data.success) {
-      setShowImportModal(false);
-      setEditing(null);
-      setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: 'ðŸ“¦' });
-      cargarProductos();
-    } else {
-      alert(data.error || 'Error al guardar');
-    }
-  };
-
-  const eliminarProducto = async (id: string) => {
-    if (!confirm('Â¿Eliminar este producto?')) return;
-    const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (data.success) {
-      cargarProductos();
-    } else {
-      alert(data.error || 'Error al eliminar');
-    }
-  };
-
-  const editarProducto = (p: any) => {
-    setEditing(p.id);
-    setForm({
-      nombre: p.nombre,
-      categoria: p.categoria,
-      precio: p.precio,
-      stock: p.stock,
-      unidad: p.unidad || 'unidad',
-      tipo_unidad: p.tipo_unidad || 'unidad',
-      venta_por_peso: p.venta_por_peso || false,
-      icono: p.icono || 'ðŸ“¦'
-    });
-    setShowImportModal(true);
-  };
-
+export default function ProductosPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
         <BackButton />
-        <h1 className="text-xl font-bold">Productos - {negocioSlug || 'negocio'}</h1>
-        <div className="flex-1"></div>
-        <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5" />
-        </button>
-        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: 'ðŸ“¦' }); setShowImportModal(true); }}
-          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
-          <Plus className="w-4 h-4" /> Nuevo
-        </button>
+        <h1 className="text-xl font-bold text-stone-800 flex-1">productos</h1>
       </header>
-
       <div className="p-4 max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-stone-50">
-                <tr>
-                  <th className="text-left p-2">Icono</th>
-                  <th className="text-left p-2">Nombre</th>
-                  <th className="text-left p-2">CategorÃ­a</th>
-                  <th className="text-left p-2">Precio</th>
-                  <th className="text-left p-2">Stock</th>
-                  <th className="text-left p-2">Unidad</th>
-                  <th className="text-left p-2">Venta for peso</th>
-                  <th className="text-left p-2">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productos.map((p: any) => (
-                  <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2 text-2xl">{p.icono || 'ðŸ“¦'}</td>
-                    <td className="p-2 font-medium">{p.nombre}</td>
-                    <td className="p-2 text-stone-700">{p.categoria}</td>
-                    <td className="p-2">${p.precio?.toLocaleString()}</td>
-                    <td className="p-2">{p.stock}</td>
-                    <td className="p-2 text-stone-700">{p.tipo_unidad}</td>
-                    <td className="p-2">{p.venta_por_peso ? 'âœ…' : 'âŒ'}</td>
-                    <td className="p-2 flex gap-2">
-                      <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4" /></button>
-                      <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 text-red-500 rounded"><Trash2 className="w-4 h-4" /></button>
-                    </td>
-                  </tr>
-                ))}
-                {productos.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-stone-600">No hay productos</td></tr>}
-              </tbody>
-            </table>
-          </div>
+        <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
+          <p className="text-stone-500">MÃ³dulo de productos en construcciÃ³n</p>
+          <p className="text-sm text-stone-400 mt-2">Funcionalidad disponible prÃ³ximamente</p>
         </div>
       </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold mb-4">{editing ? 'Editar' : 'Nuevo'} Producto</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Nombre *</label>
-                <input type="text" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">CategorÃ­a *</label>
-                <input type="text" value={form.categoria} onChange={e => setForm({...form, categoria: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Precio</label>
-                <input type="number" step="0.01" value={form.precio} onChange={e => setForm({...form, precio: parseFloat(e.target.value) || 0})} className="w-full border border-stone-300 rounded-xl p-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Stock inicial</label>
-                <input type="number" value={form.stock} onChange={e => setForm({...form, stock: parseInt(e.target.value) || 0})} className="w-full border border-stone-300 rounded-xl p-2" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Unidad</label>
-                <select value={form.tipo_unidad} onChange={e => setForm({...form, tipo_unidad: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2">
-                  <option value="unidad">Unidad</option>
-                  <option value="kilogramo">Kilogramo</option>
-                  <option value="libra">Libra</option>
-                  <option value="gramo">Gramo</option>
-                  <option value="litro">Litro</option>
-                  <option value="mililitro">Mililitro</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={form.venta_por_peso} onChange={e => setForm({...form, venta_por_peso: e.target.checked})} />
-                <label className="text-sm font-medium text-stone-700">Venta for peso</label>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700">Icono (emoji)</label>
-                <input type="text" value={form.icono} onChange={e => setForm({...form, icono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2" maxLength={2} />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowImportModal(false)} className="flex-1 py-2 border border-stone-300 rounded-xl">Cancelar</button>
-              <button onClick={guardarProducto} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">Guardar</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-
-
-
-

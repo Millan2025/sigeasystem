@@ -1,2 +1,5 @@
-﻿import inventarioPage from "@/app/demo/restaurante/inventario/page";
-export default inventarioPage;
+﻿import DemoInventarioPage from "@/app/demo/restaurante/inventario/page";
+
+export default function SlugInventarioPage() {
+  return <DemoInventarioPage />;
+}

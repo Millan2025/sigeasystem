@@ -1,2 +1,5 @@
-﻿import comprasPage from "@/app/demo/restaurante/compras/page";
-export default comprasPage;
+﻿import DemoComprasPage from "@/app/demo/restaurante/compras/page";
+
+export default function SlugComprasPage() {
+  return <DemoComprasPage />;
+}

@@ -1,2 +1,5 @@
-﻿import finanzasPage from "@/app/demo/restaurante/finanzas/page";
-export default finanzasPage;
+﻿import DemoFinanzasPage from "@/app/demo/restaurante/finanzas/page";
+
+export default function SlugFinanzasPage() {
+  return <DemoFinanzasPage />;
+}
