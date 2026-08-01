@@ -1,6 +1,8 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'; import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
 
@@ -14,25 +16,31 @@ interface CartItem {
 }
 
 export default function POSPage() {
-  const [tenantId, setTenantId] = useState('');
+  const searchParams = useSearchParams();
+  const tenantFromUrl = searchParams.get('tenant') || '';
+  const [tenantId, setTenantId] = useState(tenantFromUrl);
   const supabase = createClient();
 
+  // Si no hay tenant en la URL, intentar obtenerlo del usuario autenticado
   useEffect(() => {
-    const getTenant = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: userData } = await supabase
-          .from('usuarios')
-          .select('tenant_id')
-          .eq('id', user.id)
-          .single();
-        if (userData?.tenant_id) {
-          setTenantId(userData.tenant_id);
+    if (!tenantFromUrl) {
+      const getTenant = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: userData } = await supabase
+            .from('usuarios')
+            .select('tenant_id')
+            .eq('id', user.id)
+            .single();
+          if (userData?.tenant_id) {
+            setTenantId(userData.tenant_id);
+          }
         }
-      }
-    };
-    getTenant();
-  }, []);
+      };
+      getTenant();
+    }
+  }, [tenantFromUrl, supabase]);
+
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [showPay, setShowPay] = useState(false)
@@ -43,25 +51,37 @@ export default function POSPage() {
   const [pesoInput, setPesoInput] = useState('')
   const [productos, setProductos] = useState<ProductoBase[]>([])
 
+  // Cargar productos usando el tenantId (desde URL o usuario)
   useEffect(() => {
-    fetch('/api/products').then(r => r.json()).then(d => {
-      if (d.success && d.data.length > 0) {
-        setProductos(d.data.map((p: any) => {
-          let cat = (p.categoria || p.category || 'General')
-          if (cat.includes('Panader')) cat = 'Panaderia'
-          else if (cat.includes('Pastel')) cat = 'Pasteleria'
-          else if (cat.includes('Bebida') || cat.includes('Cafeter')) cat = 'Bebidas'
-          else if (cat.includes('Lact')) cat = 'Lacteos'
-          else if (cat.includes('Verdu')) cat = 'Verduras'
-          return {
-            id: p.id, nombre: p.nombre || p.name, icono: p.icono || 'Ã°Å¸â€œÂ¦',
-            precio: p.precio || p.price || 0, precioPorKg: p.precioPorKg,
-            stock: p.stock || 0, cat: cat, esPeso: p.esPeso || false
-          }
-        }))
-      }
-    }).catch(() => {})
-  }, [])
+    if (!tenantId) return;
+    fetch(`/api/products?tenant=${tenantId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.data.length > 0) {
+          setProductos(d.data.map((p: any) => {
+            let cat = (p.categoria || p.category || 'General')
+            if (cat.includes('Panader')) cat = 'Panaderia'
+            else if (cat.includes('Pastel')) cat = 'Pasteleria'
+            else if (cat.includes('Bebida') || cat.includes('Cafeter')) cat = 'Bebidas'
+            else if (cat.includes('Lact')) cat = 'Lacteos'
+            else if (cat.includes('Verdu')) cat = 'Verduras'
+            return {
+              id: p.id,
+              nombre: p.nombre || p.name,
+              icono: p.icono || '📦',
+              precio: p.precio || p.price || 0,
+              precioPorKg: p.precioPorKg,
+              stock: p.stock || 0,
+              cat: cat,
+              esPeso: p.esPeso || false
+            }
+          }))
+        } else {
+          console.warn('No se encontraron productos para tenant:', tenantId);
+        }
+      })
+      .catch(err => console.error('Error cargando productos:', err));
+  }, [tenantId]);
 
   const cats = ['Todo', 'Panaderia', 'Pasteleria', 'Bebidas', 'Lacteos', 'Verduras']
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos
@@ -87,7 +107,7 @@ export default function POSPage() {
   }
 
   function pay(m: string) {
-    setMsg('Ã¢Å“â€¦ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
+    setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
     setCart([]); setShowPay(false); setShowCart(false)
     setTimeout(() => setMsg(''), 3000)
   }
@@ -98,7 +118,7 @@ export default function POSPage() {
         <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
         <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
         <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">
-          <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} Ã‚Â· ${totalPrecio.toLocaleString()}
+          <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} · ${totalPrecio.toLocaleString()}
         </button>
       </header>
 
@@ -119,7 +139,7 @@ export default function POSPage() {
         <div className="grid grid-cols-2 gap-2">
           {filtered.map(p => (
             <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 active:scale-95 transition text-left hover:shadow-md">
-              <span className="text-3xl block text-center mb-2">{p.icono || 'Ã°Å¸â€œÂ¦'}</span>
+              <span className="text-3xl block text-center mb-2">{p.icono || '📦'}</span>
               <h3 className="font-medium text-stone-800 text-xs leading-tight">{p.nombre}</h3>
               <p className="text-emerald-600 font-bold text-sm mt-1">{p.esPeso ? '$' + (p.precioPorKg || 0).toLocaleString() + '/kg' : '$' + (p.precio || 0).toLocaleString()}</p>
               {p.esPeso && <span className="text-[10px] text-amber-500 flex items-center gap-0.5 mt-0.5"><Scale className="w-2.5 h-2.5" />Por peso</span>}
@@ -190,7 +210,3 @@ export default function POSPage() {
     </div>
   )
 }
-
-
-
-
