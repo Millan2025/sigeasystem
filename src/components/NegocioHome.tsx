@@ -25,6 +25,7 @@ import {
 
 const SLOGAN = "DONDE EL PAN TIENE HISTORIA Y SABOR";
 const SITIO_WEB = "https://mobirisesite.com";
+const MENSAJE_PIE = "Tu Negocio Bajo control, productividad, tranquilidad, paz y crecimiento.";
 
 const beneficiosPorModulo: Record<string, { titulo: string; icono: string; beneficios: string[]; color: string }> = {
   pos: { titulo: "Punto de Venta Inteligente", icono: "💰", beneficios: ["Productos por peso", "Cobro: Efectivo, Nequi, Daviplata", "Búsqueda rápida", "Descuento automático de inventario"], color: "bg-emerald-500" },
@@ -123,9 +124,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     );
   }
 
-  // Colores personalizados o fallback a amarillo mostaza
-  const primaryColor = config.color_principal || "#D4A017";
-  const secondaryColor = config.color_secundario || "#B8860B";
+  // Colores: dorado brillante
+  const primaryColor = config.color_principal || "#F5A623";
+  const secondaryColor = config.color_secundario || "#E08E0B";
 
   const modulos = [
     { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
@@ -142,26 +143,25 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* HEADER - LANDING CENTRALIZADA CON RELIEVE Y SOMBRA */}
+      {/* HEADER CON DORADO BRILLANTE */}
       <header
-        className="text-white px-4 py-10 text-center shadow-lg relative overflow-hidden"
+        className="text-white px-4 py-10 text-center shadow-2xl relative overflow-hidden"
         style={{
-          background: `linear-gradient(145deg, ${primaryColor}, ${secondaryColor})`,
+          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
         }}
       >
-        {/* Efecto de relieve sutil con un brillo */}
-        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
-        <div className="relative z-10 max-w-3xl mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none"></div>
+        <div className="relative z-10 max-w-4xl mx-auto">
           {config.logo_url ? (
             <img
               src={config.logo_url}
               alt={config.nombre_negocio}
-              className="w-32 h-32 rounded-full object-cover border-4 border-white/40 shadow-2xl mx-auto mb-4 transition-transform hover:scale-105"
+              className="w-40 h-40 rounded-full object-cover border-4 border-white/50 shadow-2xl mx-auto mb-4 transition-transform hover:scale-105"
             />
           ) : (
             <div
-              className="w-32 h-32 rounded-full bg-white/30 flex items-center justify-center text-6xl font-bold mx-auto mb-4 shadow-2xl border-4 border-white/40"
-              style={{ color: "white", textShadow: "0 2px 10px rgba(0,0,0,0.2)" }}
+              className="w-40 h-40 rounded-full bg-white/30 flex items-center justify-center text-7xl font-bold mx-auto mb-4 shadow-2xl border-4 border-white/50"
+              style={{ color: "white", textShadow: "0 4px 12px rgba(0,0,0,0.3)" }}
             >
               {config.nombre_negocio
                 .split(" ")
@@ -171,22 +171,22 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 .slice(0, 2)}
             </div>
           )}
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md">{config.nombre_negocio}</h1>
-          <p className="text-xl md:text-2xl font-light mt-2 text-white/90 italic drop-shadow">{SLOGAN}</p>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight drop-shadow-lg">{config.nombre_negocio}</h1>
+          <p className="text-2xl md:text-3xl font-light mt-2 text-white/90 italic drop-shadow-md">{SLOGAN}</p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm md:text-base">
-            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
+            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/20">
               <MapPin className="w-4 h-4" /> {config.direccion}
             </span>
-            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
+            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/20">
               <Phone className="w-4 h-4" /> {config.telefono}
             </span>
             {config.correo_contacto && (
-              <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
+              <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/20">
                 <Mail className="w-4 h-4" /> {config.correo_contacto}
               </span>
             )}
-            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
+            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/20">
               <Globe className="w-4 h-4" /> {SITIO_WEB}
             </span>
           </div>
@@ -199,19 +199,18 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         </div>
       </header>
 
-      {/* CONTENIDO PRINCIPAL */}
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Tarjeta de Ventas de Hoy con relieve */}
+        {/* TARJETA DE VENTAS CON RELIEVE DORADO */}
         <div
           className="rounded-2xl p-6 text-white mb-6 shadow-2xl relative overflow-hidden transition-transform hover:scale-[1.02]"
           style={{
             background: `linear-gradient(145deg, ${primaryColor}, ${secondaryColor})`,
           }}
         >
-          <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none"></div>
           <div className="relative z-10">
             <p className="text-white/80 text-sm font-light tracking-wider">VENTAS DE HOY</p>
-            <p className="text-4xl font-bold mt-1 drop-shadow">${ventasHoy.total.toLocaleString()}</p>
+            <p className="text-4xl font-bold mt-1 drop-shadow-lg">${ventasHoy.total.toLocaleString()}</p>
             <p className="text-sm text-white/80 mt-2">
               {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata{" "}
               {ventasHoy.daviplata}%
@@ -219,17 +218,20 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           </div>
         </div>
 
-        <h2 className="font-semibold text-stone-700 mb-3 text-center text-lg tracking-wide">CONOCE CADA MÓDULO</h2>
-        <p className="text-center text-stone-500 text-sm mb-5">Toca para ver beneficios e ingresar</p>
+        {/* MENSAJE INSTITUCIONAL EN LUGAR DE "CONOCE CADA MÓDULO" */}
+        <div className="text-center mb-6">
+          <p className="text-lg md:text-xl font-semibold text-stone-800 tracking-wide">{MENSAJE_PIE}</p>
+        </div>
 
+        {/* BOTONES 3D CON BORDES DORADOS */}
         <div className="grid grid-cols-2 gap-4">
           {modulos.map((m) => (
             <Link
               key={m.id}
               href={m.href}
-              className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
+              className={`${m.color} rounded-2xl p-5 text-left border-2 border-yellow-600 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-yellow-100/20 pointer-events-none"></div>
               <m.icon className="w-7 h-7 mb-2 relative z-10" />
               <span className="font-semibold text-stone-800 block relative z-10">{m.label}</span>
               <span className="text-xs text-stone-500 relative z-10">Toca para ingresar</span>
