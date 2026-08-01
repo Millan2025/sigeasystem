@@ -123,30 +123,30 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     );
   }
 
-  // Colores: amarillo oro intenso
-  const primaryColor = config.color_principal || "#fdb813";
-  const secondaryColor = config.color_secundario || "#e6a800";
+  // Color principal: #fdb813 (amarillo oro vibrante)
+  const primaryColor = "#fdb813";
+  const secondaryColor = "#D4A017"; // dorado oscuro para el degradado
 
   const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
-    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600", href: `/${negocioSlug || "restaurante"}/produccion?tenant=${tenantId}` },
-    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/inventario?tenant=${tenantId}` },
-    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600", href: `/${negocioSlug || "restaurante"}/personal?tenant=${tenantId}` },
-    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-sky-200 text-sky-600", href: `/${negocioSlug || "restaurante"}/pedidos?tenant=${tenantId}` },
-    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-rose-200 text-rose-600", href: `/${negocioSlug || "restaurante"}/reportes?tenant=${tenantId}` },
-    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-teal-200 text-teal-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
-    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-orange-200 text-orange-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
-    { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-indigo-200 text-indigo-600", href: `/${negocioSlug || "restaurante"}/compras?tenant=${tenantId}` },
-    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-pink-200 text-pink-600", href: `/${negocioSlug || "restaurante"}/creditos?tenant=${tenantId}` },
+    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
+    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-2 border-[#B8860B] text-lime-600", href: `/${negocioSlug || "restaurante"}/produccion?tenant=${tenantId}` },
+    { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/inventario?tenant=${tenantId}` },
+    { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-2 border-[#B8860B] text-purple-600", href: `/${negocioSlug || "restaurante"}/personal?tenant=${tenantId}` },
+    { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-2 border-[#B8860B] text-sky-600", href: `/${negocioSlug || "restaurante"}/pedidos?tenant=${tenantId}` },
+    { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-2 border-[#B8860B] text-rose-600", href: `/${negocioSlug || "restaurante"}/reportes?tenant=${tenantId}` },
+    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-2 border-[#B8860B] text-teal-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
+    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-2 border-[#B8860B] text-orange-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
+    { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `/${negocioSlug || "restaurante"}/compras?tenant=${tenantId}` },
+    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `/${negocioSlug || "restaurante"}/creditos?tenant=${tenantId}` },
   ];
 
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* HEADER - LANDING CENTRALIZADA CON RELIEVE Y SOMBRA */}
+      {/* HEADER - LANDING CENTRALIZADA CON FONDO AMARILLO ORO VIBRANTE */}
       <header
-        className="text-white px-4 py-10 text-center shadow-lg relative overflow-hidden"
+        className="text-stone-800 px-4 py-12 text-center shadow-lg relative overflow-hidden"
         style={{
-          background: `linear-gradient(145deg, ${primaryColor}, ${secondaryColor})`,
+          background: `linear-gradient(145deg, #fdb813, #e8a800)`,
         }}
       >
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
@@ -155,12 +155,12 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <img
               src={config.logo_url}
               alt={config.nombre_negocio}
-              className="w-40 h-40 rounded-full object-cover border-4 border-white/40 shadow-2xl mx-auto mb-4 transition-transform hover:scale-105"
+              className="w-48 h-48 rounded-full object-cover border-4 border-[#B8860B] shadow-2xl mx-auto mb-4 transition-transform hover:scale-105"
             />
           ) : (
             <div
-              className="w-40 h-40 rounded-full bg-white/30 flex items-center justify-center text-7xl font-bold mx-auto mb-4 shadow-2xl border-4 border-white/40"
-              style={{ color: "white", textShadow: "0 2px 10px rgba(0,0,0,0.2)" }}
+              className="w-48 h-48 rounded-full bg-white/30 flex items-center justify-center text-8xl font-bold mx-auto mb-4 shadow-2xl border-4 border-[#B8860B]"
+              style={{ color: "#5D4037", textShadow: "0 2px 10px rgba(0,0,0,0.1)" }}
             >
               {config.nombre_negocio
                 .split(" ")
@@ -170,28 +170,28 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 .slice(0, 2)}
             </div>
           )}
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md">{config.nombre_negocio}</h1>
-          <p className="text-xl md:text-2xl font-light mt-2 text-white/90 italic drop-shadow">{SLOGAN}</p>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md text-stone-800">{config.nombre_negocio}</h1>
+          <p className="text-xl md:text-2xl font-light mt-2 text-stone-700/90 italic drop-shadow">{SLOGAN}</p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm md:text-base">
-            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
-              <MapPin className="w-4 h-4" /> {config.direccion}
+            <span className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-[#B8860B]">
+              <MapPin className="w-4 h-4 text-stone-700" /> <span className="text-stone-800">{config.direccion}</span>
             </span>
-            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
-              <Phone className="w-4 h-4" /> {config.telefono}
+            <span className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-[#B8860B]">
+              <Phone className="w-4 h-4 text-stone-700" /> <span className="text-stone-800">{config.telefono}</span>
             </span>
             {config.correo_contacto && (
-              <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
-                <Mail className="w-4 h-4" /> {config.correo_contacto}
+              <span className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-[#B8860B]">
+                <Mail className="w-4 h-4 text-stone-700" /> <span className="text-stone-800">{config.correo_contacto}</span>
               </span>
             )}
-            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
-              <Globe className="w-4 h-4" /> {SITIO_WEB}
+            <span className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-[#B8860B]">
+              <Globe className="w-4 h-4 text-stone-700" /> <span className="text-stone-800">{SITIO_WEB}</span>
             </span>
           </div>
 
           <div className="mt-6">
-            <span className="px-5 py-1.5 bg-white/30 backdrop-blur-sm rounded-full text-sm font-semibold shadow-md border border-white/20">
+            <span className="px-5 py-1.5 bg-white/40 backdrop-blur-sm rounded-full text-sm font-semibold shadow-md border border-[#B8860B] text-stone-800">
               Plan {config.plan}
             </span>
           </div>
@@ -202,35 +202,32 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       <div className="p-4 max-w-7xl mx-auto">
         {/* Tarjeta de Ventas de Hoy con relieve */}
         <div
-          className="rounded-2xl p-6 text-white mb-6 shadow-2xl relative overflow-hidden transition-transform hover:scale-[1.02]"
+          className="rounded-2xl p-6 text-stone-800 mb-6 shadow-2xl relative overflow-hidden transition-transform hover:scale-[1.02]"
           style={{
-            background: `linear-gradient(145deg, ${primaryColor}, ${secondaryColor})`,
+            background: `linear-gradient(145deg, #fdb813, #e8a800)`,
           }}
         >
           <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
           <div className="relative z-10">
-            <p className="text-white/80 text-sm font-light tracking-wider">VENTAS DE HOY</p>
-            <p className="text-4xl font-bold mt-1 drop-shadow">${ventasHoy.total.toLocaleString()}</p>
-            <p className="text-sm text-white/80 mt-2">
+            <p className="text-stone-700/80 text-sm font-light tracking-wider">VENTAS DE HOY</p>
+            <p className="text-4xl font-bold mt-1 drop-shadow text-stone-800">${ventasHoy.total.toLocaleString()}</p>
+            <p className="text-sm text-stone-700/80 mt-2">
               {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata{" "}
               {ventasHoy.daviplata}%
             </p>
           </div>
         </div>
 
-        {/* Mensaje central personalizado */}
-        <div className="text-center mb-6">
-          <p className="text-xl md:text-2xl font-light text-stone-700 tracking-wide">
-            Tu Negocio Bajo control, <span className="font-semibold text-amber-600">productividad</span>, <span className="font-semibold text-amber-600">tranquilidad</span>, <span className="font-semibold text-amber-600">paz</span> y <span className="font-semibold text-amber-600">crecimiento</span>.
-          </p>
-        </div>
+        <h2 className="font-bold text-stone-800 mb-6 text-center text-2xl tracking-wide">
+          Tu Negocio Bajo control, productividad, tranquilidad, paz y crecimiento.
+        </h2>
 
         <div className="grid grid-cols-2 gap-4">
           {modulos.map((m) => (
             <Link
               key={m.id}
               href={m.href}
-              className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
+              className={`${m.color} rounded-2xl p-5 text-left border-2 border-[#B8860B] shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
               <m.icon className="w-7 h-7 mb-2 relative z-10" />
@@ -241,7 +238,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         </div>
       </div>
 
-      {/* Modal de beneficios */}
+      {/* Modal de beneficios (sin cambios) */}
       {moduloActivo && beneficiosPorModulo[moduloActivo] && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setModuloActivo(null)}>
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
