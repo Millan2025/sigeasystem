@@ -1,4 +1,4 @@
-"use client";
+Ôªø"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -81,19 +81,19 @@ export default function CreditosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`? Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
+        setMensaje(`‚úÖ Estado actualizado a ${ESTADOS[nuevoEstado as keyof typeof ESTADOS]?.label || nuevoEstado}`);
         setTimeout(() => setMensaje(""), 5000);
         cargarCreditosPage(true);
       } else {
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexiÛn");
+      alert("Error de conexi√≥n");
     }
   };
 
   const confirmarPedido = async (id: string) => {
-    if (!confirm("øConfirmar este pedido? Se descontar· stock y se registrar· en finanzas.")) return;
+    if (!confirm("¬øConfirmar este pedido? Se descontar√° stock y se registrar√° en finanzas.")) return;
     try {
       const res = await fetch(`/api/CreditosPage/${id}/confirmar`, {
         method: "PUT",
@@ -102,19 +102,19 @@ export default function CreditosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje("? Pedido confirmado correctamente.");
+        setMensaje("‚úÖ Pedido confirmado correctamente.");
         setTimeout(() => setMensaje(""), 5000);
         cargarCreditosPage(true);
       } else {
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexiÛn");
+      alert("Error de conexi√≥n");
     }
   };
 
   const cancelarPedido = async (id: string) => {
-    if (!confirm('øEst·s seguro de cancelar este pedido? Se revertir· inventario y finanzas.')) return;
+    if (!confirm('¬øEst√°s seguro de cancelar este pedido? Se revertir√° inventario y finanzas.')) return;
     try {
       const res = await fetch(`/api/CreditosPage/${id}/cancelar`, {
         method: 'POST',
@@ -126,15 +126,15 @@ export default function CreditosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje('? Pedido cancelado exitosamente');
+        setMensaje('‚úÖ Pedido cancelado exitosamente');
         setTimeout(() => setMensaje(''), 5000);
         cargarCreditosPage(true);
       } else {
-        alert('? Error: ' + (data.error || 'Error al cancelar'));
+        alert('‚ùå Error: ' + (data.error || 'Error al cancelar'));
       }
     } catch (error) {
       console.error(error);
-      alert('? Error al cancelar pedido');
+      alert('‚ùå Error al cancelar pedido');
     }
   };
 
@@ -209,21 +209,21 @@ export default function CreditosPage() {
                     </span>
                   </div>
                   <p className="text-sm text-stone-700 font-medium">{pedido.cliente || "Cliente"}</p>
-                  <p className="text-sm text-stone-500">?? {pedido.items?.length || 0} productos</p>
-                  <p className="text-sm text-stone-500">?? ${pedido.total?.toLocaleString()}</p>
+                  <p className="text-sm text-stone-500">üì¶ {pedido.items?.length || 0} productos</p>
+                  <p className="text-sm text-stone-500">üí∞ ${pedido.total?.toLocaleString()}</p>
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
-                  {pedido.direccion && <p className="text-xs text-stone-400">?? {pedido.direccion}</p>}
-                  {pedido.observaciones && <p className="text-xs text-stone-400">?? {pedido.observaciones}</p>}
+                  {pedido.direccion && <p className="text-xs text-stone-400">üìç {pedido.direccion}</p>}
+                  {pedido.observaciones && <p className="text-xs text-stone-400">üìù {pedido.observaciones}</p>}
 
                   <div className="mt-2 text-xs text-stone-600 border-t pt-2">
                     {pedido.items?.slice(0, 2).map((item, idx) => (
                       <div key={idx} className="flex justify-between">
-                        <span>{item.cantidad} ◊ {item.nombre}</span>
+                        <span>{item.cantidad} √ó {item.nombre}</span>
                         <span>${(item.cantidad * item.precio).toLocaleString()}</span>
                       </div>
                     ))}
                     {pedido.items?.length > 2 && (
-                      <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} m·s</div>
+                      <div className="text-stone-400 text-xs mt-1">+ {pedido.items.length - 2} m√°s</div>
                     )}
                   </div>
 
@@ -299,8 +299,8 @@ export default function CreditosPage() {
             <p className="text-sm text-stone-600">Fecha: {new Date(detallePedido.created_at).toLocaleString()}</p>
             <p className="text-sm text-stone-600">Pago: {detallePedido.metodo_pago}</p>
             <p className="text-sm text-stone-600">Estado: {ESTADOS[detallePedido.estado as keyof typeof ESTADOS]?.label || detallePedido.estado}</p>
-            {detallePedido.direccion && <p className="text-sm text-stone-600">DirecciÛn: {detallePedido.direccion}</p>}
-            {detallePedido.telefono && <p className="text-sm text-stone-600">TelÈfono: {detallePedido.telefono}</p>}
+            {detallePedido.direccion && <p className="text-sm text-stone-600">Direcci√≥n: {detallePedido.direccion}</p>}
+            {detallePedido.telefono && <p className="text-sm text-stone-600">Tel√©fono: {detallePedido.telefono}</p>}
             {detallePedido.observaciones && <p className="text-sm text-stone-600">Observaciones: {detallePedido.observaciones}</p>}
 
             <div className="mt-3 border-t pt-3">
@@ -308,7 +308,7 @@ export default function CreditosPage() {
               <div className="space-y-1 mt-1">
                 {detallePedido.items?.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm border-b border-stone-100 py-1 items-center">
-                    <span>{item.cantidad} ◊ {item.nombre}</span>
+                    <span>{item.cantidad} √ó {item.nombre}</span>
                     <span className="text-xs">Unit: ${item.precio?.toLocaleString()}</span>
                     <span className="font-bold">Subtotal: ${(item.cantidad * item.precio).toLocaleString()}</span>
                   </div>
