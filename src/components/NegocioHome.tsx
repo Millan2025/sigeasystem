@@ -124,11 +124,11 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     );
   }
 
-  const primaryColor = config.color_principal || "#10B981";
-  const secondaryColor = config.color_secundario || "#059669";
+  const primaryColor = config.color_principal || "#C68A4A";
+  const secondaryColor = config.color_secundario || "#8B5A2B";
 
   const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-emerald-50 border-emerald-200 text-emerald-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
+    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
     { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-lime-200 text-lime-600", href: `/${negocioSlug || "restaurante"}/produccion?tenant=${tenantId}` },
     { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/inventario?tenant=${tenantId}` },
     { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-purple-200 text-purple-600", href: `/${negocioSlug || "restaurante"}/personal?tenant=${tenantId}` },
@@ -141,9 +141,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   ];
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
       <header
-        className="text-white px-4 py-8 text-center"
+        className="text-white px-4 py-8 text-center shadow-lg"
         style={{
           background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
         }}
@@ -153,11 +153,11 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <img
               src={config.logo_url}
               alt={config.nombre_negocio}
-              className="w-32 h-32 rounded-full object-cover border-4 border-white/30 mx-auto mb-4 shadow-lg"
+              className="w-32 h-32 rounded-full object-cover border-4 border-white/40 mx-auto mb-4 shadow-2xl"
             />
           ) : (
             <div
-              className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center text-6xl font-bold mx-auto mb-4 shadow-lg border-4 border-white/30"
+              className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center text-6xl font-bold mx-auto mb-4 shadow-2xl border-4 border-white/30"
               style={{ color: "white" }}
             >
               {config.nombre_negocio
@@ -168,26 +168,26 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 .slice(0, 2)}
             </div>
           )}
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{config.nombre_negocio}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-sm">{config.nombre_negocio}</h1>
           <p className="text-xl md:text-2xl font-light mt-2 text-white/90 italic">{SLOGAN}</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm md:text-base">
-            <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+          <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm md:text-base">
+            <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
               <MapPin className="w-4 h-4" /> {config.direccion}
             </span>
-            <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+            <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
               <Phone className="w-4 h-4" /> {config.telefono}
             </span>
             {config.correo_contacto && (
-              <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+              <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
                 <Mail className="w-4 h-4" /> {config.correo_contacto}
               </span>
             )}
-            <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+            <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
               <Globe className="w-4 h-4" /> {SITIO_WEB}
             </span>
           </div>
           <div className="mt-6">
-            <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+            <span className="px-5 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold shadow-sm">
               Plan {config.plan}
             </span>
           </div>
@@ -196,7 +196,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
       <div className="p-4 max-w-7xl mx-auto">
         <div
-          className="rounded-2xl p-6 text-white mb-6"
+          className="rounded-2xl p-6 text-white mb-6 shadow-lg"
           style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
         >
           <p className="text-white/80 text-sm">VENTAS DE HOY</p>
@@ -207,18 +207,23 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           </p>
         </div>
 
-        <h2 className="font-semibold text-stone-700 mb-3 text-center">CONOCE CADA MÓDULO</h2>
-        <p className="text-center text-stone-500 text-sm mb-4">Toca para ver beneficios e ingresar</p>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-stone-700">MÓDULOS DISPONIBLES</h2>
+          <p className="text-stone-400 text-sm mt-1">Selecciona uno para comenzar</p>
+          <div className="w-12 h-1 bg-amber-400 mx-auto mt-2 rounded-full"></div>
+        </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {modulos.map((m) => (
             <Link
               key={m.id}
               href={m.href}
-              className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-xl transition transform hover:scale-105 active:scale-95 no-underline block`}
+              className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 no-underline block bg-white`}
             >
-              <m.icon className="w-7 h-7 mb-2" />
-              <span className="font-semibold text-stone-800 block">{m.label}</span>
+              <div className="bg-white/70 rounded-full w-12 h-12 flex items-center justify-center mb-3 shadow-sm">
+                <m.icon className="w-6 h-6" />
+              </div>
+              <span className="font-semibold text-stone-800 block text-lg">{m.label}</span>
               <span className="text-xs text-stone-500">Toca para ingresar</span>
             </Link>
           ))}
@@ -228,7 +233,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           href={`https://wa.me/${config.telefono.replace(/-/g, "")}?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System`}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 w-full bg-green-500 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-green-600 transition shadow-md"
+          className="mt-6 w-full bg-green-600 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-green-700 transition shadow-lg"
         >
           <Phone className="w-5 h-5" /> Escribenos por WhatsApp · {config.telefono}
         </a>
