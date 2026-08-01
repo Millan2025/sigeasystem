@@ -16,7 +16,6 @@ import {
   ChefHat,
   Phone,
   X,
-  ArrowRight,
   ShoppingBag,
   Receipt,
   MapPin,
@@ -124,8 +123,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     );
   }
 
-  const primaryColor = config.color_principal || "#C68A4A";
-  const secondaryColor = config.color_secundario || "#8B5A2B";
+  // Colores personalizados o fallback a amarillo mostaza
+  const primaryColor = config.color_principal || "#D4A017";
+  const secondaryColor = config.color_secundario || "#B8860B";
 
   const modulos = [
     { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-amber-200 text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
@@ -141,24 +141,27 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
+    <div className="min-h-screen bg-stone-50">
+      {/* HEADER - LANDING CENTRALIZADA CON RELIEVE Y SOMBRA */}
       <header
-        className="text-white px-4 py-8 text-center shadow-lg"
+        className="text-white px-4 py-10 text-center shadow-lg relative overflow-hidden"
         style={{
-          background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+          background: `linear-gradient(145deg, ${primaryColor}, ${secondaryColor})`,
         }}
       >
-        <div className="max-w-3xl mx-auto">
+        {/* Efecto de relieve sutil con un brillo */}
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
+        <div className="relative z-10 max-w-3xl mx-auto">
           {config.logo_url ? (
             <img
               src={config.logo_url}
               alt={config.nombre_negocio}
-              className="w-32 h-32 rounded-full object-cover border-4 border-white/40 mx-auto mb-4 shadow-2xl"
+              className="w-32 h-32 rounded-full object-cover border-4 border-white/40 shadow-2xl mx-auto mb-4 transition-transform hover:scale-105"
             />
           ) : (
             <div
-              className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center text-6xl font-bold mx-auto mb-4 shadow-2xl border-4 border-white/30"
-              style={{ color: "white" }}
+              className="w-32 h-32 rounded-full bg-white/30 flex items-center justify-center text-6xl font-bold mx-auto mb-4 shadow-2xl border-4 border-white/40"
+              style={{ color: "white", textShadow: "0 2px 10px rgba(0,0,0,0.2)" }}
             >
               {config.nombre_negocio
                 .split(" ")
@@ -168,77 +171,74 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 .slice(0, 2)}
             </div>
           )}
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-sm">{config.nombre_negocio}</h1>
-          <p className="text-xl md:text-2xl font-light mt-2 text-white/90 italic">{SLOGAN}</p>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md">{config.nombre_negocio}</h1>
+          <p className="text-xl md:text-2xl font-light mt-2 text-white/90 italic drop-shadow">{SLOGAN}</p>
+
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm md:text-base">
-            <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
+            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
               <MapPin className="w-4 h-4" /> {config.direccion}
             </span>
-            <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
+            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
               <Phone className="w-4 h-4" /> {config.telefono}
             </span>
             {config.correo_contacto && (
-              <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
+              <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
                 <Mail className="w-4 h-4" /> {config.correo_contacto}
               </span>
             )}
-            <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-inner">
+            <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-white/10">
               <Globe className="w-4 h-4" /> {SITIO_WEB}
             </span>
           </div>
+
           <div className="mt-6">
-            <span className="px-5 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold shadow-sm">
+            <span className="px-5 py-1.5 bg-white/30 backdrop-blur-sm rounded-full text-sm font-semibold shadow-md border border-white/20">
               Plan {config.plan}
             </span>
           </div>
         </div>
       </header>
 
+      {/* CONTENIDO PRINCIPAL */}
       <div className="p-4 max-w-7xl mx-auto">
+        {/* Tarjeta de Ventas de Hoy con relieve */}
         <div
-          className="rounded-2xl p-6 text-white mb-6 shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+          className="rounded-2xl p-6 text-white mb-6 shadow-2xl relative overflow-hidden transition-transform hover:scale-[1.02]"
+          style={{
+            background: `linear-gradient(145deg, ${primaryColor}, ${secondaryColor})`,
+          }}
         >
-          <p className="text-white/80 text-sm">VENTAS DE HOY</p>
-          <p className="text-4xl font-bold mt-1">${ventasHoy.total.toLocaleString()}</p>
-          <p className="text-sm text-white/80 mt-2">
-            {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata{" "}
-            {ventasHoy.daviplata}%
-          </p>
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
+          <div className="relative z-10">
+            <p className="text-white/80 text-sm font-light tracking-wider">VENTAS DE HOY</p>
+            <p className="text-4xl font-bold mt-1 drop-shadow">${ventasHoy.total.toLocaleString()}</p>
+            <p className="text-sm text-white/80 mt-2">
+              {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata{" "}
+              {ventasHoy.daviplata}%
+            </p>
+          </div>
         </div>
 
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold text-stone-700">MÓDULOS DISPONIBLES</h2>
-          <p className="text-stone-400 text-sm mt-1">Selecciona uno para comenzar</p>
-          <div className="w-12 h-1 bg-amber-400 mx-auto mt-2 rounded-full"></div>
-        </div>
+        <h2 className="font-semibold text-stone-700 mb-3 text-center text-lg tracking-wide">CONOCE CADA MÓDULO</h2>
+        <p className="text-center text-stone-500 text-sm mb-5">Toca para ver beneficios e ingresar</p>
 
         <div className="grid grid-cols-2 gap-4">
           {modulos.map((m) => (
             <Link
               key={m.id}
               href={m.href}
-              className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 no-underline block bg-white`}
+              className={`${m.color} rounded-2xl p-5 text-left border-2 shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
             >
-              <div className="bg-white/70 rounded-full w-12 h-12 flex items-center justify-center mb-3 shadow-sm">
-                <m.icon className="w-6 h-6" />
-              </div>
-              <span className="font-semibold text-stone-800 block text-lg">{m.label}</span>
-              <span className="text-xs text-stone-500">Toca para ingresar</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
+              <m.icon className="w-7 h-7 mb-2 relative z-10" />
+              <span className="font-semibold text-stone-800 block relative z-10">{m.label}</span>
+              <span className="text-xs text-stone-500 relative z-10">Toca para ingresar</span>
             </Link>
           ))}
         </div>
-
-        <a
-          href={`https://wa.me/${config.telefono.replace(/-/g, "")}?text=Hola%20Quiero%20informacion%20de%20SIGEA%20System`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-6 w-full bg-green-600 text-white rounded-2xl py-4 font-bold text-lg flex items-center justify-center gap-2 hover:bg-green-700 transition shadow-lg"
-        >
-          <Phone className="w-5 h-5" /> Escribenos por WhatsApp · {config.telefono}
-        </a>
       </div>
 
+      {/* Modal de beneficios (sin cambios) */}
       {moduloActivo && beneficiosPorModulo[moduloActivo] && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setModuloActivo(null)}>
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
