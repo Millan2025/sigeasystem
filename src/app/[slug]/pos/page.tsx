@@ -1,212 +1,393 @@
-﻿'use client'
+﻿"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from "react";
+import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
+import Link from "next/link";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
-  precio?: number; precioPorKg?: number;
+  precio?: number; precioPorKg?: number; tipo_unidad?: string; venta_por_peso?: boolean;
 }
 
 interface CartItem {
   id: string; nombre: string; icono: string; cantidad: number; precioUnitario: number; subtotal: number;
+  esPeso?: boolean; unidad?: string;
 }
 
+const NEGOCIOS = {
+  panaderia: { titulo: "PanaderÃ­a DoÃ±a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "CarnicerÃ­a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "FerreterÃ­a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+};
+
 export default function POSPage() {
-  const searchParams = useSearchParams();
-  const tenantFromUrl = searchParams.get('tenant') || '';
-  const [tenantId, setTenantId] = useState(tenantFromUrl);
-  const supabase = createClient();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const pathParts = pathname?.split('/') || [];
+  const negocioSlug = pathParts[2] || 'restaurante';
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const tenantId = negocio?.tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76';
+  const titulo = negocio?.titulo || 'Negocio';
+  const categoria = negocio?.categoria || '';
 
-  // Si no hay tenant en la URL, intentar obtenerlo del usuario autenticado
-  useEffect(() => {
-    if (!tenantFromUrl) {
-      const getTenant = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: userData } = await supabase
-            .from('usuarios')
-            .select('tenant_id')
-            .eq('id', user.id)
-            .single();
-          if (userData?.tenant_id) {
-            setTenantId(userData.tenant_id);
-          }
-        }
-      };
-      getTenant();
-    }
-  }, [tenantFromUrl, supabase]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showPay, setShowPay] = useState(false);
+  const [showCreditoModal, setShowCreditoModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [creditoData, setCreditoData] = useState({ cliente: '', telefono: '', direccion: '' });
+  const [msg, setMsg] = useState('');
+  const [catFilter, setCatFilter] = useState('Todo');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [productos, setProductos] = useState<ProductoBase[]>([]);
+  const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [showCart, setShowCart] = useState(false)
-  const [showPay, setShowPay] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [catFilter, setCatFilter] = useState('Todo')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [productoPesaje, setProductoPesaje] = useState<ProductoBase | null>(null)
-  const [pesoInput, setPesoInput] = useState('')
-  const [productos, setProductos] = useState<ProductoBase[]>([])
-
-  // Cargar productos usando el tenantId (desde URL o usuario)
-  useEffect(() => {
-    if (!tenantId) return;
-    fetch(`/api/products?tenant=${tenantId}`)
+  // ðŸ”¥ FunciÃ³n para cargar productos (reutilizable)
+  const cargarProductos = () => {
+    const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
+    fetch(url)
       .then(r => r.json())
       .then(d => {
         if (d.success && d.data.length > 0) {
-          setProductos(d.data.map((p: any) => {
-            let cat = (p.categoria || p.category || 'General')
-            if (cat.includes('Panader')) cat = 'Panaderia'
-            else if (cat.includes('Pastel')) cat = 'Pasteleria'
-            else if (cat.includes('Bebida') || cat.includes('Cafeter')) cat = 'Bebidas'
-            else if (cat.includes('Lact')) cat = 'Lacteos'
-            else if (cat.includes('Verdu')) cat = 'Verduras'
-            return {
-              id: p.id,
-              nombre: p.nombre || p.name,
-              icono: p.icono || '📦',
-              precio: p.precio || p.price || 0,
-              precioPorKg: p.precioPorKg,
-              stock: p.stock || 0,
-              cat: cat,
-              esPeso: p.esPeso || false
-            }
-          }))
-        } else {
-          console.warn('No se encontraron productos para tenant:', tenantId);
+          setProductos(d.data.map((p: any) => ({
+            id: p.id,
+            nombre: p.nombre,
+            icono: p.icono || 'ðŸ“¦',
+            precio: p.precio || 0,
+            stock: p.stock || 0,
+            cat: p.categoria || 'General',
+            esPeso: p.venta_por_peso || false,
+            tipo_unidad: p.tipo_unidad || 'unidad',
+            precioPorKg: p.precioporkg || p.precio || 0,
+          })));
         }
       })
-      .catch(err => console.error('Error cargando productos:', err));
-  }, [tenantId]);
+      .catch(() => {});
+  };
 
-  const cats = ['Todo', 'Panaderia', 'Pasteleria', 'Bebidas', 'Lacteos', 'Verduras']
-  const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos
-  const filtered = catFilter === 'Todo' ? searchFiltered : searchFiltered.filter(p => p.cat === catFilter)
-  const totalItems = cart.reduce((s, i) => s + i.cantidad, 0)
-  const totalPrecio = cart.reduce((s, i) => s + i.subtotal, 0)
+  // Cargar productos al montar el componente y cuando cambie tenant o categorÃ­a
+  useEffect(() => {
+    cargarProductos();
+  }, [tenantId, categoria]);
 
-  function addItem(p: ProductoBase) {
-    if (p.esPeso) { setProductoPesaje(p); setPesoInput(''); return }
+  const cats = ['Todo', ...Array.from(new Set(productos.map(p => p.cat)))];
+  const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
+  const filtered = catFilter === 'Todo' ? searchFiltered : searchFiltered.filter(p => p.cat === catFilter);
+  const totalItems = cart.reduce((s, i) => s + i.cantidad, 0);
+  const totalPrecio = cart.reduce((s, i) => s + i.subtotal, 0);
+
+  const addItem = (p: ProductoBase) => {
+    if (p.esPeso) {
+      setPesoModal({ producto: p, cantidad: 1, unidad: p.tipo_unidad || 'gramos' });
+      return;
+    }
     setCart(prev => {
-      const exist = prev.find(i => i.id === p.id)
-      if (exist) return prev.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario || 0) * (i.cantidad + 1) } : i)
-      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0 }]
-    })
-  }
+      const exist = prev.find(i => i.id === p.id);
+      if (exist) return prev.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario) * (i.cantidad + 1) } : i);
+      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0, esPeso: false }];
+    });
+  };
 
-  function confirmarPeso() {
-    if (!productoPesaje || !pesoInput) return
-    const gramos = Number(pesoInput)
-    const precioFinal = Math.round((gramos / 1000) * (productoPesaje.precioPorKg || 0))
-    setCart(prev => [...prev, { id: productoPesaje!.id + '-' + Date.now(), nombre: productoPesaje!.nombre + ' (' + gramos + 'g)', icono: productoPesaje!.icono, cantidad: 1, precioUnitario: precioFinal, subtotal: precioFinal }])
-    setProductoPesaje(null); setPesoInput('')
-  }
+  const confirmarPeso = () => {
+    if (!pesoModal.producto || pesoModal.cantidad <= 0) return;
+    const { producto, cantidad, unidad } = pesoModal;
+    let gramos = 0;
+    if (unidad === 'gramos') gramos = cantidad;
+    else if (unidad === 'kilogramos') gramos = cantidad * 1000;
+    else if (unidad === 'libras') gramos = cantidad * 453.592;
 
-  function pay(m: string) {
-    setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
-    setCart([]); setShowPay(false); setShowCart(false)
-    setTimeout(() => setMsg(''), 3000)
-  }
+    const precioPorGramo = (producto.precioPorKg || 0) / 1000;
+    const precioFinal = Math.round(precioPorGramo * gramos);
+
+    let cantidadBase = 0;
+    if (producto.tipo_unidad === 'kilogramo') cantidadBase = gramos / 1000;
+    else if (producto.tipo_unidad === 'gramo') cantidadBase = gramos;
+    else if (producto.tipo_unidad === 'libra') cantidadBase = gramos / 453.592;
+    else cantidadBase = gramos / 1000;
+
+    const item: CartItem = {
+      id: producto.id + '-peso',
+      nombre: `${producto.nombre} (${cantidad} ${unidad})`,
+      icono: producto.icono,
+      cantidad: cantidadBase,
+      precioUnitario: precioFinal,
+      subtotal: precioFinal,
+      esPeso: true,
+      unidad: unidad,
+    };
+    setCart(prev => [...prev, item]);
+    setPesoModal({ producto: null, cantidad: 1, unidad: 'gramos' });
+  };
+
+  const pay = async (metodo: string) => {
+    if (cart.length === 0) return;
+
+    if (metodo === 'CrÃ©dito') {
+      setShowCreditoModal(true);
+      return;
+    }
+
+    try {
+      const items = cart.map(item => {
+        const producto_id = item.id.includes('-') ? item.id.split('-')[0] : item.id;
+        return {
+          producto_id: producto_id,
+          cantidad: item.cantidad,
+          precio_unitario: item.precioUnitario,
+          subtotal: item.subtotal
+        };
+      });
+
+      const res = await fetch('/api/ventas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          metodo_pago: metodo,
+          total: totalPrecio,
+          items: items
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setMsg('âœ… Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
+        setCart([]);
+        setShowPay(false);
+        setShowCart(false);
+        // ðŸ”¥ Recargar productos para actualizar stock
+        cargarProductos();
+        setTimeout(() => setMsg(''), 4000);
+      } else {
+        alert('Error al registrar venta: ' + data.error);
+      }
+    } catch (error) {
+      alert('Error de conexiÃ³n');
+    }
+  };
+
+  const guardarCredito = async () => {
+    if (!creditoData.cliente) {
+      alert('Ingrese el nombre del cliente');
+      return;
+    }
+    try {
+      const res = await fetch('/api/creditos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cliente: creditoData.cliente,
+          telefono: creditoData.telefono,
+          direccion: creditoData.direccion,
+          monto: totalPrecio,
+          tenant_id: tenantId
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMsg('âœ… CrÃ©dito registrado - $' + totalPrecio.toLocaleString());
+        setCart([]);
+        setShowPay(false);
+        setShowCart(false);
+        setShowCreditoModal(false);
+        setCreditoData({ cliente: '', telefono: '', direccion: '' });
+        // ðŸ”¥ Recargar productos para actualizar stock
+        cargarProductos();
+        setTimeout(() => setMsg(''), 4000);
+      } else {
+        alert('Error: ' + data.error);
+      }
+    } catch (error) {
+      alert('Error de conexiÃ³n');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
       <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
-        <Link href="/" className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-600" /></Link>
-        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta</h1></div>
-        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm">
-          <ShoppingCart className="w-4 h-4 inline mr-1" /> {totalItems} · ${totalPrecio.toLocaleString()}
+        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-700" /></Link>
+        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta - {titulo}</h1></div>
+        <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
+          <Share2 className="w-5 h-5" />
+        </button>
+        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2">
+          <ShoppingCart className="w-4 h-4" />
+          {totalItems > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{totalItems}</span>}
         </button>
       </header>
 
-      {msg && <div className="px-4 py-2 text-sm font-medium bg-emerald-100 text-emerald-800">{msg}</div>}
+      {msg && <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">{msg}</div>}
 
-      <div className="px-3 pt-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-          <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar producto..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 placeholder-stone-400 outline-none" />
-        </div>
-      </div>
-
-      <div className="flex gap-1 p-2 overflow-x-auto bg-white border-b shrink-0">
-        {cats.map(c => <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${catFilter === c ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-600'}`}>{c}</button>)}
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-2">
-        <div className="grid grid-cols-2 gap-2">
-          {filtered.map(p => (
-            <button key={p.id} onClick={() => addItem(p)} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 active:scale-95 transition text-left hover:shadow-md">
-              <span className="text-3xl block text-center mb-2">{p.icono || '📦'}</span>
-              <h3 className="font-medium text-stone-800 text-xs leading-tight">{p.nombre}</h3>
-              <p className="text-emerald-600 font-bold text-sm mt-1">{p.esPeso ? '$' + (p.precioPorKg || 0).toLocaleString() + '/kg' : '$' + (p.precio || 0).toLocaleString()}</p>
-              {p.esPeso && <span className="text-[10px] text-amber-500 flex items-center gap-0.5 mt-0.5"><Scale className="w-2.5 h-2.5" />Por peso</span>}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {cart.length > 0 && (
-        <div className="bg-white border-t p-3 shrink-0">
-          <button onClick={() => setShowPay(true)} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg hover:bg-emerald-600 transition shadow-lg">Cobrar ${totalPrecio.toLocaleString()}</button>
-        </div>
-      )}
-
-      {productoPesaje && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setProductoPesaje(null)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-xl mb-1 text-stone-900">{productoPesaje.icono} {productoPesaje.nombre}</h3>
-            <p className="text-stone-700 mb-4 font-medium">${(productoPesaje.precioPorKg || 0).toLocaleString()} / kilogramo</p>
-            <input type="number" value={pesoInput} onChange={e => setPesoInput(e.target.value)} placeholder="0" className="w-full p-5 text-5xl text-center font-bold bg-stone-50 rounded-2xl mb-4 border-4 border-amber-400 outline-none text-stone-800" autoFocus />
-            <p className="text-center text-stone-400 text-sm mb-4">Ingresa los gramos</p>
-            {pesoInput && Number(pesoInput) > 0 && (
-              <div className="bg-emerald-50 rounded-2xl p-4 text-center mb-4">
-                <p className="text-sm text-emerald-600">Precio calculado</p>
-                <p className="text-4xl font-bold text-emerald-700">${Math.round((Number(pesoInput) / 1000) * (productoPesaje.precioPorKg || 0)).toLocaleString()}</p>
-              </div>
-            )}
-            <div className="flex gap-3"><button onClick={() => setProductoPesaje(null)} className="flex-1 bg-stone-200 py-3 rounded-xl font-bold text-stone-700 text-lg">Cancelar</button><button onClick={confirmarPeso} disabled={!pesoInput || Number(pesoInput) <= 0} className="flex-1 bg-amber-500 text-white py-3 rounded-xl font-bold text-lg disabled:opacity-30">Agregar</button></div>
+      <div className="p-4 flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-2 flex-wrap mb-4">
+            {cats.map(c => (
+              <button key={c} onClick={() => setCatFilter(c)} className={`px-4 py-1.5 rounded-full text-sm font-medium ${catFilter === c ? 'bg-emerald-500 text-white' : 'bg-white text-stone-700'}`}>
+                {c}
+              </button>
+            ))}
           </div>
-        </div>
-      )}
 
-      {showCart && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center md:justify-center" onClick={() => setShowCart(false)}>
-          <div className="bg-white w-full md:max-w-lg md:rounded-3xl rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4"><h2 className="font-bold text-xl text-stone-900">Carrito ({totalItems} items)</h2><button onClick={() => setShowCart(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5 text-stone-800" /></button></div>
-            {cart.map(i => (
-              <div key={i.id} className="flex items-center justify-between py-3 border-b border-stone-100 gap-2">
-                <span className="text-sm flex-1 font-medium text-stone-900 truncate">{i.icono} {i.nombre}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: Math.max(1, x.cantidad - 1), subtotal: x.precioUnitario * Math.max(1, x.cantidad - 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Minus className="w-4 h-4 text-stone-800" /></button>
-                  <span className="w-7 text-center font-bold text-stone-900">{i.cantidad}</span>
-                  <button onClick={() => setCart(prev => prev.map(x => x.id === i.id ? { ...x, cantidad: x.cantidad + 1, subtotal: x.precioUnitario * (x.cantidad + 1) } : x))} className="p-1.5 bg-stone-100 rounded-lg"><Plus className="w-4 h-4 text-stone-800" /></button>
-                  <button onClick={() => setCart(prev => prev.filter(x => x.id !== i.id))} className="p-1.5 text-red-500 ml-1"><Trash2 className="w-4 h-4" /></button>
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+            <input type="text" placeholder="Buscar producto..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-xl border border-stone-300 bg-white text-stone-800" />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {filtered.map(p => (
+              <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition" onClick={() => addItem(p)}>
+                <div className="text-3xl">{p.icono}</div>
+                <div className="font-semibold text-stone-800 text-sm truncate">{p.nombre}</div>
+                <div className="text-xs text-stone-600">{p.cat}</div>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-sm font-bold text-emerald-600">${(p.precio || 0).toLocaleString()}</span>
+                  <span className="text-xs text-stone-600">Stock: {p.stock}</span>
                 </div>
-                <span className="w-24 text-right font-bold text-emerald-600 text-base shrink-0">${i.subtotal.toLocaleString()}</span>
+                {p.esPeso && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Por peso</span>}
               </div>
             ))}
-            <div className="mt-4 pt-4 border-t-2 border-stone-200"><p className="text-right text-2xl font-bold text-stone-900">Total: <span className="text-emerald-600">${totalPrecio.toLocaleString()}</span></p><button onClick={() => { setShowCart(false); setShowPay(true) }} className="w-full bg-emerald-500 text-white rounded-2xl py-4 font-bold text-lg mt-3">Cobrar</button></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Carrito */}
+      {showCart && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Carrito</h3>
+              <button onClick={() => setShowCart(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            {cart.length === 0 ? <p className="text-stone-500 text-center py-4">Carrito vacÃ­o</p> : (
+              <>
+                {cart.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3 border-b border-stone-100 py-2">
+                    <span className="text-2xl">{item.icono}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-stone-800 truncate">{item.nombre}</div>
+                      <div className="text-xs text-stone-600">${item.precioUnitario.toLocaleString()} c/u</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setCart(prev => prev.map((i, j) => j === idx ? { ...i, cantidad: i.cantidad - 1, subtotal: (i.precioUnitario) * (i.cantidad - 1) } : i).filter(i => i.cantidad > 0))} className="p-1 hover:bg-stone-100 rounded"><Minus className="w-4 h-4 text-stone-700" /></button>
+                      <span className="w-6 text-center text-sm text-stone-800">{item.cantidad}</span>
+                      <button onClick={() => setCart(prev => prev.map((i, j) => j === idx ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario) * (i.cantidad + 1) } : i))} className="p-1 hover:bg-stone-100 rounded"><Plus className="w-4 h-4 text-stone-700" /></button>
+                    </div>
+                    <button onClick={() => setCart(prev => prev.filter((_, j) => j !== idx))} className="p-1 hover:bg-red-50 text-red-500 rounded"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                ))}
+                <div className="flex justify-between font-bold text-lg mt-4 text-stone-800">
+                  <span>Total</span>
+                  <span>${totalPrecio.toLocaleString()}</span>
+                </div>
+                <button onClick={() => { setShowCart(false); setShowPay(true); }} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Cobrar</button>
+              </>
+            )}
           </div>
         </div>
       )}
 
+      {/* Modal Pago */}
       {showPay && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center md:justify-center" onClick={() => setShowPay(false)}>
-          <div className="bg-white w-full md:max-w-sm md:rounded-3xl rounded-t-3xl p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h2 className="font-bold text-xl mb-3 text-stone-900">Metodo de pago</h2>
-            <p className="text-stone-700 mb-4 font-medium">Total: <span className="text-emerald-600 font-bold text-2xl">${totalPrecio.toLocaleString()}</span></p>
-            <div className="grid grid-cols-3 gap-3 mb-3">
-              <button onClick={() => pay('Efectivo')} className="bg-emerald-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-emerald-600">Efectivo</button>
-              <button onClick={() => pay('Nequi')} className="bg-purple-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-purple-600">Nequi</button>
-              <button onClick={() => pay('Daviplata')} className="bg-red-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-red-600">Daviplata</button><button onClick={() => pay('Bancolombia')} className='bg-yellow-500 text-white rounded-2xl py-5 font-bold text-base hover:bg-yellow-600'>Bancolombia</button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-stone-800 mb-2">Cobrar</h3>
+            <p className="text-2xl font-bold text-emerald-600 mb-4">${totalPrecio.toLocaleString()}</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => pay('Efectivo')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Efectivo</button>
+              <button onClick={() => pay('Nequi')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Nequi</button>
+              <button onClick={() => pay('Bancolombia')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Bancolombia</button>
+              <button onClick={() => pay('Daviplata')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Daviplata</button>
+              <button onClick={() => pay('CrÃ©dito')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">CrÃ©dito</button>
             </div>
-            <button onClick={() => setShowPay(false)} className="w-full py-3 text-stone-500 font-medium">Cancelar</button>
+            <button onClick={() => setShowPay(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Peso */}
+      {pesoModal.producto && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-stone-800 mb-2">Pesar {pesoModal.producto.nombre}</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-stone-700">Cantidad:</span>
+              <input type="number" value={pesoModal.cantidad} onChange={e => setPesoModal({...pesoModal, cantidad: parseFloat(e.target.value) || 1})} className="border border-stone-300 rounded-xl p-2 w-24 text-stone-800" min="0.1" step="0.1" />
+              <select value={pesoModal.unidad} onChange={e => setPesoModal({...pesoModal, unidad: e.target.value})} className="border border-stone-300 rounded-xl p-2 text-stone-800">
+                <option value="gramos">Gramos</option>
+                <option value="kilogramos">Kilogramos</option>
+                <option value="libras">Libras</option>
+              </select>
+            </div>
+            <p className="text-sm text-stone-600 mb-4">Precio por kg: ${(pesoModal.producto.precioPorKg || 0).toLocaleString()}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setPesoModal({ producto: null, cantidad: 1, unidad: 'gramos' })} className="flex-1 border border-stone-300 py-2 rounded-xl text-stone-700">Cancelar</button>
+              <button onClick={confirmarPeso} className="flex-1 bg-emerald-500 text-white py-2 rounded-xl">Agregar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal CrÃ©dito */}
+      {showCreditoModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar CrÃ©dito</h3>
+            <p className="text-sm text-stone-600 mb-4">Total: ${totalPrecio.toLocaleString()}</p>
+            <div className="space-y-3">
+              <input type="text" placeholder="Nombre del cliente" value={creditoData.cliente} onChange={e => setCreditoData({...creditoData, cliente: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              <input type="text" placeholder="TelÃ©fono" value={creditoData.telefono} onChange={e => setCreditoData({...creditoData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              <input type="text" placeholder="DirecciÃ³n" value={creditoData.direccion} onChange={e => setCreditoData({...creditoData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setShowCreditoModal(false); setCreditoData({ cliente: '', telefono: '', direccion: '' }); }} className="flex-1 border border-stone-300 py-2 rounded-xl text-stone-700">Cancelar</button>
+              <button onClick={guardarCredito} className="flex-1 bg-emerald-500 text-white py-2 rounded-xl">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Compartir Accesos */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Compartir Accesos</h3>
+              <button onClick={() => setShowShareModal(false)}><X className="w-5 h-5 text-stone-700" /></button>
+            </div>
+            <p className="text-sm text-stone-600 mb-4">Comparte estos enlaces con tu equipo y clientes</p>
+            <div className="space-y-3">
+              <a
+                href={`https://wa.me/?text=POS%20Vendedor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/pos`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition"
+              >
+                <span className="text-xl">ðŸ’°</span> POS Vendedor
+              </a>
+              <a
+                href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition"
+              >
+                <span className="text-xl">ðŸ›’</span> Tienda Clientes
+              </a>
+              <a
+                href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition"
+              >
+                <span className="text-xl">ðŸ›µ</span> App Repartidor
+              </a>
+            </div>
+            <button onClick={() => setShowShareModal(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cerrar</button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
+
