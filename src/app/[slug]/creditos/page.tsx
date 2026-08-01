@@ -1,5 +1,5 @@
 ﻿import DemoCreditosPage from "@/app/demo/restaurante/creditos/page";
 
-export default function SlugDemoCreditosPage() {
+export default function SlugCreditosPage() {
   return <DemoCreditosPage />;
 }
