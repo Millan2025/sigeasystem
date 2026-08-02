@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";, useSearchParams
+import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -234,6 +234,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
 
 
 

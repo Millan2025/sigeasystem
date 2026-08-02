@@ -645,3 +645,4 @@ setResumen({ ingresos, egresos, saldo, impuestos, retenciones, desglosePagos });
 
 
 
+
