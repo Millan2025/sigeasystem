@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";, useSearchParams
+import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -84,19 +84,19 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       // Calcular resumen usando ventas y compras reales
 const ventasRes = await fetch(`/api/ventas?tenant=${tenantId}`);
 const ventasData = await ventasRes.json();
-const totalVentas = ventasData.success ? ventasData.data.reduce((sum, v) => sum + (v.total || 0), 0) : 0;
+const totalVentas: number = ventasData.success ? ventasData.data.reduce((sum: number, v: any) => sum + (v.total || 0), 0) : 0;
 
 const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
 const comprasData = await comprasRes.json();
-const totalCompras = comprasData.success ? comprasData.data.reduce((sum, c) => sum + (c.total || 0), 0) : 0;
+const totalCompras: number = comprasData.success ? comprasData.data.reduce((sum: number, c: any) => sum + (c.total || 0), 0) : 0;
 
-const ingresos = totalVentas;
-const egresos = totalCompras;
-const saldo = ingresos - egresos;
-const impuestos = 0;
-const retenciones = 0;
-const desglosePagos = {};
-ventasData.data?.forEach(v => {
+const ingresos: number = totalVentas;
+const egresos: number = totalCompras;
+const saldo: number = ingresos - egresos;
+const impuestos: number = 0;
+const retenciones: number = 0;
+const desglosePagos: Record<string, number> = {};
+ventasData.data?.forEach((v: any) => {
   const metodo = v.metodo_pago || 'Otro';
   desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (v.total || 0);
 });
@@ -634,6 +634,8 @@ setResumen({ ingresos, egresos, saldo, impuestos, retenciones, desglosePagos });
     </div>
   );
 }
+
+
 
 
 
