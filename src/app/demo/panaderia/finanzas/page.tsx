@@ -79,7 +79,19 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
+      // Calcular resumen manualmente a partir de transacciones
+const transacciones = data.data || [];
+const ingresos = transacciones.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
+const egresos = transacciones.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
+const saldo = ingresos - egresos;
+const impuestos = transacciones.reduce((sum, t) => sum + (t.iva || 0), 0);
+const retenciones = transacciones.reduce((sum, t) => sum + (t.retencion || 0), 0);
+const desglosePagos = {};
+transacciones.filter(t => t.tipo === 'ingreso').forEach(t => {
+  const metodo = t.metodo_pago || 'Otro';
+  desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.monto || 0);
+});
+setResumen({ ingresos, egresos, saldo, impuestos, retenciones, desglosePagos });
     }
 
     // 2. Cuentas por Cobrar (saldos pendientes de créditos)
@@ -613,6 +625,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 

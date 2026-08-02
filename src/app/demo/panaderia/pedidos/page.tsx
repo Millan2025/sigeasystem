@@ -91,7 +91,7 @@ export default function PedidosPage() {
   const cargarPedidos = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/orders?tenant=${tenantId}`);
+      const res = await fetch(`/api/pedidos?tenant=${tenantId}`);
       const data = await res.json();
       if (data.success) {
         setPedidos(data.data || []);
@@ -120,7 +120,7 @@ export default function PedidosPage() {
 
     try {
       // 1. Actualizar estado en customer_orders
-      const resUpdate = await fetch("/api/orders", {
+      const resUpdate = await fetch("/api/pedidos", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: nuevoEstado }),
@@ -168,7 +168,7 @@ export default function PedidosPage() {
     }
   };
 
-  // Guardar pedido (POST a /api/orders)
+  // Guardar pedido (POST a /api/pedidos)
   const guardarPedido = async () => {
     if (!form.customer_name || form.items.length === 0) {
       alert("Cliente y al menos un producto son obligatorios");
@@ -194,7 +194,7 @@ export default function PedidosPage() {
     };
 
     try {
-      const res = await fetch("/api/orders", {
+      const res = await fetch("/api/pedidos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -486,6 +486,7 @@ export default function PedidosPage() {
     </div>
   );
 }
+
 
 
 
