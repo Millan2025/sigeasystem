@@ -80,14 +80,14 @@ export default function FinanzasPage() {
     if (data.success) {
       setTransacciones(data.data || []);
       // Calcular resumen manualmente a partir de transacciones
-const transacciones = data.data || [];
-const ingresos = transacciones.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
-const egresos = transacciones.filter(t => t.tipo === 'egreso').reduce((sum, t) => sum + (t.total || t.monto || 0), 0);
+const transacciones: any[] = data.data || [];
+const ingresos = transacciones.filter((t: any) => t.tipo === 'ingreso').reduce((sum: number, t: any) => sum + (t.total || t.monto || 0), 0);
+const egresos = transacciones.filter((t: any) => t.tipo === 'egreso').reduce((sum: number, t: any) => sum + (t.total || t.monto || 0), 0);
 const saldo = ingresos - egresos;
-const impuestos = transacciones.reduce((sum, t) => sum + (t.iva || 0), 0);
-const retenciones = transacciones.reduce((sum, t) => sum + (t.retencion || 0), 0);
-const desglosePagos = {};
-transacciones.filter(t => t.tipo === 'ingreso').forEach(t => {
+const impuestos = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
+const retenciones = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
+const desglosePagos: Record<string, number> = {};
+transacciones.filter((t: any) => t.tipo === 'ingreso').forEach((t: any) => {
   const metodo = t.metodo_pago || 'Otro';
   desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.monto || 0);
 });
@@ -625,6 +625,7 @@ setResumen({ ingresos, egresos, saldo, impuestos, retenciones, desglosePagos });
     </div>
   );
 }
+
 
 
 
