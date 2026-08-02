@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";, useSearchParams
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -63,7 +63,9 @@ export default function FinanzasPage() {
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[1] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const searchParams = useSearchParams();
+const tenantFromUrl = searchParams.get("tenant");
+const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -79,17 +81,24 @@ export default function FinanzasPage() {
     const data = await res.json();
     if (data.success) {
       setTransacciones(data.data || []);
-      // Calcular resumen manualmente a partir de transacciones
-const transacciones: any[] = data.data || [];
-const ingresos = transacciones.filter((t: any) => t.tipo === 'ingreso').reduce((sum: number, t: any) => sum + (t.total || t.monto || 0), 0);
-const egresos = transacciones.filter((t: any) => t.tipo === 'egreso').reduce((sum: number, t: any) => sum + (t.total || t.monto || 0), 0);
+      // Calcular resumen usando ventas y compras reales
+const ventasRes = await fetch(`/api/ventas?tenant=${tenantId}`);
+const ventasData = await ventasRes.json();
+const totalVentas = ventasData.success ? ventasData.data.reduce((sum, v) => sum + (v.total || 0), 0) : 0;
+
+const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
+const comprasData = await comprasRes.json();
+const totalCompras = comprasData.success ? comprasData.data.reduce((sum, c) => sum + (c.total || 0), 0) : 0;
+
+const ingresos = totalVentas;
+const egresos = totalCompras;
 const saldo = ingresos - egresos;
-const impuestos = transacciones.reduce((sum: number, t: any) => sum + (t.iva || 0), 0);
-const retenciones = transacciones.reduce((sum: number, t: any) => sum + (t.retencion || 0), 0);
-const desglosePagos: Record<string, number> = {};
-transacciones.filter((t: any) => t.tipo === 'ingreso').forEach((t: any) => {
-  const metodo = t.metodo_pago || 'Otro';
-  desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.monto || 0);
+const impuestos = 0;
+const retenciones = 0;
+const desglosePagos = {};
+ventasData.data?.forEach(v => {
+  const metodo = v.metodo_pago || 'Otro';
+  desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (v.total || 0);
 });
 setResumen({ ingresos, egresos, saldo, impuestos, retenciones, desglosePagos });
     }
@@ -625,6 +634,8 @@ setResumen({ ingresos, egresos, saldo, impuestos, retenciones, desglosePagos });
     </div>
   );
 }
+
+
 
 
 

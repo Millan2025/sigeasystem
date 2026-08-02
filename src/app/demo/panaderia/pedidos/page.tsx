@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";, useSearchParams
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -54,7 +54,9 @@ export default function PedidosPage() {
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[1] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const searchParams = useSearchParams();
+const tenantFromUrl = searchParams.get("tenant");
+const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
@@ -486,6 +488,7 @@ export default function PedidosPage() {
     </div>
   );
 }
+
 
 
 
