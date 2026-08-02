@@ -1,5 +1,4 @@
 ﻿"use client";
-
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
@@ -21,10 +20,11 @@ export default function POSPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[1] || "restaurante";
-  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const tenantFromUrl = searchParams.get("tenant");
-  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+const negocioSlug = pathParts[1] || "restaurante";
+const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+
+const tenantFromUrl = searchParams.get("tenant");
+const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoria = negocio?.categoria || "";
   const titulo = negocio?.titulo || "Negocio";
 
@@ -385,3 +385,4 @@ export default function POSPage() {
     </div>
   );
 }
+
