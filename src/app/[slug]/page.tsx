@@ -1,12 +1,19 @@
-﻿import NegocioHome from "@/components/NegocioHome";
+﻿"use client";
 
-interface Props {
-  params: Promise<{ slug: string }>
-  searchParams: Promise<{ tenant?: string }>
-}
+import NegocioHome from "@/components/NegocioHome";
+import { useParams, useSearchParams } from "next/navigation";
 
-export default async function NegocioPage({ params, searchParams }: Props) {
-  const { slug } = await params;
-  const { tenant } = await searchParams;
+export default function SlugPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const tenant = searchParams.get("tenant") || "";
+  
+  // Manejar slug como string o array
+  let slug = params.slug;
+  if (Array.isArray(slug)) {
+    slug = slug[0];
+  }
+  slug = slug || "restaurante";
+  
   return <NegocioHome negocioSlug={slug} tenantId={tenant} />;
 }

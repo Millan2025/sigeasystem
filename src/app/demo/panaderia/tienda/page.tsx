@@ -1,18 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 interface Producto {
   id: string;
@@ -106,7 +99,7 @@ export default function TiendaPage() {
       return;
     }
     // Aquí se integrará con /api/orders en el futuro
-    alert("✅ Pedido realizado con éxito. Pronto recibirás confirmación.");
+    alert("âœ… Pedido realizado con éxito. Pronto recibirás confirmación.");
     setCarrito([]);
     setShowCart(false);
   };
@@ -148,7 +141,7 @@ export default function TiendaPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-                <div className="text-4xl text-center">{p.icono || "📦"}</div>
+                <div className="text-4xl text-center">{p.icono || "ðŸ“¦"}</div>
                 <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
                 <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
                 <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
@@ -211,3 +204,5 @@ export default function TiendaPage() {
     </div>
   );
 }
+
+

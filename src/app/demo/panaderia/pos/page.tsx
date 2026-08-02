@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
@@ -14,14 +14,7 @@ interface CartItem {
   esPeso?: boolean; unidad?: string;
 }
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 export default function POSPage() {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
@@ -44,7 +37,7 @@ export default function POSPage() {
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  // 🔥 Función para cargar productos (reutilizable)
+  // ðŸ”¥ Función para cargar productos (reutilizable)
   const cargarProductos = () => {
     const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
     fetch(url)
@@ -54,7 +47,7 @@ export default function POSPage() {
           setProductos(d.data.map((p: any) => ({
             id: p.id,
             nombre: p.nombre,
-            icono: p.icono || '📦',
+            icono: p.icono || 'ðŸ“¦',
             precio: p.precio || 0,
             stock: p.stock || 0,
             cat: p.categoria || 'General',
@@ -153,11 +146,11 @@ export default function POSPage() {
 
       const data = await res.json();
       if (data.success) {
-        setMsg('✅ Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
+        setMsg('âœ… Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
         setShowCart(false);
-        // 🔥 Recargar productos para actualizar stock
+        // ðŸ”¥ Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
@@ -187,13 +180,13 @@ export default function POSPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMsg('✅ Crédito registrado - $' + totalPrecio.toLocaleString());
+        setMsg('âœ… Crédito registrado - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
         setShowCart(false);
         setShowCreditoModal(false);
         setCreditoData({ cliente: '', telefono: '', direccion: '' });
-        // 🔥 Recargar productos para actualizar stock
+        // ðŸ”¥ Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
@@ -364,7 +357,7 @@ export default function POSPage() {
                 rel="noopener noreferrer"
                 className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition"
               >
-                <span className="text-xl">💰</span> POS Vendedor
+                <span className="text-xl">ðŸ’°</span> POS Vendedor
               </a>
               <a
                 href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`}
@@ -372,7 +365,7 @@ export default function POSPage() {
                 rel="noopener noreferrer"
                 className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition"
               >
-                <span className="text-xl">🛒</span> Tienda Clientes
+                <span className="text-xl">ðŸ›’</span> Tienda Clientes
               </a>
               <a
                 href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`}
@@ -380,7 +373,7 @@ export default function POSPage() {
                 rel="noopener noreferrer"
                 className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition"
               >
-                <span className="text-xl">🛵</span> App Repartidor
+                <span className="text-xl">ðŸ›µ</span> App Repartidor
               </a>
             </div>
             <button onClick={() => setShowShareModal(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cerrar</button>
@@ -390,3 +383,5 @@ export default function POSPage() {
     </div>
   );
 }
+
+

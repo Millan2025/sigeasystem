@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -14,14 +14,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 export default function ComprasPage() {
   const pathname = usePathname();
@@ -54,7 +47,7 @@ export default function ComprasPage() {
     observaciones: "",
     unidad: "unidad",
     tipo_unidad: "unidad",
-    icono: "📦",
+    icono: "ðŸ“¦",
   });
 
   const cargarDatos = async () => {
@@ -101,7 +94,7 @@ export default function ComprasPage() {
   };
 
   // ============================================
-  // FUNCIÓN PARA REGISTRAR LA COMPRA
+  // FUNCIÃ“N PARA REGISTRAR LA COMPRA
   // ============================================
   const registrarCompra = async () => {
     if (seleccionados.length === 0) {
@@ -145,7 +138,7 @@ export default function ComprasPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`✅ Compra #${data.data.compra.id} registrada exitosamente.`);
+        setMensaje(`âœ… Compra #${data.data.compra.id} registrada exitosamente.`);
         setSeleccionados([]);
         cargarDatos();
       } else {
@@ -184,7 +177,7 @@ export default function ComprasPage() {
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
     XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
-    alert(`📦 Orden de compra generada con ${data.length} productos.`);
+    alert(`ðŸ“¦ Orden de compra generada con ${data.length} productos.`);
   };
 
   // ============================================
@@ -227,7 +220,7 @@ export default function ComprasPage() {
     if (data.success) {
       setShowImportModal(false);
       setEditando(null);
-      setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
+      setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "ðŸ“¦" });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -235,7 +228,7 @@ export default function ComprasPage() {
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm("¿Eliminar este producto?")) return;
+    if (!confirm("Â¿Eliminar este producto?")) return;
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -258,7 +251,7 @@ export default function ComprasPage() {
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "📦",
+      icono: p.icono || "ðŸ“¦",
     });
     setShowImportModal(true);
   };
@@ -298,7 +291,7 @@ export default function ComprasPage() {
         <button
           onClick={() => {
             setEditando(null);
-            setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "📦" });
+            setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "ðŸ“¦" });
             setShowImportModal(true);
           }}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -323,8 +316,8 @@ export default function ComprasPage() {
         >
           <p className={`font-medium ${productosCriticos.length > 0 ? "text-red-700" : "text-emerald-700"}`}>
             {productosCriticos.length > 0
-              ? `⚠️ ${productosCriticos.length} productos con stock por debajo del mínimo`
-              : "✅ Todos los productos tienen stock adecuado"}
+              ? `âš ï¸ ${productosCriticos.length} productos con stock por debajo del mínimo`
+              : "âœ… Todos los productos tienen stock adecuado"}
           </p>
         </div>
 
@@ -568,4 +561,6 @@ export default function ComprasPage() {
     </div>
   );
 }
+
+
 

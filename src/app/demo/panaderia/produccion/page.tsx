@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
@@ -21,16 +21,9 @@ import {
 } from "lucide-react";
 
 // ============================================
-// CONFIGURACIÓN DE NEGOCIOS
+// CONFIGURACIÃ“N DE NEGOCIOS
 // ============================================
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 // ============================================
 // TIPOS Y ESTADOS
@@ -78,7 +71,7 @@ export default function ProduccionPage() {
 
   const esRestaurante = negocioSlug === "restaurante";
 
-  // ========== ESTADO DE ÓRDENES ==========
+  // ========== ESTADO DE Ã“RDENES ==========
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [loadingOrdenes, setLoadingOrdenes] = useState(true);
   const [showModalOrden, setShowImportModalOrden] = useState(false);
@@ -104,7 +97,7 @@ export default function ProduccionPage() {
   const [tab, setTab] = useState<"ordenes" | "jornada">("ordenes");
 
   // ============================================
-  // CARGA DE ÓRDENES (desde Supabase)
+  // CARGA DE Ã“RDENES (desde Supabase)
   // ============================================
   const cargarOrdenes = async () => {
     setLoadingOrdenes(true);
@@ -210,7 +203,7 @@ export default function ProduccionPage() {
           audioRef.current.play().catch(() => {});
         }
         setContadorNuevas((prev) => prev + 1);
-        setNotificacion(`📢 Nueva orden #${data.data.id.slice(0, 6)}`);
+        setNotificacion(`ðŸ“¢ Nueva orden #${data.data.id.slice(0, 6)}`);
         setTimeout(() => setNotificacion(null), 5000);
         setShowImportModalOrden(false);
         setNuevaOrden({
@@ -327,7 +320,7 @@ export default function ProduccionPage() {
               tab === "ordenes" ? "bg-white shadow-sm text-stone-800" : "text-stone-600 hover:bg-stone-200"
             }`}
           >
-            Órdenes
+            Ã“rdenes
           </button>
           {esRestaurante && (
             <button
@@ -475,17 +468,17 @@ export default function ProduccionPage() {
                       <div className="space-y-1 mb-2">
                         {orden.productos.map((p, i) => (
                           <div key={i} className="text-sm text-stone-700">
-                            {p.cantidad} × {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
+                            {p.cantidad} Ã— {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
                           </div>
                         ))}
                       </div>
 
                       {orden.nota && (
-                        <p className="text-xs text-stone-500 mb-2">📝 {orden.nota}</p>
+                        <p className="text-xs text-stone-500 mb-2">ðŸ“ {orden.nota}</p>
                       )}
 
                       <div className="flex items-center justify-between text-xs text-stone-400">
-                        <span>📅 {new Date(orden.creado_en).toLocaleString()}</span>
+                        <span>ðŸ“… {new Date(orden.creado_en).toLocaleString()}</span>
                         <span className={`px-2 py-0.5 rounded-full ${estadoInfo.color}`}>
                           <EstadoIcon className="w-3 h-3 inline mr-1" />
                           {estadoInfo.label}
@@ -514,7 +507,7 @@ export default function ProduccionPage() {
 
                       {vista === "admin" && (
                         <div className="mt-3 text-xs text-stone-400">
-                          {orden.producido_por && <span>👤 {orden.producido_por}</span>}
+                          {orden.producido_por && <span>ðŸ‘¤ {orden.producido_por}</span>}
                         </div>
                       )}
                     </div>
@@ -671,7 +664,7 @@ export default function ProduccionPage() {
                       }}
                       className="text-red-500 hover:bg-red-50 rounded-xl p-2"
                     >
-                      ×
+                      Ã—
                     </button>
                   </div>
                 ))}
@@ -747,7 +740,7 @@ export default function ProduccionPage() {
                     className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
                   />
                   <button onClick={() => eliminarJornada(idx)} className="text-red-500 hover:bg-red-50 rounded-xl p-2">
-                    ×
+                    Ã—
                   </button>
                 </div>
               ))}
@@ -774,4 +767,6 @@ export default function ProduccionPage() {
     </div>
   );
 }
+
+
 

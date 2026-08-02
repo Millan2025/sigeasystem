@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -6,14 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 export default function ReportesPage() {
   const pathname = usePathname();
@@ -208,7 +201,7 @@ export default function ReportesPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Últimas Ventas</h3>
+          <h3 className="font-semibold text-stone-800 mb-3">Ãšltimas Ventas</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
@@ -239,3 +232,5 @@ export default function ReportesPage() {
     </div>
   );
 }
+
+

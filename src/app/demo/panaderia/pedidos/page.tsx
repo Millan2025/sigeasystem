@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -17,14 +17,7 @@ import {
   X,
 } from "lucide-react";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 interface PedidoItem {
   product_id: string;
@@ -161,7 +154,7 @@ export default function PedidosPage() {
         });
         const dataProd = await resProd.json();
         if (dataProd.success) {
-          setMensaje(`✅ Orden de producción creada para pedido #${pedido.id.slice(0, 6)}`);
+          setMensaje(`âœ… Orden de producción creada para pedido #${pedido.id.slice(0, 6)}`);
           setTimeout(() => setMensaje(""), 5000);
         } else {
           alert("Error al crear orden de producción: " + dataProd.error);
@@ -208,7 +201,7 @@ export default function PedidosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`✅ Pedido #${data.data.id.slice(0, 6)} creado`);
+        setMensaje(`âœ… Pedido #${data.data.id.slice(0, 6)} creado`);
         setTimeout(() => setMensaje(""), 5000);
         setShowImportModal(false);
         setForm({ customer_name: "", metodo_pago: "Efectivo", direccion_entrega: "", items: [] });
@@ -223,7 +216,7 @@ export default function PedidosPage() {
 
   // Eliminar pedido (solo si está pendiente)
   const eliminarPedido = async (id: string) => {
-    if (!confirm("¿Eliminar este pedido?")) return;
+    if (!confirm("Â¿Eliminar este pedido?")) return;
     // No implementamos DELETE en API, pero se puede agregar
     alert("Eliminación no implementada en API.");
   };
@@ -329,10 +322,10 @@ export default function PedidosPage() {
                     </span>
                   </div>
                   <p className="text-sm text-stone-700 font-medium">{pedido.customer_name || "Cliente"}</p>
-                  <p className="text-sm text-stone-500">📦 {pedido.order_items?.length || 0} productos</p>
-                  <p className="text-sm text-stone-500">💰 ${pedido.total?.toLocaleString()}</p>
+                  <p className="text-sm text-stone-500">ðŸ“¦ {pedido.order_items?.length || 0} productos</p>
+                  <p className="text-sm text-stone-500">ðŸ’° ${pedido.total?.toLocaleString()}</p>
                   <p className="text-xs text-stone-400">Pago: {pedido.metodo_pago}</p>
-                  {pedido.direccion_entrega && <p className="text-xs text-stone-400">📍 {pedido.direccion_entrega}</p>}
+                  {pedido.direccion_entrega && <p className="text-xs text-stone-400">ðŸ“ {pedido.direccion_entrega}</p>}
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
@@ -474,7 +467,7 @@ export default function PedidosPage() {
               <ul className="space-y-1 mt-1">
                 {detallePedido.order_items?.map((item, i) => (
                   <li key={i} className="text-sm text-stone-700 flex justify-between">
-                    <span>{item.quantity} × {item.productos?.nombre || "Producto"}</span>
+                    <span>{item.quantity} Ã— {item.productos?.nombre || "Producto"}</span>
                     <span>${(item.quantity * item.price).toLocaleString()}</span>
                   </li>
                 ))}
@@ -493,6 +486,8 @@ export default function PedidosPage() {
     </div>
   );
 }
+
+
 
 
 

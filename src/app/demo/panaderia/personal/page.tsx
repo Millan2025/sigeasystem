@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -15,14 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 interface Empleado {
   id: string;
@@ -142,7 +135,7 @@ export default function PersonalPage() {
   };
 
   const eliminarEmpleado = (id: string) => {
-    if (!confirm("¿Eliminar este empleado?")) return;
+    if (!confirm("Â¿Eliminar este empleado?")) return;
     guardarEmpleados(empleados.filter((e) => e.id !== id));
   };
 
@@ -281,10 +274,10 @@ export default function PersonalPage() {
                             Check-in
                           </button>
                         ) : tieneCheckOut ? (
-                          <span className="text-xs text-stone-500">✅ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
+                          <span className="text-xs text-stone-500">âœ… {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-blue-600">⏳ {asistenciaHoy?.hora_entrada}</span>
+                            <span className="text-xs text-blue-600">â³ {asistenciaHoy?.hora_entrada}</span>
                             <button onClick={() => registrarAsistencia(emp.id)} className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full hover:bg-orange-600">
                               Check-out
                             </button>
@@ -398,4 +391,6 @@ export default function PersonalPage() {
     </div>
   );
 }
+
+
 
