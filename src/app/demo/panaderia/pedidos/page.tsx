@@ -52,7 +52,7 @@ const LISTA_ESTADOS = ["pendiente", "confirmado", "preparando", "en_camino", "en
 export default function PedidosPage() {
   const pathname = usePathname();
   const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[2] || "restaurante";
+  const negocioSlug = pathParts[1] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
   const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
@@ -486,6 +486,7 @@ export default function PedidosPage() {
     </div>
   );
 }
+
 
 
 
