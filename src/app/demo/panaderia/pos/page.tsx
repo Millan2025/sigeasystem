@@ -1,9 +1,11 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
+
+import { NEGOCIOS } from "@/config/negocios";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -15,25 +17,16 @@ interface CartItem {
   esPeso?: boolean; unidad?: string;
 }
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
-
 export default function POSPage() {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const pathParts = pathname?.split("/") || [];
-const negocioSlug = pathParts[1] || "restaurante";
-const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-const searchParams = useSearchParams();
-const tenantFromUrl = searchParams.get("tenant");
-const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
-  const titulo = negocio?.titulo || 'Negocio';
-  const categoria = negocio?.categoria || '';
+  const negocioSlug = pathParts[1] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const tenantFromUrl = searchParams.get("tenant");
+  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const categoria = negocio?.categoria || "";
+  const titulo = negocio?.titulo || "Negocio";
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -47,7 +40,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  // ­ƒöÑ Funci├│n para cargar productos (reutilizable)
+  // Función para cargar productos (reutilizable)
   const cargarProductos = () => {
     const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
     fetch(url)
@@ -57,7 +50,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
           setProductos(d.data.map((p: any) => ({
             id: p.id,
             nombre: p.nombre,
-            icono: p.icono || '­ƒôª',
+            icono: p.icono || '📦',
             precio: p.precio || 0,
             stock: p.stock || 0,
             cat: p.categoria || 'General',
@@ -70,7 +63,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       .catch(() => {});
   };
 
-  // Cargar productos al montar el componente y cuando cambie tenant o categor├¡a
+  // Cargar productos al montar el componente y cuando cambie tenant o categoría
   useEffect(() => {
     cargarProductos();
   }, [tenantId, categoria]);
@@ -88,8 +81,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     }
     setCart(prev => {
       const exist = prev.find(i => i.id === p.id);
-      if (exist) return prev.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario) * (i.cantidad + 1) } : i);
-      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0, esPeso: false }];
+      if (exist) return prev.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1, subtotal: (i.precioUnitario || 0) * (i.cantidad + 1) } : i);
+      return [...prev, { id: p.id, nombre: p.nombre, icono: p.icono, cantidad: 1, precioUnitario: p.precio || 0, subtotal: p.precio || 0 }];
     });
   };
 
@@ -127,7 +120,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   const pay = async (metodo: string) => {
     if (cart.length === 0) return;
 
-    if (metodo === 'Cr├®dito') {
+    if (metodo === 'Crédito') {
       setShowCreditoModal(true);
       return;
     }
@@ -156,18 +149,18 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
 
       const data = await res.json();
       if (data.success) {
-        setMsg('Ô£à Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
+        setMsg('✅ Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
         setShowCart(false);
-        // ­ƒöÑ Recargar productos para actualizar stock
+        // Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
         alert('Error al registrar venta: ' + data.error);
       }
     } catch (error) {
-      alert('Error de conexi├│n');
+      alert('Error de conexión');
     }
   };
 
@@ -190,20 +183,19 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       });
       const data = await res.json();
       if (data.success) {
-        setMsg('Ô£à Cr├®dito registrado - $' + totalPrecio.toLocaleString());
+        setMsg('✅ Crédito registrado - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
         setShowCart(false);
         setShowCreditoModal(false);
         setCreditoData({ cliente: '', telefono: '', direccion: '' });
-        // ­ƒöÑ Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
         alert('Error: ' + data.error);
       }
     } catch (error) {
-      alert('Error de conexi├│n');
+      alert('Error de conexión');
     }
   };
 
@@ -263,7 +255,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               <h3 className="text-lg font-bold text-stone-800">Carrito</h3>
               <button onClick={() => setShowCart(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
-            {cart.length === 0 ? <p className="text-stone-500 text-center py-4">Carrito vac├¡o</p> : (
+            {cart.length === 0 ? <p className="text-stone-500 text-center py-4">Carrito vacío</p> : (
               <>
                 {cart.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 border-b border-stone-100 py-2">
@@ -302,7 +294,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               <button onClick={() => pay('Nequi')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Nequi</button>
               <button onClick={() => pay('Bancolombia')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Bancolombia</button>
               <button onClick={() => pay('Daviplata')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Daviplata</button>
-              <button onClick={() => pay('Cr├®dito')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Cr├®dito</button>
+              <button onClick={() => pay('Crédito')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Crédito</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cancelar</button>
           </div>
@@ -332,16 +324,16 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Cr├®dito */}
+      {/* Modal Crédito */}
       {showCreditoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar Cr├®dito</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar Crédito</h3>
             <p className="text-sm text-stone-600 mb-4">Total: ${totalPrecio.toLocaleString()}</p>
             <div className="space-y-3">
               <input type="text" placeholder="Nombre del cliente" value={creditoData.cliente} onChange={e => setCreditoData({...creditoData, cliente: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
-              <input type="text" placeholder="Tel├®fono" value={creditoData.telefono} onChange={e => setCreditoData({...creditoData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
-              <input type="text" placeholder="Direcci├│n" value={creditoData.direccion} onChange={e => setCreditoData({...creditoData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              <input type="text" placeholder="Teléfono" value={creditoData.telefono} onChange={e => setCreditoData({...creditoData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              <input type="text" placeholder="Dirección" value={creditoData.direccion} onChange={e => setCreditoData({...creditoData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowCreditoModal(false); setCreditoData({ cliente: '', telefono: '', direccion: '' }); }} className="flex-1 border border-stone-300 py-2 rounded-xl text-stone-700">Cancelar</button>
@@ -367,7 +359,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 rel="noopener noreferrer"
                 className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition"
               >
-                <span className="text-xl">­ƒÆ░</span> POS Vendedor
+                <span className="text-xl">📱</span> POS Vendedor
               </a>
               <a
                 href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`}
@@ -375,7 +367,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 rel="noopener noreferrer"
                 className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition"
               >
-                <span className="text-xl">­ƒøÆ</span> Tienda Clientes
+                <span className="text-xl">🛒</span> Tienda Clientes
               </a>
               <a
                 href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`}
@@ -383,7 +375,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 rel="noopener noreferrer"
                 className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition"
               >
-                <span className="text-xl">­ƒøÁ</span> App Repartidor
+                <span className="text-xl">🛵</span> App Repartidor
               </a>
             </div>
             <button onClick={() => setShowShareModal(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cerrar</button>
@@ -393,4 +385,3 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
