@@ -51,9 +51,9 @@ export default function InventarioPage() {
   });
 
   const pathParts = pathname?.split("/") || [];
-  const negocioSlug = pathParts[1] || "restaurante";
-  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const searchParams = useSearchParams();
+const negocioSlug = pathParts[1] || "restaurante";
+const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+const searchParams = useSearchParams();
 const tenantFromUrl = searchParams.get("tenant");
 const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoriaNegocio = negocio?.categoria || "";
@@ -834,6 +834,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
 
 
 
