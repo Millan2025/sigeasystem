@@ -1,10 +1,18 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import BackButton from "@/components/BackButton";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
+
+const NEGOCIOS = {
+  panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
+  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
+};
 
 interface Producto {
   id: string;
@@ -13,16 +21,10 @@ interface Producto {
   stock: number;
   icono: string;
   categoria: string;
-  imagen_url?: string;
 }
 
 export default function TiendaPage() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const tenantId = searchParams.get("tenant") || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
-  const negocioSlug = searchParams.get("slug") || "restaurante";
-  const categoriaNegocio = "";
-
   const [productos, setProductos] = useState<Producto[]>([]);
   const [carrito, setCarrito] = useState<any[]>([]);
   const [showCart, setShowCart] = useState(false);
@@ -31,6 +33,12 @@ export default function TiendaPage() {
   const [mensaje, setMensaje] = useState("");
   const [checkoutData, setCheckoutData] = useState({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
   const [loading, setLoading] = useState(true);
+
+  const pathParts = pathname?.split("/") || [];
+  const negocioSlug = pathParts[2] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const tenantId = negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const categoriaNegocio = negocio?.categoria || "";
 
   const cargarProductos = () => {
     setLoading(true);
@@ -47,11 +55,13 @@ export default function TiendaPage() {
     cargarProductos();
   }, [tenantId, categoriaNegocio]);
 
+  // Cargar carrito desde localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`carrito_${negocioSlug}`);
     if (saved) setCarrito(JSON.parse(saved));
   }, []);
 
+  // Guardar carrito en localStorage
   useEffect(() => {
     localStorage.setItem(`carrito_${negocioSlug}`, JSON.stringify(carrito));
   }, [carrito]);
@@ -90,54 +100,24 @@ export default function TiendaPage() {
 
   const totalCarrito = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
-    const finalizarPedido = async () => {
+  const finalizarPedido = async () => {
     if (carrito.length === 0) {
       alert("Carrito vacío");
       return;
     }
-
-    const items = carrito.map(item => ({
-      producto_id: item.id,
-      cantidad: item.cantidad,
-      precio: item.precio
-    }));
-
-    try {
-      const res = await fetch("/api/pedidos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          cliente: checkoutData.nombre || "Cliente",
-          direccion: checkoutData.direccion,
-          telefono: checkoutData.telefono,
-          metodo_pago: checkoutData.metodo_pago,
-          total: totalCarrito,
-          items: items,
-          observaciones: ""
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        const pedidoId = data.data.id;
-        setMensaje("✅ Pedido #" + pedidoId + " registrado con éxito.");
-        setCarrito([]);
-        setShowCart(false);
-        setCheckoutData({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
-        setTimeout(() => setMensaje(""), 5000);
-      } else {
-        alert("Error al registrar pedido: " + data.error);
-      }
-    } catch (error) {
-      alert("Error de conexión al servidor");
-    }
+    // Aquí se integrará con /api/orders en el futuro
+    alert("✅ Pedido realizado con éxito. Pronto recibirás confirmación.");
+    setCarrito([]);
+    setShowCart(false);
   };
 
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
-        <BackButton />
-        <h1 className="text-xl font-bold text-stone-800">Tienda</h1>
+        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
+          <ArrowLeft className="w-5 h-5 text-stone-700" />
+        </Link>
+        <h1 className="text-xl font-bold text-stone-800">Tienda - {negocio?.titulo}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -168,11 +148,7 @@ export default function TiendaPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-                {p.imagen_url ? (
-                  <img src={p.imagen_url} alt={p.nombre} className="w-full h-32 object-cover rounded-xl mb-2" />
-                ) : (
-                  <div className="text-4xl text-center mb-2">{p.icono || "📦"}</div>
-                )}
+                <div className="text-4xl text-center">{p.icono || "📦"}</div>
                 <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
                 <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
                 <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
@@ -197,11 +173,7 @@ export default function TiendaPage() {
               <>
                 {carrito.map(item => (
                   <div key={item.id} className="flex items-center gap-3 border-b border-stone-100 py-2">
-                    {item.imagen_url ? (
-                      <img src={item.imagen_url} alt={item.nombre} className="w-12 h-12 object-cover rounded-lg" />
-                    ) : (
-                      <span className="text-2xl">{item.icono}</span>
-                    )}
+                    <span className="text-2xl">{item.icono}</span>
                     <div className="flex-1">
                       <p className="font-medium text-stone-800">{item.nombre}</p>
                       <p className="text-sm text-stone-600">${item.precio.toLocaleString()}</p>
@@ -228,7 +200,6 @@ export default function TiendaPage() {
                     <option value="Bancolombia">Bancolombia</option>
                     <option value="Daviplata">Daviplata</option>
                     <option value="Crédito">Crédito</option>
-                    <option value="Otros">Otros</option>
                   </select>
                 </div>
                 <button onClick={finalizarPedido} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Finalizar Pedido</button>
@@ -240,13 +211,3 @@ export default function TiendaPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
