@@ -19,7 +19,7 @@ import { NEGOCIOS } from "@/config/negocios";
 export default function POSPage() {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const pathParts = pathname?.split('/') || [];
-  const negocioSlug = pathParts[2] || 'restaurante';
+  const negocioSlug = pathParts[1] || 'restaurante';
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
   const tenantId = negocio?.tenantId || '7e045520-5e36-4e3f-a39f-10ea7d6dce76';
   const titulo = negocio?.titulo || 'Negocio';
@@ -383,5 +383,6 @@ export default function POSPage() {
     </div>
   );
 }
+
 
 
