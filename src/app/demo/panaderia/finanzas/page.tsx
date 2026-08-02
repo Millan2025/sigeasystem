@@ -157,7 +157,7 @@ export default function FinanzasPage() {
   };
 
   const eliminarTransaccion = async (id: string) => {
-    if (!confirm("Â¿Eliminar esta transacción?")) return;
+    if (!confirm("¿Eliminar esta transacción?")) return;
     const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -613,6 +613,7 @@ export default function FinanzasPage() {
     </div>
   );
 }
+
 
 
 
