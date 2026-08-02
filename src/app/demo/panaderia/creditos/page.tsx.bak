@@ -1,8 +1,7 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
 
@@ -18,14 +17,7 @@ interface Credito {
   tenant_id: string;
 }
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 export default function CreditosPage() {
   const pathname = usePathname();
@@ -34,9 +26,9 @@ export default function CreditosPage() {
   const [abono, setAbono] = useState<{ id: string; monto: number } | null>(null);
 
   const pathParts = pathname?.split("/") || [];
-const negocioSlug = pathParts[1] || "restaurante";
-const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-const searchParams = useSearchParams();
+  const negocioSlug = pathParts[1] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const searchParams = useSearchParams();
 const tenantFromUrl = searchParams.get("tenant");
 const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
@@ -56,7 +48,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
 
   const registrarAbono = async (id: string) => {
     if (!abono || abono.monto <= 0) {
-      alert("Ingrese un monto v├ílido");
+      alert("Ingrese un monto válido");
       return;
     }
     const res = await fetch("/api/creditos", {
@@ -83,7 +75,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
           <ArrowLeft className="w-5 h-5 text-stone-700" />
         </Link>
-        <h1 className="text-xl font-bold text-stone-800">Cr├®ditos - {negocio?.titulo || "Negocio"}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Créditos - {negocio?.titulo || "Negocio"}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarCreditos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -97,7 +89,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Listado de cr├®ditos</h3>
+          <h3 className="font-semibold text-stone-800 mb-3">Listado de créditos</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
@@ -108,7 +100,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   <th className="text-left p-2 text-stone-700">Saldo</th>
                   <th className="text-left p-2 text-stone-700">Estado</th>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
-                  <th className="text-left p-2 text-stone-700">Acci├│n</th>
+                  <th className="text-left p-2 text-stone-700">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -155,7 +147,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 {creditos.length === 0 && (
                   <tr>
                     <td colSpan={7} className="p-4 text-center text-stone-500">
-                      No hay cr├®ditos
+                      No hay créditos
                     </td>
                   </tr>
                 )}
@@ -167,4 +159,9 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
+
+
+
 

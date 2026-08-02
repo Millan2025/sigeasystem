@@ -1,8 +1,7 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,21 +14,14 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+import { NEGOCIOS } from "@/config/negocios";
 
 export default function ComprasPage() {
   const pathname = usePathname();
   const pathParts = pathname?.split("/") || [];
-const negocioSlug = pathParts[1] || "restaurante";
-const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-const searchParams = useSearchParams();
+  const negocioSlug = pathParts[1] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const searchParams = useSearchParams();
 const tenantFromUrl = searchParams.get("tenant");
 const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoriaNegocio = negocio?.categoria || "";
@@ -57,7 +49,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     observaciones: "",
     unidad: "unidad",
     tipo_unidad: "unidad",
-    icono: "­ƒôª",
+    icono: "ðŸ“¦",
   });
 
   const cargarDatos = async () => {
@@ -104,7 +96,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   // ============================================
-  // FUNCI├ôN PARA REGISTRAR LA COMPRA
+  // FUNCIÃ“N PARA REGISTRAR LA COMPRA
   // ============================================
   const registrarCompra = async () => {
     if (seleccionados.length === 0) {
@@ -113,7 +105,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     }
 
     // Construir el array de items con cantidades y precios de compra
-    // Para simplificar, usaremos las cantidades sugeridas (stock m├¡nimo - stock actual)
+    // Para simplificar, usaremos las cantidades sugeridas (stock mínimo - stock actual)
     const items = seleccionados.map((id) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
@@ -148,14 +140,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       });
       const data = await res.json();
       if (data.success) {
-        setMensaje(`Ô£à Compra #${data.data.compra.id} registrada exitosamente.`);
+        setMensaje(`âœ… Compra #${data.data.compra.id} registrada exitosamente.`);
         setSeleccionados([]);
         cargarDatos();
       } else {
         alert("Error: " + data.error);
       }
     } catch (error) {
-      alert("Error de conexi├│n");
+      alert("Error de conexión");
     }
   };
 
@@ -175,7 +167,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       return {
         Producto: p.nombre,
         "Stock Actual": stockActual,
-        "M├¡nimo Requerido": p.stock_minimo || 0,
+        "Mínimo Requerido": p.stock_minimo || 0,
         "Cantidad a Comprar": Math.max((p.stock_minimo || 0) - stockActual, 0),
         Proveedor: p.proveedor || "",
         "Precio Compra": p.precio_compra || 0,
@@ -187,7 +179,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
     XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
-    alert(`­ƒôª Orden de compra generada con ${data.length} productos.`);
+    alert(`ðŸ“¦ Orden de compra generada con ${data.length} productos.`);
   };
 
   // ============================================
@@ -197,7 +189,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     const data = productos.map((p) => ({
       Nombre: p.nombre,
       "Stock Actual": stockMap[p.id] ?? 0,
-      "Stock M├¡nimo": p.stock_minimo || 0,
+      "Stock Mínimo": p.stock_minimo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
       "Precio Venta": p.precio || 0,
@@ -230,7 +222,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     if (data.success) {
       setShowImportModal(false);
       setEditando(null);
-      setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "­ƒôª" });
+      setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "ðŸ“¦" });
       cargarDatos();
     } else {
       alert(data.error || "Error al guardar");
@@ -238,7 +230,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm("┬┐Eliminar este producto?")) return;
+    if (!confirm("Â¿Eliminar este producto?")) return;
     const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -261,7 +253,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       observaciones: p.observaciones || "",
       unidad: p.unidad || "unidad",
       tipo_unidad: p.tipo_unidad || "unidad",
-      icono: p.icono || "­ƒôª",
+      icono: p.icono || "ðŸ“¦",
     });
     setShowImportModal(true);
   };
@@ -301,7 +293,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         <button
           onClick={() => {
             setEditando(null);
-            setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "­ƒôª" });
+            setForm({ nombre: "", categoria: "", precio: 0, precio_compra: 0, stock: 0, stock_minimo: 0, proveedor: "", observaciones: "", unidad: "unidad", tipo_unidad: "unidad", icono: "ðŸ“¦" });
             setShowImportModal(true);
           }}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
@@ -326,8 +318,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         >
           <p className={`font-medium ${productosCriticos.length > 0 ? "text-red-700" : "text-emerald-700"}`}>
             {productosCriticos.length > 0
-              ? `ÔÜá´©Å ${productosCriticos.length} productos con stock por debajo del m├¡nimo`
-              : "Ô£à Todos los productos tienen stock adecuado"}
+              ? `âš ï¸ ${productosCriticos.length} productos con stock por debajo del mínimo`
+              : "âœ… Todos los productos tienen stock adecuado"}
           </p>
         </div>
 
@@ -358,7 +350,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
             className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800"
           >
             <option value="contado">Contado</option>
-            <option value="credito">Cr├®dito</option>
+            <option value="credito">Crédito</option>
           </select>
         </div>
 
@@ -369,7 +361,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <th className="p-2 text-left text-stone-700">Seleccionar</th>
                 <th className="p-2 text-left text-stone-700">Nombre</th>
                 <th className="p-2 text-left text-stone-700">Stock actual</th>
-                <th className="p-2 text-left text-stone-700">M├¡nimo</th>
+                <th className="p-2 text-left text-stone-700">Mínimo</th>
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
@@ -451,7 +443,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Categor├¡a *</label>
+                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
                 <input
                   type="text"
                   value={form.categoria}
@@ -487,10 +479,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-600 mt-1">El stock se calcula autom├íticamente</p>
+                <p className="text-xs text-stone-600 mt-1">El stock se calcula automáticamente</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock m├¡nimo</label>
+                <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
                 <input
                   type="number"
                   value={form.stock_minimo}
@@ -571,5 +563,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
+
+
+
 
 
