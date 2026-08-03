@@ -386,7 +386,7 @@ export default function ReportesPage() {
               <TrendingUp className="w-4 h-4 text-emerald-500" /> Ingresos por Categoría
             </h3>
             {ingresosPorCategoria.length === 0 ? (
-              <p className="text-stone-500 text-sm">No hay datos</p>
+              <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
             ) : (
               <ResponsiveContainer width="100%" height={200}>
                 <RePieChart>
@@ -414,7 +414,7 @@ export default function ReportesPage() {
               <TrendingDown className="w-4 h-4 text-red-500" /> Egresos por Categoría
             </h3>
             {egresosPorCategoria.length === 0 ? (
-              <p className="text-stone-500 text-sm">No hay datos</p>
+              <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
             ) : (
               <ResponsiveContainer width="100%" height={200}>
                 <RePieChart>
@@ -444,7 +444,7 @@ export default function ReportesPage() {
             <BarChart3 className="w-4 h-4 text-blue-500" /> Tendencia de Ventas ({agrupacionTemporal})
           </h3>
           {ventasTemporales.length === 0 ? (
-            <p className="text-stone-500 text-sm">No hay datos</p>
+            <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={ventasTemporales}>
@@ -466,7 +466,7 @@ export default function ReportesPage() {
               <Package className="w-4 h-4 text-emerald-500" /> Productos Más Vendidos
             </h3>
             {topProductos.length === 0 ? (
-              <p className="text-stone-500 text-sm">No hay datos</p>
+              <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -498,7 +498,7 @@ export default function ReportesPage() {
               <Package className="w-4 h-4 text-red-500" /> Productos Menos Vendidos
             </h3>
             {menosProductos.length === 0 ? (
-              <p className="text-stone-500 text-sm">No hay datos</p>
+              <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -533,7 +533,7 @@ export default function ReportesPage() {
               <Users className="w-4 h-4 text-blue-500" /> Clientes con Mayores Compras
             </h3>
             {clientesTopCompras.length === 0 ? (
-              <p className="text-stone-500 text-sm">No hay datos</p>
+              <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -565,7 +565,7 @@ export default function ReportesPage() {
               <Users className="w-4 h-4 text-green-500" /> Mejores Pagadores de Créditos
             </h3>
             {clientesTopPagos.length === 0 ? (
-              <p className="text-stone-500 text-sm">No hay datos</p>
+              <p className="text-stone-700 text-sm font-medium bg-stone-100 p-4 rounded-xl text-center">No hay datos disponibles</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -630,3 +630,4 @@ export default function ReportesPage() {
     </div>
   );
 }
+
