@@ -194,7 +194,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       Tipo: t.tipo,
       Categoría: t.categorias_contables?.nombre || "",
       Descripción: t.descripcion || "",
-      "MÍ®todo de Pago": t.metodo_pago || "",
+      "Método de Pago": t.metodo_pago || "",
       Monto: t.monto,
       Impuesto: t.impuesto || 0,
       Retención: t.retencion || 0,
@@ -391,10 +391,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
           </div>
         </div>
 
-        {/* Desglose por mÍ®todo de pago */}
+        {/* Desglose por Método de pago */}
         {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-            <h3 className="font-semibold text-stone-800 mb-2">Desglose por MÍ®todo de Pago</h3>
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose por Método de Pago</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
@@ -441,7 +441,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   <th className="text-left p-2 text-stone-700">Tipo</th>
                   <th className="text-left p-2 text-stone-700">Categoría</th>
                   <th className="text-left p-2 text-stone-700">Descripción</th>
-                  <th className="text-left p-2 text-stone-700">MÍ®todo de Pago</th>
+                  <th className="text-left p-2 text-stone-700">Método de Pago</th>
                   <th className="text-left p-2 text-stone-700">Monto</th>
                   <th className="text-left p-2 text-stone-700">Impuesto</th>
                   <th className="text-left p-2 text-stone-700">Retención</th>
@@ -519,7 +519,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">MÍ®todo de pago</label>
+                <label className="block text-sm font-medium text-stone-700">Método de pago</label>
                 <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">No aplica</option>
                   <option value="Efectivo">Efectivo</option>
@@ -615,6 +615,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
 
 
 
