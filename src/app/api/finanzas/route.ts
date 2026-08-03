@@ -70,7 +70,7 @@ export async function GET(request: Request) {
           .select('id, venta_productos(productos(id, nombre), cantidad, precio)')
           .in('id', saleIds)
         if (ventasConProductos) {
-          saleItems = ventasConProductos.flatMap((v: any) => 
+          saleItems = ventasConProductos.flatMap((v: any) =>
             (v.venta_productos || []).map((p: any) => ({
               sale_id: v.id,
               ...p,
@@ -197,7 +197,7 @@ export async function GET(request: Request) {
     }
 
     // ============================================================
-    // NUEVO CÁLCULO DE RESUMEN INTEGRAL (VENTAS + COMPRAS + TRANSACCIONES)
+    // NUEVO CÁLCULO DE RESUMEN INTEGRAL (VENTAS + TODAS LAS TRANSACCIONES)
     // ============================================================
 
     // 1. Obtener total de ventas
@@ -216,32 +216,31 @@ export async function GET(request: Request) {
     if (comprasError) throw comprasError;
     const totalCompras = comprasData?.reduce((sum, c) => sum + (c.total || 0), 0) || 0;
 
-    // 3. Ingresos/egresos de transacciones que NO son ventas/compras
-    const ingresosTransacciones = expandedData
-      .filter(t => t.tipo === "ingreso" && !t.referencia_tipo)
+    // 3. Sumar TODAS las transacciones de ingreso y egreso (sin importar referencia_tipo)
+    const totalIngresosTransacciones = expandedData
+      .filter(t => t.tipo === "ingreso")
       .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
-    const egresosTransacciones = expandedData
-      .filter(t => t.tipo === "egreso" && !t.referencia_tipo)
+
+    const totalEgresosTransacciones = expandedData
+      .filter(t => t.tipo === "egreso")
       .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
 
     // 4. Totales integrales
-    const ingresos = totalVentas + ingresosTransacciones;
-    const egresos = totalCompras + egresosTransacciones;
+    const ingresos = totalVentas + totalIngresosTransacciones;
+    const egresos = totalCompras + totalEgresosTransacciones;
     const saldo = ingresos - egresos;
     const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0);
     const retenciones = expandedData.reduce((sum, t) => sum + (t.retencion || 0), 0);
 
-    // 5. Desglose de pagos (ventas + transacciones de ingreso no referenciadas)
+    // 5. Desglose de pagos (ventas + TODAS las transacciones de ingreso)
     const desglosePagos: Record<string, number> = {};
-    // Añadir pagos de ventas
     ventasData?.forEach(v => {
       let metodo = v.metodo_pago || 'Otro';
       if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
       desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (v.total || 0);
     });
-    // Añadir pagos de transacciones de ingreso no referenciadas
     expandedData
-      .filter(t => t.tipo === 'ingreso' && !t.referencia_tipo)
+      .filter(t => t.tipo === 'ingreso')
       .forEach(t => {
         let metodo = t.metodo_pago || 'Otro';
         if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
@@ -392,5 +391,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
