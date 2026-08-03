@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// GET: listar transacciones
+// GET: listar transacciones con resumen integral
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
@@ -39,7 +39,6 @@ export async function GET(request: Request) {
       }
     }
 
-    // Paginación (50 registros por página)
     const page = parseInt(url.searchParams.get('page') || '1');
     const pageSize = parseInt(url.searchParams.get('pageSize') || '50');
     const start = (page - 1) * pageSize;
@@ -48,20 +47,16 @@ export async function GET(request: Request) {
     const { data, error } = await query
     if (error) throw error
 
-    // Obtener todos los IDs de ventas y compras en lote
+    // Expandir datos (ventas, compras, etc.) - mantener lógica existente
     const saleIds = data?.filter(t => t.referencia_tipo === 'venta' && t.referencia_id).map(t => t.referencia_id) || []
     const compraIds = data?.filter(t => t.referencia_tipo === 'compra' && t.referencia_id).map(t => t.referencia_id) || []
 
-    // Obtener todos los items de ventas de una vez (intentando con sale_id y venta_id)
     let saleItemsMap: Record<string, any[]> = {}
     if (saleIds.length > 0) {
-      // Intentar con 'sale_id'
       let { data: saleItems } = await supabase
         .from('sale_items')
         .select('*, productos(id, nombre)')
         .in('sale_id', saleIds)
-      
-      // Si no hay, intentar con 'venta_id'
       if (!saleItems || saleItems.length === 0) {
         const { data: items } = await supabase
           .from('sale_items')
@@ -69,37 +64,30 @@ export async function GET(request: Request) {
           .in('venta_id', saleIds)
         saleItems = items
       }
-
-      // Si aún no hay, obtener productos directamente de la tabla 'ventas'
       if (!saleItems || saleItems.length === 0) {
-        // Consultar la tabla ventas con sus productos (asumiendo relación venta_productos)
         const { data: ventasConProductos } = await supabase
           .from('ventas')
           .select('id, venta_productos(productos(id, nombre), cantidad, precio)')
           .in('id', saleIds)
-        
         if (ventasConProductos) {
-          ventasConProductos.forEach((v: any) => {
-            if (v.venta_productos && v.venta_productos.length > 0) {
-              saleItemsMap[v.id] = v.venta_productos.map((vp: any) => ({
-                ...vp,
-                quantity: vp.cantidad,
-                price_at_sale: vp.precio,
-                productos: vp.productos || { nombre: 'Producto' }
-              }))
-            }
-          })
+          saleItems = ventasConProductos.flatMap((v: any) => 
+            (v.venta_productos || []).map((p: any) => ({
+              sale_id: v.id,
+              ...p,
+              productos: p.productos
+            }))
+          )
         }
-      } else {
-        // Construir el map normalmente
+      }
+      if (saleItems) {
         saleItems.forEach(item => {
-          if (!saleItemsMap[item.sale_id]) saleItemsMap[item.sale_id] = []
-          saleItemsMap[item.sale_id].push(item)
+          const key = item.sale_id || item.venta_id
+          if (!saleItemsMap[key]) saleItemsMap[key] = []
+          saleItemsMap[key].push(item)
         })
       }
     }
 
-    // Obtener todos los items de compras de una vez (similar)
     let compraItemsMap: Record<string, any[]> = {}
     if (compraIds.length > 0) {
       const { data: compraItems } = await supabase
@@ -114,7 +102,6 @@ export async function GET(request: Request) {
       }
     }
 
-    // Expandir datos usando los maps
     const expandedData: any[] = []
     let itemCounter = 1
 
@@ -196,7 +183,6 @@ export async function GET(request: Request) {
           })
         }
       } else {
-        // Otras transacciones
         let desc = t.descripcion || ''
         if (t.referencia_tipo === 'credito') {
           const { data: credito } = await supabase.from('creditos').select('cliente').eq('id', t.referencia_id).single()
@@ -210,38 +196,93 @@ export async function GET(request: Request) {
       }
     }
 
-    // Recalcular resumen
-    const ingresos = expandedData.filter(t => t.tipo === "ingreso").reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0)
-    const egresos = expandedData.filter(t => t.tipo === "egreso").reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0)
-    const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0)
-    const retenciones = expandedData.reduce((sum, t) => sum + (t.retencion || 0), 0)
-    const saldo = ingresos - egresos
+    // ============================================================
+    // NUEVO CÁLCULO DE RESUMEN INTEGRAL (VENTAS + COMPRAS + TRANSACCIONES)
+    // ============================================================
 
-    const desglosePagos: Record<string, number> = {}
-    expandedData.filter(t => t.tipo === 'ingreso').forEach(t => {
-      let metodo = t.metodo_pago || 'Otro'
-      if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros'
-      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || 0)
-    })
+    // 1. Obtener total de ventas
+    const { data: ventasData, error: ventasError } = await supabase
+      .from('ventas')
+      .select('total, metodo_pago')
+      .eq('tenant_id', tenantId);
+    if (ventasError) throw ventasError;
+    const totalVentas = ventasData?.reduce((sum, v) => sum + (v.total || 0), 0) || 0;
 
-    const costo_ventas = expandedData.filter(t => t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras').reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0)
-    let gastos_operativos = 0
+    // 2. Obtener total de compras
+    const { data: comprasData, error: comprasError } = await supabase
+      .from('compras')
+      .select('total')
+      .eq('tenant_id', tenantId);
+    if (comprasError) throw comprasError;
+    const totalCompras = comprasData?.reduce((sum, c) => sum + (c.total || 0), 0) || 0;
+
+    // 3. Ingresos/egresos de transacciones que NO son ventas/compras
+    const ingresosTransacciones = expandedData
+      .filter(t => t.tipo === "ingreso" && !t.referencia_tipo)
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+    const egresosTransacciones = expandedData
+      .filter(t => t.tipo === "egreso" && !t.referencia_tipo)
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || t.monto || 0), 0);
+
+    // 4. Totales integrales
+    const ingresos = totalVentas + ingresosTransacciones;
+    const egresos = totalCompras + egresosTransacciones;
+    const saldo = ingresos - egresos;
+    const impuestos = expandedData.reduce((sum, t) => sum + (t.iva || 0), 0);
+    const retenciones = expandedData.reduce((sum, t) => sum + (t.retencion || 0), 0);
+
+    // 5. Desglose de pagos (ventas + transacciones de ingreso no referenciadas)
+    const desglosePagos: Record<string, number> = {};
+    // Añadir pagos de ventas
+    ventasData?.forEach(v => {
+      let metodo = v.metodo_pago || 'Otro';
+      if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (v.total || 0);
+    });
+    // Añadir pagos de transacciones de ingreso no referenciadas
+    expandedData
+      .filter(t => t.tipo === 'ingreso' && !t.referencia_tipo)
+      .forEach(t => {
+        let metodo = t.metodo_pago || 'Otro';
+        if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros';
+        desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (t.total || t.total_con_impuestos || t.monto || 0);
+      });
+
+    // 6. Costo de ventas y gastos operativos (mantener lógica existente)
+    const costo_ventas = expandedData
+      .filter(t => t.tipo === 'egreso' && t.categorias_contables?.nombre === 'Compras')
+      .reduce((sum, t) => sum + (t.total || t.total_con_impuestos || 0), 0);
+    let gastos_operativos = 0;
     try {
-      const { data: gastosData } = await supabase.from('gastos_operativos').select('monto').eq('tenant_id', tenantId)
-      if (gastosData) gastos_operativos = gastosData.reduce((sum, g) => sum + (g.monto || 0), 0)
+      const { data: gastosData } = await supabase.from('gastos_operativos').select('monto').eq('tenant_id', tenantId);
+      if (gastosData) gastos_operativos = gastosData.reduce((sum, g) => sum + (g.monto || 0), 0);
     } catch (e) {}
 
-    const utilidad_bruta = ingresos - costo_ventas
-    const utilidad_neta = utilidad_bruta - gastos_operativos
+    const utilidad_bruta = ingresos - costo_ventas;
+    const utilidad_neta = utilidad_bruta - gastos_operativos;
+
+    const resumen = {
+      ingresos,
+      egresos,
+      saldo,
+      impuestos,
+      retenciones,
+      desglosePagos,
+      costo_ventas,
+      gastos_operativos,
+      utilidad_bruta,
+      utilidad_neta
+    };
 
     return NextResponse.json({
       success: true,
       data: expandedData,
-      resumen: { ingresos, egresos, saldo, impuestos, retenciones, desglosePagos, costo_ventas, gastos_operativos, utilidad_bruta, utilidad_neta }
-    })
+      resumen
+    });
+
   } catch (error: any) {
-    console.error('❌ Error GET /api/finanzas:', error)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    console.error('❌ Error GET /api/finanzas:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -351,5 +392,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-

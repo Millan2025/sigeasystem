@@ -620,3 +620,5 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
 
 
 
+
+
