@@ -1,6 +1,6 @@
 ﻿"use client";
 import { NEGOCIOS } from '@/config/negocios';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,6 +13,7 @@ import {
   Edit,
   Trash2,
   X,
+  Camera,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -53,6 +54,9 @@ export default function InventarioPage() {
   const [imagenFile, setImagenFile] = useState<File | null>(null);
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
+
+  // Referencia para el input de archivo (para dispararlo desde el botón)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[1] || "restaurante";
@@ -265,6 +269,16 @@ export default function InventarioPage() {
     setImagenFile(null);
     setImagenPreview(null);
     setFormProducto({ ...formProducto, imagen_url: "" });
+    // Limpiar el input de archivo también
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const dispararCamara = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const exportarInventario = () => {
@@ -540,6 +554,7 @@ export default function InventarioPage() {
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
                 <tr>
+                  <th className="text-left p-2 text-stone-700">Imagen</th>
                   <th className="text-left p-2 text-stone-700">SKU</th>
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
@@ -552,6 +567,13 @@ export default function InventarioPage() {
               <tbody>
                 {stockFiltrado.map((p: any) => (
                   <tr key={p.id} className="border-b border-stone-100">
+                    <td className="p-2">
+                      {p.imagen_url ? (
+                        <img src={p.imagen_url} alt={p.nombre} className="w-10 h-10 object-cover rounded" />
+                      ) : (
+                        <span className="text-2xl">📦</span>
+                      )}
+                    </td>
                     <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
                     <td className="p-2 text-stone-800 font-medium">
                       <div>{p.nombre}</div>
@@ -575,7 +597,7 @@ export default function InventarioPage() {
                 ))}
                 {stockFiltrado.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-4 text-center text-stone-500">
+                    <td colSpan={8} className="p-4 text-center text-stone-500">
                       No hay productos
                     </td>
                   </tr>
@@ -721,32 +743,50 @@ export default function InventarioPage() {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Imagen del producto</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleImagenChange}
-                    className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-                  />
-                  {imagenPreview && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleImagenChange}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
                     <button
-                      onClick={quitarImagen}
-                      className="p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
-                      title="Quitar imagen"
+                      type="button"
+                      onClick={dispararCamara}
+                      className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2"
                     >
-                      <X className="w-4 h-4" />
+                      <Camera className="w-4 h-4" />
+                      Tomar foto
                     </button>
+                    <span className="text-sm text-stone-500">o selecciona un archivo</span>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-sm text-emerald-600 underline"
+                    >
+                      Examinar
+                    </button>
+                    {imagenPreview && (
+                      <button
+                        onClick={quitarImagen}
+                        className="p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
+                        title="Quitar imagen"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  {imagenPreview && (
+                    <div className="mt-1">
+                      <img src={imagenPreview} alt="Vista previa" className="w-24 h-24 object-cover rounded-xl border border-stone-300" />
+                    </div>
+                  )}
+                  {editandoProducto?.imagen_url && !imagenFile && (
+                    <p className="text-xs text-stone-500 mt-1">Imagen actual: <a href={editandoProducto.imagen_url} target="_blank" className="text-emerald-600 underline">Ver</a></p>
                   )}
                 </div>
-                {imagenPreview && (
-                  <div className="mt-2">
-                    <img src={imagenPreview} alt="Vista previa" className="w-24 h-24 object-cover rounded-xl border border-stone-300" />
-                  </div>
-                )}
-                {editandoProducto?.imagen_url && !imagenFile && (
-                  <p className="text-xs text-stone-500 mt-1">Imagen actual: <a href={editandoProducto.imagen_url} target="_blank" className="text-emerald-600 underline">Ver</a></p>
-                )}
               </div>
 
               <div>
