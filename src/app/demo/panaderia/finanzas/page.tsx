@@ -1,6 +1,5 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
-
+﻿"use client";
+import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -18,16 +17,9 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
 
-// Formateador de fecha manual (sin conversi├│n UTC)
+
+// Formateador de fecha manual (sin conversión UTC)
 const formatDate = (fechaStr: string) => {
   if (!fechaStr) return "-";
   const partes = fechaStr.split("-");
@@ -92,7 +84,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       setResumen(data.resumen || { ingresos: 0, egresos: 0, saldo: 0, impuestos: 0, retenciones: 0, desglosePagos: {} });
     }
 
-    // 2. Cuentas por Cobrar (saldos pendientes de cr├®ditos)
+    // 2. Cuentas por Cobrar (saldos pendientes de crÍ®ditos)
     const creditosRes = await fetch(`/api/creditos?tenant=${tenantId}`);
     const creditosData = await creditosRes.json();
     if (creditosData.success) {
@@ -102,8 +94,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       setCuentasPorCobrar(pendientes);
     }
 
-    // 3. Cuentas por Pagar (pendiente de implementar compras a cr├®dito)
-    // Por ahora, consultamos si existe la tabla compras y sumamos las que est├®n pendientes
+    // 3. Cuentas por Pagar (pendiente de implementar compras a crÍ®dito)
+    // Por ahora, consultamos si existe la tabla compras y sumamos las que estÍ®n pendientes
     try {
       const comprasRes = await fetch(`/api/compras?tenant=${tenantId}`);
       const comprasData = await comprasRes.json();
@@ -118,7 +110,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       setCuentasPorPagar(0);
     }
 
-    // 4. Categor├¡as y per├¡odos
+    // 4. Categorías y períodos
     const catRes = await fetch(`/api/categorias-contables?tenant=${tenantId}`);
     const catData = await catRes.json();
     if (catData.success) setCategorias(catData.data || []);
@@ -167,7 +159,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   const eliminarTransaccion = async (id: string) => {
-    if (!confirm("┬┐Eliminar esta transacci├│n?")) return;
+    if (!confirm("┬┐Eliminar esta transacción?")) return;
     const res = await fetch(`/api/finanzas?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (data.success) {
@@ -200,12 +192,12 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     const data = transacciones.map((t: any) => ({
       Fecha: formatDate(t.fecha),
       Tipo: t.tipo,
-      Categor├¡a: t.categorias_contables?.nombre || "",
-      Descripci├│n: t.descripcion || "",
-      "M├®todo de Pago": t.metodo_pago || "",
+      Categoría: t.categorias_contables?.nombre || "",
+      Descripción: t.descripcion || "",
+      "MÍ®todo de Pago": t.metodo_pago || "",
       Monto: t.monto,
       Impuesto: t.impuesto || 0,
-      Retenci├│n: t.retencion || 0,
+      Retención: t.retencion || 0,
       "Total con impuestos": t.total_con_impuestos || 0,
     }));
     const wb = XLSX.utils.book_new();
@@ -225,7 +217,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     if (data.success) {
       setFormCategoria({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
       cargarDatos();
-      alert("Categor├¡a agregada");
+      alert("Categoría agregada");
     } else {
       alert(data.error);
     }
@@ -241,7 +233,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     if (data.success) {
       setFormPeriodo({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
       cargarDatos();
-      alert("Per├¡odo creado");
+      alert("Período creado");
     } else {
       alert(data.error);
     }
@@ -288,7 +280,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       }
     } else if (tipo === "anual") {
       periodos.push({
-        nombre: `A├▒o ${year}`,
+        nombre: `AÍ▒o ${year}`,
         fecha_inicio: `${year}-01-01`,
         fecha_fin: `${year}-12-31`,
         tipo: "anual",
@@ -302,7 +294,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       });
     });
     cargarDatos();
-    alert(`Per├¡odos ${tipo} generados correctamente`);
+    alert(`Períodos ${tipo} generados correctamente`);
   };
 
   return (
@@ -334,21 +326,21 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Registrar nuevo movimiento"
         >
-          <Plus className="w-4 h-4" /> Nueva Transacci├│n
+          <Plus className="w-4 h-4" /> Nueva Transacción
         </button>
         <button
           onClick={() => setShowImportModalCategoria(true)}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
           title="Plan de cuentas"
         >
-          <BookOpen className="w-4 h-4" /> Categor├¡as
+          <BookOpen className="w-4 h-4" /> Categorías
         </button>
         <button
           onClick={() => setShowImportModalPeriodo(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-          title="Per├¡odos fiscales"
+          title="Períodos fiscales"
         >
-          <Calendar className="w-4 h-4" /> Per├¡odos
+          <Calendar className="w-4 h-4" /> Períodos
         </button>
         <button
           onClick={exportarExcel}
@@ -399,10 +391,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
           </div>
         </div>
 
-        {/* Desglose por m├®todo de pago */}
+        {/* Desglose por mÍ®todo de pago */}
         {resumen.desglosePagos && Object.keys(resumen.desglosePagos).length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
-            <h3 className="font-semibold text-stone-800 mb-2">Desglose por M├®todo de Pago</h3>
+            <h3 className="font-semibold text-stone-800 mb-2">Desglose por MÍ®todo de Pago</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {Object.entries(resumen.desglosePagos).map(([metodo, monto]) => (
                 <div key={metodo} className="bg-stone-50 rounded-xl p-2 text-center">
@@ -428,11 +420,11 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               <option value="egreso">Egresos</option>
             </select>
             <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todas las categor├¡as</option>
+              <option value="">Todas las categorías</option>
               {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
             </select>
             <select value={filtros.periodo} onChange={(e) => setFiltros({ ...filtros, periodo: e.target.value })} className="border border-stone-300 rounded-xl px-3 py-1 text-sm text-stone-800">
-              <option value="">Todos los per├¡odos</option>
+              <option value="">Todos los períodos</option>
               {periodos.map((p: any) => (<option key={p.id} value={p.id}>{p.nombre}</option>))}
             </select>
           </div>
@@ -447,12 +439,12 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <tr>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Tipo</th>
-                  <th className="text-left p-2 text-stone-700">Categor├¡a</th>
-                  <th className="text-left p-2 text-stone-700">Descripci├│n</th>
-                  <th className="text-left p-2 text-stone-700">M├®todo de Pago</th>
+                  <th className="text-left p-2 text-stone-700">Categoría</th>
+                  <th className="text-left p-2 text-stone-700">Descripción</th>
+                  <th className="text-left p-2 text-stone-700">MÍ®todo de Pago</th>
                   <th className="text-left p-2 text-stone-700">Monto</th>
                   <th className="text-left p-2 text-stone-700">Impuesto</th>
-                  <th className="text-left p-2 text-stone-700">Retenci├│n</th>
+                  <th className="text-left p-2 text-stone-700">Retención</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
                   <th className="text-left p-2 text-stone-700">Acciones</th>
                 </tr>
@@ -486,11 +478,11 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       </div>
 
-      {/* Modal Transacci├│n */}
+      {/* Modal Transacción */}
       {showModalTransaccion && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar Transacci├│n" : "Nueva Transacci├│n"}</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-4">{editando ? "Editar Transacción" : "Nueva Transacción"}</h3>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-stone-700">Tipo</label>
@@ -504,14 +496,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <input type="number" step="0.01" value={formTransaccion.monto} onChange={(e) => setFormTransaccion({ ...formTransaccion, monto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Categor├¡a contable</label>
+                <label className="block text-sm font-medium text-stone-700">Categoría contable</label>
                 <select value={formTransaccion.categoria_contable_id} onChange={(e) => setFormTransaccion({ ...formTransaccion, categoria_contable_id: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">Seleccionar...</option>
                   {categorias.map((c: any) => (<option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Descripci├│n</label>
+                <label className="block text-sm font-medium text-stone-700">Descripción</label>
                 <input type="text" value={formTransaccion.descripcion} onChange={(e) => setFormTransaccion({ ...formTransaccion, descripcion: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
@@ -523,18 +515,18 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <input type="number" step="0.01" value={formTransaccion.impuesto} onChange={(e) => setFormTransaccion({ ...formTransaccion, impuesto: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Retenci├│n</label>
+                <label className="block text-sm font-medium text-stone-700">Retención</label>
                 <input type="number" step="0.01" value={formTransaccion.retencion} onChange={(e) => setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">M├®todo de pago</label>
+                <label className="block text-sm font-medium text-stone-700">MÍ®todo de pago</label>
                 <select value={formTransaccion.metodo_pago} onChange={(e) => setFormTransaccion({ ...formTransaccion, metodo_pago: e.target.value })} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800">
                   <option value="">No aplica</option>
                   <option value="Efectivo">Efectivo</option>
                   <option value="Nequi">Nequi</option>
                   <option value="Bancolombia">Bancolombia</option>
                   <option value="Daviplata">Daviplata</option>
-                  <option value="Cr├®dito">Cr├®dito</option>
+                  <option value="CrÍ®dito">CrÍ®dito</option>
                 </select>
               </div>
             </div>
@@ -546,7 +538,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Categor├¡as */}
+      {/* Modal Categorías */}
       {showModalCategoria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -561,31 +553,31 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   <span className="text-xs text-stone-600">{c.tipo}</span>
                 </div>
               ))}
-              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categor├¡as</p>}
+              {categorias.length === 0 && <p className="text-stone-500 text-sm">No hay categorías</p>}
             </div>
             <div className="mt-4 border-t pt-4">
               <h4 className="font-medium text-stone-700 mb-2">Agregar nueva</h4>
               <div className="space-y-2">
-                <input type="text" placeholder="C├│digo (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
+                <input type="text" placeholder="Código (ej. 4-01-01)" value={formCategoria.codigo} onChange={(e) => setFormCategoria({...formCategoria, codigo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <input type="text" placeholder="Nombre" value={formCategoria.nombre} onChange={(e) => setFormCategoria({...formCategoria, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm" />
                 <select value={formCategoria.tipo} onChange={(e) => setFormCategoria({...formCategoria, tipo: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm">
                   <option value="ingreso">Ingreso</option>
                   <option value="egreso">Egreso</option>
                   <option value="costo">Costo</option>
                 </select>
-                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar Categor├¡a</button>
+                <button onClick={agregarCategoria} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Agregar Categoría</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Per├¡odos */}
+      {/* Modal Períodos */}
       {showModalPeriodo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">Per├¡odos Fiscales</h3>
+              <h3 className="text-lg font-bold text-stone-800">Períodos Fiscales</h3>
               <button onClick={() => setShowImportModalPeriodo(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border-b mb-4 pb-4">
@@ -595,10 +587,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   <span className="text-stone-500">{formatDate(p.fecha_inicio)} - {formatDate(p.fecha_fin)}</span>
                 </div>
               ))}
-              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay per├¡odos.</p>}
+              {periodos.length === 0 && <p className="text-stone-500 text-sm">No hay períodos.</p>}
             </div>
             <div>
-              <h4 className="font-medium text-stone-700 mb-2">Generar per├¡odos autom├íticos</h4>
+              <h4 className="font-medium text-stone-700 mb-2">Generar períodos automÍíticos</h4>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => generarPeriodosAutomaticos("bimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Bimestres</button>
                 <button onClick={() => generarPeriodosAutomaticos("trimestral")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Trimestres</button>
@@ -606,14 +598,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <button onClick={() => generarPeriodosAutomaticos("anual")} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-xl text-sm">Anual</button>
               </div>
               <div className="mt-4 border-t pt-4">
-                <h4 className="font-medium text-stone-700 mb-2">Crear per├¡odo manual</h4>
+                <h4 className="font-medium text-stone-700 mb-2">Crear período manual</h4>
                 <div className="space-y-2">
                   <input type="text" placeholder="Nombre" value={formPeriodo.nombre} onChange={(e) => setFormPeriodo({...formPeriodo, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <div className="flex gap-2">
                     <input type="date" value={formPeriodo.fecha_inicio} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_inicio: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                     <input type="date" value={formPeriodo.fecha_fin} onChange={(e) => setFormPeriodo({...formPeriodo, fecha_fin: e.target.value})} className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   </div>
-                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear Per├¡odo</button>
+                  <button onClick={crearPeriodo} className="w-full bg-emerald-500 text-white rounded-xl py-2 text-sm">Crear Período</button>
                 </div>
               </div>
             </div>
@@ -623,5 +615,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
+
 
 
