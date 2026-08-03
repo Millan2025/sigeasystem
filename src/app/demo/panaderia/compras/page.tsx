@@ -1,6 +1,5 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
-
+﻿"use client";
+import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -15,14 +14,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+
 
 export default function ComprasPage() {
   const pathname = usePathname();
@@ -104,7 +96,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   // ============================================
-  // FUNCI├ôN PARA REGISTRAR LA COMPRA
+  // FUNCIÍôN PARA REGISTRAR LA COMPRA
   // ============================================
   const registrarCompra = async () => {
     if (seleccionados.length === 0) {
@@ -113,7 +105,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     }
 
     // Construir el array de items con cantidades y precios de compra
-    // Para simplificar, usaremos las cantidades sugeridas (stock m├¡nimo - stock actual)
+    // Para simplificar, usaremos las cantidades sugeridas (stock mínimo - stock actual)
     const items = seleccionados.map((id) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
@@ -155,7 +147,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         alert("Error: " + data.error);
       }
     } catch (error) {
-      alert("Error de conexi├│n");
+      alert("Error de conexión");
     }
   };
 
@@ -175,7 +167,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       return {
         Producto: p.nombre,
         "Stock Actual": stockActual,
-        "M├¡nimo Requerido": p.stock_minimo || 0,
+        "Mínimo Requerido": p.stock_minimo || 0,
         "Cantidad a Comprar": Math.max((p.stock_minimo || 0) - stockActual, 0),
         Proveedor: p.proveedor || "",
         "Precio Compra": p.precio_compra || 0,
@@ -197,7 +189,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     const data = productos.map((p) => ({
       Nombre: p.nombre,
       "Stock Actual": stockMap[p.id] ?? 0,
-      "Stock M├¡nimo": p.stock_minimo || 0,
+      "Stock Mínimo": p.stock_minimo || 0,
       Unidad: p.unidad || "",
       Proveedor: p.proveedor || "",
       "Precio Venta": p.precio || 0,
@@ -326,7 +318,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         >
           <p className={`font-medium ${productosCriticos.length > 0 ? "text-red-700" : "text-emerald-700"}`}>
             {productosCriticos.length > 0
-              ? `ÔÜá´©Å ${productosCriticos.length} productos con stock por debajo del m├¡nimo`
+              ? `ÔÜá´©Å ${productosCriticos.length} productos con stock por debajo del mínimo`
               : "Ô£à Todos los productos tienen stock adecuado"}
           </p>
         </div>
@@ -358,7 +350,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
             className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800"
           >
             <option value="contado">Contado</option>
-            <option value="credito">Cr├®dito</option>
+            <option value="credito">CrÍ®dito</option>
           </select>
         </div>
 
@@ -369,7 +361,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <th className="p-2 text-left text-stone-700">Seleccionar</th>
                 <th className="p-2 text-left text-stone-700">Nombre</th>
                 <th className="p-2 text-left text-stone-700">Stock actual</th>
-                <th className="p-2 text-left text-stone-700">M├¡nimo</th>
+                <th className="p-2 text-left text-stone-700">Mínimo</th>
                 <th className="p-2 text-left text-stone-700">Proveedor</th>
                 <th className="p-2 text-left text-stone-700">Precio Venta</th>
                 <th className="p-2 text-left text-stone-700">Precio Compra</th>
@@ -451,7 +443,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Categor├¡a *</label>
+                <label className="block text-sm font-medium text-stone-700">Categoría *</label>
                 <input
                   type="text"
                   value={form.categoria}
@@ -487,10 +479,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   disabled
                   className="w-full border border-stone-300 rounded-xl p-2 bg-stone-100 text-stone-600"
                 />
-                <p className="text-xs text-stone-600 mt-1">El stock se calcula autom├íticamente</p>
+                <p className="text-xs text-stone-600 mt-1">El stock se calcula automÍíticamente</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Stock m├¡nimo</label>
+                <label className="block text-sm font-medium text-stone-700">Stock mínimo</label>
                 <input
                   type="number"
                   value={form.stock_minimo}
@@ -571,5 +563,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
+
 
 

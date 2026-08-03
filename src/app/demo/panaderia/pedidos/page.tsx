@@ -1,6 +1,5 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
-
+﻿"use client";
+import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -18,14 +17,7 @@ import {
   X,
 } from "lucide-react";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+
 
 interface PedidoItem {
   product_id: string;
@@ -119,7 +111,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     cargarPedidos();
   }, [tenantId]);
 
-  // Cambiar estado del pedido y, si es confirmado, crear orden de producci├│n
+  // Cambiar estado del pedido y, si es confirmado, crear orden de producción
   const cambiarEstado = async (id: string, nuevoEstado: string) => {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido) return;
@@ -141,13 +133,13 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         return;
       }
 
-      // 2. Si el nuevo estado es "confirmado" o "preparando", crear orden de producci├│n
+      // 2. Si el nuevo estado es "confirmado" o "preparando", crear orden de producción
       if (nuevoEstado === "confirmado" || nuevoEstado === "preparando") {
         // Mapear items del pedido a productos con nombre y unidad (por defecto 'unidad')
         const productosOrden = pedido.order_items.map((item) => ({
           nombre: item.productos?.nombre || "Producto",
           cantidad: item.quantity,
-          unidad: "unidad", // Podr├¡amos obtenerlo de productos si existe
+          unidad: "unidad", // Podríamos obtenerlo de productos si existe
         }));
 
         const resProd = await fetch("/api/ordenes-produccion", {
@@ -164,17 +156,17 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         });
         const dataProd = await resProd.json();
         if (dataProd.success) {
-          setMensaje(`Ô£à Orden de producci├│n creada para pedido #${pedido.id.slice(0, 6)}`);
+          setMensaje(`Ô£à Orden de producción creada para pedido #${pedido.id.slice(0, 6)}`);
           setTimeout(() => setMensaje(""), 5000);
         } else {
-          alert("Error al crear orden de producci├│n: " + dataProd.error);
+          alert("Error al crear orden de producción: " + dataProd.error);
         }
       }
 
       // Recargar pedidos
       cargarPedidos();
     } catch (error) {
-      alert("Error de conexi├│n");
+      alert("Error de conexión");
     }
   };
 
@@ -195,7 +187,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const body = {
-      customer_id: null, // Podr├¡amos crear o buscar cliente
+      customer_id: null, // Podríamos crear o buscar cliente
       tenant_id: tenantId,
       items,
       direccion_entrega: form.direccion_entrega || "Pendiente",
@@ -220,15 +212,15 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         alert("Error: " + data.error);
       }
     } catch (e) {
-      alert("Error de conexi├│n");
+      alert("Error de conexión");
     }
   };
 
-  // Eliminar pedido (solo si est├í pendiente)
+  // Eliminar pedido (solo si estÍí pendiente)
   const eliminarPedido = async (id: string) => {
     if (!confirm("┬┐Eliminar este pedido?")) return;
     // No implementamos DELETE en API, pero se puede agregar
-    alert("Eliminaci├│n no implementada en API.");
+    alert("Eliminación no implementada en API.");
   };
 
   // Agregar item al formulario
@@ -391,7 +383,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">M├®todo de Pago</label>
+                <label className="block text-sm font-medium text-stone-700">MÍ®todo de Pago</label>
                 <select
                   value={form.metodo_pago}
                   onChange={(e) => setForm({ ...form, metodo_pago: e.target.value })}
@@ -401,11 +393,11 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   <option value="Nequi">Nequi</option>
                   <option value="Bancolombia">Bancolombia</option>
                   <option value="Daviplata">Daviplata</option>
-                  <option value="Cr├®dito">Cr├®dito</option>
+                  <option value="CrÍ®dito">CrÍ®dito</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700">Direcci├│n (opcional)</label>
+                <label className="block text-sm font-medium text-stone-700">Dirección (opcional)</label>
                 <input
                   type="text"
                   value={form.direccion_entrega}
@@ -471,13 +463,13 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
             <p className="text-sm text-stone-600">Fecha: {new Date(detallePedido.created_at).toLocaleString()}</p>
             <p className="text-sm text-stone-600">Pago: {detallePedido.metodo_pago}</p>
             <p className="text-sm text-stone-600">Estado: {ESTADOS[detallePedido.status as keyof typeof ESTADOS]?.label || detallePedido.status}</p>
-            {detallePedido.direccion_entrega && <p className="text-sm text-stone-600">Direcci├│n: {detallePedido.direccion_entrega}</p>}
+            {detallePedido.direccion_entrega && <p className="text-sm text-stone-600">Dirección: {detallePedido.direccion_entrega}</p>}
             <div className="mt-3 border-t pt-3">
               <h4 className="font-semibold text-stone-700">Productos</h4>
               <ul className="space-y-1 mt-1">
                 {detallePedido.order_items?.map((item, i) => (
                   <li key={i} className="text-sm text-stone-700 flex justify-between">
-                    <span>{item.quantity} ├ù {item.productos?.nombre || "Producto"}</span>
+                    <span>{item.quantity} Íù {item.productos?.nombre || "Producto"}</span>
                     <span>${(item.quantity * item.price).toLocaleString()}</span>
                   </li>
                 ))}
@@ -496,6 +488,9 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
+
 
 
 

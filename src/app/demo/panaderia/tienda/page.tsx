@@ -1,19 +1,11 @@
-﻿import { NEGOCIOS } from '@/config/negocios';
-"use client";
-
+﻿"use client";
+import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
 
-const NEGOCIOS = {
-  panaderia: { titulo: "Panader├¡a Do├▒a Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  carniceria: { titulo: "Carnicer├¡a El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  salsamentaria: { titulo: "Salsamentaria La Especial", categoria: "Salsamentaria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  ferreteria: { titulo: "Ferreter├¡a El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
-  tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
-};
+
 
 interface Producto {
   id: string;
@@ -105,11 +97,11 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
 
   const finalizarPedido = async () => {
     if (carrito.length === 0) {
-      alert("Carrito vac├¡o");
+      alert("Carrito vacío");
       return;
     }
-    // Aqu├¡ se integrar├í con /api/orders en el futuro
-    alert("Ô£à Pedido realizado con ├®xito. Pronto recibir├ís confirmaci├│n.");
+    // Aquí se integrarÍí con /api/orders en el futuro
+    alert("Ô£à Pedido realizado con Í®xito. Pronto recibirÍís confirmación.");
     setCarrito([]);
     setShowCart(false);
   };
@@ -171,7 +163,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               <button onClick={() => setShowCart(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
             {carrito.length === 0 ? (
-              <p className="text-center text-stone-500 py-4">Carrito vac├¡o</p>
+              <p className="text-center text-stone-500 py-4">Carrito vacío</p>
             ) : (
               <>
                 {carrito.map(item => (
@@ -195,14 +187,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 </div>
                 <div className="mt-4 space-y-2">
                   <input type="text" placeholder="Nombre" value={checkoutData.nombre} onChange={e => setCheckoutData({...checkoutData, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <input type="text" placeholder="Direcci├│n" value={checkoutData.direccion} onChange={e => setCheckoutData({...checkoutData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <input type="text" placeholder="Tel├®fono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <input type="text" placeholder="Dirección" value={checkoutData.direccion} onChange={e => setCheckoutData({...checkoutData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <input type="text" placeholder="TelÍ®fono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <select value={checkoutData.metodo_pago} onChange={e => setCheckoutData({...checkoutData, metodo_pago: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800">
                     <option value="Efectivo">Efectivo</option>
                     <option value="Nequi">Nequi</option>
                     <option value="Bancolombia">Bancolombia</option>
                     <option value="Daviplata">Daviplata</option>
-                    <option value="Cr├®dito">Cr├®dito</option>
+                    <option value="CrÍ®dito">CrÍ®dito</option>
                   </select>
                 </div>
                 <button onClick={finalizarPedido} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Finalizar Pedido</button>
@@ -214,4 +206,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
+
+
+
 
