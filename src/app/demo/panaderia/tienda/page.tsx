@@ -1,11 +1,9 @@
 ﻿"use client";
-import { NEGOCIOS } from '@/config/negocios';
+import { NEGOCIOS } from "@/config/negocios";
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShoppingCart, Minus, Plus, X, RefreshCw } from "lucide-react";
-
-
 
 interface Producto {
   id: string;
@@ -14,6 +12,9 @@ interface Producto {
   stock: number;
   icono: string;
   categoria: string;
+  imagen_url?: string;
+  descripcion?: string;
+  unidad?: string;
 }
 
 export default function TiendaPage() {
@@ -28,16 +29,19 @@ export default function TiendaPage() {
   const [loading, setLoading] = useState(true);
 
   const pathParts = pathname?.split("/") || [];
-const negocioSlug = pathParts[1] || "restaurante";
-const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-const searchParams = useSearchParams();
-const tenantFromUrl = searchParams.get("tenant");
-const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = pathParts[1] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const searchParams = useSearchParams();
+  const tenantFromUrl = searchParams.get("tenant");
+  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoriaNegocio = negocio?.categoria || "";
 
   const cargarProductos = () => {
     setLoading(true);
-    fetch(`/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`)
+    const url = categoriaNegocio
+      ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`
+      : `/api/products?tenant=${tenantId}`;
+    fetch(url)
       .then(r => r.json())
       .then(d => {
         if (d.success) setProductos(d.data || []);
@@ -50,13 +54,11 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     cargarProductos();
   }, [tenantId, categoriaNegocio]);
 
-  // Cargar carrito desde localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`carrito_${negocioSlug}`);
     if (saved) setCarrito(JSON.parse(saved));
   }, []);
 
-  // Guardar carrito en localStorage
   useEffect(() => {
     localStorage.setItem(`carrito_${negocioSlug}`, JSON.stringify(carrito));
   }, [carrito]);
@@ -100,10 +102,45 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       alert("Carrito vacío");
       return;
     }
-    // Aquí se integrarÍí con /api/orders en el futuro
-    alert("Ô£à Pedido realizado con Í®xito. Pronto recibirÍís confirmación.");
-    setCarrito([]);
-    setShowCart(false);
+    if (!checkoutData.nombre) {
+      alert("Por favor ingresa tu nombre");
+      return;
+    }
+
+    const items = carrito.map(item => ({
+      producto_id: item.id,
+      cantidad: item.cantidad,
+      precio: item.precio,
+      nombre: item.nombre,
+    }));
+
+    try {
+      const res = await fetch("/api/pedidos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          cliente: checkoutData.nombre,
+          direccion: checkoutData.direccion || "",
+          telefono: checkoutData.telefono || "",
+          metodo_pago: checkoutData.metodo_pago,
+          total: totalCarrito,
+          items,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje("✅ Pedido realizado con éxito. Pronto recibirás confirmación.");
+        setCarrito([]);
+        setShowCart(false);
+        setCheckoutData({ nombre: "", direccion: "", telefono: "", metodo_pago: "Efectivo" });
+        setTimeout(() => setMensaje(""), 5000);
+      } else {
+        alert("Error al crear pedido: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -128,7 +165,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       <div className="p-4 max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-2 mb-4">
           {cats.map(c => (
-            <button key={c} onClick={() => setCatFilter(c)} className={`px-4 py-1.5 rounded-full text-sm font-medium ${catFilter === c ? 'bg-emerald-500 text-white' : 'bg-white text-stone-700'}`}>
+            <button key={c} onClick={() => setCatFilter(c)} className={`px-4 py-1.5 rounded-full text-sm font-medium ${catFilter === c ? "bg-emerald-500 text-white" : "bg-white text-stone-700"}`}>
               {c}
             </button>
           ))}
@@ -142,19 +179,26 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map(p => (
-              <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-                <div className="text-4xl text-center">{p.icono || "­ƒôª"}</div>
+              <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col">
+                {p.imagen_url ? (
+                  <img src={p.imagen_url} alt={p.nombre} className="w-full h-32 object-cover rounded-xl mb-2" />
+                ) : (
+                  <div className="text-4xl text-center mb-2">{p.icono || "📦"}</div>
+                )}
                 <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
                 <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
                 <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
-                <button onClick={() => agregarAlCarrito(p)} className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600">Agregar</button>
+                {p.descripcion && <p className="text-xs text-stone-400 text-center truncate">{p.descripcion}</p>}
+                {p.unidad && <p className="text-xs text-stone-400 text-center">Unidad: {p.unidad}</p>}
+                <button onClick={() => agregarAlCarrito(p)} className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600">
+                  Agregar
+                </button>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal Carrito */}
       {showCart && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
@@ -186,15 +230,15 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   <span>${totalCarrito.toLocaleString()}</span>
                 </div>
                 <div className="mt-4 space-y-2">
-                  <input type="text" placeholder="Nombre" value={checkoutData.nombre} onChange={e => setCheckoutData({...checkoutData, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <input type="text" placeholder="Nombre *" value={checkoutData.nombre} onChange={e => setCheckoutData({...checkoutData, nombre: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <input type="text" placeholder="Dirección" value={checkoutData.direccion} onChange={e => setCheckoutData({...checkoutData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
-                  <input type="text" placeholder="TelÍ®fono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
+                  <input type="text" placeholder="Teléfono" value={checkoutData.telefono} onChange={e => setCheckoutData({...checkoutData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800" />
                   <select value={checkoutData.metodo_pago} onChange={e => setCheckoutData({...checkoutData, metodo_pago: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-sm text-stone-800">
                     <option value="Efectivo">Efectivo</option>
                     <option value="Nequi">Nequi</option>
                     <option value="Bancolombia">Bancolombia</option>
                     <option value="Daviplata">Daviplata</option>
-                    <option value="CrÍ®dito">CrÍ®dito</option>
+                    <option value="Crédito">Crédito</option>
                   </select>
                 </div>
                 <button onClick={finalizarPedido} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Finalizar Pedido</button>
@@ -206,7 +250,3 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
-
-
-

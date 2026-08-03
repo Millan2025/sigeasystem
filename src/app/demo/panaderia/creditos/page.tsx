@@ -1,5 +1,5 @@
 ﻿"use client";
-import { NEGOCIOS } from '@/config/negocios';
+import { NEGOCIOS } from "@/config/negocios";
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -8,16 +8,16 @@ import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
 interface Credito {
   id: string;
   responsable: string;
+  cliente: string;
+  telefono?: string;
+  direccion?: string;
   valor_total: number;
   valor_pagado: number;
   saldo_pendiente: number;
   estado: string;
   fecha_inicio: string;
   observaciones: string;
-  tenant_id: string;
 }
-
-
 
 export default function CreditosPage() {
   const pathname = usePathname();
@@ -26,11 +26,11 @@ export default function CreditosPage() {
   const [abono, setAbono] = useState<{ id: string; monto: number } | null>(null);
 
   const pathParts = pathname?.split("/") || [];
-const negocioSlug = pathParts[1] || "restaurante";
-const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-const searchParams = useSearchParams();
-const tenantFromUrl = searchParams.get("tenant");
-const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = pathParts[1] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const searchParams = useSearchParams();
+  const tenantFromUrl = searchParams.get("tenant");
+  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const cargarCreditos = () => {
     setLoading(true);
@@ -48,7 +48,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
 
   const registrarAbono = async (id: string) => {
     if (!abono || abono.monto <= 0) {
-      alert("Ingrese un monto vÍílido");
+      alert("Ingrese un monto válido");
       return;
     }
     const res = await fetch("/api/creditos", {
@@ -75,7 +75,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
           <ArrowLeft className="w-5 h-5 text-stone-700" />
         </Link>
-        <h1 className="text-xl font-bold text-stone-800">CrÍ®ditos - {negocio?.titulo || "Negocio"}</h1>
+        <h1 className="text-xl font-bold text-stone-800">Créditos - {negocio?.titulo || "Negocio"}</h1>
         <div className="flex-1"></div>
         <button onClick={cargarCreditos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5 text-stone-700" />
@@ -89,12 +89,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Listado de crÍ®ditos</h3>
+          <h3 className="font-semibold text-stone-800 mb-3">Listado de créditos</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700">Cliente</th>
+                  <th className="text-left p-2 text-stone-700">Teléfono</th>
+                  <th className="text-left p-2 text-stone-700">Dirección</th>
                   <th className="text-left p-2 text-stone-700">Total</th>
                   <th className="text-left p-2 text-stone-700">Pagado</th>
                   <th className="text-left p-2 text-stone-700">Saldo</th>
@@ -106,17 +108,15 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               <tbody>
                 {creditos.map((c) => (
                   <tr key={c.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-800">{c.responsable}</td>
+                    <td className="p-2 text-stone-800">{c.responsable || c.cliente}</td>
+                    <td className="p-2 text-stone-600">{c.telefono || "-"}</td>
+                    <td className="p-2 text-stone-600">{c.direccion || "-"}</td>
                     <td className="p-2 text-stone-800">${c.valor_total.toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${c.valor_pagado.toLocaleString()}</td>
                     <td className="p-2 font-medium text-stone-800">${c.saldo_pendiente.toLocaleString()}</td>
                     <td className="p-2">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          c.estado === "pagado"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${c.estado === "pagado" ? "bg-emerald-100 text-emerald-700" : "bg-yellow-100 text-yellow-700"}`}
                       >
                         {c.estado}
                       </span>
@@ -146,8 +146,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 ))}
                 {creditos.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-4 text-center text-stone-500">
-                      No hay crÍ®ditos
+                    <td colSpan={9} className="p-4 text-center text-stone-500">
+                      No hay créditos
                     </td>
                   </tr>
                 )}
@@ -159,7 +159,3 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
-
-
-
