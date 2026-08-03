@@ -300,14 +300,14 @@ export default function ReportesPage() {
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-stone-900" />
-              <span className="text-sm font-medium text-stone-900">Desde:</span>
+              <span className="text-sm font-medium" style="color: #1a1a1a;">Desde:</span>
               <input
                 type="date"
                 value={filtroFecha.start}
                 onChange={(e) => setFiltroFecha({ ...filtroFecha, start: e.target.value })}
                 className="border border-stone-300 rounded-xl px-3 py-1 text-sm"
               />
-              <span className="text-sm font-medium text-stone-900">Hasta:</span>
+              <span className="text-sm font-medium" style="color: #1a1a1a;">Hasta:</span>
               <input
                 type="date"
                 value={filtroFecha.end}
@@ -317,7 +317,7 @@ export default function ReportesPage() {
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-stone-900" />
-              <span className="text-sm font-medium text-stone-900">Método de Pago:</span>
+              <span className="text-sm font-medium" style="color: #1a1a1a;">Método de Pago:</span>
               <select
                 value={filtroMetodoPago}
                 onChange={(e) => setFiltroMetodoPago(e.target.value)}
@@ -333,7 +333,7 @@ export default function ReportesPage() {
             </div>
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-stone-900" />
-              <span className="text-sm font-medium text-stone-900">Agrupar por:</span>
+              <span className="text-sm font-medium" style="color: #1a1a1a;">Agrupar por:</span>
               <select
                 value={agrupacionTemporal}
                 onChange={(e) => setAgrupacionTemporal(e.target.value)}
@@ -630,6 +630,7 @@ export default function ReportesPage() {
     </div>
   );
 }
+
 
 
 
