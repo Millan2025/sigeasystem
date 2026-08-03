@@ -1,9 +1,9 @@
 ﻿"use client";
+
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
-
 import { NEGOCIOS } from "@/config/negocios";
 
 interface ProductoBase {
@@ -20,11 +20,10 @@ export default function POSPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const pathParts = pathname?.split("/") || [];
-const negocioSlug = pathParts[1] || "restaurante";
-const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-
-const tenantFromUrl = searchParams.get("tenant");
-const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const negocioSlug = pathParts[1] || "restaurante";
+  const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
+  const tenantFromUrl = searchParams.get("tenant");
+  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
   const categoria = negocio?.categoria || "";
   const titulo = negocio?.titulo || "Negocio";
 
@@ -40,7 +39,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
-  // Función para cargar productos (reutilizable)
   const cargarProductos = () => {
     const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
     fetch(url)
@@ -63,7 +61,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       .catch(() => {});
   };
 
-  // Cargar productos al montar el componente y cuando cambie tenant o categoría
   useEffect(() => {
     cargarProductos();
   }, [tenantId, categoria]);
@@ -153,7 +150,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         setCart([]);
         setShowPay(false);
         setShowCart(false);
-        // Recargar productos para actualizar stock
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
@@ -247,7 +243,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       </div>
 
-      {/* Modal Carrito */}
       {showCart && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
@@ -283,7 +278,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Pago */}
       {showPay && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -301,7 +295,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Peso */}
       {pesoModal.producto && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -324,7 +317,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Crédito */}
       {showCreditoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -343,7 +335,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Compartir Accesos */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -353,28 +344,13 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
             </div>
             <p className="text-sm text-stone-600 mb-4">Comparte estos enlaces con tu equipo y clientes</p>
             <div className="space-y-3">
-              <a
-                href={`https://wa.me/?text=POS%20Vendedor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/pos`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition"
-              >
+              <a href={`https://wa.me/?text=POS%20Vendedor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/pos`} target="_blank" rel="noopener noreferrer" className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition">
                 <span className="text-xl">📱</span> POS Vendedor
               </a>
-              <a
-                href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition"
-              >
+              <a href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`} target="_blank" rel="noopener noreferrer" className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition">
                 <span className="text-xl">🛒</span> Tienda Clientes
               </a>
-              <a
-                href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition"
-              >
+              <a href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`} target="_blank" rel="noopener noreferrer" className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition">
                 <span className="text-xl">🛵</span> App Repartidor
               </a>
             </div>
@@ -385,4 +361,3 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
