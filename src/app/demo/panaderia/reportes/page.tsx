@@ -1,30 +1,31 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Download, Filter, Calendar } from "lucide-react";
 import * as XLSX from "xlsx";
-
 import { NEGOCIOS } from "@/config/negocios";
 
 export default function ReportesPage() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [ventas, setVentas] = useState<any[]>([]);
   const [compras, setCompras] = useState<any[]>([]);
   const [finanzas, setFinanzas] = useState<any[]>([]);
   const [stock, setStock] = useState<any[]>([]);
   const [creditos, setCreditos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);`n  const [resumenFinanzas, setResumenFinanzas] = useState(null);
+  const [resumenFinanzas, setResumenFinanzas] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [filtroFecha, setFiltroFecha] = useState({ start: "", end: "" });
   const [filtroMetodoPago, setFiltroMetodoPago] = useState("todos");
 
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[1] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const searchParams = useSearchParams();
-const tenantFromUrl = searchParams.get("tenant");
-const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const tenantFromUrl = searchParams.get("tenant");
+  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -45,8 +46,13 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       if (dataCompras.success) setCompras(dataCompras.data || []);
 
       const resFinanzas = await fetch(`/api/finanzas?tenant=${tenantId}`);
-      const dataFinanzas = await resFinanzas.json();`n      if (dataFinanzas.success && dataFinanzas.resumen) {`n        setResumenFinanzas(dataFinanzas.resumen);`n      }
-      if (dataFinanzas.success) setFinanzas(dataFinanzas.data || []);
+      const dataFinanzas = await resFinanzas.json();
+      if (dataFinanzas.success) {
+        setFinanzas(dataFinanzas.data || []);
+        if (dataFinanzas.resumen) {
+          setResumenFinanzas(dataFinanzas.resumen);
+        }
+      }
 
       const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
       const dataStock = await resStock.json();
@@ -65,7 +71,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     cargarDatos();
   }, [tenantId, filtroFecha, filtroMetodoPago]);
 
-  // Métricas
   const totalVentas = ventas.reduce((sum, v) => sum + (v.total || 0), 0);
   const totalCompras = compras.reduce((sum, c) => sum + (c.total || 0), 0);
   const totalIngresos = resumenFinanzas?.ingresos || 0;
@@ -73,7 +78,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + (c.saldo_pendiente || 0), 0);
   const stockCritico = stock.filter(s => s.stock_actual < (s.stock_minimo || 0)).length;
 
-  // Exportar Excel
   const exportarExcel = () => {
     const wb = XLSX.utils.book_new();
 
@@ -150,7 +154,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       </header>
 
       <div className="p-4 max-w-7xl mx-auto">
-        {/* Filtros */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2">
@@ -203,7 +206,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
 
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <h3 className="font-semibold text-stone-800 mb-3">Ãšltimas Ventas</h3>
+          <h3 className="font-semibold text-stone-800 mb-3">Últimas Ventas</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
@@ -234,11 +237,3 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
-
-
-
-
-
-
-
