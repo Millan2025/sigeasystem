@@ -15,7 +15,7 @@ export default function ReportesPage() {
   const [finanzas, setFinanzas] = useState<any[]>([]);
   const [stock, setStock] = useState<any[]>([]);
   const [creditos, setCreditos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);`n  const [resumenFinanzas, setResumenFinanzas] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [filtroFecha, setFiltroFecha] = useState({ start: "", end: "" });
   const [filtroMetodoPago, setFiltroMetodoPago] = useState("todos");
 
@@ -45,7 +45,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       if (dataCompras.success) setCompras(dataCompras.data || []);
 
       const resFinanzas = await fetch(`/api/finanzas?tenant=${tenantId}`);
-      const dataFinanzas = await resFinanzas.json();`n      if (dataFinanzas.success && dataFinanzas.resumen) {`n        setResumenFinanzas(dataFinanzas.resumen);`n      }
+      const dataFinanzas = await resFinanzas.json();
       if (dataFinanzas.success) setFinanzas(dataFinanzas.data || []);
 
       const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
@@ -68,8 +68,8 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   // Métricas
   const totalVentas = ventas.reduce((sum, v) => sum + (v.total || 0), 0);
   const totalCompras = compras.reduce((sum, c) => sum + (c.total || 0), 0);
-  const totalIngresos = resumenFinanzas?.ingresos || 0;
-  const totalEgresos = resumenFinanzas?.egresos || 0;
+  const totalIngresos = finanzas.filter(f => f.tipo === "ingreso").reduce((sum, f) => sum + f.monto, 0);
+  const totalEgresos = finanzas.filter(f => f.tipo === "egreso").reduce((sum, f) => sum + f.monto, 0);
   const totalCreditoPendiente = creditos.filter(c => c.estado === "pendiente").reduce((sum, c) => sum + (c.saldo_pendiente || 0), 0);
   const stockCritico = stock.filter(s => s.stock_actual < (s.stock_minimo || 0)).length;
 
@@ -234,8 +234,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
-
 
 
 
