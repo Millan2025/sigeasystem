@@ -55,7 +55,6 @@ export default function InventarioPage() {
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
 
-  // Referencia para el input de archivo (para dispararlo desde el botón)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const pathParts = pathname?.split("/") || [];
@@ -145,10 +144,14 @@ export default function InventarioPage() {
       setSubiendoImagen(false);
     }
 
+    // CORRECCIÓN: Asegurar que fecha_caducidad sea null si está vacía
+    const fechaCaducidad = formProducto.fecha_caducidad ? formProducto.fecha_caducidad : null;
+
     const { stock, ...productoData } = {
       ...formProducto,
       imagen_url: imagenUrl,
       tenant_id: tenantId,
+      fecha_caducidad: fechaCaducidad,
     };
 
     const url = "/api/products";
@@ -269,7 +272,6 @@ export default function InventarioPage() {
     setImagenFile(null);
     setImagenPreview(null);
     setFormProducto({ ...formProducto, imagen_url: "" });
-    // Limpiar el input de archivo también
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -456,97 +458,97 @@ export default function InventarioPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link href={'/demo/' + negocioSlug} className="p-2 hover:bg-stone-100 rounded-xl">
+      <header className="bg-white shadow-sm p-4 flex flex-wrap items-center gap-2 sticky top-0 z-10">
+        <Link href={'/demo/' + negocioSlug} className="p-2 hover:bg-stone-100 rounded-xl shrink-0">
           <ArrowLeft className="w-5 h-5 text-stone-700" />
         </Link>
-        <h1 className="text-xl font-bold text-stone-800">Inventario - {negocio?.titulo}</h1>
-        <div className="flex-1"></div>
-        <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5 text-stone-700" />
-        </button>
-        <button
-          onClick={() => setShowMovimientoModal(true)}
-          className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" /> Movimiento
-        </button>
-        <button
-          onClick={() => {
-            setEditandoProducto(null);
-            setFormProducto({
-              nombre: "",
-              categoria: "",
-              precio: 0,
-              precio_compra: 0,
-              stock: 0,
-              stock_minimo: 0,
-              stock_maximo: 0,
-              proveedor: "",
-              observaciones: "",
-              unidad: "unidad",
-              tipo_unidad: "unidad",
-              icono: "📦",
-              sku: "",
-              descripcion: "",
-              fecha_caducidad: "",
-              ubicacion: "",
-              imagen_url: "",
-            });
-            setImagenFile(null);
-            setImagenPreview(null);
-            setShowProductoModal(true);
-          }}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" /> Nuevo Producto
-        </button>
-        <button
-          onClick={descargarPlantilla}
-          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700"
-          title="Descargar plantilla Excel"
-        >
-          <FileDown className="w-5 h-5" />
-          <span className="text-xs hidden sm:inline">Plantilla</span>
-        </button>
-        <button
-          onClick={exportarInventario}
-          className="p-2 hover:bg-stone-100 rounded-xl flex items-center gap-1 text-stone-700 bg-emerald-50"
-          title="Exportar inventario actual"
-        >
-          <FileDown className="w-5 h-5" />
-          <span className="text-xs hidden sm:inline">Exportar Inv.</span>
-        </button>
-        <label className="p-2 hover:bg-stone-100 rounded-xl cursor-pointer flex items-center gap-1 text-stone-700">
-          <FileUp className="w-5 h-5" />
-          <span className="text-xs hidden sm:inline">Importar</span>
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                importarProductos(e.target.files[0]);
-              }
-              e.target.value = "";
+        <h1 className="text-lg md:text-xl font-bold text-stone-800 flex-1 min-w-0 truncate">Inventario - {negocio?.titulo}</h1>
+        <div className="flex flex-wrap items-center gap-1 md:gap-2">
+          <button onClick={cargarDatos} className="p-2 hover:bg-stone-100 rounded-xl">
+            <RefreshCw className="w-5 h-5 text-stone-700" />
+          </button>
+          <button
+            onClick={() => setShowMovimientoModal(true)}
+            className="bg-emerald-500 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Movimiento</span>
+          </button>
+          <button
+            onClick={() => {
+              setEditandoProducto(null);
+              setFormProducto({
+                nombre: "",
+                categoria: "",
+                precio: 0,
+                precio_compra: 0,
+                stock: 0,
+                stock_minimo: 0,
+                stock_maximo: 0,
+                proveedor: "",
+                observaciones: "",
+                unidad: "unidad",
+                tipo_unidad: "unidad",
+                icono: "📦",
+                sku: "",
+                descripcion: "",
+                fecha_caducidad: "",
+                ubicacion: "",
+                imagen_url: "",
+              });
+              setImagenFile(null);
+              setImagenPreview(null);
+              setShowProductoModal(true);
             }}
-            disabled={importando}
-          />
-        </label>
+            className="bg-blue-500 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nuevo Producto</span>
+          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={descargarPlantilla}
+              className="p-2 hover:bg-stone-100 rounded-xl text-stone-700"
+              title="Descargar plantilla Excel"
+            >
+              <FileDown className="w-5 h-5" />
+            </button>
+            <button
+              onClick={exportarInventario}
+              className="p-2 hover:bg-stone-100 rounded-xl text-stone-700 bg-emerald-50"
+              title="Exportar inventario actual"
+            >
+              <FileDown className="w-5 h-5" />
+            </button>
+            <label className="p-2 hover:bg-stone-100 rounded-xl cursor-pointer text-stone-700">
+              <FileUp className="w-5 h-5" />
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    importarProductos(e.target.files[0]);
+                  }
+                  e.target.value = "";
+                }}
+                disabled={importando}
+              />
+            </label>
+          </div>
+        </div>
       </header>
 
-      <div className="p-4 max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">
+      <div className="p-3 md:p-4 max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl p-3 md:p-4 shadow-sm border border-stone-200 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="font-semibold text-stone-800">Stock Actual</h2>
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
               <input
                 type="text"
-                placeholder="Buscar por SKU o nombre..."
+                placeholder="Buscar..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
+                className="w-full sm:w-48 pl-10 pr-4 py-1.5 border border-stone-300 rounded-xl text-sm text-stone-800"
               />
             </div>
           </div>
@@ -554,38 +556,38 @@ export default function InventarioPage() {
             <table className="w-full text-sm">
               <thead className="bg-stone-50">
                 <tr>
-                  <th className="text-left p-2 text-stone-700">Imagen</th>
-                  <th className="text-left p-2 text-stone-700">SKU</th>
+                  <th className="text-left p-2 text-stone-700 hidden sm:table-cell">Imagen</th>
+                  <th className="text-left p-2 text-stone-700 hidden md:table-cell">SKU</th>
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
-                  <th className="text-left p-2 text-stone-700">Unidad</th>
-                  <th className="text-left p-2 text-stone-700">Ubicación</th>
-                  <th className="text-left p-2 text-stone-700">Caducidad</th>
+                  <th className="text-left p-2 text-stone-700 hidden md:table-cell">Unidad</th>
+                  <th className="text-left p-2 text-stone-700 hidden lg:table-cell">Ubicación</th>
+                  <th className="text-left p-2 text-stone-700 hidden xl:table-cell">Caducidad</th>
                   <th className="text-left p-2 text-stone-700">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {stockFiltrado.map((p: any) => (
                   <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2">
+                    <td className="p-2 hidden sm:table-cell">
                       {p.imagen_url ? (
                         <img src={p.imagen_url} alt={p.nombre} className="w-10 h-10 object-cover rounded" />
                       ) : (
                         <span className="text-2xl">📦</span>
                       )}
                     </td>
-                    <td className="p-2 text-stone-600 font-mono text-xs">{p.sku || "-"}</td>
+                    <td className="p-2 text-stone-600 font-mono text-xs hidden md:table-cell">{p.sku || "-"}</td>
                     <td className="p-2 text-stone-800 font-medium">
                       <div>{p.nombre}</div>
                       <div className="text-xs text-stone-600 truncate max-w-xs">{p.descripcion || ""}</div>
                     </td>
                     <td className="p-2 font-semibold text-stone-800">{p.stock_actual}</td>
-                    <td className="p-2 text-stone-600">{p.unidad || "unidad"}</td>
-                    <td className="p-2 text-stone-600">{p.ubicacion || "-"}</td>
-                    <td className="p-2 text-stone-600">
+                    <td className="p-2 text-stone-600 hidden md:table-cell">{p.unidad || "unidad"}</td>
+                    <td className="p-2 text-stone-600 hidden lg:table-cell">{p.ubicacion || "-"}</td>
+                    <td className="p-2 text-stone-600 hidden xl:table-cell">
                       {p.fecha_caducidad ? new Date(p.fecha_caducidad).toLocaleDateString() : "-"}
                     </td>
-                    <td className="p-2 flex gap-2">
+                    <td className="p-2 flex gap-1">
                       <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded">
                         <Edit className="w-4 h-4 text-stone-600" />
                       </button>
@@ -607,8 +609,8 @@ export default function InventarioPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white rounded-2xl p-3 md:p-4 shadow-sm border border-stone-200">
+          <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
             <h2 className="font-semibold text-stone-800">Últimos Movimientos</h2>
             <select
               value={filtroTipo}
@@ -627,17 +629,17 @@ export default function InventarioPage() {
                 <tr>
                   <th className="text-left p-2 text-stone-700">Fecha</th>
                   <th className="text-left p-2 text-stone-700">Producto</th>
-                  <th className="text-left p-2 text-stone-700">Tipo</th>
+                  <th className="text-left p-2 text-stone-700 hidden sm:table-cell">Tipo</th>
                   <th className="text-left p-2 text-stone-700">Cantidad</th>
-                  <th className="text-left p-2 text-stone-700">Motivo</th>
+                  <th className="text-left p-2 text-stone-700 hidden md:table-cell">Motivo</th>
                 </tr>
               </thead>
               <tbody>
                 {movimientosFiltrados.map((m: any) => (
                   <tr key={m.id} className="border-b border-stone-100">
-                    <td className="p-2 text-stone-600">{new Date(m.created_at).toLocaleString()}</td>
+                    <td className="p-2 text-stone-600 text-xs md:text-sm">{new Date(m.created_at).toLocaleString()}</td>
                     <td className="p-2 text-stone-800">{m.productos?.nombre || "Producto"}</td>
-                    <td className="p-2">
+                    <td className="p-2 hidden sm:table-cell">
                       <span
                         className={'px-2 py-1 rounded-full text-xs font-medium ' + (m.tipo === "entrada" ? "bg-emerald-100 text-emerald-700" : m.tipo === "salida" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700")}
                       >
@@ -645,7 +647,7 @@ export default function InventarioPage() {
                       </span>
                     </td>
                     <td className="p-2 font-medium text-stone-800">{m.cantidad}</td>
-                    <td className="p-2 text-stone-600">{m.motivo || "-"}</td>
+                    <td className="p-2 text-stone-600 hidden md:table-cell">{m.motivo || "-"}</td>
                   </tr>
                 ))}
                 {movimientosFiltrados.length === 0 && (
@@ -736,7 +738,7 @@ export default function InventarioPage() {
 
       {showProductoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-4 md:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-stone-800 mb-4">
               {editandoProducto ? 'Editar producto: ' + editandoProducto.nombre : "Nuevo Producto"}
             </h3>
@@ -744,7 +746,7 @@ export default function InventarioPage() {
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Imagen del producto</label>
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     <input
                       type="file"
                       accept="image/*"
@@ -756,12 +758,12 @@ export default function InventarioPage() {
                     <button
                       type="button"
                       onClick={dispararCamara}
-                      className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2"
+                      className="bg-emerald-500 text-white px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-2"
                     >
                       <Camera className="w-4 h-4" />
-                      Tomar foto
+                      <span>Tomar foto</span>
                     </button>
-                    <span className="text-sm text-stone-500">o selecciona un archivo</span>
+                    <span className="text-sm text-stone-500 hidden sm:inline">o</span>
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       className="text-sm text-emerald-600 underline"
@@ -790,7 +792,7 @@ export default function InventarioPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700">SKU (Código de Barras)</label>
+                <label className="block text-sm font-medium text-stone-700">SKU</label>
                 <input
                   type="text"
                   value={formProducto.sku}
@@ -948,7 +950,7 @@ export default function InventarioPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowProductoModal(false);
