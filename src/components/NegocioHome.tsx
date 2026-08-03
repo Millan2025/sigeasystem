@@ -128,13 +128,13 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const secondaryColor = "#D4A017"; // dorado oscuro para el degradado
 
   const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
+    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
     { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-2 border-[#B8860B] text-lime-600", href: `/${negocioSlug || "restaurante"}/produccion?tenant=${tenantId}` },
     { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/inventario?tenant=${tenantId}` },
     { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-2 border-[#B8860B] text-purple-600", href: `/${negocioSlug || "restaurante"}/personal?tenant=${tenantId}` },
     { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-2 border-[#B8860B] text-sky-600", href: `/${negocioSlug || "restaurante"}/pedidos?tenant=${tenantId}` },
     { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-2 border-[#B8860B] text-rose-600", href: `/${negocioSlug || "restaurante"}/reportes?tenant=${tenantId}` },
-    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-2 border-[#B8860B] text-teal-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
+    { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-2 border-[#B8860B] text-teal-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
     { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-2 border-[#B8860B] text-orange-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `/${negocioSlug || "restaurante"}/compras?tenant=${tenantId}` },
     { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `/${negocioSlug || "restaurante"}/creditos?tenant=${tenantId}` },
@@ -272,4 +272,5 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     </div>
   );
 }
+
 
