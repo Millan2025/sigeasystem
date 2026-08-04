@@ -52,22 +52,53 @@ export default function ComprasPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
-    const url = categoriaNegocio
-  ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`
-  : `/api/products?tenant=${tenantId}`;
-    const resProd = await fetch(url);
-    const dataProd = await resProd.json();
-    if (dataProd.success) setProductos(dataProd.data || []);
+    console.log("🔍 Iniciando carga de datos...");
+    console.log("📌 tenantId:", tenantId);
+    console.log("📌 categoriaNegocio:", categoriaNegocio);
 
-    const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
-    const dataStock = await resStock.json();
-    if (dataStock.success) {
-      const map: Record<string, number> = {};
-      dataStock.data.forEach((s: any) => {
-        map[s.id] = s.stock_actual;
-      });
-      setStockMap(map);
+    const url = categoriaNegocio
+      ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`
+      : `/api/products?tenant=${tenantId}`;
+
+    console.log("🌐 URL de productos:", url);
+
+    try {
+      const resProd = await fetch(url);
+      console.log("📦 Respuesta de productos (raw):", resProd.status, resProd.statusText);
+      const dataProd = await resProd.json();
+      console.log("📦 Datos de productos (parseados):", dataProd);
+
+      if (dataProd.success) {
+        console.log("✅ Productos cargados:", dataProd.data?.length || 0);
+        if (dataProd.data && dataProd.data.length > 0) {
+          console.log("📋 Primer producto:", dataProd.data[0]);
+        }
+        setProductos(dataProd.data || []);
+      } else {
+        console.error("❌ Error en la API de productos:", dataProd.error);
+        setProductos([]);
+      }
+    } catch (error) {
+      console.error("❌ Error al cargar productos:", error);
+      setProductos([]);
     }
+
+    try {
+      const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
+      const dataStock = await resStock.json();
+      console.log("📊 Stock recibido:", dataStock);
+      if (dataStock.success) {
+        const map: Record<string, number> = {};
+        dataStock.data.forEach((s: any) => {
+          map[s.id] = s.stock_actual;
+        });
+        setStockMap(map);
+        console.log("📊 Mapa de stock actualizado:", Object.keys(map).length, "productos");
+      }
+    } catch (error) {
+      console.error("❌ Error al cargar stock:", error);
+    }
+
     setLoading(false);
     setMensaje("");
   };
@@ -75,6 +106,13 @@ export default function ComprasPage() {
   useEffect(() => {
     cargarDatos();
   }, [tenantId, categoriaNegocio]);
+
+  useEffect(() => {
+    console.log("🔄 productos actualizados:", productos.length);
+    if (productos.length > 0) {
+      console.log("📋 Primer producto:", productos[0]);
+    }
+  }, [productos]);
 
   const proveedores = [...new Set(productos.map((p) => p.proveedor).filter(Boolean))];
 
@@ -88,6 +126,13 @@ export default function ComprasPage() {
     if (filtroProveedor && p.proveedor !== filtroProveedor) return false;
     return true;
   });
+
+  useEffect(() => {
+    console.log("🔄 productosFiltrados actualizados:", productosFiltrados.length);
+    if (productosFiltrados.length > 0) {
+      console.log("📋 Primer producto filtrado:", productosFiltrados[0]);
+    }
+  }, [productos, filtroProveedor]);
 
   const toggleSeleccion = (id: string) => {
     setSeleccionados((prev) => {
@@ -168,6 +213,8 @@ export default function ComprasPage() {
       total_con_impuestos,
     };
 
+    console.log("📤 Enviando compra:", body);
+
     try {
       const res = await fetch("/api/compras", {
         method: "POST",
@@ -175,6 +222,7 @@ export default function ComprasPage() {
         body: JSON.stringify(body),
       });
       const data = await res.json();
+      console.log("📥 Respuesta de la API:", data);
       if (data.success) {
         setMensaje(`✅ Compra #${data.data.compra.id.slice(0, 6)} registrada exitosamente. Total: $${total_con_impuestos.toLocaleString()}`);
         setSeleccionados({});
@@ -185,6 +233,7 @@ export default function ComprasPage() {
         alert("Error: " + data.error);
       }
     } catch (error) {
+      console.error("❌ Error de conexión:", error);
       alert("Error de conexión");
     }
   };
@@ -213,7 +262,7 @@ export default function ComprasPage() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(items);
     XLSX.utils.book_append_sheet(wb, ws, "OrdenCompra");
-    XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `orden_compra_${new Date().toISOString().slice(0, 10)}.xlsx`);
     alert(`📄 Orden de compra generada con ${items.length} productos.`);
   };
 
@@ -232,7 +281,7 @@ export default function ComprasPage() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "Inventario");
-    XLSX.writeFile(wb, `inventario_completo_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `inventario_completo_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const guardarProducto = async () => {
@@ -289,6 +338,8 @@ export default function ComprasPage() {
 
   const totalSeleccionados = Object.keys(seleccionados).length;
   const { subtotal, iva, retencion, ica, total_con_impuestos } = calcularTotales();
+
+  console.log("🎯 Estado actual - productos:", productos.length, "productosFiltrados:", productosFiltrados.length);
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -702,3 +753,4 @@ export default function ComprasPage() {
     </div>
   );
 }
+
