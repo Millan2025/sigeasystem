@@ -33,6 +33,7 @@ export default function ComprasPage() {
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
   const [showResumen, setShowResumen] = useState(false);
+    const [impuestos, setImpuestos] = useState({ iva: 0.19, retencion: 0, ica: 0.005, exento: false });
 
   const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
@@ -159,31 +160,32 @@ export default function ComprasPage() {
   };
 
   const calcularTotales = () => {
-    let subtotal = 0;
-    const items = Object.entries(seleccionados).map(([id, cantidad]) => {
-      const p = productos.find(prod => prod.id === id);
-      if (!p) return null;
-      const precioCompra = p.precio_compra || 0;
-      subtotal += cantidad * precioCompra;
-      return {
-        producto_id: id,
-        cantidad: cantidad,
-        precio_compra: precioCompra,
-        nombre: p.nombre,
-      };
-    }).filter(Boolean);
+  let subtotal = 0;
+  const items = Object.entries(seleccionados).map(([id, cantidad]) => {
+    const p = productos.find(prod => prod.id === id);
+    if (!p) return null;
+    const precioCompra = p.precio_compra || 0;
+    subtotal += cantidad * precioCompra;
+    return {
+      producto_id: id,
+      cantidad: cantidad,
+      precio_compra: precioCompra,
+      nombre: p.nombre,
+    };
+  }).filter(Boolean);
 
-    const tasaIVA = 0.19;
-    const tasaRetencion = 0;
-    const tasaICA = 0.005;
+  // Usar los valores del estado
+  const tasaIVA = impuestos.exento ? 0 : impuestos.iva;
+  const tasaRetencion = impuestos.retencion;
+  const tasaICA = impuestos.ica;
 
-    const iva = subtotal * tasaIVA;
-    const retencion = subtotal * tasaRetencion;
-    const ica = subtotal * tasaICA;
-    const total_con_impuestos = subtotal + iva - retencion + ica;
+  const iva = subtotal * tasaIVA;
+  const retencion = subtotal * tasaRetencion;
+  const ica = subtotal * tasaICA;
+  const total_con_impuestos = subtotal + iva - retencion + ica;
 
-    return { items, subtotal, iva, retencion, ica, total_con_impuestos };
-  };
+  return { items, subtotal, iva, retencion, ica, total_con_impuestos };
+};
 
   const registrarCompra = async () => {
     const { items, subtotal, iva, retencion, ica, total_con_impuestos } = calcularTotales();
@@ -571,6 +573,77 @@ export default function ComprasPage() {
             })}
           </div>
 
+          {/* 🧮 Impuestos editables */}
+<div className="border-t pt-3 mt-2 mb-3 space-y-2">
+  <h4 className="text-sm font-semibold text-stone-700">Ajustar impuestos</h4>
+  
+  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <label className="text-sm text-stone-600 w-16">IVA (%)</label>
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        max="100"
+        value={impuestos.iva * 100}
+        onChange={(e) => setImpuestos({ 
+          ...impuestos, 
+          iva: parseFloat(e.target.value) / 100 || 0 
+        })}
+        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+        disabled={impuestos.exento}
+      />
+    </div>
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <label className="text-sm text-stone-600 w-16">Retención (%)</label>
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        max="100"
+        value={impuestos.retencion * 100}
+        onChange={(e) => setImpuestos({ 
+          ...impuestos, 
+          retencion: parseFloat(e.target.value) / 100 || 0 
+        })}
+        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+      />
+    </div>
+  </div>
+  
+  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <label className="text-sm text-stone-600 w-16">ICA (%)</label>
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        max="100"
+        value={impuestos.ica * 100}
+        onChange={(e) => setImpuestos({ 
+          ...impuestos, 
+          ica: parseFloat(e.target.value) / 100 || 0 
+        })}
+        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+      />
+    </div>
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <label className="text-sm text-stone-600 flex items-center gap-1 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={impuestos.exento}
+          onChange={(e) => setImpuestos({ 
+            ...impuestos, 
+            exento: e.target.checked 
+          })}
+          className="w-4 h-4"
+        />
+        Exento de IVA
+      </label>
+    </div>
+  </div>
+</div>
+className={`w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800 ${impuestos.exento ? 'bg-stone-100 text-stone-400' : ''}`}
           <div className="border-t pt-3 space-y-1 text-sm">
             <div className="flex justify-between">
               <span className="text-stone-800 font-medium">Subtotal</span>
