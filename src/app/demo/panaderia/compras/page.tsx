@@ -543,76 +543,76 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {showResumen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-stone-800">Resumen de Compra</h3>
-              <button onClick={() => setShowResumen(false)} className="text-stone-500 hover:text-stone-700">
-                <span className="text-2xl">&times;</span>
-              </button>
-            </div>
+{showResumen && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold text-stone-800">Resumen de Compra</h3>
+        <button onClick={() => setShowResumen(false)} className="text-stone-500 hover:text-stone-700">
+          <span className="text-2xl">&times;</span>
+        </button>
+      </div>
 
-            {Object.entries(seleccionados).length === 0 ? (
-              <p className="text-stone-500 text-center py-4">No hay productos seleccionados</p>
-            ) : (
-              <>
-                <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
-                  {Object.entries(seleccionados).map(([id, cantidad]) => {
-                    const p = productos.find(prod => prod.id === id);
-                    if (!p) return null;
-                    const precio = p.precio_compra || 0;
-                    return (
-                      <div key={id} className="flex justify-between text-sm border-b py-1">
-                        <span>{p.nombre} x {cantidad}</span>
-                        <span className="font-medium">${(cantidad * precio).toLocaleString()}</span>
-                      </div>
-                    );
-                  })}
+      {Object.entries(seleccionados).length === 0 ? (
+        <p className="text-stone-500 text-center py-4">No hay productos seleccionados</p>
+      ) : (
+        <>
+          <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
+            {Object.entries(seleccionados).map(([id, cantidad]) => {
+              const p = productos.find(prod => prod.id === id);
+              if (!p) return null;
+              const precio = p.precio_compra || 0;
+              return (
+                <div key={id} className="flex justify-between text-sm border-b py-1">
+                  <span className="text-stone-700">{p.nombre} x {cantidad}</span>
+                  <span className="font-medium text-stone-800">${(cantidad * precio).toLocaleString()}</span>
                 </div>
-
-                <div className="border-t pt-3 space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">Subtotal</span>
-                    <span className="font-medium">${subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">IVA (19%)</span>
-                    <span className="font-medium">${iva.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">Retención</span>
-                    <span className="font-medium">${retencion.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-600">ICA (0.5%)</span>
-                    <span className="font-medium">${ica.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                    <span>Total</span>
-                    <span className="text-emerald-600">${total_con_impuestos.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => setShowResumen(false)}
-                    className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={registrarCompra}
-                    className="flex-1 py-2 bg-emerald-500 text-white rounded-xl font-medium"
-                  >
-                    Confirmar Compra
-                  </button>
-                </div>
-              </>
-            )}
+              );
+            })}
           </div>
-        </div>
+
+          <div className="border-t pt-3 space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-stone-800 font-medium">Subtotal</span>
+              <span className="font-medium text-stone-800">${subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-stone-800 font-medium">IVA (19%)</span>
+              <span className="font-medium text-stone-800">${iva.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-stone-800 font-medium">Retención</span>
+              <span className="font-medium text-stone-800">${retencion.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-stone-800 font-medium">ICA (0.5%)</span>
+              <span className="font-medium text-stone-800">${ica.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-lg font-bold pt-2 border-t">
+              <span className="text-stone-800">Total</span>
+              <span className="text-emerald-700">${total_con_impuestos.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setShowResumen(false)}
+              className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={registrarCompra}
+              className="flex-1 py-2 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
+            >
+              Confirmar Compra
+            </button>
+          </div>
+        </>
       )}
+    </div>
+  </div>
+)}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
