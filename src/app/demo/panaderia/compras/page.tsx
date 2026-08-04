@@ -52,7 +52,9 @@ export default function ComprasPage() {
 
   const cargarDatos = async () => {
     setLoading(true);
-    const url = `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`;
+    const url = categoriaNegocio
+  ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`
+  : `/api/products?tenant=${tenantId}`;
     const resProd = await fetch(url);
     const dataProd = await resProd.json();
     if (dataProd.success) setProductos(dataProd.data || []);
