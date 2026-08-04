@@ -56,9 +56,7 @@ export default function ComprasPage() {
     console.log("📌 tenantId:", tenantId);
     console.log("📌 categoriaNegocio:", categoriaNegocio);
 
-    const url = categoriaNegocio
-      ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`
-      : `/api/products?tenant=${tenantId}`;
+    const url = `/api/products?tenant=${tenantId}`;
 
     console.log("🌐 URL de productos:", url);
 
