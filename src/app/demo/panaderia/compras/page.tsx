@@ -27,13 +27,13 @@ export default function ComprasPage() {
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroProveedor, setFiltroProveedor] = useState("");
-  const [seleccionados, setSeleccionados] = useState<Record<string, number>>({});
+  const [seleccionados, setSeleccionados] = useState<Record<string, { cantidad: number; proveedor: string }>>({});
   const [stockMap, setStockMap] = useState<Record<string, number>>({});
-  const [proveedor, setProveedor] = useState("");
+  const [proveedorGeneral, setProveedorGeneral] = useState("");
   const [metodoPago, setMetodoPago] = useState("contado");
   const [mensaje, setMensaje] = useState("");
   const [showResumen, setShowResumen] = useState(false);
-    const [impuestos, setImpuestos] = useState({ iva: 0.19, retencion: 0, ica: 0.005, exento: false });
+  const [impuestos, setImpuestos] = useState({ iva: 0.19, retencion: 0, ica: 0.005, exento: false });
 
   const [showModal, setShowImportModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
@@ -58,7 +58,6 @@ export default function ComprasPage() {
     console.log("📌 categoriaNegocio:", categoriaNegocio);
 
     const url = `/api/products?tenant=${tenantId}`;
-
     console.log("🌐 URL de productos:", url);
 
     try {
@@ -142,7 +141,8 @@ export default function ComprasPage() {
         const p = productos.find(prod => prod.id === id);
         if (p) {
           const stockActual = stockMap[p.id] ?? 0;
-          newState[id] = Math.max((p.stock_minimo || 0) - stockActual, 1);
+          const cantidad = Math.max((p.stock_minimo || 0) - stockActual, 1);
+          newState[id] = { cantidad, proveedor: p.proveedor || "" };
         }
       }
       return newState;
@@ -156,36 +156,47 @@ export default function ComprasPage() {
       setSeleccionados(newState);
       return;
     }
-    setSeleccionados((prev) => ({ ...prev, [id]: cantidad }));
+    setSeleccionados((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], cantidad },
+    }));
+  };
+
+  const actualizarProveedor = (id: string, proveedor: string) => {
+    setSeleccionados((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], proveedor },
+    }));
   };
 
   const calcularTotales = () => {
-  let subtotal = 0;
-  const items = Object.entries(seleccionados).map(([id, cantidad]) => {
-    const p = productos.find(prod => prod.id === id);
-    if (!p) return null;
-    const precioCompra = p.precio_compra || 0;
-    subtotal += cantidad * precioCompra;
-    return {
-      producto_id: id,
-      cantidad: cantidad,
-      precio_compra: precioCompra,
-      nombre: p.nombre,
-    };
-  }).filter(Boolean);
+    let subtotal = 0;
+    const items = Object.entries(seleccionados).map(([id, { cantidad, proveedor }]) => {
+      const p = productos.find(prod => prod.id === id);
+      if (!p) return null;
+      const precioCompra = p.precio_compra || 0;
+      subtotal += cantidad * precioCompra;
+      return {
+        producto_id: id,
+        cantidad: cantidad,
+        precio_compra: precioCompra,
+        nombre: p.nombre,
+        descripcion: p.descripcion || "",
+        proveedor: proveedor || p.proveedor || "",
+      };
+    }).filter(Boolean);
 
-  // Usar los valores del estado
-  const tasaIVA = impuestos.exento ? 0 : impuestos.iva;
-  const tasaRetencion = impuestos.retencion;
-  const tasaICA = impuestos.ica;
+    const tasaIVA = impuestos.exento ? 0 : impuestos.iva;
+    const tasaRetencion = impuestos.retencion;
+    const tasaICA = impuestos.ica;
 
-  const iva = subtotal * tasaIVA;
-  const retencion = subtotal * tasaRetencion;
-  const ica = subtotal * tasaICA;
-  const total_con_impuestos = subtotal + iva - retencion + ica;
+    const iva = subtotal * tasaIVA;
+    const retencion = subtotal * tasaRetencion;
+    const ica = subtotal * tasaICA;
+    const total_con_impuestos = subtotal + iva - retencion + ica;
 
-  return { items, subtotal, iva, retencion, ica, total_con_impuestos };
-};
+    return { items, subtotal, iva, retencion, ica, total_con_impuestos };
+  };
 
   const registrarCompra = async () => {
     const { items, subtotal, iva, retencion, ica, total_con_impuestos } = calcularTotales();
@@ -195,22 +206,22 @@ export default function ComprasPage() {
       return;
     }
 
-    if (!proveedor) {
-      alert("Ingresa el nombre del proveedor.");
+    if (!proveedorGeneral) {
+      alert("Ingresa el nombre del proveedor general.");
       return;
     }
 
     const body = {
       tenant_id: tenantId,
-      proveedor: proveedor,
+      proveedor: proveedorGeneral,
       metodo_pago: metodoPago,
       fecha: new Date().toISOString().split("T")[0],
       items: items,
-      subtotal,
-      iva,
-      retencion,
-      ica,
-      total_con_impuestos,
+      subtotal: subtotal,
+      iva: iva,
+      retencion: retencion,
+      ica: ica,
+      total_con_impuestos: total_con_impuestos,
     };
 
     console.log("📤 Enviando compra:", body);
@@ -239,7 +250,7 @@ export default function ComprasPage() {
   };
 
   const generarOrdenCompra = () => {
-    const items = Object.entries(seleccionados).map(([id, cantidad]) => {
+    const items = Object.entries(seleccionados).map(([id, { cantidad }]) => {
       const p = productos.find((prod) => prod.id === id);
       if (!p) return null;
       const stockActual = stockMap[p.id] ?? 0;
@@ -429,9 +440,9 @@ export default function ComprasPage() {
 
           <input
             type="text"
-            placeholder="Proveedor de esta compra *"
-            value={proveedor}
-            onChange={(e) => setProveedor(e.target.value)}
+            placeholder="Proveedor general *"
+            value={proveedorGeneral}
+            onChange={(e) => setProveedorGeneral(e.target.value)}
             className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800 flex-1 min-w-[150px]"
           />
           <select
@@ -469,7 +480,8 @@ export default function ComprasPage() {
                 const stockActual = stockMap[p.id] ?? 0;
                 const esCritico = stockActual < (p.stock_minimo || 0);
                 const cantidadSugerida = Math.max((p.stock_minimo || 0) - stockActual, 0);
-                const cantidad = seleccionados[p.id] || 0;
+                const seleccion = seleccionados[p.id];
+                const cantidad = seleccion?.cantidad || 0;
                 const subtotalItem = cantidad * (p.precio_compra || 0);
 
                 return (
@@ -508,7 +520,21 @@ export default function ComprasPage() {
                         <span className="text-xs text-stone-400 ml-1">Sug: {cantidadSugerida}</span>
                       )}
                     </td>
-                    <td className="p-2 text-stone-600">{p.proveedor || "-"}</td>
+                    <td className="p-2">
+                      <select
+                        value={seleccion?.proveedor || p.proveedor || ""}
+                        onChange={(e) => actualizarProveedor(p.id, e.target.value)}
+                        className="border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800 w-full"
+                        disabled={seleccionados[p.id] === undefined}
+                      >
+                        <option value="">Sin proveedor</option>
+                        {proveedores.map((prov) => (
+                          <option key={prov} value={prov}>
+                            {prov}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="p-2 text-stone-800">${(p.precio_compra || 0).toLocaleString()}</td>
                     <td className="p-2 text-stone-800">${subtotalItem.toLocaleString()}</td>
                     <td className="p-2">
@@ -545,147 +571,135 @@ export default function ComprasPage() {
         </div>
       </div>
 
-{showResumen && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-stone-800">Resumen de Compra</h3>
-        <button onClick={() => setShowResumen(false)} className="text-stone-500 hover:text-stone-700">
-          <span className="text-2xl">&times;</span>
-        </button>
-      </div>
+      {showResumen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-stone-800">Resumen de Compra</h3>
+              <button onClick={() => setShowResumen(false)} className="text-stone-500 hover:text-stone-700">
+                <span className="text-2xl">&times;</span>
+              </button>
+            </div>
 
-      {Object.entries(seleccionados).length === 0 ? (
-        <p className="text-stone-500 text-center py-4">No hay productos seleccionados</p>
-      ) : (
-        <>
-          <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
-            {Object.entries(seleccionados).map(([id, cantidad]) => {
-              const p = productos.find(prod => prod.id === id);
-              if (!p) return null;
-              const precio = p.precio_compra || 0;
-              return (
-                <div key={id} className="flex justify-between text-sm border-b py-1">
-                  <span className="text-stone-700">{p.nombre} x {cantidad}</span>
-                  <span className="font-medium text-stone-800">${(cantidad * precio).toLocaleString()}</span>
+            {Object.entries(seleccionados).length === 0 ? (
+              <p className="text-stone-500 text-center py-4">No hay productos seleccionados</p>
+            ) : (
+              <>
+                <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
+                  {Object.entries(seleccionados).map(([id, { cantidad, proveedor }]) => {
+                    const p = productos.find(prod => prod.id === id);
+                    if (!p) return null;
+                    const precio = p.precio_compra || 0;
+                    return (
+                      <div key={id} className="flex justify-between text-sm border-b py-1">
+                        <span className="text-stone-700">
+                          {p.nombre} {p.descripcion ? `(${p.descripcion})` : ''} x {cantidad}
+                          {proveedor && <span className="text-xs text-stone-400 ml-1">({proveedor})</span>}
+                        </span>
+                        <span className="font-medium text-stone-800">${(cantidad * precio).toLocaleString()}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
 
-          {/* 🧮 Impuestos editables */}
-<div className="border-t pt-3 mt-2 mb-3 space-y-2">
-  <h4 className="text-sm font-semibold text-stone-700">Ajustar impuestos</h4>
-  
-  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      <label className="text-sm text-stone-600 w-16">IVA (%)</label>
-      <input
-        type="number"
-        step="0.01"
-        min="0"
-        max="100"
-        value={impuestos.iva * 100}
-        onChange={(e) => setImpuestos({ 
-          ...impuestos, 
-          iva: parseFloat(e.target.value) / 100 || 0 
-        })}
-        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
-        disabled={impuestos.exento}
-      />
-    </div>
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      <label className="text-sm text-stone-600 w-16">Retención (%)</label>
-      <input
-        type="number"
-        step="0.01"
-        min="0"
-        max="100"
-        value={impuestos.retencion * 100}
-        onChange={(e) => setImpuestos({ 
-          ...impuestos, 
-          retencion: parseFloat(e.target.value) / 100 || 0 
-        })}
-        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
-      />
-    </div>
-  </div>
-  
-  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      <label className="text-sm text-stone-600 w-16">ICA (%)</label>
-      <input
-        type="number"
-        step="0.01"
-        min="0"
-        max="100"
-        value={impuestos.ica * 100}
-        onChange={(e) => setImpuestos({ 
-          ...impuestos, 
-          ica: parseFloat(e.target.value) / 100 || 0 
-        })}
-        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
-      />
-    </div>
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      <label className="text-sm text-stone-600 flex items-center gap-1 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={impuestos.exento}
-          onChange={(e) => setImpuestos({ 
-            ...impuestos, 
-            exento: e.target.checked 
-          })}
-          className="w-4 h-4"
-        />
-        Exento de IVA
-      </label>
-    </div>
-  </div>
-</div>
-className={`w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800 ${impuestos.exento ? 'bg-stone-100 text-stone-400' : ''}`}
-          <div className="border-t pt-3 space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-stone-800 font-medium">Subtotal</span>
-              <span className="font-medium text-stone-800">${subtotal.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-stone-800 font-medium">IVA (19%)</span>
-              <span className="font-medium text-stone-800">${iva.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-stone-800 font-medium">Retención</span>
-              <span className="font-medium text-stone-800">${retencion.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-stone-800 font-medium">ICA (0.5%)</span>
-              <span className="font-medium text-stone-800">${ica.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold pt-2 border-t">
-              <span className="text-stone-800">Total</span>
-              <span className="text-emerald-700">${total_con_impuestos.toLocaleString()}</span>
-            </div>
-          </div>
+                <div className="border-t pt-3 mt-2 mb-3 space-y-2">
+                  <h4 className="text-sm font-semibold text-stone-700">Ajustar impuestos</h4>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <label className="text-sm text-stone-600 w-16">IVA (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={impuestos.iva * 100}
+                        onChange={(e) => setImpuestos({ ...impuestos, iva: parseFloat(e.target.value) / 100 || 0 })}
+                        className={`w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800 ${impuestos.exento ? 'bg-stone-100 text-stone-400' : ''}`}
+                        disabled={impuestos.exento}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <label className="text-sm text-stone-600 w-16">Retención (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={impuestos.retencion * 100}
+                        onChange={(e) => setImpuestos({ ...impuestos, retencion: parseFloat(e.target.value) / 100 || 0 })}
+                        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <label className="text-sm text-stone-600 w-16">ICA (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={impuestos.ica * 100}
+                        onChange={(e) => setImpuestos({ ...impuestos, ica: parseFloat(e.target.value) / 100 || 0 })}
+                        className="w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone-800"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <label className="text-sm text-stone-600 flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={impuestos.exento}
+                          onChange={(e) => setImpuestos({ ...impuestos, exento: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        Exento de IVA
+                      </label>
+                    </div>
+                  </div>
+                </div>
 
-          <div className="flex gap-3 mt-6">
-            <button
-              onClick={() => setShowResumen(false)}
-              className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={registrarCompra}
-              className="flex-1 py-2 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
-            >
-              Confirmar Compra
-            </button>
+                <div className="border-t pt-3 space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-stone-800 font-medium">Subtotal</span>
+                    <span className="font-medium text-stone-800">${subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-800 font-medium">IVA ({Math.round(impuestos.iva * 100)}%)</span>
+                    <span className="font-medium text-stone-800">${iva.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-800 font-medium">Retención ({Math.round(impuestos.retencion * 100)}%)</span>
+                    <span className="font-medium text-stone-800">${retencion.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-800 font-medium">ICA ({Math.round(impuestos.ica * 100)}%)</span>
+                    <span className="font-medium text-stone-800">${ica.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                    <span className="text-stone-800">Total</span>
+                    <span className="text-emerald-700">${total_con_impuestos.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowResumen(false)}
+                    className="flex-1 py-2 border border-stone-300 rounded-xl text-stone-700 hover:bg-stone-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={registrarCompra}
+                    className="flex-1 py-2 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600"
+                  >
+                    Confirmar Compra
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </>
+        </div>
       )}
-    </div>
-  </div>
-)}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -824,5 +838,3 @@ className={`w-20 border border-stone-300 rounded-xl px-2 py-1 text-sm text-stone
     </div>
   );
 }
-
-
