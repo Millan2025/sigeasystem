@@ -580,7 +580,7 @@ export default function InventarioPage() {
                         <span className="text-2xl">📦</span>
                       )}
                     </td>
-                    <td className="p-2 hidden lg:table-cell">
+                    <td className="p-2 hidden sm:table-cell">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.tipo_producto === "producido" ? "bg-blue-100 text-blue-700" : p.tipo_producto === "insumo" ? "bg-amber-100 text-amber-700" : p.tipo_producto === "empaque" ? "bg-purple-100 text-purple-700" : "bg-stone-100 text-stone-700"}`}>
                         {p.tipo_producto === 'producido' ? 'Producido' :
                          p.tipo_producto === 'insumo' ? 'Insumo' :
@@ -1002,4 +1002,5 @@ export default function InventarioPage() {
     </div>
   );
 }
+
 
