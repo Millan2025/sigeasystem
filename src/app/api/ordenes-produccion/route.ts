@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       .from('ordenes_produccion')
       .select(`
         *,
-        producto:producto_id(id, nombre, stock, precio_compra, es_producido),
+        producto:producto_id(id, nombre, stock, precio_compra, tipo_producto),
         insumos:produccion_insumos(
           id,
           insumo_id,
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
     if (prodErr || !producto || producto.tipo_producto !== "producido") {
       return NextResponse.json(
-        { success: false, error: 'El producto seleccionado no es de tipo "Insumo / Materia Prima" o no es de tipo "Producto Producido".' },
+        { success: false, error: 'El producto seleccionado no es de tipo "Producto Producido". Verifica que el producto tenga tipo_producto = "producido".' },
         { status: 400 }
       )
     }
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
       if (insErr || !insumo || insumo.tipo_producto !== "insumo") {
         return NextResponse.json(
-          { success: false, error: `El insumo ${ins.insumo_id} no es de tipo "Insumo / Materia Prima".` },
+          { success: false, error: 'El insumo seleccionado no es de tipo "Insumo / Materia Prima". Verifica que el insumo tenga tipo_producto = "insumo".' },
           { status: 400 }
         )
       }
