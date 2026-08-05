@@ -32,6 +32,7 @@ export default function InventarioPage() {
 
   const [editandoProducto, setEditandoProducto] = useState<any>(null);
   const [formProducto, setFormProducto] = useState({
+    tipo_producto: "general",
     nombre: "",
     categoria: "",
     precio: 0,
@@ -187,6 +188,7 @@ export default function InventarioPage() {
         fecha_caducidad: "",
         ubicacion: "",
         imagen_url: "",
+        tipo_producto: "general",
       });
       setImagenFile(null);
       setImagenPreview(null);
@@ -243,7 +245,8 @@ export default function InventarioPage() {
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
       imagen_url: p.imagen_url || "",
-    });
+    }),
+      tipo_producto: p.tipo_producto || "general",;
     if (p.imagen_url) {
       setImagenPreview(p.imagen_url);
     } else {
@@ -477,24 +480,25 @@ export default function InventarioPage() {
             onClick={() => {
               setEditandoProducto(null);
               setFormProducto({
-                nombre: "",
-                categoria: "",
-                precio: 0,
-                precio_compra: 0,
-                stock: 0,
-                stock_minimo: 0,
-                stock_maximo: 0,
-                proveedor: "",
-                observaciones: "",
-                unidad: "unidad",
-                tipo_unidad: "unidad",
-                icono: "📦",
-                sku: "",
-                descripcion: "",
-                fecha_caducidad: "",
-                ubicacion: "",
-                imagen_url: "",
-              });
+        nombre: "",
+        categoria: "",
+        precio: 0,
+        precio_compra: 0,
+        stock: 0,
+        stock_minimo: 0,
+        stock_maximo: 0,
+        proveedor: "",
+        observaciones: "",
+        unidad: "unidad",
+        tipo_unidad: "unidad",
+        icono: "📦",
+        sku: "",
+        descripcion: "",
+        fecha_caducidad: "",
+        ubicacion: "",
+        imagen_url: "",
+        tipo_producto: "general",
+      });
               setImagenFile(null);
               setImagenPreview(null);
               setShowProductoModal(true);
@@ -976,3 +980,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+

@@ -674,15 +674,15 @@ export default function ProduccionPage() {
                 >
                   <option value="">Seleccionar producto terminado</option>
                   {productos
-                    .filter(p => p.tipo_producto === "producido")
+                    .filter(p => p.es_producido === true)
                     .map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nombre} (Stock: {p.stock || 0})
                       </option>
                     ))}
                 </select>
-                {productos.filter(p => p.tipo_producto === "producido").length === 0 && (
-                  <p className="text-xs text-amber-600 mt-1">No hay productos de tipo "Producto Producido". Edita un producto y marca "es_producido".</p>
+                {productos.filter(p => p.es_producido === true).length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">No hay productos marcados como "Producido". Edita un producto y marca "es_producido".</p>
                 )}
               </div>
 
@@ -708,7 +708,7 @@ export default function ProduccionPage() {
                     >
                       <option value="">Seleccionar insumo</option>
                       {productos
-                        .filter(p => p.tipo_producto === "insumo")
+                        .filter(p => p.es_insumo === true)
                         .map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.nombre} (Stock: {p.stock || 0})
@@ -739,8 +739,8 @@ export default function ProduccionPage() {
                 >
                   + Agregar insumo
                 </button>
-                {productos.filter(p => p.tipo_producto === "insumo").length === 0 && (
-                  <p className="text-xs text-amber-600 mt-1">No hay productos de tipo "Insumo / Materia Prima". Edita un producto y marca "es_insumo".</p>
+                {productos.filter(p => p.es_insumo === true).length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">No hay insumos marcados. Edita un producto y marca "es_insumo".</p>
                 )}
               </div>
 
@@ -830,7 +830,6 @@ export default function ProduccionPage() {
     </div>
   );
 }
-
 
 
 

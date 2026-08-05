@@ -63,9 +63,9 @@ export async function POST(request: Request) {
       .eq('tenant_id', tenant_id)
       .single()
 
-    if (prodErr || !producto || !producto.tipo_producto === "producido") {
+    if (prodErr || !producto || !producto.es_producido) {
       return NextResponse.json(
-        { success: false, error: 'El producto seleccionado no es de tipo "Insumo / Materia Prima" o no es de tipo "Producto Producido".' },
+        { success: false, error: 'El producto seleccionado no es válido o no está marcado como producido.' },
         { status: 400 }
       )
     }
@@ -81,9 +81,9 @@ export async function POST(request: Request) {
         .eq('tenant_id', tenant_id)
         .single()
 
-      if (insErr || !insumo || !insumo.tipo_producto === "insumo") {
+      if (insErr || !insumo || !insumo.es_insumo) {
         return NextResponse.json(
-          { success: false, error: `El insumo ${ins.insumo_id} no es de tipo "Insumo / Materia Prima".` },
+          { success: false, error: `El insumo ${ins.insumo_id} no es válido.` },
           { status: 400 }
         )
       }
