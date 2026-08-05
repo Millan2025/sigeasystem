@@ -560,6 +560,7 @@ export default function InventarioPage() {
               <thead className="bg-stone-50">
                 <tr>
                   <th className="text-left p-2 text-stone-700 hidden sm:table-cell">Imagen</th>
+                  <th className="text-left p-2 text-stone-700 hidden lg:table-cell">Tipo</th>
                   <th className="text-left p-2 text-stone-700 hidden md:table-cell">SKU</th>
                   <th className="text-left p-2 text-stone-700">Producto</th>
                   <th className="text-left p-2 text-stone-700">Stock</th>
@@ -578,6 +579,14 @@ export default function InventarioPage() {
                       ) : (
                         <span className="text-2xl">📦</span>
                       )}
+                    </td>
+                    <td className="p-2 hidden lg:table-cell">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.tipo_producto === "producido" ? "bg-blue-100 text-blue-700" : p.tipo_producto === "insumo" ? "bg-amber-100 text-amber-700" : p.tipo_producto === "empaque" ? "bg-purple-100 text-purple-700" : "bg-stone-100 text-stone-700"}`}>
+                        {p.tipo_producto === 'producido' ? 'Producido' :
+                         p.tipo_producto === 'insumo' ? 'Insumo' :
+                         p.tipo_producto === 'empaque' ? 'Empaque' :
+                         'General'}
+                      </span>
                     </td>
                     <td className="p-2 text-stone-600 font-mono text-xs hidden md:table-cell">{p.sku || "-"}</td>
                     <td className="p-2 text-stone-800 font-medium">
@@ -602,7 +611,7 @@ export default function InventarioPage() {
                 ))}
                 {stockFiltrado.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-4 text-center text-stone-500">
+                    <td colSpan={9} className="p-4 text-center text-stone-500">
                       No hay productos
                     </td>
                   </tr>
@@ -993,3 +1002,4 @@ export default function InventarioPage() {
     </div>
   );
 }
+

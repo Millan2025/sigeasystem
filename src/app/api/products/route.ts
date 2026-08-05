@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
       venta_por_peso, icono, tenant_id, proveedor, stock_minimo, stock_maximo,
       observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url,
-      exento_iva
+      exento_iva, tipo_producto
     } = body
 
     if (!nombre || !categoria || !tenant_id) {
@@ -84,6 +84,7 @@ export async function POST(request: Request) {
         ubicacion: ubicacion || '',
         imagen_url: imagen_url || null,
         exento_iva: exento_iva || false,
+        tipo_producto: tipo_producto || 'general',
         tenant_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -119,7 +120,7 @@ export async function PUT(request: Request) {
       id, nombre, categoria, precio, precio_compra, stock, unidad, tipo_unidad,
       venta_por_peso, icono, proveedor, stock_minimo, stock_maximo,
       observaciones, sku, descripcion, fecha_caducidad, ubicacion, imagen_url,
-      exento_iva
+      exento_iva, tipo_producto
     } = body
 
     if (!id) {
@@ -158,7 +159,7 @@ export async function PUT(request: Request) {
       'stock_minimo', 'stock_maximo', 'unidad', 'tipo_unidad',
       'venta_por_peso', 'icono', 'proveedor', 'observaciones',
       'sku', 'descripcion', 'fecha_caducidad', 'ubicacion', 'imagen_url',
-      'exento_iva'
+      'exento_iva', 'tipo_producto'
     ]
     campos.forEach((campo) => {
       if (campo in body && body[campo] !== undefined) {
