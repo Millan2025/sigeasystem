@@ -18,11 +18,8 @@ import {
   ClipboardList,
   TrendingUp,
   X,
+  Trash2,
 } from "lucide-react";
-
-// ============================================
-// CONFIGURACIÃ“N DE NEGOCIOS
-// ============================================
 import { NEGOCIOS } from "@/config/negocios";
 
 // ============================================
@@ -47,9 +44,12 @@ const ESTADOS_ORDEN = ["pendiente", "en_produccion", "finalizado", "entregado"];
 interface Orden {
   id: string;
   pedido_id?: string;
+  producto_id?: string;
+  cantidad_producida?: number;
   tipo: keyof typeof TIPOS_ORDEN;
   estado: keyof typeof ESTADOS;
   productos: { nombre: string; cantidad: number; unidad: string }[];
+  insumos?: { insumo_id: string; cantidad: number }[];
   nota: string;
   creado_por: string;
   creado_en: string;
@@ -57,9 +57,6 @@ interface Orden {
   producido_por?: string;
 }
 
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
 export default function ProduccionPage() {
   const pathname = usePathname();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -68,18 +65,26 @@ export default function ProduccionPage() {
   const negocioSlug = pathParts[1] || "restaurante";
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
   const searchParams = useSearchParams();
-const tenantFromUrl = searchParams.get("tenant");
-const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
+  const tenantFromUrl = searchParams.get("tenant");
+  const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-10ea7d6dce76";
 
   const esRestaurante = negocioSlug === "restaurante";
 
-  // ========== ESTADO DE Ã“RDENES ==========
+  // ========== ESTADO DE ÓRDENES ==========
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [loadingOrdenes, setLoadingOrdenes] = useState(true);
   const [showModalOrden, setShowImportModalOrden] = useState(false);
-  const [nuevaOrden, setNuevaOrden] = useState<Partial<Orden>>({
+  const [nuevaOrden, setNuevaOrden] = useState<{
+    tipo: keyof typeof TIPOS_ORDEN;
+    producto_id: string;
+    cantidad_producida: number;
+    insumos: { insumo_id: string; cantidad: number }[];
+    nota: string;
+  }>({
     tipo: "pedido_pos",
-    productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
+    producto_id: "",
+    cantidad_producida: 1,
+    insumos: [{ insumo_id: "", cantidad: 1 }],
     nota: "",
   });
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
@@ -87,19 +92,37 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   const [notificacion, setNotificacion] = useState<string | null>(null);
   const [contadorNuevas, setContadorNuevas] = useState(0);
 
+  // ========== PRODUCTOS (para selectores) ==========
+  const [productos, setProductos] = useState<any[]>([]);
+  const [loadingProductos, setLoadingProductos] = useState(false);
+
   // ========== JORNADA (localStorage) ==========
   const [jornada, setJornada] = useState<any[]>([]);
   const [loadingJornada, setLoadingJornada] = useState(true);
   const [fechaJornada, setFechaJornada] = useState(new Date().toISOString().split("T")[0]);
   const [showModalJornada, setShowImportModalJornada] = useState(false);
   const [formJornada, setFormJornada] = useState<{ producto_id: string; cantidad: number }[]>([]);
-  const [productos, setProductos] = useState<any[]>([]);
   const [resumenJornada, setResumenJornada] = useState({ planificado: 0, vendido: 0, restante: 0 });
 
   const [tab, setTab] = useState<"ordenes" | "jornada">("ordenes");
 
   // ============================================
-  // CARGA DE Ã“RDENES (desde Supabase)
+  // CARGA DE PRODUCTOS
+  // ============================================
+  const cargarProductos = async () => {
+    setLoadingProductos(true);
+    try {
+      const res = await fetch(`/api/products?tenant=${tenantId}`);
+      const data = await res.json();
+      if (data.success) setProductos(data.data || []);
+    } catch (e) {
+      console.error("Error cargando productos:", e);
+    }
+    setLoadingProductos(false);
+  };
+
+  // ============================================
+  // CARGA DE ÓRDENES (desde Supabase)
   // ============================================
   const cargarOrdenes = async () => {
     setLoadingOrdenes(true);
@@ -144,22 +167,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     setLoadingJornada(false);
   };
 
-  const cargarProductos = async () => {
-    const res = await fetch(`/api/products?tenant=${tenantId}`);
-    const data = await res.json();
-    if (data.success) setProductos(data.data || []);
-  };
-
   // ============================================
   // EFECTOS
   // ============================================
   useEffect(() => {
     audioRef.current = new Audio("/notification.mp3");
+    cargarProductos();
     cargarOrdenes();
-    if (esRestaurante) {
-      cargarProductos();
-      cargarJornada();
-    }
+    if (esRestaurante) cargarJornada();
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -176,19 +191,21 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   // CREAR ORDEN (POST a Supabase)
   // ============================================
   const crearOrden = async () => {
-    if (!nuevaOrden.productos || nuevaOrden.productos.length === 0) {
-      alert("Agrega al menos un producto.");
+    if (!nuevaOrden.producto_id) {
+      alert("Selecciona un producto a producir.");
+      return;
+    }
+    if (nuevaOrden.insumos.some(i => !i.insumo_id)) {
+      alert("Completa todos los insumos.");
       return;
     }
 
     const body = {
       tenant_id: tenantId,
-      tipo: nuevaOrden.tipo || "pedido_pos",
-      productos: nuevaOrden.productos.map((p) => ({
-        nombre: p.nombre || "Producto",
-        cantidad: p.cantidad || 1,
-        unidad: p.unidad || "unidad",
-      })),
+      tipo: nuevaOrden.tipo,
+      producto_id: nuevaOrden.producto_id,
+      cantidad_producida: nuevaOrden.cantidad_producida,
+      insumos: nuevaOrden.insumos,
       nota: nuevaOrden.nota || "",
       creado_por: "Admin",
     };
@@ -205,12 +222,14 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
           audioRef.current.play().catch(() => {});
         }
         setContadorNuevas((prev) => prev + 1);
-        setNotificacion(`ðŸ“¢ Nueva orden #${data.data.id.slice(0, 6)}`);
+        setNotificacion(`📢 Nueva orden #${data.data.id.slice(0, 6)}`);
         setTimeout(() => setNotificacion(null), 5000);
         setShowImportModalOrden(false);
         setNuevaOrden({
           tipo: "pedido_pos",
-          productos: [{ nombre: "", cantidad: 1, unidad: "unidad" }],
+          producto_id: "",
+          cantidad_producida: 1,
+          insumos: [{ insumo_id: "", cantidad: 1 }],
           nota: "",
         });
         cargarOrdenes();
@@ -246,7 +265,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
       const data = await res.json();
       if (data.success) {
         cargarOrdenes();
-        // Si la orden llega a finalizado o entregado, se podría actualizar el pedido relacionado (opcional)
       } else {
         alert("Error al actualizar estado: " + data.error);
       }
@@ -256,7 +274,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   // ============================================
-  // JORNADA (sin cambios)
+  // JORNADA
   // ============================================
   const guardarJornada = (nuevaJornada: any[]) => {
     const key = `jornada_${tenantId}_${fechaJornada}`;
@@ -302,7 +320,31 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   });
 
   // ============================================
-  // RENDER (igual que antes, solo cambia origen de datos)
+  // MANEJO DE INSUMOS EN MODAL
+  // ============================================
+  const agregarInsumo = () => {
+    setNuevaOrden({
+      ...nuevaOrden,
+      insumos: [...nuevaOrden.insumos, { insumo_id: "", cantidad: 1 }],
+    });
+  };
+
+  const actualizarInsumo = (idx: number, campo: string, valor: any) => {
+    const nuevos = [...nuevaOrden.insumos];
+    nuevos[idx] = { ...nuevos[idx], [campo]: valor };
+    setNuevaOrden({ ...nuevaOrden, insumos: nuevos });
+  };
+
+  const eliminarInsumo = (idx: number) => {
+    if (nuevaOrden.insumos.length <= 1) return;
+    setNuevaOrden({
+      ...nuevaOrden,
+      insumos: nuevaOrden.insumos.filter((_, i) => i !== idx),
+    });
+  };
+
+  // ============================================
+  // RENDER
   // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
@@ -322,7 +364,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               tab === "ordenes" ? "bg-white shadow-sm text-stone-800" : "text-stone-600 hover:bg-stone-200"
             }`}
           >
-            Ã“rdenes
+            Órdenes
           </button>
           {esRestaurante && (
             <button
@@ -357,7 +399,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 Productor
               </button>
             </div>
-            <button onClick={() => cargarOrdenes()} className="p-2 hover:bg-stone-100 rounded-xl">
+            <button onClick={cargarOrdenes} className="p-2 hover:bg-stone-100 rounded-xl">
               <RefreshCw className="w-5 h-5 text-stone-700" />
             </button>
             <button
@@ -468,19 +510,24 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                       </div>
 
                       <div className="space-y-1 mb-2">
-                        {orden.productos.map((p, i) => (
+                        {orden.productos?.map((p, i) => (
                           <div key={i} className="text-sm text-stone-700">
-                            {p.cantidad} Ã— {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
+                            {p.cantidad} × {p.nombre} {p.unidad !== "unidad" ? `(${p.unidad})` : ""}
                           </div>
                         ))}
+                        {!orden.productos && orden.producto_id && (
+                          <div className="text-sm text-stone-700">
+                            Producto: {productos.find(p => p.id === orden.producto_id)?.nombre || "Desconocido"} × {orden.cantidad_producida || 1}
+                          </div>
+                        )}
                       </div>
 
                       {orden.nota && (
-                        <p className="text-xs text-stone-500 mb-2">ðŸ“ {orden.nota}</p>
+                        <p className="text-xs text-stone-500 mb-2">📝 {orden.nota}</p>
                       )}
 
                       <div className="flex items-center justify-between text-xs text-stone-400">
-                        <span>ðŸ“… {new Date(orden.creado_en).toLocaleString()}</span>
+                        <span>📅 {new Date(orden.creado_en).toLocaleString()}</span>
                         <span className={`px-2 py-0.5 rounded-full ${estadoInfo.color}`}>
                           <EstadoIcon className="w-3 h-3 inline mr-1" />
                           {estadoInfo.label}
@@ -509,7 +556,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
 
                       {vista === "admin" && (
                         <div className="mt-3 text-xs text-stone-400">
-                          {orden.producido_por && <span>ðŸ‘¤ {orden.producido_por}</span>}
+                          {orden.producido_por && <span>👤 {orden.producido_por}</span>}
                         </div>
                       )}
                     </div>
@@ -595,7 +642,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         )}
       </div>
 
-      {/* Modal Nueva Orden */}
+      {/* Modal Nueva Orden (mejorado) */}
       {showModalOrden && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -619,68 +666,82 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Productos</label>
-                {(nuevaOrden.productos || []).map((p, idx) => (
+                <label className="block text-sm font-medium text-stone-700">Producto a producir</label>
+                <select
+                  value={nuevaOrden.producto_id}
+                  onChange={(e) => setNuevaOrden({ ...nuevaOrden, producto_id: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                >
+                  <option value="">Seleccionar producto terminado</option>
+                  {productos
+                    .filter(p => p.es_producido === true)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre} (Stock: {p.stock || 0})
+                      </option>
+                    ))}
+                </select>
+                {productos.filter(p => p.es_producido === true).length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">No hay productos marcados como "Producido". Edita un producto y marca "es_producido".</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700">Cantidad a producir</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={nuevaOrden.cantidad_producida}
+                  onChange={(e) => setNuevaOrden({ ...nuevaOrden, cantidad_producida: parseInt(e.target.value) || 1 })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Insumos (ingredientes)</label>
+                {nuevaOrden.insumos.map((ins, idx) => (
                   <div key={idx} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      placeholder="Nombre"
-                      value={p.nombre}
-                      onChange={(e) => {
-                        const prod = [...(nuevaOrden.productos || [])];
-                        prod[idx].nombre = e.target.value;
-                        setNuevaOrden({ ...nuevaOrden, productos: prod });
-                      }}
+                    <select
+                      value={ins.insumo_id}
+                      onChange={(e) => actualizarInsumo(idx, "insumo_id", e.target.value)}
                       className="flex-1 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                    />
+                    >
+                      <option value="">Seleccionar insumo</option>
+                      {productos
+                        .filter(p => p.es_insumo === true)
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.nombre} (Stock: {p.stock || 0})
+                          </option>
+                        ))}
+                    </select>
                     <input
                       type="number"
+                      min="0.1"
+                      step="0.1"
                       placeholder="Cant."
-                      value={p.cantidad}
-                      onChange={(e) => {
-                        const prod = [...(nuevaOrden.productos || [])];
-                        prod[idx].cantidad = parseInt(e.target.value) || 1;
-                        setNuevaOrden({ ...nuevaOrden, productos: prod });
-                      }}
-                      className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Unidad"
-                      value={p.unidad}
-                      onChange={(e) => {
-                        const prod = [...(nuevaOrden.productos || [])];
-                        prod[idx].unidad = e.target.value || "unidad";
-                        setNuevaOrden({ ...nuevaOrden, productos: prod });
-                      }}
+                      value={ins.cantidad}
+                      onChange={(e) => actualizarInsumo(idx, "cantidad", parseFloat(e.target.value) || 0)}
                       className="w-20 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
                     />
                     <button
-                      onClick={() => {
-                        const prod = nuevaOrden.productos || [];
-                        if (prod.length <= 1) return;
-                        setNuevaOrden({
-                          ...nuevaOrden,
-                          productos: prod.filter((_, i) => i !== idx),
-                        });
-                      }}
+                      onClick={() => eliminarInsumo(idx)}
                       className="text-red-500 hover:bg-red-50 rounded-xl p-2"
+                      disabled={nuevaOrden.insumos.length <= 1}
                     >
-                      Ã—
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
                 <button
-                  onClick={() => {
-                    setNuevaOrden({
-                      ...nuevaOrden,
-                      productos: [...(nuevaOrden.productos || []), { nombre: "", cantidad: 1, unidad: "unidad" }],
-                    });
-                  }}
+                  onClick={agregarInsumo}
                   className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
                 >
-                  + Agregar producto
+                  + Agregar insumo
                 </button>
+                {productos.filter(p => p.es_insumo === true).length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">No hay insumos marcados. Edita un producto y marca "es_insumo".</p>
+                )}
               </div>
 
               <div>
@@ -713,7 +774,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         </div>
       )}
 
-      {/* Modal Jornada */}
+      {/* Modal Jornada (sin cambios) */}
       {showModalJornada && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -742,7 +803,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                     className="w-16 border border-stone-300 rounded-xl p-2 text-sm text-stone-800"
                   />
                   <button onClick={() => eliminarJornada(idx)} className="text-red-500 hover:bg-red-50 rounded-xl p-2">
-                    Ã—
+                    ×
                   </button>
                 </div>
               ))}
@@ -769,8 +830,6 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
     </div>
   );
 }
-
-
 
 
 
