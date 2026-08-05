@@ -32,7 +32,6 @@ export default function InventarioPage() {
 
   const [editandoProducto, setEditandoProducto] = useState<any>(null);
   const [formProducto, setFormProducto] = useState({
-    tipo_producto: "general",
     nombre: "",
     categoria: "",
     precio: 0,
@@ -50,6 +49,7 @@ export default function InventarioPage() {
     fecha_caducidad: "",
     ubicacion: "",
     imagen_url: "",
+    tipo_producto: "general",
   });
 
   const [imagenFile, setImagenFile] = useState<File | null>(null);
@@ -145,7 +145,6 @@ export default function InventarioPage() {
       setSubiendoImagen(false);
     }
 
-    // CORRECCIÓN: Asegurar que fecha_caducidad sea null si está vacía
     const fechaCaducidad = formProducto.fecha_caducidad ? formProducto.fecha_caducidad : null;
 
     const { stock, ...productoData } = {
@@ -245,8 +244,8 @@ export default function InventarioPage() {
       fecha_caducidad: p.fecha_caducidad || "",
       ubicacion: p.ubicacion || "",
       imagen_url: p.imagen_url || "",
-    }),
-      tipo_producto: p.tipo_producto || "general",;
+      tipo_producto: p.tipo_producto || "general",
+    });
     if (p.imagen_url) {
       setImagenPreview(p.imagen_url);
     } else {
@@ -480,25 +479,25 @@ export default function InventarioPage() {
             onClick={() => {
               setEditandoProducto(null);
               setFormProducto({
-        nombre: "",
-        categoria: "",
-        precio: 0,
-        precio_compra: 0,
-        stock: 0,
-        stock_minimo: 0,
-        stock_maximo: 0,
-        proveedor: "",
-        observaciones: "",
-        unidad: "unidad",
-        tipo_unidad: "unidad",
-        icono: "📦",
-        sku: "",
-        descripcion: "",
-        fecha_caducidad: "",
-        ubicacion: "",
-        imagen_url: "",
-        tipo_producto: "general",
-      });
+                nombre: "",
+                categoria: "",
+                precio: 0,
+                precio_compra: 0,
+                stock: 0,
+                stock_minimo: 0,
+                stock_maximo: 0,
+                proveedor: "",
+                observaciones: "",
+                unidad: "unidad",
+                tipo_unidad: "unidad",
+                icono: "📦",
+                sku: "",
+                descripcion: "",
+                fecha_caducidad: "",
+                ubicacion: "",
+                imagen_url: "",
+                tipo_producto: "general",
+              });
               setImagenFile(null);
               setImagenPreview(null);
               setShowProductoModal(true);
@@ -834,6 +833,20 @@ export default function InventarioPage() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-stone-700">Tipo de producto *</label>
+                <select
+                  value={formProducto.tipo_producto}
+                  onChange={(e) => setFormProducto({ ...formProducto, tipo_producto: e.target.value })}
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800"
+                >
+                  <option value="general">General (Venta Directa)</option>
+                  <option value="producido">Producto Producido</option>
+                  <option value="insumo">Insumo / Materia Prima</option>
+                  <option value="empaque">Empaque</option>
+                </select>
+                <p className="text-xs text-stone-500 mt-1">Define cómo se usará este producto en el sistema.</p>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-stone-700">Precio Venta</label>
                 <input
                   type="number"
@@ -980,4 +993,3 @@ export default function InventarioPage() {
     </div>
   );
 }
-

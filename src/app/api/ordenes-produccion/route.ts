@@ -58,12 +58,12 @@ export async function POST(request: Request) {
     // Verificar que el producto terminado existe y es producido
     const { data: producto, error: prodErr } = await supabase
       .from('productos')
-      .select('id, nombre, es_producido')
+      .select('id, nombre, tipo_producto')
       .eq('id', producto_id)
       .eq('tenant_id', tenant_id)
       .single()
 
-    if (prodErr || !producto || !producto.tipo_producto === "producido") {
+    if (prodErr || !producto || producto.tipo_producto !== "producido") {
       return NextResponse.json(
         { success: false, error: 'El producto seleccionado no es de tipo "Insumo / Materia Prima" o no es de tipo "Producto Producido".' },
         { status: 400 }
@@ -76,12 +76,12 @@ export async function POST(request: Request) {
     for (const ins of insumos) {
       const { data: insumo, error: insErr } = await supabase
         .from('productos')
-        .select('id, nombre, precio_compra, es_insumo')
+        .select('id, nombre, precio_compra, tipo_producto')
         .eq('id', ins.insumo_id)
         .eq('tenant_id', tenant_id)
         .single()
 
-      if (insErr || !insumo || !insumo.tipo_producto === "insumo") {
+      if (insErr || !insumo || insumo.tipo_producto !== "insumo") {
         return NextResponse.json(
           { success: false, error: `El insumo ${ins.insumo_id} no es de tipo "Insumo / Materia Prima".` },
           { status: 400 }
