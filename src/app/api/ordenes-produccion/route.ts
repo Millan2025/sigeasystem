@@ -158,7 +158,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
-    const { id, estado, producido_por } = body
+    const { id, estado, producido_por, motivo_cierre, pausado_por, cerrado_por, fecha_cierre } = body
 
     if (!id || !estado) {
       return NextResponse.json({ success: false, error: 'Faltan: id, estado' }, { status: 400 })
@@ -172,67 +172,89 @@ export async function PUT(request: Request) {
 
     if (getErr) throw getErr
 
+    // ====== FLUJO ESPECIAL: Cerrar orden definitivamente (admin) ======
+    if (estado === 'cerrada') {
+      const updateData: any = {
+        estado: 'cerrada',
+        cerrado_por: cerrado_por || 'Admin',
+        fecha_cierre: fecha_cierre || new Date().toISOString(),
+        actualizado_en: new Date().toISOString()
+      }
+
+      const { data: ordenCerrada, error: updateErr } = await supabase
+        .from('ordenes_produccion')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (updateErr) throw updateErr
+      return NextResponse.json({ success: true, data: ordenCerrada })
+    }
+
+    // ====== FLUJO ESPECIAL: Pausar por producción ======
+    if (estado === 'pausada_por_produccion') {
+      if (!motivo_cierre || motivo_cierre.trim() === '') {
+        return NextResponse.json({ success: false, error: 'El motivo de cierre es obligatorio' }, { status: 400 })
+      }
+
+      const updateData: any = {
+        estado: 'pausada_por_produccion',
+        motivo_cierre: motivo_cierre,
+        pausado_por: pausado_por || 'Productor',
+        pausado_en: fecha_cierre || new Date().toISOString(),
+        actualizado_en: new Date().toISOString()
+      }
+
+      const { data: ordenPausada, error: updateErr } = await supabase
+        .from('ordenes_produccion')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (updateErr) throw updateErr
+      return NextResponse.json({ success: true, data: ordenPausada })
+    }
+
+    // ====== FLUJO NORMAL: cambios de estado regulares ======
     if (estado === 'finalizado' && orden.estado !== 'finalizado') {
       const tenantId = orden.tenant_id
       const productoId = orden.producto_id
       const cantidadProducida = orden.cantidad_producida || 1
 
-      // Descontar insumos
       if (orden.insumos && orden.insumos.length > 0) {
         for (const ins of orden.insumos) {
           await supabase.from('movimientos_inventario').insert({
-            producto_id: ins.insumo_id,
-            tipo: 'salida',
-            cantidad: ins.cantidad,
-            motivo: `Producción #${orden.id}`,
-            tenant_id: tenantId,
-            created_at: new Date().toISOString()
+            producto_id: ins.insumo_id, tipo: 'salida', cantidad: ins.cantidad,
+            motivo: `Producción #${orden.id}`, tenant_id: tenantId, created_at: new Date().toISOString()
           })
-
           const { data: movs } = await supabase
-            .from('movimientos_inventario')
-            .select('tipo, cantidad')
-            .eq('producto_id', ins.insumo_id)
-            .eq('tenant_id', tenantId)
-
+            .from('movimientos_inventario').select('tipo, cantidad')
+            .eq('producto_id', ins.insumo_id).eq('tenant_id', tenantId)
           let nuevoStock = 0
-          movs?.forEach(m => {
-            nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
-          })
-
+          movs?.forEach(m => { nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad })
           await supabase.from('productos').update({ stock: nuevoStock }).eq('id', ins.insumo_id).eq('tenant_id', tenantId)
         }
       }
 
-      // Añadir producto terminado
       if (productoId) {
         await supabase.from('movimientos_inventario').insert({
-          producto_id: productoId,
-          tipo: 'entrada',
-          cantidad: cantidadProducida,
-          motivo: `Producción #${orden.id}`,
-          tenant_id: tenantId,
-          created_at: new Date().toISOString()
+          producto_id: productoId, tipo: 'entrada', cantidad: cantidadProducida,
+          motivo: `Producción #${orden.id}`, tenant_id: tenantId, created_at: new Date().toISOString()
         })
-
         const { data: movsProd } = await supabase
-          .from('movimientos_inventario')
-          .select('tipo, cantidad')
-          .eq('producto_id', productoId)
-          .eq('tenant_id', tenantId)
-
+          .from('movimientos_inventario').select('tipo, cantidad')
+          .eq('producto_id', productoId).eq('tenant_id', tenantId)
         let nuevoStockProd = 0
-        movsProd?.forEach(m => {
-          nuevoStockProd += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
-        })
-
+        movsProd?.forEach(m => { nuevoStockProd += m.tipo === 'entrada' ? m.cantidad : -m.cantidad })
         await supabase.from('productos').update({ stock: nuevoStockProd }).eq('id', productoId).eq('tenant_id', tenantId)
       }
     }
 
     const updateData: any = {
       estado,
-      producido_por: producido_por || null,
+      producido_por: producido_por || orden.producido_por,
       actualizado_en: new Date().toISOString()
     }
     if (estado === 'finalizado' && !orden.fecha_fin) {
@@ -240,14 +262,9 @@ export async function PUT(request: Request) {
     }
 
     const { data: ordenActualizada, error: updateErr } = await supabase
-      .from('ordenes_produccion')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single()
+      .from('ordenes_produccion').update(updateData).eq('id', id).select().single()
 
     if (updateErr) throw updateErr
-
     return NextResponse.json({ success: true, data: ordenActualizada })
   } catch (error: any) {
     console.error('❌ PUT error:', error)
