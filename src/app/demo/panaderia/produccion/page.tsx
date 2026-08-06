@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation"
@@ -457,72 +457,75 @@ function ProduccionContent() {
         </div>
       )}
 
-      {/* ===== MEJORA 3: MODAL DE DETALLES ===== */}
+      {/* ===== MEJORA 3: MODAL DE DETALLES (texto negro, alto contraste) ===== */}
       {showModalDetalles && ordenDetalles && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto text-stone-900 shadow-2xl">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold">Orden #{ordenDetalles.id.slice(0, 8)}</h3>
-                <p className="text-sm text-stone-500">{getNombreProducto(ordenDetalles)} × {ordenDetalles.cantidad_producida || 1}</p>
+                <h3 className="text-xl font-bold text-black">Orden #{ordenDetalles.id.slice(0, 8)}</h3>
+                <p className="text-sm font-semibold text-stone-900 mt-1">{getNombreProducto(ordenDetalles)} × {ordenDetalles.cantidad_producida || 1}</p>
               </div>
-              <button onClick={() => setShowModalDetalles(false)} className="p-2 hover:bg-stone-100 rounded-xl"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowModalDetalles(false)} className="p-2 hover:bg-stone-200 rounded-xl">
+                <X className="w-5 h-5 text-black" />
+              </button>
             </div>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-stone-50 p-3 rounded-xl">
-                  <div className="text-xs text-stone-500">Estado</div>
-                  <div className={`inline-block mt-1 px-2 py-0.5 rounded-full text-sm font-medium ${ESTADOS[ordenDetalles.estado]?.color}`}>{ESTADOS[ordenDetalles.estado]?.label}</div>
+                <div className="bg-stone-100 border border-stone-300 p-3 rounded-xl">
+                  <div className="text-xs font-bold text-stone-900">Estado</div>
+                  <div className={`inline-block mt-1 px-2 py-0.5 rounded-full text-sm font-bold ${ESTADOS[ordenDetalles.estado]?.color}`}>
+                    {ESTADOS[ordenDetalles.estado]?.label}
+                  </div>
                 </div>
-                <div className="bg-stone-50 p-3 rounded-xl">
-                  <div className="text-xs text-stone-500">Tipo</div>
-                  <div className="text-sm font-medium mt-1">{TIPOS_ORDEN[ordenDetalles.tipo]?.label}</div>
+                <div className="bg-stone-100 border border-stone-300 p-3 rounded-xl">
+                  <div className="text-xs font-bold text-stone-900">Tipo</div>
+                  <div className="text-sm font-semibold text-black mt-1">{TIPOS_ORDEN[ordenDetalles.tipo]?.label}</div>
                 </div>
-                <div className="bg-stone-50 p-3 rounded-xl">
-                  <div className="text-xs text-stone-500">Creada</div>
-                  <div className="text-sm mt-1">{new Date(ordenDetalles.creado_en).toLocaleString()}</div>
+                <div className="bg-stone-100 border border-stone-300 p-3 rounded-xl">
+                  <div className="text-xs font-bold text-stone-900">Creada</div>
+                  <div className="text-sm font-semibold text-black mt-1">{new Date(ordenDetalles.creado_en).toLocaleString()}</div>
                 </div>
-                <div className="bg-stone-50 p-3 rounded-xl">
-                  <div className="text-xs text-stone-500">Creada por</div>
-                  <div className="text-sm mt-1">{ordenDetalles.creado_por}</div>
+                <div className="bg-stone-100 border border-stone-300 p-3 rounded-xl">
+                  <div className="text-xs font-bold text-stone-900">Creada por</div>
+                  <div className="text-sm font-semibold text-black mt-1">{ordenDetalles.creado_por}</div>
                 </div>
               </div>
 
               {ordenDetalles.nota && (
-                <div className="bg-blue-50 p-3 rounded-xl">
-                  <div className="text-xs text-blue-700 font-semibold mb-1">📝 Nota</div>
-                  <div className="text-sm text-blue-900">{ordenDetalles.nota}</div>
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl">
+                  <div className="text-xs font-bold text-blue-900 mb-1">📝 Nota</div>
+                  <div className="text-sm font-medium text-blue-950">{ordenDetalles.nota}</div>
                 </div>
               )}
 
-              {/* Insumos (ingredientes) */}
               <div>
-                <h4 className="font-semibold text-stone-800 mb-2 flex items-center gap-2">
+                <h4 className="font-bold text-black mb-2 flex items-center gap-2">
                   <Package className="w-4 h-4" /> Ingredientes / Insumos
                 </h4>
                 {ordenDetalles.insumos && ordenDetalles.insumos.length > 0 ? (
-                  <div className="bg-stone-50 rounded-xl overflow-hidden">
+                  <div className="bg-white border border-stone-300 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-stone-100">
+                      <thead className="bg-stone-200">
                         <tr>
-                          <th className="text-left p-2 font-medium">Insumo</th>
-                          <th className="text-right p-2 font-medium">Cantidad</th>
-                          <th className="text-right p-2 font-medium">P. Unit.</th>
-                          <th className="text-right p-2 font-medium">Subtotal</th>
+                          <th className="text-left p-2 font-bold text-black">Insumo</th>
+                          <th className="text-right p-2 font-bold text-black">Cantidad</th>
+                          <th className="text-right p-2 font-bold text-black">P. Unit.</th>
+                          <th className="text-right p-2 font-bold text-black">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody>
                         {ordenDetalles.insumos.map((ins, i) => (
-                          <tr key={i} className="border-t border-stone-200">
-                            <td className="p-2">{ins.insumo?.nombre || ins.insumo_id.slice(0, 8)}</td>
-                            <td className="p-2 text-right font-medium">{ins.cantidad}</td>
-                            <td className="p-2 text-right text-stone-600">${(ins.precio_unitario || 0).toLocaleString()}</td>
-                            <td className="p-2 text-right font-semibold">${(ins.subtotal || 0).toLocaleString()}</td>
+                          <tr key={i} className="border-t border-stone-300">
+                            <td className="p-2 font-semibold text-black">{ins.insumo?.nombre || ins.insumo_id.slice(0, 8)}</td>
+                            <td className="p-2 text-right font-semibold text-black">{ins.cantidad}</td>
+                            <td className="p-2 text-right font-medium text-stone-800">${(ins.precio_unitario || 0).toLocaleString()}</td>
+                            <td className="p-2 text-right font-semibold text-stone-900">${(ins.subtotal || 0).toLocaleString()}</td>
                           </tr>
                         ))}
-                        <tr className="border-t-2 border-stone-300 bg-stone-100">
-                          <td colSpan={3} className="p-2 font-semibold text-right">TOTAL:</td>
+                        <tr className="border-t-2 border-stone-400 bg-stone-200">
+                          <td colSpan={3} className="p-2 font-bold text-black text-right">TOTAL:</td>
                           <td className="p-2 text-right font-bold text-emerald-700">
                             ${ordenDetalles.insumos.reduce((s, i) => s + (i.subtotal || 0), 0).toLocaleString()}
                           </td>
@@ -531,28 +534,28 @@ function ProduccionContent() {
                     </table>
                   </div>
                 ) : (
-                  <p className="text-sm text-stone-500 italic">Sin insumos registrados.</p>
+                  <p className="text-sm font-medium text-stone-800 italic">Sin insumos registrados.</p>
                 )}
               </div>
 
-              {/* Info de pausa si aplica */}
               {(ordenDetalles.estado === "pausada_por_produccion" || ordenDetalles.estado === "cerrada") && (
-                <div className="bg-orange-50 border border-orange-200 p-3 rounded-xl">
-                  <div className="font-semibold text-orange-800 mb-2 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Información de Cierre</div>
-                  <div className="text-sm space-y-1">
-                    <div><strong>Motivo:</strong> {ordenDetalles.motivo_cierre}</div>
-                    <div><strong>Pausada por:</strong> {ordenDetalles.pausado_por}</div>
-                    <div><strong>Fecha de pausa:</strong> {new Date(ordenDetalles.pausado_en || ordenDetalles.creado_en).toLocaleString()}</div>
-                    {ordenDetalles.cerrado_por && <div><strong>Cerrada definitivamente por:</strong> {ordenDetalles.cerrado_por}</div>}
-                    {ordenDetalles.fecha_cierre && <div><strong>Fecha de cierre:</strong> {new Date(ordenDetalles.fecha_cierre).toLocaleString()}</div>}
+                <div className="bg-orange-50 border border-orange-300 p-3 rounded-xl">
+                  <div className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" /> Información de Cierre
+                  </div>
+                  <div className="text-sm font-medium text-stone-900 space-y-1">
+                    <div><strong className="text-black">Motivo:</strong> {ordenDetalles.motivo_cierre}</div>
+                    <div><strong className="text-black">Pausada por:</strong> {ordenDetalles.pausado_por}</div>
+                    <div><strong className="text-black">Fecha de pausa:</strong> {new Date(ordenDetalles.pausado_en || ordenDetalles.creado_en).toLocaleString()}</div>
+                    {ordenDetalles.cerrado_por && <div><strong className="text-black">Cerrada por:</strong> {ordenDetalles.cerrado_por}</div>}
+                    {ordenDetalles.fecha_cierre && <div><strong className="text-black">Fecha de cierre:</strong> {new Date(ordenDetalles.fecha_cierre).toLocaleString()}</div>}
                   </div>
                 </div>
               )}
 
-              {/* IDs completos (debug) */}
-              <details className="text-xs text-stone-500">
-                <summary className="cursor-pointer">Ver IDs técnicos</summary>
-                <div className="mt-2 p-2 bg-stone-50 rounded font-mono break-all">
+              <details className="text-xs font-medium text-stone-800">
+                <summary className="cursor-pointer font-bold text-stone-900">Ver IDs técnicos</summary>
+                <div className="mt-2 p-2 bg-stone-100 border border-stone-300 rounded font-mono break-all text-stone-900">
                   <div>Orden: {ordenDetalles.id}</div>
                   <div>Producto: {ordenDetalles.producto_id || "N/A"}</div>
                   <div>Pedido: {ordenDetalles.pedido_id || "N/A"}</div>
@@ -560,7 +563,9 @@ function ProduccionContent() {
               </details>
             </div>
 
-            <button onClick={() => setShowModalDetalles(false)} className="w-full mt-6 py-2 bg-stone-800 text-white rounded-xl">Cerrar</button>
+            <button onClick={() => setShowModalDetalles(false)} className="w-full mt-6 py-2 bg-stone-900 text-white rounded-xl font-semibold">
+              Cerrar
+            </button>
           </div>
         </div>
       )}
