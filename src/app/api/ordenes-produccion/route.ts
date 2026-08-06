@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -13,17 +13,14 @@ export async function GET(request: Request) {
     const estado = url.searchParams.get('estado')
     const pedidoId = url.searchParams.get('pedido_id')
 
+    // Intento 1: con relaciones (JOINs)
     let query = supabase
       .from('ordenes_produccion')
       .select(`
         *,
         producto:producto_id(id, nombre, stock, precio_compra, tipo_producto),
         insumos:produccion_insumos(
-          id,
-          insumo_id,
-          cantidad,
-          precio_unitario,
-          subtotal,
+          id, insumo_id, cantidad, precio_unitario, subtotal,
           insumo:insumo_id(id, nombre, stock, precio_compra)
         )
       `)
@@ -34,7 +31,22 @@ export async function GET(request: Request) {
     if (pedidoId) query = query.eq('pedido_id', pedidoId)
 
     const { data, error } = await query
-    if (error) throw error
+
+    // Intento 2 (fallback): sin relaciones si falla
+    if (error) {
+      console.warn('⚠️ GET con relaciones falló, usando fallback:', error.message)
+      let q2 = supabase
+        .from('ordenes_produccion')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('creado_en', { ascending: false })
+      if (estado && estado !== 'todos') q2 = q2.eq('estado', estado)
+      if (pedidoId) q2 = q2.eq('pedido_id', pedidoId)
+
+      const { data: d2, error: e2 } = await q2
+      if (e2) throw e2
+      return NextResponse.json({ success: true, data: d2 || [] })
+    }
 
     return NextResponse.json({ success: true, data: data || [] })
   } catch (error: any) {
