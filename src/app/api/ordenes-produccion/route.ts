@@ -1,7 +1,6 @@
 ﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Usar SERVICE_ROLE_KEY para bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -39,7 +38,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, data: data || [] })
   } catch (error: any) {
-    console.error('❌ GET /api/ordenes-produccion error:', error)
+    console.error('❌ GET error:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
@@ -47,26 +46,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { 
-      pedido_id, 
-      tenant_id, 
-      tipo, 
-      producto_id, 
-      cantidad_producida, 
-      insumos, 
-      nota, 
-      creado_por 
-    } = body
+    const { pedido_id, tenant_id, tipo, producto_id, cantidad_producida, insumos, nota, creado_por } = body
 
-    // Validar datos requeridos
     if (!tenant_id) {
-      return NextResponse.json(
-        { success: false, error: 'tenant_id es requerido' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'tenant_id requerido' }, { status: 400 })
     }
 
-    // Validar que si hay producto_id, sea de tipo "producido"
+    // Validar producto si existe
     if (producto_id) {
       const { data: producto, error: prodErr } = await supabase
         .from('productos')
@@ -76,60 +62,49 @@ export async function POST(request: Request) {
         .single()
 
       if (prodErr || !producto || producto.tipo_producto !== "producido") {
-        return NextResponse.json(
-          { success: false, error: 'El producto seleccionado no es de tipo "Producto Producido".' },
-          { status: 400 }
-        )
+        return NextResponse.json({ success: false, error: 'Producto no válido para producción' }, { status: 400 })
       }
     }
 
-    // Validar insumos si se proporcionan
+    // Procesar insumos
     const insumosConPrecios = []
-    let totalCosto = 0
-
     if (insumos && Array.isArray(insumos) && insumos.length > 0) {
       for (const ins of insumos) {
         if (!ins.insumo_id) continue
-
         const { data: insumo, error: insErr } = await supabase
           .from('productos')
-          .select('id, nombre, precio_compra, tipo_producto')
+          .select('id, nombre, precio_compra')
           .eq('id', ins.insumo_id)
           .eq('tenant_id', tenant_id)
           .single()
 
-        if (insErr || !insumo) {
-          return NextResponse.json(
-            { success: false, error: `Insumo no encontrado: ${ins.insumo_id}` },
-            { status: 400 }
-          )
+        if (!insErr && insumo) {
+          const subtotal = (ins.cantidad || 0) * (insumo.precio_compra || 0)
+          insumosConPrecios.push({
+            insumo_id: ins.insumo_id,
+            cantidad: ins.cantidad || 0,
+            precio_unitario: insumo.precio_compra || 0,
+            subtotal,
+            nombre: insumo.nombre,
+          })
         }
-
-        const subtotal = (ins.cantidad || 0) * (insumo.precio_compra || 0)
-        insumosConPrecios.push({
-          insumo_id: ins.insumo_id,
-          cantidad: ins.cantidad || 0,
-          precio_unitario: insumo.precio_compra || 0,
-          subtotal,
-          nombre: insumo.nombre,
-        })
-        totalCosto += subtotal
       }
     }
 
-    // 1. Insertar la orden con la nueva estructura relacional
+    // INSERTAR ORDEN CON productos: [] PARA COMPATIBILIDAD
     const { data: orden, error: insertErr } = await supabase
       .from('ordenes_produccion')
       .insert({
         pedido_id: pedido_id || null,
         tenant_id,
         tipo: tipo || 'pedido_pos',
-        producto_id: producto_id || null, // ✅ Columna ahora existe
+        producto_id: producto_id || null,
         cantidad_producida: cantidad_producida || 1,
         nota: nota || '',
         creado_por: creado_por || 'Sistema',
         estado: 'pendiente',
-        fecha_fin: null, // ✅ Columna ahora existe
+        productos: [],
+        fecha_fin: null,
         creado_en: new Date().toISOString(),
         actualizado_en: new Date().toISOString()
       })
@@ -137,11 +112,11 @@ export async function POST(request: Request) {
       .single()
 
     if (insertErr) {
-      console.error('Error insertando orden:', insertErr)
+      console.error('❌ Error insertando orden:', insertErr)
       throw insertErr
     }
 
-    // 2. Insertar los insumos en la tabla relacional produccion_insumos
+    // INSERTAR INSUMOS EN TABLA RELACIONAL
     if (insumosConPrecios.length > 0) {
       const insumosInsert = insumosConPrecios.map(ins => ({
         orden_id: orden.id,
@@ -157,15 +132,13 @@ export async function POST(request: Request) {
         .insert(insumosInsert)
 
       if (insInsertErr) {
-        console.error('Error insertando insumos:', insInsertErr)
-        // La orden ya se creó, pero los insumos fallaron
-        // Podrías hacer rollback aquí si lo necesitas
+        console.error('⚠️ Error insertando insumos:', insInsertErr)
       }
     }
 
     return NextResponse.json({ success: true, data: orden })
   } catch (error: any) {
-    console.error('❌ POST /api/ordenes-produccion error:', error)
+    console.error('❌ POST error:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
@@ -176,46 +149,34 @@ export async function PUT(request: Request) {
     const { id, estado, producido_por } = body
 
     if (!id || !estado) {
-      return NextResponse.json(
-        { success: false, error: 'Faltan: id, estado' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Faltan: id, estado' }, { status: 400 })
     }
 
-    // 1. Obtener la orden actual con sus insumos
     const { data: orden, error: getErr } = await supabase
       .from('ordenes_produccion')
-      .select(`
-        *,
-        insumos:produccion_insumos(*)
-      `)
+      .select('*, insumos:produccion_insumos(*)')
       .eq('id', id)
       .single()
 
     if (getErr) throw getErr
 
-    // 2. Si el nuevo estado es "finalizado", procesar inventario y finanzas
     if (estado === 'finalizado' && orden.estado !== 'finalizado') {
       const tenantId = orden.tenant_id
       const productoId = orden.producto_id
       const cantidadProducida = orden.cantidad_producida || 1
 
-      // 2a. Descontar insumos (movimientos de salida)
+      // Descontar insumos
       if (orden.insumos && orden.insumos.length > 0) {
         for (const ins of orden.insumos) {
-          // Insertar movimiento de salida
-          await supabase
-            .from('movimientos_inventario')
-            .insert({
-              producto_id: ins.insumo_id,
-              tipo: 'salida',
-              cantidad: ins.cantidad,
-              motivo: `Producción #${orden.id}`,
-              tenant_id: tenantId,
-              created_at: new Date().toISOString()
-            })
+          await supabase.from('movimientos_inventario').insert({
+            producto_id: ins.insumo_id,
+            tipo: 'salida',
+            cantidad: ins.cantidad,
+            motivo: `Producción #${orden.id}`,
+            tenant_id: tenantId,
+            created_at: new Date().toISOString()
+          })
 
-          // Recalcular stock para el insumo
           const { data: movs } = await supabase
             .from('movimientos_inventario')
             .select('tipo, cantidad')
@@ -227,28 +188,21 @@ export async function PUT(request: Request) {
             nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
           })
 
-          await supabase
-            .from('productos')
-            .update({ stock: nuevoStock })
-            .eq('id', ins.insumo_id)
-            .eq('tenant_id', tenantId)
+          await supabase.from('productos').update({ stock: nuevoStock }).eq('id', ins.insumo_id).eq('tenant_id', tenantId)
         }
       }
 
-      // 2b. Añadir producto terminado (movimiento de entrada)
+      // Añadir producto terminado
       if (productoId) {
-        await supabase
-          .from('movimientos_inventario')
-          .insert({
-            producto_id: productoId,
-            tipo: 'entrada',
-            cantidad: cantidadProducida,
-            motivo: `Producción #${orden.id}`,
-            tenant_id: tenantId,
-            created_at: new Date().toISOString()
-          })
+        await supabase.from('movimientos_inventario').insert({
+          producto_id: productoId,
+          tipo: 'entrada',
+          cantidad: cantidadProducida,
+          motivo: `Producción #${orden.id}`,
+          tenant_id: tenantId,
+          created_at: new Date().toISOString()
+        })
 
-        // Recalcular stock del producto terminado
         const { data: movsProd } = await supabase
           .from('movimientos_inventario')
           .select('tipo, cantidad')
@@ -260,64 +214,10 @@ export async function PUT(request: Request) {
           nuevoStockProd += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
         })
 
-        await supabase
-          .from('productos')
-          .update({ stock: nuevoStockProd })
-          .eq('id', productoId)
-          .eq('tenant_id', tenantId)
-      }
-
-      // 2c. Registrar costo de producción en Finanzas
-      const costoTotal = orden.insumos?.reduce((sum: number, ins: any) => sum + (ins.subtotal || 0), 0) || 0
-
-      if (costoTotal > 0) {
-        // Buscar o crear categoría contable "Costo de Producción" (6-01-01)
-        let { data: categoria, error: catErr } = await supabase
-          .from('categorias_contables')
-          .select('id')
-          .eq('codigo', '6-01-01')
-          .eq('tenant_id', tenantId)
-          .maybeSingle()
-
-        if (!categoria) {
-          const { data: newCat, error: createErr } = await supabase
-            .from('categorias_contables')
-            .insert({
-              codigo: '6-01-01',
-              nombre: 'Costo de Producción',
-              tipo: 'costo',
-              tenant_id: tenantId
-            })
-            .select()
-            .single()
-          if (!createErr && newCat) categoria = newCat
-        }
-
-        if (categoria?.id) {
-          const nombresInsumos = orden.insumos?.map((ins: any) => ins.nombre || ins.insumo_id).join(', ') || 'Sin insumos'
-          await supabase
-            .from('transacciones')
-            .insert({
-              tipo: 'egreso',
-              monto: costoTotal,
-              categoria_contable_id: categoria.id,
-              descripcion: `Costo de producción #${orden.id} - ${productoId || 'Sin producto'} (insumos: ${nombresInsumos})`,
-              fecha: new Date().toISOString().split('T')[0],
-              impuesto: 0,
-              retencion: 0,
-              ica: 0,
-              total_con_impuestos: costoTotal,
-              metodo_pago: 'produccion',
-              tenant_id: tenantId,
-              referencia_id: orden.id,
-              referencia_tipo: 'produccion',
-              created_at: new Date().toISOString()
-            })
-        }
+        await supabase.from('productos').update({ stock: nuevoStockProd }).eq('id', productoId).eq('tenant_id', tenantId)
       }
     }
 
-    // 3. Actualizar estado de la orden
     const updateData: any = {
       estado,
       producido_por: producido_por || null,
@@ -336,26 +236,9 @@ export async function PUT(request: Request) {
 
     if (updateErr) throw updateErr
 
-    // 4. Si la orden tiene pedido_id, actualizar el estado del pedido
-    if (orden.pedido_id) {
-      let nuevoEstadoPedido = null
-      if (estado === 'finalizado') {
-        nuevoEstadoPedido = 'preparando'
-      } else if (estado === 'entregado') {
-        nuevoEstadoPedido = 'entregado'
-      }
-
-      if (nuevoEstadoPedido) {
-        await supabase
-          .from('pedidos')
-          .update({ estado: nuevoEstadoPedido })
-          .eq('id', orden.pedido_id)
-      }
-    }
-
     return NextResponse.json({ success: true, data: ordenActualizada })
   } catch (error: any) {
-    console.error('❌ PUT /api/ordenes-produccion error:', error)
+    console.error('❌ PUT error:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
@@ -366,22 +249,15 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'ID es requerido' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'ID requerido' }, { status: 400 })
     }
 
-    const { error } = await supabase
-      .from('ordenes_produccion')
-      .delete()
-      .eq('id', id)
-
+    const { error } = await supabase.from('ordenes_produccion').delete().eq('id', id)
     if (error) throw error
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('❌ DELETE /api/ordenes-produccion error:', error)
+    console.error('❌ DELETE error:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
