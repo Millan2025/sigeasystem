@@ -191,14 +191,14 @@ export default function TiendaPage() {
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col">
                 {p.imagen_url ? (
-                  <img src={p.imagen_url} alt={p.nombre} className="w-full h-32 object-cover rounded-xl mb-2" />
+                  <img src={p.imagen_url} alt={p.nombre} className="w-full h-40 object-contain rounded-xl mb-2 bg-stone-50 p-2" />
                 ) : (
                   <div className="text-4xl text-center mb-2">{p.icono || "📦"}</div>
                 )}
                 <h3 className="font-medium text-stone-800 text-center truncate">{p.nombre}</h3>
                 <p className="text-sm text-stone-600 text-center">${p.precio.toLocaleString()}</p>
                 <p className="text-xs text-stone-500 text-center">Stock: {p.stock}</p>
-                {p.descripcion && <p className="text-xs text-stone-400 text-center truncate">{p.descripcion}</p>}
+                {p.descripcion && <p className="text-xs text-stone-600 text-center line-clamp-2 mb-1">{p.descripcion}</p>}
                 {p.unidad && <p className="text-xs text-stone-400 text-center">Unidad: {p.unidad}</p>}
                 <button onClick={() => agregarAlCarrito(p)} className="w-full mt-2 bg-emerald-500 text-white py-1 rounded-xl text-sm hover:bg-emerald-600">
                   Agregar
@@ -248,7 +248,6 @@ export default function TiendaPage() {
                     <option value="Nequi">Nequi</option>
                     <option value="Bancolombia">Bancolombia</option>
                     <option value="Daviplata">Daviplata</option>
-                    <option value="Crédito">Crédito</option>
                   </select>
                 </div>
                 <button onClick={finalizarPedido} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Finalizar Pedido</button>
