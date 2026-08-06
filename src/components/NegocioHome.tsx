@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -128,7 +128,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const secondaryColor = "#D4A017"; // dorado oscuro para el degradado
 
   const modulos = [
-    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
+    { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/pos?tenant=${tenantId}` },
     { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-2 border-[#B8860B] text-lime-600", href: `/${negocioSlug || "restaurante"}/produccion?tenant=${tenantId}` },
     { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `/${negocioSlug || "restaurante"}/inventario?tenant=${tenantId}` },
     { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-2 border-[#B8860B] text-purple-600", href: `/${negocioSlug || "restaurante"}/personal?tenant=${tenantId}` },

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { NEGOCIOS } from "@/config/negocios";
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -38,13 +38,23 @@ export default function TiendaPage() {
 
   const cargarProductos = () => {
     setLoading(true);
-    const url = categoriaNegocio
-      ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoriaNegocio)}`
-      : `/api/products?tenant=${tenantId}`;
-    fetch(url)
+    // Cargar TODOS los productos del tenant (sin filtro de categoría)
+    // Las categorías reales en DB no coinciden con la categoría del negocio
+    fetch(`/api/products?tenant=${tenantId}`)
       .then(r => r.json())
       .then(d => {
-        if (d.success) setProductos(d.data || []);
+        if (d.success) {
+          // Filtrar solo productos de venta (excluir insumos)
+          const todos = d.data || [];
+          const productosVenta = todos.filter((p: any) => {
+            const cat = (p.categoria || "").toLowerCase();
+            const tipo = (p.tipo_producto || "").toLowerCase();
+            // Excluir insumos
+            if (cat.includes("insumo") || tipo === "insumo") return false;
+            return true;
+          });
+          setProductos(productosVenta);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
