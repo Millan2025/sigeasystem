@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -40,10 +40,13 @@ export default function POSPage() {
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
 
   const cargarProductos = () => {
-    const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
+    // Cargar TODOS los productos sin filtro de categoria (categorias reales no coinciden con categoriaNegocio)
+    const url = `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
       .then(d => {
+        console.log('POS: Productos cargados:', d.data?.length || 0);
+        console.log('POS: Primer producto:', d.data?.[0]);
         if (d.success && d.data.length > 0) {
           setProductos(d.data.map((p: any) => ({
             id: p.id,
