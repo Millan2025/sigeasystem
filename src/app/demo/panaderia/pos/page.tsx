@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -9,7 +9,7 @@ import PageHeader from "@/components/PageHeader";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
-  precio?: number; precioPorKg?: number; tipo_unidad?: string; venta_por_peso?: boolean;
+  precio?: number; precioPorKg?: number; tipo_unidad?: string; venta_por_peso?: boolean; imagen_url?: string;
 }
 
 interface CartItem {
@@ -58,7 +58,7 @@ export default function POSPage() {
             cat: p.categoria || 'General',
             esPeso: p.venta_por_peso || false,
             tipo_unidad: p.tipo_unidad || 'unidad',
-            precioPorKg: p.precioporkg || p.precio || 0,
+            precioPorKg: p.precioporkg || p.precio || 0, imagen_url: p.imagen_url || null,
           })));
         }
       })
@@ -238,15 +238,21 @@ export default function POSPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map(p => (
-              <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition" onClick={() => addItem(p)}>
-                <div className="text-3xl">{p.icono}</div>
+              <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition flex flex-col" onClick={() => addItem(p)}>
+                <div className="w-full h-24 mb-2 overflow-hidden rounded-lg bg-stone-100 flex items-center justify-center">
+                  {p.imagen_url ? (
+                    <img src={p.imagen_url} alt={p.nombre} className="w-full h-full object-contain p-1" />
+                  ) : (
+                    <div className="text-4xl">{p.icono}</div>
+                  )}
+                </div>
                 <div className="font-semibold text-stone-800 text-sm truncate">{p.nombre}</div>
-                <div className="text-xs text-stone-600">{p.cat}</div>
+                <div className="text-xs text-stone-600 truncate">{p.cat}</div>
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-sm font-bold text-emerald-600">${(p.precio || 0).toLocaleString()}</span>
                   <span className="text-xs text-stone-600">Stock: {p.stock}</span>
                 </div>
-                {p.esPeso && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Por peso</span>}
+                {p.esPeso && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full mt-1">Por peso</span>}
               </div>
             ))}
           </div>
