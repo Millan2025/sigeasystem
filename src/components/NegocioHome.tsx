@@ -52,6 +52,14 @@ interface BusinessConfig {
   color_principal: string;
   color_secundario: string;
   plan: string;
+  slogan?: string;
+  website?: string;
+  whatsapp?: string;
+  nequi?: string;
+  bancolombia?: string;
+  daviplata?: string;
+  nit?: string;
+  cedula?: string;
 }
 
 export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { negocioSlug?: string; tenantId?: string }) {
@@ -63,6 +71,10 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const searchParams = useSearchParams();
   const [ventasHoy, setVentasHoy] = useState({ total: 0, transacciones: 0, efectivo: 0, nequi: 0, daviplata: 0 });
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
+  const [showSharePos, setShowSharePos] = useState(false);
+  const [showShareTienda, setShowShareTienda] = useState(false);
+  const [copiadoPos, setCopiadoPos] = useState(false);
+  const [copiadoTienda, setCopiadoTienda] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -112,6 +124,32 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     loadData();
   }, [supabase, tenantIdProp]);
 
+
+  const generarEnlace = (modulo: string) => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://sigea-system.vercel.app";
+    return `${baseUrl}/demo/${negocioSlug || "restaurante"}/${modulo}?tenant=${tenantId}`;
+  };
+
+  const copiarAlPortapapeles = async (texto: string, tipo: "pos" | "tienda") => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      if (tipo === "pos") {
+        setCopiadoPos(true);
+        setTimeout(() => setCopiadoPos(false), 2000);
+      } else {
+        setCopiadoTienda(true);
+        setTimeout(() => setCopiadoTienda(false), 2000);
+      }
+    } catch (e) {
+      alert("No se pudo copiar. Copia manualmente: " + texto);
+    }
+  };
+
+  const compartirWhatsApp = (texto: string, enlace: string) => {
+    const mensaje = `${texto}\\n\\n${enlace}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank");
+  };
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -204,6 +242,24 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             </span>
           </div>
         </div>
+
+          {/* BOTONES DE COMPARTIR ENLACES */}
+          <div className="flex flex-wrap gap-3 justify-center mt-6">
+            <button
+              onClick={() => setShowSharePos(true)}
+              className="bg-white/90 hover:bg-white text-amber-700 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Compartir POS (Trabajadores)
+            </button>
+            <button
+              onClick={() => setShowShareTienda(true)}
+              className="bg-white/90 hover:bg-white text-orange-700 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Compartir Tienda (Clientes)
+            </button>
+          </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
@@ -274,6 +330,150 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 </>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================
+          MODAL: COMPARTIR POS (Trabajadores)
+          ============================================ */}
+      {showSharePos && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowSharePos(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-xl text-stone-900 flex items-center gap-2">
+                <ShoppingCart className="w-6 h-6 text-amber-600" />
+                Compartir POS
+              </h2>
+              <button onClick={() => setShowSharePos(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+              <p className="text-sm text-stone-700 mb-2">
+                <strong>📱 Comparte este enlace</strong> con tus trabajadores para que puedan atender ventas en el POS.
+              </p>
+              <p className="text-xs text-stone-600">
+                Cada trabajador podrá acceder al sistema de cobro con su propio dispositivo.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-stone-700 mb-2">Enlace del POS:</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={generarEnlace("pos")}
+                  className="flex-1 p-3 bg-stone-50 border border-stone-300 rounded-xl text-xs text-stone-700 font-mono"
+                />
+                <button
+                  onClick={() => copiarAlPortapapeles(generarEnlace("pos"), "pos")}
+                  className={
+                    "px-4 py-2 rounded-xl font-bold text-white transition " +
+                    (copiadoPos ? "bg-green-500" : "bg-amber-500 hover:bg-amber-600")
+                  }
+                >
+                  {copiadoPos ? "✓ Copiado" : "Copiar"}
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                compartirWhatsApp(
+                  `🛒 *Acceso al POS de ${config?.nombre_negocio || "Mi Negocio"}*\\n\\nHola! Usa este enlace para acceder al sistema de punto de venta:`,
+                  generarEnlace("pos")
+                )
+              }
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+            >
+              <Phone className="w-5 h-5" />
+              Compartir por WhatsApp
+            </button>
+
+            <p className="text-xs text-stone-500 text-center mt-3">
+              💡 Tip: Envíalo al grupo de WhatsApp de tu equipo de trabajo
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================
+          MODAL: COMPARTIR TIENDA (Clientes)
+          ============================================ */}
+      {showShareTienda && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowShareTienda(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-xl text-stone-900 flex items-center gap-2">
+                <ShoppingBag className="w-6 h-6 text-orange-600" />
+                Compartir Tienda
+              </h2>
+              <button onClick={() => setShowShareTienda(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-4">
+              <p className="text-sm text-stone-700 mb-2">
+                <strong>🛍️ Comparte este enlace</strong> con tus clientes para que puedan hacer pedidos a domicilio.
+              </p>
+              <p className="text-xs text-stone-600">
+                Ideal para grupos de WhatsApp del barrio, redes sociales o estados.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-stone-700 mb-2">Enlace de la Tienda:</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={generarEnlace("tienda")}
+                  className="flex-1 p-3 bg-stone-50 border border-stone-300 rounded-xl text-xs text-stone-700 font-mono"
+                />
+                <button
+                  onClick={() => copiarAlPortapapeles(generarEnlace("tienda"), "tienda")}
+                  className={
+                    "px-4 py-2 rounded-xl font-bold text-white transition " +
+                    (copiadoTienda ? "bg-green-500" : "bg-orange-500 hover:bg-orange-600")
+                  }
+                >
+                  {copiadoTienda ? "✓ Copiado" : "Copiar"}
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                compartirWhatsApp(
+                  `🥖 *${config?.nombre_negocio || "Mi Negocio"}*\\n${config?.slogan || "Tu tienda de confianza"}\\n\\n¡Haz tu pedido a domicilio! 🚚`,
+                  generarEnlace("tienda")
+                )
+              }
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+            >
+              <Phone className="w-5 h-5" />
+              Compartir por WhatsApp
+            </button>
+
+            <p className="text-xs text-stone-500 text-center mt-3">
+              💡 Tip: Compártelo en los grupos de WhatsApp del barrio y en tus estados
+            </p>
           </div>
         </div>
       )}
