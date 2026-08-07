@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -67,12 +67,15 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       setTenantId(tenant);
 
       if (tenant) {
-        const { data: configData } = await supabase
-          .from("business_config")
-          .select("*")
-          .eq("id", tenant)
-          .single();
-        setConfig(configData);
+        try {
+          const res = await fetch(`/api/tenant-config?tenant=${tenant}`);
+          const dataApi = await res.json();
+          if (dataApi.success && dataApi.data) {
+            setConfig(dataApi.data);
+          }
+        } catch (e) {
+          console.error("Error cargando config:", e);
+        }
 
         try {
           const res = await fetch(`/api/ventas?tenant=${tenant}&start=${new Date().toISOString().split("T")[0]}`);
