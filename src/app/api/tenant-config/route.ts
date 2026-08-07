@@ -15,18 +15,67 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, error: 'Falta tenant_id' }, { status: 400 })
     }
 
-    // Usar business_config (la tabla real)
     const { data, error } = await supabase
       .from('business_config')
-      .select('nombre_negocio, whatsapp, direccion, telefono')
-      .eq('id', tenantId)   // ← IMPORTANTE: usar 'id' no 'tenant_id'
+      .select('*')
+      .eq('id', tenantId)
       .single()
 
     if (error) throw error
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('❌ Error en tenant-config:', error)
+    console.error('❌ GET tenant-config:', error)
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const url = new URL(request.url)
+    const tenantId = url.searchParams.get('tenant')
+    
+    if (!tenantId) {
+      return NextResponse.json({ success: false, error: 'Falta tenant_id' }, { status: 400 })
+    }
+
+    const body = await request.json()
+    
+    // Campos permitidos para actualizar
+    const camposPermitidos = [
+      'nombre_negocio', 'tipo_negocio', 'direccion', 'telefono', 'whatsapp',
+      'correo_contacto', 'logo_url', 'color_principal', 'color_secundario',
+      'gerente', 'nit', 'cedula', 'nequi', 'bancolombia', 'daviplata',
+      'slogan', 'website'
+    ]
+    
+    const updateData: any = {}
+    for (const campo of camposPermitidos) {
+      if (body[campo] !== undefined) {
+        updateData[campo] = body[campo]
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ success: false, error: 'No hay campos para actualizar' }, { status: 400 })
+    }
+
+    const { data, error } = await supabase
+      .from('business_config')
+      .update(updateData)
+      .eq('id', tenantId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return NextResponse.json({ 
+      success: true, 
+      data,
+      message: 'Configuración actualizada correctamente'
+    })
+  } catch (error: any) {
+    console.error('❌ PUT tenant-config:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }

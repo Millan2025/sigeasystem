@@ -94,6 +94,10 @@ export default function AdminMasterPage() {
   const [tenantId, settenantId] = useState<string | null>(null);
   const [importProgress, setImportProgress] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
+  const [configNegocio, setConfigNegocio] = useState<any>({});
+  const [clienteConfigId, setClienteConfigId] = useState<string>("");
+  const [guardandoConfig, setGuardandoConfig] = useState(false);
+  const [previewLogo, setPreviewLogo] = useState<string>("");
 
   // ============================================
   // CARGAR DATOS
@@ -112,6 +116,47 @@ export default function AdminMasterPage() {
       console.error("Error cargando datos", e);
     }
     setLoading(false);
+  };
+
+  const cargarConfigCliente = async (tenantIdSel: string) => {
+    if (!tenantIdSel) {
+      setConfigNegocio({});
+      setPreviewLogo("");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/tenant-config?tenant=${tenantIdSel}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setConfigNegocio(data.data);
+        setPreviewLogo(data.data.logo_url || "");
+      }
+    } catch (e) {
+      console.error("Error cargando config:", e);
+    }
+  };
+
+  const guardarConfigCliente = async () => {
+    if (!clienteConfigId) return;
+    setGuardandoConfig(true);
+    try {
+      const res = await fetch(`/api/tenant-config?tenant=${clienteConfigId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(configNegocio),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje("✅ Configuración actualizada. Los cambios se reflejan en todos los módulos.");
+        setTimeout(() => setMensaje(""), 4000);
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión");
+    } finally {
+      setGuardandoConfig(false);
+    }
   };
 
   useEffect(() => {
@@ -688,26 +733,286 @@ export default function AdminMasterPage() {
         )}
 
         {tab === "config" && (
-          <div className="space-y-3">
-            <h2 className="font-bold text-stone-800">Configuración Global</h2>
-            {[
-              { label: "Notificaciones", desc: "Alertas y recordatorios" },
-              { label: "Seguridad", desc: "Permisos y accesos" },
-              { label: "Actualizaciones", desc: "Versión del sistema" },
-              { label: "Precios y Planes", desc: "Gestionar suscripciones" },
-            ].map((c) => (
-              <div
-                key={c.label}
-                className="bg-white rounded-xl border border-stone-200 p-4 flex items-center gap-3 cursor-pointer hover:bg-stone-50"
-              >
-                <Settings className="w-5 h-5 text-stone-500" />
-                <div className="flex-1">
-                  <p className="font-bold text-stone-800 text-sm">{c.label}</p>
-                  <p className="text-xs text-stone-500">{c.desc}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-stone-300" />
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-300 p-4">
+              <h2 className="font-bold text-stone-800 text-lg mb-1 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-amber-600" />
+                Configuración del Negocio
+              </h2>
+              <p className="text-xs text-stone-600 mb-3">
+                Actualiza los datos de identidad del negocio. Los cambios se reflejan automáticamente en el encabezado de todos los módulos.
+              </p>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Selecciona el negocio a configurar *</label>
+                <select
+                  value={clienteConfigId}
+                  onChange={(e) => {
+                    setClienteConfigId(e.target.value);
+                    cargarConfigCliente(e.target.value);
+                  }}
+                  className="w-full p-3 bg-white border border-stone-300 rounded-xl text-sm text-stone-900 font-medium"
+                >
+                  <option value="">-- Selecciona un negocio --</option>
+                  {clientes.map((cl: any) => (
+                    <option key={cl.id} value={cl.id}>
+                      {cl.nombre_negocio} ({cl.tipo_negocio})
+                    </option>
+                  ))}
+                </select>
               </div>
-            ))}
+            </div>
+
+            {clienteConfigId && (
+              <div className="bg-white rounded-2xl border border-stone-200 p-4 space-y-4">
+                <h3 className="font-bold text-stone-800 border-b border-stone-200 pb-2">
+                  🏪 Información General
+                </h3>
+
+                {/* Logo + Preview */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Logo del negocio (URL)</label>
+                  <input
+                    type="text"
+                    value={configNegocio.logo_url || ""}
+                    onChange={(e) => {
+                      setConfigNegocio({ ...configNegocio, logo_url: e.target.value });
+                      setPreviewLogo(e.target.value);
+                    }}
+                    placeholder="https://..."
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                  />
+                  {previewLogo && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <img src={previewLogo} alt="Preview" className="w-14 h-14 rounded-full object-cover border-2 border-amber-400" />
+                      <span className="text-xs text-stone-500">Vista previa</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Nombre del Negocio *</label>
+                    <input
+                      type="text"
+                      value={configNegocio.nombre_negocio || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, nombre_negocio: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Tipo de Negocio</label>
+                    <input
+                      type="text"
+                      value={configNegocio.tipo_negocio || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, tipo_negocio: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Slogan</label>
+                  <input
+                    type="text"
+                    value={configNegocio.slogan || ""}
+                    onChange={(e) => setConfigNegocio({ ...configNegocio, slogan: e.target.value })}
+                    placeholder="Tu frase publicitaria..."
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Dirección</label>
+                  <input
+                    type="text"
+                    value={configNegocio.direccion || ""}
+                    onChange={(e) => setConfigNegocio({ ...configNegocio, direccion: e.target.value })}
+                    placeholder="Calle, ciudad, país"
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                  />
+                </div>
+
+                <h3 className="font-bold text-stone-800 border-b border-stone-200 pb-2 pt-2">
+                  📞 Contacto
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Teléfono</label>
+                    <input
+                      type="text"
+                      value={configNegocio.telefono || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, telefono: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">WhatsApp</label>
+                    <input
+                      type="text"
+                      value={configNegocio.whatsapp || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, whatsapp: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Correo de contacto</label>
+                    <input
+                      type="email"
+                      value={configNegocio.correo_contacto || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, correo_contacto: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Website</label>
+                    <input
+                      type="url"
+                      value={configNegocio.website || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, website: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                <h3 className="font-bold text-stone-800 border-b border-stone-200 pb-2 pt-2">
+                  🎨 Identidad Visual
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Color Principal</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={configNegocio.color_principal || "#F7B500"}
+                        onChange={(e) => setConfigNegocio({ ...configNegocio, color_principal: e.target.value })}
+                        className="w-12 h-10 rounded-lg border border-stone-300 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={configNegocio.color_principal || "#F7B500"}
+                        onChange={(e) => setConfigNegocio({ ...configNegocio, color_principal: e.target.value })}
+                        className="flex-1 p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Color Secundario</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={configNegocio.color_secundario || "#FFC107"}
+                        onChange={(e) => setConfigNegocio({ ...configNegocio, color_secundario: e.target.value })}
+                        className="w-12 h-10 rounded-lg border border-stone-300 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={configNegocio.color_secundario || "#FFC107"}
+                        onChange={(e) => setConfigNegocio({ ...configNegocio, color_secundario: e.target.value })}
+                        className="flex-1 p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="font-bold text-stone-800 border-b border-stone-200 pb-2 pt-2">
+                  👤 Administración
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Gerente</label>
+                    <input
+                      type="text"
+                      value={configNegocio.gerente || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, gerente: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">NIT</label>
+                    <input
+                      type="text"
+                      value={configNegocio.nit || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, nit: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Cédula del Gerente</label>
+                    <input
+                      type="text"
+                      value={configNegocio.cedula || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, cedula: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                <h3 className="font-bold text-stone-800 border-b border-stone-200 pb-2 pt-2">
+                  💳 Datos de Pago
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Nequi</label>
+                    <input
+                      type="text"
+                      value={configNegocio.nequi || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, nequi: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Daviplata</label>
+                    <input
+                      type="text"
+                      value={configNegocio.daviplata || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, daviplata: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Bancolombia</label>
+                    <input
+                      type="text"
+                      value={configNegocio.bancolombia || ""}
+                      onChange={(e) => setConfigNegocio({ ...configNegocio, bancolombia: e.target.value })}
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Botón Guardar */}
+                <div className="pt-3 border-t border-stone-200">
+                  <button
+                    onClick={guardarConfigCliente}
+                    disabled={guardandoConfig}
+                    className={"w-full py-3 rounded-xl font-bold text-white transition " +
+                      (guardandoConfig
+                        ? "bg-stone-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-md hover:shadow-lg")
+                    }
+                  >
+                    {guardandoConfig ? "⏳ Guardando..." : "💾 Guardar Configuración"}
+                  </button>
+                  <p className="text-xs text-stone-500 text-center mt-2">
+                    Los cambios se reflejan en todos los módulos del sistema automáticamente.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {!clienteConfigId && (
+              <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center">
+                <Settings className="w-12 h-12 text-stone-300 mx-auto mb-3" />
+                <p className="text-stone-600 font-medium">Selecciona un negocio para comenzar a configurar</p>
+                <p className="text-xs text-stone-500 mt-1">Podrás personalizar logo, datos de contacto, colores y más.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
