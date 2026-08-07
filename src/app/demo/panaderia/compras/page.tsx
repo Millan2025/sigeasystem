@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";

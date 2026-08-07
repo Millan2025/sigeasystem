@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation"
@@ -299,7 +299,7 @@ function ProduccionContent() {
             {loadingOrdenes ? (
               <div className="text-center py-12">Cargando...</div>
             ) : ordenesFiltradas.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border"><ClipboardList className="w-16 h-16 text-stone-300 mx-auto mb-4" /><p>Sin órdenes.</p></div>
+              <div className="bg-white rounded-2xl p-12 text-center border"><ClipboardList className="w-16 h-16 text-stone-500 mx-auto mb-4" /><p className="text-stone-800 font-medium">Sin órdenes.</p></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ordenesFiltradas.map(orden => {
@@ -317,7 +317,7 @@ function ProduccionContent() {
                           <button onClick={() => abrirModalDetalles(orden)} className="font-bold text-emerald-700 hover:text-emerald-900 hover:underline text-sm">
                             #{orden.id.slice(0, 8)}
                           </button>
-                          {orden.pedido_id && <span className="text-xs text-stone-400 ml-2">Ped: {orden.pedido_id.slice(0, 6)}</span>}
+                          {orden.pedido_id && <span className="text-xs text-stone-600 ml-2">Ped: {orden.pedido_id.slice(0, 6)}</span>}
                           <div className="text-base font-semibold text-stone-800 mt-1 truncate">{nombreProd}</div>
                           <div className="text-xs text-stone-500">× {orden.cantidad_producida || 1}</div>
                         </div>
@@ -344,7 +344,7 @@ function ProduccionContent() {
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between text-xs text-stone-400 mb-3">
+                      <div className="flex items-center justify-between text-xs text-stone-600 mb-3">
                         <span>📅 {new Date(orden.creado_en).toLocaleString()}</span>
                         <span className={`px-2 py-0.5 rounded-full ${estadoInfo.color}`}>
                           <EstadoIcon className="w-3 h-3 inline mr-1" />{estadoInfo.label}
@@ -505,7 +505,7 @@ function ProduccionContent() {
                   <Package className="w-4 h-4" /> Ingredientes / Insumos
                 </h4>
                 {ordenDetalles.insumos && ordenDetalles.insumos.length > 0 ? (
-                  <div className="bg-white border border-stone-300 rounded-xl overflow-hidden">
+                  <div className="bg-white border border-stone-300 rounded-xl overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-stone-200">
                         <tr>
