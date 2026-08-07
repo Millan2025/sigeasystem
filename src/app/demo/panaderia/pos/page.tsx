@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
 import { NEGOCIOS } from "@/config/negocios";
+import PageHeader from "@/components/PageHeader";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -200,17 +201,23 @@ export default function POSPage() {
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
-      <header className="bg-white shadow-sm p-3 flex items-center gap-2 sticky top-0 z-20">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl shrink-0"><ArrowLeft className="w-5 h-5 text-stone-700" /></Link>
-        <div className="flex-1 min-w-0"><h1 className="font-bold text-stone-800 truncate">Nueva Venta - {titulo}</h1></div>
-        <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
-          <Share2 className="w-5 h-5" />
-        </button>
-        <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2">
-          <ShoppingCart className="w-4 h-4" />
-          {totalItems > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{totalItems}</span>}
-        </button>
-      </header>
+      <PageHeader
+        negocioSlug={negocioSlug}
+        titulo="Nueva Venta"
+        icono="💰"
+        subtitulo={`POS - ${titulo}`}
+        acciones={
+          <>
+            <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
+              <Share2 className="w-5 h-5" />
+            </button>
+            <button onClick={() => setShowCart(true)} className="relative bg-emerald-500 text-white px-3 sm:px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              {totalItems > 0 && <span className="bg-white text-emerald-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{totalItems}</span>}
+            </button>
+          </>
+        }
+      />
 
       {msg && <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">{msg}</div>}
 
