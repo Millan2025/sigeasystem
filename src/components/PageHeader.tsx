@@ -33,23 +33,28 @@ export default function PageHeader({
 
   return (
     <>
-      {/* Franja institucional AMARILLO TAXI con logo real */}
-      <div className="hidden md:block bg-gradient-to-r from-[#F7B500] via-[#FFC107] to-[#FFD54F] border-b-2 border-[#B8860B]">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      {/* Franja institucional AMARILLO TAXI - Visible en TODOS los tamaños */}
+      <div className="bg-gradient-to-r from-[#F7B500] via-[#FFC107] to-[#FFD54F] border-b-2 border-[#B8860B]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 md:py-3 flex items-center gap-3 md:gap-4">
+          {/* Logo */}
           <img
             src={LOGO_URL}
             alt="Logo La Casa del Pan"
-            className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0 bg-white"
+            className="w-10 h-10 md:w-14 md:h-14 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0 bg-white"
           />
+          
+          {/* Nombre y slogan */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-extrabold text-stone-900 truncate">
+            <h2 className="text-sm md:text-lg font-extrabold text-stone-900 truncate">
               {infoNegocio.nombre}
             </h2>
-            <p className="text-sm text-stone-800 italic truncate font-medium">
+            <p className="text-xs md:text-sm text-stone-800 italic truncate font-medium hidden sm:block">
               {infoNegocio.slogan}
             </p>
           </div>
-          <div className="flex flex-col gap-1 text-xs text-stone-800 font-medium">
+          
+          {/* Info de contacto - solo en desktop */}
+          <div className="hidden md:flex flex-col gap-1 text-xs text-stone-800 font-medium">
             <div className="flex items-center gap-2">
               <MapPin className="w-3 h-3 flex-shrink-0" />
               <span className="truncate max-w-xs">{infoNegocio.direccion}</span>
