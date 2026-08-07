@@ -40,12 +40,15 @@ export default function ClienteDashboard() {
       setTenantId(tenant);
 
       if (tenant) {
-        const { data: configData } = await supabase
-          .from('business_config')
-          .select('*')
-          .eq('id', tenant)
-          .single();
-        setConfig(configData);
+        try {
+          const res = await fetch(`/api/tenant-config?tenant=${tenant}`);
+          const data = await res.json();
+          if (data.success && data.data) {
+            setConfig(data.data);
+          }
+        } catch (e) {
+          console.error("Error cargando config:", e);
+        }
       }
       setLoading(false);
     };
