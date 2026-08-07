@@ -1,10 +1,12 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getTenantId } from "@/lib/tenant";
+import { NEGOCIOS } from "@/config/negocios";
 import {
   ShoppingCart,
   DollarSign,
@@ -58,12 +60,15 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
   const [ventasHoy, setVentasHoy] = useState({ total: 0, transacciones: 0, efectivo: 0, nequi: 0, daviplata: 0 });
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
-      const tenant = tenantIdProp || (await getTenantId());
+      const tenantFromUrl = searchParams.get("tenant");
+      const tenantFromConfig = negocioSlug ? NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS]?.tenantId : null;
+      const tenant = tenantIdProp || tenantFromUrl || tenantFromConfig || (await getTenantId());
       setTenantId(tenant);
 
       if (tenant) {
