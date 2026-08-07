@@ -14,6 +14,7 @@ import {
   Calendar,
   BookOpen,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -56,6 +57,9 @@ export default function FinanzasPage() {
   });
   const [formCategoria, setFormCategoria] = useState({ codigo: "", nombre: "", tipo: "ingreso", nivel: 1, padre_id: "" });
   const [formPeriodo, setFormPeriodo] = useState({ nombre: "", fecha_inicio: "", fecha_fin: "", tipo: "bimestral", cerrado: false });
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState("");
+  const [resetting, setResetting] = useState(false);
 
   const pathParts = pathname?.split("/") || [];
   const negocioSlug = pathParts[1] || "restaurante";
@@ -287,6 +291,34 @@ export default function FinanzasPage() {
     alert(`Períodos ${tipo} generados correctamente`);
   };
 
+
+  const resetearFinanzas = async () => {
+    if (resetConfirmText !== "RESETEAR") {
+      alert("Debes escribir RESETEAR para confirmar");
+      return;
+    }
+    setResetting(true);
+    try {
+      const res = await fetch(`/api/finanzas/reset?tenant=${tenantId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmacion: resetConfirmText }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ ${data.message}\\n\\nEl negocio inicia desde cero.`);
+        setShowResetModal(false);
+        setResetConfirmText("");
+        cargarDatos();
+      } else {
+        alert("❌ Error: " + data.error);
+      }
+    } catch (e) {
+      alert("Error de conexión al resetear");
+    } finally {
+      setResetting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="bg-white shadow-sm p-4 flex items-center gap-2 sm:gap-3 sticky top-0 z-10 flex-wrap">
@@ -339,6 +371,14 @@ export default function FinanzasPage() {
         >
           <Download className="w-5 h-5" />
           <span className="text-xs hidden sm:inline">Exportar</span>
+        </button>
+        <button
+          onClick={() => setShowResetModal(true)}
+          className="p-2 hover:bg-red-50 rounded-xl flex items-center gap-1 text-red-600 bg-red-50 border border-red-200"
+          title="Resetear todas las cifras financieras"
+        >
+          <AlertTriangle className="w-5 h-5" />
+          <span className="text-xs hidden sm:inline">Reset</span>
         </button>
       </header>
 
@@ -783,5 +823,6 @@ export default function FinanzasPage() {
         </div>
       )}
     </div>
+
   );
 }
