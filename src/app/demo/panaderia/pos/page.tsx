@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -200,7 +200,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col">
+    <div className="min-h-screen bg-stone-100 flex flex-col overflow-x-hidden">
       <PageHeader
         negocioSlug={negocioSlug}
         titulo="Nueva Venta"

@@ -33,39 +33,44 @@ export default function PageHeader({
 
   return (
     <>
-      {/* Franja institucional AMARILLO TAXI - Visible en TODOS los tamaños */}
+      {/* Franja institucional AMARILLO TAXI - visible en todos los tamaños */}
       <div className="bg-gradient-to-r from-[#F7B500] via-[#FFC107] to-[#FFD54F] border-b-2 border-[#B8860B]">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 md:py-3 flex items-center gap-3 md:gap-4">
-          {/* Logo */}
-          <img
-            src={LOGO_URL}
-            alt="Logo La Casa del Pan"
-            className="w-10 h-10 md:w-14 md:h-14 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0 bg-white"
-          />
-          
-          {/* Nombre y slogan */}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm md:text-lg font-extrabold text-stone-900 truncate">
-              {infoNegocio.nombre}
-            </h2>
-            <p className="text-xs md:text-sm text-stone-800 italic truncate font-medium hidden sm:block">
-              {infoNegocio.slogan}
-            </p>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 md:py-3">
+          {/* FILA 1: Logo + Nombre + Teléfono */}
+          <div className="flex items-center gap-2 md:gap-4">
+            <img
+              src={LOGO_URL}
+              alt="Logo La Casa del Pan"
+              className="w-11 h-11 md:w-14 md:h-14 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0 bg-white"
+            />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm md:text-lg font-extrabold text-stone-900 truncate">
+                {infoNegocio.nombre}
+              </h2>
+              <p className="text-[10px] md:text-sm text-stone-800 italic truncate font-medium hidden sm:block">
+                {infoNegocio.slogan}
+              </p>
+              {/* Teléfono visible en mobile (al lado del nombre) */}
+              <a href={`tel:${infoNegocio.telefono.replace(/\s/g, '')}`} className="flex items-center gap-1 text-[11px] md:hidden text-stone-900 font-semibold mt-0.5">
+                <Phone className="w-3 h-3 flex-shrink-0" />
+                <span>{infoNegocio.telefono}</span>
+              </a>
+            </div>
           </div>
           
-          {/* Info de contacto - solo en desktop */}
-          <div className="hidden md:flex flex-col gap-1 text-xs text-stone-800 font-medium">
-            <div className="flex items-center gap-2">
+          {/* FILA 2: Dirección y email - siempre visible */}
+          <div className="flex flex-col gap-0.5 mt-1 md:mt-2 text-[11px] md:text-xs text-stone-800 font-medium">
+            <div className="flex items-center gap-1.5 md:gap-2">
               <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate max-w-xs">{infoNegocio.direccion}</span>
+              <span className="truncate">{infoNegocio.direccion}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Phone className="w-3 h-3 flex-shrink-0" />
               <span>{infoNegocio.telefono}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 md:gap-2">
               <Mail className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate max-w-xs">{infoNegocio.email}</span>
+              <span className="truncate">{infoNegocio.email}</span>
             </div>
           </div>
         </div>
@@ -73,7 +78,7 @@ export default function PageHeader({
 
       {/* Header del módulo con acento amarillo */}
       <div className="bg-white shadow-sm border-b-2 border-[#F7B500] sticky top-0 z-20">
-        <div className="px-3 sm:px-4 py-3 max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
+        <div className="px-3 sm:px-4 py-2.5 md:py-3 max-w-7xl mx-auto flex items-center gap-2 sm:gap-3">
           <Link
             href={`/demo/${negocioSlug}`}
             className="p-2 hover:bg-amber-50 rounded-xl shrink-0"

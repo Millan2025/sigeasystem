@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { NEGOCIOS } from "@/config/negocios";
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
@@ -155,7 +155,7 @@ export default function TiendaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 overflow-x-hidden">
       <PageHeader
         negocioSlug={negocioSlug}
         titulo="Tienda"
@@ -176,7 +176,7 @@ export default function TiendaPage() {
 
       {mensaje && <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">{mensaje}</div>}
 
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-3 sm:p-4 max-w-7xl mx-auto overflow-x-hidden">
         <div className="flex flex-wrap gap-2 mb-4">
           {cats.map(c => (
             <button key={c} onClick={() => setCatFilter(c)} className={`px-4 py-1.5 rounded-full text-sm font-medium ${catFilter === c ? "bg-emerald-500 text-white" : "bg-white text-stone-700"}`}>
@@ -191,7 +191,7 @@ export default function TiendaPage() {
         {loading ? (
           <div className="text-center py-8 text-stone-500">Cargando productos...</div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-full">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 flex flex-col">
                 {p.imagen_url ? (
