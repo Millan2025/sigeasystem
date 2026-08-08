@@ -822,6 +822,76 @@ export default function FinanzasPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL RESET FINANZAS */}
+      {showResetModal && (
+        <div
+          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
+          onClick={() => { setShowResetModal(false); setResetConfirmText(""); }}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-xl text-red-600 flex items-center gap-2">
+                <AlertTriangle className="w-6 h-6" />
+                Resetear Finanzas
+              </h2>
+              <button onClick={() => { setShowResetModal(false); setResetConfirmText(""); }} className="p-2 hover:bg-stone-100 rounded-xl">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-4">
+              <p className="text-sm text-red-800 font-bold mb-2">⚠️ Esta acción es IRREVERSIBLE</p>
+              <ul className="text-xs text-red-700 space-y-1 ml-4 list-disc">
+                <li>Se borrarán TODAS las ventas</li>
+                <li>Se borrarán TODOS los pedidos</li>
+                <li>Se borrarán TODOS los créditos</li>
+                <li>Se borrarán TODOS los cierres de caja</li>
+                <li>El stock de productos se resetea a 0</li>
+              </ul>
+              <p className="text-xs text-stone-600 mt-2 italic">Se mantienen: catálogo de productos, usuarios y configuración.</p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-stone-700 mb-2">
+                Para confirmar, escribe la palabra <span className="text-red-600">RESETEAR</span>:
+              </label>
+              <input
+                type="text"
+                value={resetConfirmText}
+                onChange={(e) => setResetConfirmText(e.target.value)}
+                placeholder="Escribe RESETEAR"
+                className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowResetModal(false); setResetConfirmText(""); }}
+                className="flex-1 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-3 rounded-xl transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={resetearFinanzas}
+                disabled={resetConfirmText !== "RESETEAR" || resetting}
+                className={
+                  "flex-1 font-bold py-3 rounded-xl transition " +
+                  (resetConfirmText === "RESETEAR" && !resetting
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "bg-stone-300 text-stone-500 cursor-not-allowed")
+                }
+              >
+                {resetting ? "Reseteando..." : "🔥 Confirmar Reset"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
   );
