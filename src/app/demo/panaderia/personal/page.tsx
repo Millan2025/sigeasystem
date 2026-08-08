@@ -231,7 +231,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
         {loading ? (
           <div className="text-center py-12 text-stone-500">Cargando...</div>
         ) : empleados.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
+          <div className="bg-white rounded-2xl p-6 sm:p-12 text-center border border-stone-200">
             <p className="text-stone-500">No hay empleados registrados.</p>
           </div>
         ) : (
