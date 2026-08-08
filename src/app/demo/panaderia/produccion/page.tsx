@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation"
@@ -273,7 +273,7 @@ function ProduccionContent() {
               <button onClick={() => setVista("admin")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "admin" ? "bg-emerald-500 text-white" : "bg-stone-200"}`}>Admin</button>
               <button onClick={() => setVista("productor")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "productor" ? "bg-blue-500 text-white" : "bg-stone-200"}`}>Productor</button>
             </div>
-            <button onClick={cargarOrdenes} className="p-2 hover:bg-stone-100 rounded-xl"><RefreshCw className="w-5 h-5" /></button>
+            <button onClick={cargarOrdenes} className="p-2 hover:bg-stone-100 rounded-xl"><RefreshCw className="w-5 h-5 text-stone-700" /></button>
             <button onClick={() => setShowModalOrden(true)} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> Nueva Orden</button>
             <div className="relative">
               <Bell className={`w-6 h-6 ${contadorNuevas > 0 ? "text-red-500" : "text-stone-400"}`} />
@@ -289,15 +289,15 @@ function ProduccionContent() {
         {tab === "ordenes" && (
           <>
             <div className="flex flex-wrap gap-2 mb-4">
-              <button onClick={() => setFiltroEstado("todos")} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white border"}`}>Todos</button>
+              <button onClick={() => setFiltroEstado("todos")} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white border text-stone-700"}`}>Todos</button>
               {ESTADOS_ORDEN.map(e => {
                 const info = ESTADOS[e as keyof typeof ESTADOS];
-                return <button key={e} onClick={() => setFiltroEstado(e)} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === e ? `${info.color} border-2 border-current` : "bg-white border"}`}>{info.label}</button>;
+                return <button key={e} onClick={() => setFiltroEstado(e)} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === e ? `${info.color} border-2 border-current` : "bg-white border text-stone-700"}`}>{info.label}</button>;
               })}
             </div>
 
             {loadingOrdenes ? (
-              <div className="text-center py-12">Cargando...</div>
+              <div className="text-center py-12 text-stone-700">Cargando...</div>
             ) : ordenesFiltradas.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 text-center border"><ClipboardList className="w-16 h-16 text-stone-500 mx-auto mb-4" /><p className="text-stone-800 font-medium">Sin órdenes.</p></div>
             ) : (
