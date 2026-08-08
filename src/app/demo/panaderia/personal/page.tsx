@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation"
@@ -62,17 +62,64 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   });
   const [filtro, setFiltro] = useState<string>("todos");
 
-  // Cargar datos desde localStorage
-  const cargarDatos = () => {
+  // Cargar datos desde Supabase (con fallback a localStorage)
+  const cargarDatos = async () => {
     setLoading(true);
     const keyEmpleados = `empleados_${tenantId}`;
     const keyAsistencias = `asistencias_${tenantId}`;
+
+    // Intentar cargar desde API (Supabase)
+    try {
+      const [empRes, asisRes] = await Promise.all([
+        fetch(`/api/employees?tenant=${tenantId}`),
+        fetch(`/api/asistencias?tenant=${tenantId}`)
+      ]);
+
+      if (empRes.ok && asisRes.ok) {
+        const empData = await empRes.json();
+        const asisData = await asisRes.json();
+
+        if (empData.success && asisData.success) {
+          const empleadosAPI = empData.data.map((e: any) => ({
+            id: e.id,
+            nombre: e.nombre,
+            telefono: e.telefono || "",
+            email: e.email || "",
+            rol: e.rol || e.cargo || "empleado",
+            salario_base: Number(e.salario_base) || 0,
+            fecha_contratacion: e.fecha_contratacion || new Date().toISOString().split("T")[0],
+            activo: e.activo !== undefined ? e.activo : true,
+          }));
+
+          const asistenciasAPI = asisData.data.map((a: any) => ({
+            id: a.id,
+            empleado_id: a.empleado_id,
+            fecha: a.fecha,
+            hora_entrada: a.hora_entrada,
+            hora_salida: a.hora_salida,
+          }));
+
+          setEmpleados(empleadosAPI);
+          setAsistencias(asistenciasAPI);
+
+          // Guardar en localStorage como backup
+          localStorage.setItem(keyEmpleados, JSON.stringify(empleadosAPI));
+          localStorage.setItem(keyAsistencias, JSON.stringify(asistenciasAPI));
+
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn("Error cargando desde API, usando localStorage:", error);
+    }
+
+    // Fallback: cargar desde localStorage
     try {
       const storedEmpleados = localStorage.getItem(keyEmpleados);
       if (storedEmpleados) {
         setEmpleados(JSON.parse(storedEmpleados));
       } else {
-        // Datos de ejemplo
         const ejemplos: Empleado[] = [
           { id: "EMP-001", nombre: "Juan Pérez", telefono: "3001234567", email: "juan@restaurante.com", rol: "cocinero", salario_base: 1500000, fecha_contratacion: "2026-01-01", activo: true },
           { id: "EMP-002", nombre: "María Gómez", telefono: "3007654321", email: "maria@restaurante.com", rol: "mesero", salario_base: 1200000, fecha_contratacion: "2026-02-15", activo: true },
@@ -110,36 +157,104 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   // CRUD Empleados
-  const guardarEmpleado = () => {
+  const guardarEmpleado = async () => {
     if (!form.nombre || !form.rol) {
       alert("Nombre y rol son obligatorios");
       return;
     }
-    const nuevo: Empleado = {
-      id: editando ? editando.id : `EMP-${String(empleados.length + 1).padStart(3, "0")}`,
-      nombre: form.nombre!,
-      telefono: form.telefono || "",
-      email: form.email || "",
-      rol: form.rol!,
-      salario_base: form.salario_base || 0,
-      fecha_contratacion: form.fecha_contratacion || new Date().toISOString().split("T")[0],
-      activo: form.activo !== undefined ? form.activo : true,
-    };
-    let nuevos: Empleado[];
-    if (editando) {
-      nuevos = empleados.map((e) => (e.id === editando.id ? nuevo : e));
-    } else {
-      nuevos = [...empleados, nuevo];
+
+    const esEdicion = editando && editando.id && editando.id.length > 10; // UUID vs ID local
+
+    try {
+      if (esEdicion) {
+        // Actualizar empleado existente
+        const res = await fetch('/api/employees', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editando.id,
+            tenant_id: tenantId,
+            nombre: form.nombre,
+            telefono: form.telefono || "",
+            email: form.email || "",
+            rol: form.rol,
+            cargo: form.rol,
+            salario_base: form.salario_base || 0,
+            fecha_contratacion: form.fecha_contratacion || new Date().toISOString().split("T")[0],
+            activo: form.activo !== undefined ? form.activo : true,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const nuevos = empleados.map((e) => (e.id === editando.id ? { ...e, ...form } : e));
+          guardarEmpleados(nuevos);
+        } else {
+          throw new Error(data.error);
+        }
+      } else {
+        // Crear nuevo empleado
+        const res = await fetch('/api/employees', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            nombre: form.nombre,
+            telefono: form.telefono || "",
+            email: form.email || "",
+            rol: form.rol,
+            cargo: form.rol,
+            salario_base: form.salario_base || 0,
+            fecha_contratacion: form.fecha_contratacion || new Date().toISOString().split("T")[0],
+            activo: form.activo !== undefined ? form.activo : true,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const nuevo: Empleado = {
+            id: data.data.id,
+            nombre: form.nombre!,
+            telefono: form.telefono || "",
+            email: form.email || "",
+            rol: form.rol!,
+            salario_base: form.salario_base || 0,
+            fecha_contratacion: form.fecha_contratacion || new Date().toISOString().split("T")[0],
+            activo: form.activo !== undefined ? form.activo : true,
+          };
+          guardarEmpleados([...empleados, nuevo]);
+        } else {
+          throw new Error(data.error);
+        }
+      }
+
+      setShowImportModal(false);
+      setEditando(null);
+      setForm({ nombre: "", telefono: "", email: "", rol: "mesero", salario_base: 0, fecha_contratacion: new Date().toISOString().split("T")[0], activo: true });
+    } catch (error) {
+      console.error("Error guardando empleado en API:", error);
+      alert("Error al guardar. Verifique su conexión e intente de nuevo.");
     }
-    guardarEmpleados(nuevos);
-    setShowImportModal(false);
-    setEditando(null);
-    setForm({ nombre: "", telefono: "", email: "", rol: "mesero", salario_base: 0, fecha_contratacion: new Date().toISOString().split("T")[0], activo: true });
   };
 
-  const eliminarEmpleado = (id: string) => {
-    if (!confirm("Â¿Eliminar este empleado?")) return;
-    guardarEmpleados(empleados.filter((e) => e.id !== id));
+  const eliminarEmpleado = async (id: string) => {
+    if (!confirm("¿Eliminar este empleado?")) return;
+
+    try {
+      const res = await fetch(`/api/employees?id=${id}&tenant=${tenantId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        guardarEmpleados(empleados.filter((e) => e.id !== id));
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error("Error eliminando empleado:", error);
+      alert("Error al eliminar. Verifique su conexión.");
+    }
   };
 
   const editarEmpleado = (emp: Empleado) => {
@@ -149,28 +264,65 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
   };
 
   // Registrar asistencia
-  const registrarAsistencia = (empleado_id: string) => {
+  const registrarAsistencia = async (empleado_id: string) => {
     const hoy = new Date().toISOString().split("T")[0];
     const ahora = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
     const asistenciaExistente = asistencias.find(
       (a) => a.empleado_id === empleado_id && a.fecha === hoy && a.hora_salida === null
     );
-    if (asistenciaExistente) {
-      // Check-out
-      const actualizadas = asistencias.map((a) =>
-        a.id === asistenciaExistente.id ? { ...a, hora_salida: ahora } : a
-      );
-      guardarAsistencias(actualizadas);
-    } else {
-      // Check-in
-      const nueva: Asistencia = {
-        id: `ASIS-${String(asistencias.length + 1).padStart(3, "0")}`,
-        empleado_id,
-        fecha: hoy,
-        hora_entrada: ahora,
-        hora_salida: null,
-      };
-      guardarAsistencias([...asistencias, nueva]);
+
+    try {
+      if (asistenciaExistente) {
+        // Check-out: actualizar asistencia existente
+        const res = await fetch('/api/asistencias', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: asistenciaExistente.id,
+            tenant_id: tenantId,
+            hora_salida: ahora,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const actualizadas = asistencias.map((a) =>
+            a.id === asistenciaExistente.id ? { ...a, hora_salida: ahora } : a
+          );
+          guardarAsistencias(actualizadas);
+        } else {
+          throw new Error(data.error);
+        }
+      } else {
+        // Check-in: crear nueva asistencia
+        const res = await fetch('/api/asistencias', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            empleado_id,
+            fecha: hoy,
+            hora_entrada: ahora,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const nueva: Asistencia = {
+            id: data.data.id,
+            empleado_id,
+            fecha: hoy,
+            hora_entrada: ahora,
+            hora_salida: null,
+          };
+          guardarAsistencias([...asistencias, nueva]);
+        } else {
+          throw new Error(data.error);
+        }
+      }
+    } catch (error) {
+      console.error("Error registrando asistencia:", error);
+      alert("Error al registrar asistencia. Verifique su conexión.");
     }
   };
 
