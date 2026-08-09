@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, ShoppingCart, Package, Calendar, Clock, CheckCircle, Truck, Bell,
-  RefreshCw, Plus, Store, ClipboardList, X, Trash2, Info, XCircle, AlertTriangle, Eye
+  RefreshCw, Plus, Store, ClipboardList, X, Trash2, Info, XCircle, AlertTriangle, Eye,
+  Check, AlertCircle, Loader2
 } from "lucide-react";
 import { NEGOCIOS } from "@/config/negocios";
 
+// ===== CONSTANTES =====
 const TIPOS_ORDEN = {
   pedido_tienda: { label: "Pedido Tienda", icon: Store, color: "bg-blue-100 text-blue-700 border-blue-300" },
   pedido_pos: { label: "Pedido POS", icon: ShoppingCart, color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
@@ -27,6 +29,7 @@ const ESTADOS = {
 
 const ESTADOS_ORDEN = ["pendiente", "en_produccion", "finalizado", "entregado", "pausada_por_produccion", "cerrada"];
 
+// ===== INTERFACES =====
 interface InsumoOrden {
   insumo_id: string;
   cantidad: number;
@@ -57,6 +60,42 @@ interface Orden {
   fecha_cierre?: string;
 }
 
+interface Toast {
+  id: string;
+  tipo: "success" | "error" | "info" | "warning";
+  mensaje: string;
+  duracion?: number;
+}
+
+interface ConfirmModal {
+  abierto: boolean;
+  titulo: string;
+  mensaje: string;
+  onConfirm: () => void;
+  tipo?: "danger" | "warning" | "info";
+}
+
+// ===== HELPERS =====
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const fetchConRetry = async (url: string, options?: RequestInit, reintentos = 2): Promise<Response> => {
+  for (let i = 0; i <= reintentos; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok && res.status >= 500 && i < reintentos) {
+        await sleep(1000 * (i + 1));
+        continue;
+      }
+      return res;
+    } catch (e) {
+      if (i === reintentos) throw e;
+      await sleep(1000 * (i + 1));
+    }
+  }
+  throw new Error("Error de red");
+};
+
+// ===== COMPONENTE PRINCIPAL =====
 function ProduccionContent() {
   const pathname = usePathname();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -70,6 +109,7 @@ function ProduccionContent() {
 
   const esRestaurante = negocioSlug === "restaurante";
 
+  // ===== ESTADOS =====
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [loadingOrdenes, setLoadingOrdenes] = useState(true);
   const [showModalOrden, setShowModalOrden] = useState(false);
@@ -82,7 +122,6 @@ function ProduccionContent() {
   });
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [vista, setVista] = useState<"admin" | "productor">("admin");
-  const [notificacion, setNotificacion] = useState<string | null>(null);
   const [contadorNuevas, setContadorNuevas] = useState(0);
   const [productos, setProductos] = useState<any[]>([]);
   const [jornada, setJornada] = useState<any[]>([]);
@@ -91,27 +130,62 @@ function ProduccionContent() {
   const [formJornada, setFormJornada] = useState<{ producto_id: string; cantidad: number }[]>([]);
   const [resumenJornada, setResumenJornada] = useState({ planificado: 0, vendido: 0, restante: 0 });
   const [tab, setTab] = useState<"ordenes" | "jornada">("ordenes");
-
-  // ===== NUEVOS ESTADOS PARA LAS 3 MEJORAS =====
   const [showModalCierre, setShowModalCierre] = useState(false);
   const [ordenACerrar, setOrdenACerrar] = useState<Orden | null>(null);
   const [formCierre, setFormCierre] = useState({ motivo: "", fecha: new Date().toISOString().slice(0, 16) });
-
   const [showModalDetalles, setShowModalDetalles] = useState(false);
   const [ordenDetalles, setOrdenDetalles] = useState<Orden | null>(null);
 
-  const cargarProductos = async () => {
-    try {
-      const res = await fetch(`/api/products?tenant=${tenantId}`);
-      const data = await res.json();
-      if (data.success) setProductos(data.data || []);
-    } catch (e) { console.error("Error cargando productos:", e); }
+  // ===== NUEVOS ESTADOS PARA MEJORAS =====
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModal>({
+    abierto: false, titulo: "", mensaje: "", onConfirm: () => {}, tipo: "info"
+  });
+  const [accionesEnProgreso, setAccionesEnProgreso] = useState<Set<string>>(new Set());
+
+  // ===== SISTEMA DE TOAST =====
+  const showToast = (tipo: Toast["tipo"], mensaje: string, duracion = 4000) => {
+    const id = Date.now().toString() + Math.random().toString(36).slice(2);
+    setToasts(prev => [...prev, { id, tipo, mensaje, duracion }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, duracion);
   };
 
-  const cargarOrdenes = async () => {
-    setLoadingOrdenes(true);
+  const mostrarConfirmacion = (
+    titulo: string,
+    mensaje: string,
+    onConfirm: () => void,
+    tipo: ConfirmModal["tipo"] = "info"
+  ) => {
+    setConfirmModal({ abierto: true, titulo, mensaje, onConfirm, tipo });
+  };
+
+  const setAccionEnProgreso = (id: string, enProgreso: boolean) => {
+    setAccionesEnProgreso(prev => {
+      const nuevo = new Set(prev);
+      if (enProgreso) nuevo.add(id);
+      else nuevo.delete(id);
+      return nuevo;
+    });
+  };
+
+  // ===== CARGA DE DATOS (OPTIMIZADA) =====
+  const cargarProductos = async () => {
     try {
-      const res = await fetch(`/api/ordenes-produccion?tenant=${tenantId}`);
+      const res = await fetchConRetry(`/api/products?tenant=${tenantId}`);
+      const data = await res.json();
+      if (data.success) setProductos(data.data || []);
+    } catch (e) {
+      console.error("Error cargando productos:", e);
+      showToast("error", "Error al cargar productos");
+    }
+  };
+
+  const cargarOrdenes = async (silencioso = false) => {
+    if (!silencioso) setLoadingOrdenes(true);
+    try {
+      const res = await fetchConRetry(`/api/ordenes-produccion?tenant=${tenantId}`);
       const data = await res.json();
       if (data.success) {
         setOrdenes(data.data || []);
@@ -120,58 +194,121 @@ function ProduccionContent() {
         ).length;
         setContadorNuevas(nuevas);
       }
-    } catch (e) { setOrdenes([]); }
-    setLoadingOrdenes(false);
+    } catch (e) {
+      setOrdenes([]);
+      showToast("error", "Error al cargar órdenes");
+    } finally {
+      if (!silencioso) setLoadingOrdenes(false);
+    }
+  };
+
+  const cargarTodo = async () => {
+    setLoadingOrdenes(true);
+    try {
+      await Promise.all([cargarProductos(), cargarOrdenes(true)]);
+    } finally {
+      setLoadingOrdenes(false);
+    }
   };
 
   useEffect(() => {
     audioRef.current = new Audio("/notification.mp3");
-    cargarProductos();
-    cargarOrdenes();
-    return () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } };
+    cargarTodo();
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, [tenantId]);
 
+  // ===== CREAR ORDEN (CON VALIDACIÓN DE STOCK) =====
   const crearOrden = async () => {
-    if (!nuevaOrden.producto_id) { alert("Selecciona un producto."); return; }
-    if (nuevaOrden.insumos.some(i => !i.insumo_id)) { alert("Completa todos los insumos."); return; }
+    if (!nuevaOrden.producto_id) {
+      showToast("warning", "Selecciona un producto");
+      return;
+    }
+    if (nuevaOrden.insumos.some(i => !i.insumo_id)) {
+      showToast("warning", "Completa todos los insumos");
+      return;
+    }
+
+    // Validar stock de insumos
+    const insumosSinStock = nuevaOrden.insumos.filter(ins => {
+      const prod = productos.find(p => p.id === ins.insumo_id);
+      return prod && prod.stock !== undefined && prod.stock < ins.cantidad;
+    });
+    if (insumosSinStock.length > 0) {
+      showToast("warning", "Stock insuficiente en algunos insumos");
+      return;
+    }
+
     const body = {
-      tenant_id: tenantId, tipo: nuevaOrden.tipo, producto_id: nuevaOrden.producto_id,
-      cantidad_producida: nuevaOrden.cantidad_producida, insumos: nuevaOrden.insumos,
-      nota: nuevaOrden.nota || "", creado_por: "Admin",
+      tenant_id: tenantId,
+      tipo: nuevaOrden.tipo,
+      producto_id: nuevaOrden.producto_id,
+      cantidad_producida: nuevaOrden.cantidad_producida,
+      insumos: nuevaOrden.insumos,
+      nota: nuevaOrden.nota || "",
+      creado_por: "Admin",
     };
+
+    setAccionEnProgreso("crear-orden", true);
     try {
-      const res = await fetch("/api/ordenes-produccion", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      const res = await fetchConRetry("/api/ordenes-produccion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.success) {
         if (audioRef.current) audioRef.current.play().catch(() => {});
         setContadorNuevas(prev => prev + 1);
-        setNotificacion(`📢 Nueva orden #${data.data.id.slice(0, 6)}`);
-        setTimeout(() => setNotificacion(null), 5000);
+        showToast("success", `📢 Nueva orden #${data.data.id.slice(0, 6)} creada`);
         setShowModalOrden(false);
-        setNuevaOrden({ tipo: "pedido_pos", producto_id: "", cantidad_producida: 1, insumos: [{ insumo_id: "", cantidad: 1 }], nota: "" });
-        cargarOrdenes();
-      } else { alert("Error: " + data.error); }
-    } catch (e) { alert("Error de conexión"); }
+        setNuevaOrden({
+          tipo: "pedido_pos", producto_id: "", cantidad_producida: 1,
+          insumos: [{ insumo_id: "", cantidad: 1 }], nota: ""
+        });
+        cargarOrdenes(true);
+      } else {
+        showToast("error", "Error: " + data.error);
+      }
+    } catch (e) {
+      showToast("error", "Error de conexión al crear orden");
+    } finally {
+      setAccionEnProgreso("crear-orden", false);
+    }
   };
 
+  // ===== CAMBIAR ESTADO =====
   const cambiarEstado = async (id: string, nuevoEstado: keyof typeof ESTADOS) => {
+    setAccionEnProgreso(id + nuevoEstado, true);
     try {
-      const res = await fetch("/api/ordenes-produccion", {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+      const res = await fetchConRetry("/api/ordenes-produccion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id, estado: nuevoEstado,
+          id,
+          estado: nuevoEstado,
           producido_por: nuevoEstado === "entregado" ? "Productor" : undefined,
         }),
       });
       const data = await res.json();
-      if (data.success) cargarOrdenes();
-      else alert("Error: " + data.error);
-    } catch (e) { alert("Error de conexión"); }
+      if (data.success) {
+        showToast("success", `Estado actualizado a: ${ESTADOS[nuevoEstado].label}`);
+        cargarOrdenes(true);
+      } else {
+        showToast("error", "Error: " + data.error);
+      }
+    } catch (e) {
+      showToast("error", "Error de conexión");
+    } finally {
+      setAccionEnProgreso(id + nuevoEstado, false);
+    }
   };
 
-  // ===== NUEVA FUNCIÓN: Pausar orden (productor) =====
+  // ===== PAUSAR ORDEN =====
   const abrirModalCierre = (orden: Orden) => {
     setOrdenACerrar(orden);
     setFormCierre({ motivo: "", fecha: new Date().toISOString().slice(0, 16) });
@@ -180,10 +317,15 @@ function ProduccionContent() {
 
   const confirmarPausaProduccion = async () => {
     if (!ordenACerrar) return;
-    if (!formCierre.motivo.trim()) { alert("Debes indicar el motivo del cierre"); return; }
+    if (!formCierre.motivo.trim()) {
+      showToast("warning", "Debes indicar el motivo del cierre");
+      return;
+    }
+    setAccionEnProgreso("pausar-" + ordenACerrar.id, true);
     try {
-      const res = await fetch("/api/ordenes-produccion", {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+      const res = await fetchConRetry("/api/ordenes-produccion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: ordenACerrar.id,
           estado: "pausada_por_produccion",
@@ -195,20 +337,36 @@ function ProduccionContent() {
       const data = await res.json();
       if (data.success) {
         setShowModalCierre(false);
+        showToast("info", `⏸️ Orden #${ordenACerrar.id.slice(0, 6)} pausada. Admin revisará.`);
         setOrdenACerrar(null);
-        setNotificacion(`⏸️ Orden #${ordenACerrar.id.slice(0, 6)} pausada. Admin revisará.`);
-        setTimeout(() => setNotificacion(null), 5000);
-        cargarOrdenes();
-      } else { alert("Error: " + data.error); }
-    } catch (e) { alert("Error de conexión"); }
+        cargarOrdenes(true);
+      } else {
+        showToast("error", "Error: " + data.error);
+      }
+    } catch (e) {
+      showToast("error", "Error de conexión");
+    } finally {
+      setAccionEnProgreso("pausar-" + ordenACerrar.id, false);
+    }
   };
 
-  // ===== NUEVA FUNCIÓN: Confirmar cierre definitivo (admin) =====
+  // ===== CIERRE DEFINITIVO (ADMIN) =====
+  const solicitarCierreDefinitivo = (orden: Orden) => {
+    mostrarConfirmacion(
+      "Cerrar Orden Definitivamente",
+      `¿Estás seguro de cerrar DEFINITIVAMENTE la orden #${orden.id.slice(0, 6)}?\n\nMotivo: ${orden.motivo_cierre}\n\nEsta acción no se puede deshacer.`,
+      () => confirmarCierreDefinitivo(orden),
+      "danger"
+    );
+  };
+
   const confirmarCierreDefinitivo = async (orden: Orden) => {
-    if (!confirm(`¿Cerrar DEFINITIVAMENTE la orden #${orden.id.slice(0, 6)}?\n\nMotivo: ${orden.motivo_cierre}`)) return;
+    setConfirmModal(prev => ({ ...prev, abierto: false }));
+    setAccionEnProgreso("cerrar-" + orden.id, true);
     try {
-      const res = await fetch("/api/ordenes-produccion", {
-        method: "PUT", headers: { "Content-Type": "application/json" },
+      const res = await fetchConRetry("/api/ordenes-produccion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: orden.id,
           estado: "cerrada",
@@ -218,20 +376,25 @@ function ProduccionContent() {
       });
       const data = await res.json();
       if (data.success) {
-        setNotificacion(`✅ Orden #${orden.id.slice(0, 6)} cerrada definitivamente`);
-        setTimeout(() => setNotificacion(null), 5000);
-        cargarOrdenes();
-      } else { alert("Error: " + data.error); }
-    } catch (e) { alert("Error de conexión"); }
+        showToast("success", `✅ Orden #${orden.id.slice(0, 6)} cerrada definitivamente`);
+        cargarOrdenes(true);
+      } else {
+        showToast("error", "Error: " + data.error);
+      }
+    } catch (e) {
+      showToast("error", "Error de conexión");
+    } finally {
+      setAccionEnProgreso("cerrar-" + orden.id, false);
+    }
   };
 
-  // ===== NUEVA FUNCIÓN: Abrir modal de detalles =====
+  // ===== MODAL DETALLES =====
   const abrirModalDetalles = (orden: Orden) => {
     setOrdenDetalles(orden);
     setShowModalDetalles(true);
   };
 
-  // ===== Helpers =====
+  // ===== HELPERS =====
   const getNombreProducto = (orden: Orden): string => {
     if (orden.producto?.nombre) return orden.producto.nombre;
     if (orden.producto_id) {
@@ -246,7 +409,8 @@ function ProduccionContent() {
 
   const agregarInsumo = () => setNuevaOrden({ ...nuevaOrden, insumos: [...nuevaOrden.insumos, { insumo_id: "", cantidad: 1 }] });
   const actualizarInsumo = (idx: number, campo: string, valor: any) => {
-    const nuevos = [...nuevaOrden.insumos]; nuevos[idx] = { ...nuevos[idx], [campo]: valor };
+    const nuevos = [...nuevaOrden.insumos];
+    nuevos[idx] = { ...nuevos[idx], [campo]: valor };
     setNuevaOrden({ ...nuevaOrden, insumos: nuevos });
   };
   const eliminarInsumo = (idx: number) => {
@@ -254,8 +418,24 @@ function ProduccionContent() {
     setNuevaOrden({ ...nuevaOrden, insumos: nuevaOrden.insumos.filter((_, i) => i !== idx) });
   };
 
+  // ===== CÁLCULOS JORNADA =====
+  useEffect(() => {
+    if (tab === "jornada") {
+      const ordenesDia = ordenes.filter(o => o.creado_en.startsWith(fechaJornada));
+      const producidas = ordenesDia
+        .filter(o => ["finalizado", "entregado", "cerrada"].includes(o.estado))
+        .reduce((sum, o) => sum + (o.cantidad_producida || 0), 0);
+      const pendientes = ordenesDia
+        .filter(o => ["pendiente", "en_produccion"].includes(o.estado))
+        .reduce((sum, o) => sum + (o.cantidad_producida || 0), 0);
+      setResumenJornada({ planificado: producidas + pendientes, vendido: producidas, restante: pendientes });
+      setJornada(ordenesDia);
+    }
+  }, [tab, fechaJornada, ordenes]);
+
   return (
     <div className="min-h-screen bg-stone-50">
+      {/* ===== HEADER ORIGINAL (MANTENIDO EXACTAMENTE) ===== */}
       <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-20 flex-wrap">
         <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
           <ArrowLeft className="w-5 h-5 text-stone-700" />
@@ -273,7 +453,7 @@ function ProduccionContent() {
               <button onClick={() => setVista("admin")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "admin" ? "bg-emerald-500 text-white" : "bg-stone-200"}`}>Admin</button>
               <button onClick={() => setVista("productor")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "productor" ? "bg-blue-500 text-white" : "bg-stone-200"}`}>Productor</button>
             </div>
-            <button onClick={cargarOrdenes} className="p-2 hover:bg-stone-100 rounded-xl"><RefreshCw className="w-5 h-5 text-stone-700" /></button>
+            <button onClick={() => cargarOrdenes()} className="p-2 hover:bg-stone-100 rounded-xl"><RefreshCw className="w-5 h-5 text-stone-700" /></button>
             <button onClick={() => setShowModalOrden(true)} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> Nueva Orden</button>
             <div className="relative">
               <Bell className={`w-6 h-6 ${contadorNuevas > 0 ? "text-red-500" : "text-stone-400"}`} />
@@ -283,23 +463,121 @@ function ProduccionContent() {
         )}
       </header>
 
-      {notificacion && <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium">{notificacion}</div>}
+      {/* ===== SISTEMA DE TOASTS ===== */}
+      <div className="fixed top-20 right-4 z-[60] space-y-2 pointer-events-none">
+        {toasts.map(toast => {
+          const colores = {
+            success: "bg-emerald-500 text-white",
+            error: "bg-red-500 text-white",
+            warning: "bg-amber-500 text-white",
+            info: "bg-blue-500 text-white",
+          };
+          const iconos = {
+            success: <Check className="w-5 h-5" />,
+            error: <AlertCircle className="w-5 h-5" />,
+            warning: <AlertTriangle className="w-5 h-5" />,
+            info: <Info className="w-5 h-5" />,
+          };
+          return (
+            <div
+              key={toast.id}
+              className={`${colores[toast.tipo]} px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 min-w-[280px] max-w-md animate-[slideIn_0.3s_ease-out] pointer-events-auto`}
+            >
+              {iconos[toast.tipo]}
+              <span className="text-sm font-medium flex-1">{toast.mensaje}</span>
+            </div>
+          );
+        })}
+      </div>
 
+      {/* ===== MODAL DE CONFIRMACIÓN ===== */}
+      {confirmModal.abierto && (
+        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4" onClick={() => setConfirmModal(prev => ({ ...prev, abierto: false }))}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3 mb-4">
+              <div className={`p-2 rounded-full ${
+                confirmModal.tipo === "danger" ? "bg-red-100" :
+                confirmModal.tipo === "warning" ? "bg-amber-100" : "bg-blue-100"
+              }`}>
+                {confirmModal.tipo === "danger" ? <AlertTriangle className="w-6 h-6 text-red-600" /> :
+                 confirmModal.tipo === "warning" ? <AlertTriangle className="w-6 h-6 text-amber-600" /> :
+                 <Info className="w-6 h-6 text-blue-600" />}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-stone-800">{confirmModal.titulo}</h3>
+                <p className="text-sm text-stone-600 mt-2 whitespace-pre-line">{confirmModal.mensaje}</p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setConfirmModal(prev => ({ ...prev, abierto: false }))}
+                className="flex-1 py-2 border border-stone-300 rounded-xl font-medium hover:bg-stone-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal(prev => ({ ...prev, abierto: false }));
+                }}
+                className={`flex-1 py-2 rounded-xl font-medium text-white ${
+                  confirmModal.tipo === "danger" ? "bg-red-500 hover:bg-red-600" :
+                  confirmModal.tipo === "warning" ? "bg-amber-500 hover:bg-amber-600" :
+                  "bg-blue-500 hover:bg-blue-600"
+                }`}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== CONTENIDO PRINCIPAL ===== */}
       <div className="p-4 max-w-7xl mx-auto">
         {tab === "ordenes" && (
           <>
+            {/* Filtros */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <button onClick={() => setFiltroEstado("todos")} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white border text-stone-700"}`}>Todos</button>
+              <button onClick={() => setFiltroEstado("todos")} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === "todos" ? "bg-stone-800 text-white" : "bg-white border text-stone-700"}`}>
+                Todos ({ordenes.length})
+              </button>
               {ESTADOS_ORDEN.map(e => {
                 const info = ESTADOS[e as keyof typeof ESTADOS];
-                return <button key={e} onClick={() => setFiltroEstado(e)} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === e ? `${info.color} border-2 border-current` : "bg-white border text-stone-700"}`}>{info.label}</button>;
+                const count = ordenes.filter(o => o.estado === e).length;
+                return (
+                  <button key={e} onClick={() => setFiltroEstado(e)} className={`px-3 py-1.5 rounded-full text-sm font-medium ${filtroEstado === e ? `${info.color} border-2 border-current` : "bg-white border text-stone-700"}`}>
+                    {info.label} ({count})
+                  </button>
+                );
               })}
             </div>
 
+            {/* Contenido */}
             {loadingOrdenes ? (
-              <div className="text-center py-12 text-stone-700">Cargando...</div>
+              <div className="bg-white rounded-2xl p-12 text-center border">
+                <Loader2 className="w-12 h-12 text-stone-400 mx-auto mb-4 animate-spin" />
+                <p className="text-stone-600 font-medium">Cargando órdenes...</p>
+              </div>
             ) : ordenesFiltradas.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 text-center border"><ClipboardList className="w-16 h-16 text-stone-500 mx-auto mb-4" /><p className="text-stone-800 font-medium">Sin órdenes.</p></div>
+              <div className="bg-white rounded-2xl p-12 text-center border">
+                <div className="w-24 h-24 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ClipboardList className="w-12 h-12 text-stone-400" />
+                </div>
+                <h3 className="text-lg font-bold text-stone-800 mb-2">Sin órdenes</h3>
+                <p className="text-stone-600 mb-4">
+                  {filtroEstado === "todos"
+                    ? "No hay órdenes de producción registradas"
+                    : `No hay órdenes con estado "${ESTADOS[filtroEstado as keyof typeof ESTADOS]?.label}"`}
+                </p>
+                <button
+                  onClick={() => setShowModalOrden(true)}
+                  className="inline-flex items-center gap-2 bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-emerald-600"
+                >
+                  <Plus className="w-5 h-5" />
+                  Crear primera orden
+                </button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ordenesFiltradas.map(orden => {
@@ -311,7 +589,6 @@ function ProduccionContent() {
 
                   return (
                     <div key={orden.id} className={`bg-white rounded-2xl p-4 shadow-sm border hover:shadow-md transition ${orden.estado === "pausada_por_produccion" ? "border-orange-400 border-2" : orden.estado === "cerrada" ? "border-red-300 opacity-75" : "border-stone-200"}`}>
-                      {/* ===== MEJORA 2: ID + Nombre del producto ===== */}
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1 min-w-0">
                           <button onClick={() => abrirModalDetalles(orden)} className="font-bold text-emerald-700 hover:text-emerald-900 hover:underline text-sm">
@@ -328,7 +605,6 @@ function ProduccionContent() {
 
                       {orden.nota && <p className="text-xs text-stone-500 mb-2 truncate">📝 {orden.nota}</p>}
 
-                      {/* Aviso si está pausada */}
                       {orden.estado === "pausada_por_produccion" && (
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-2 text-xs">
                           <div className="font-semibold text-orange-800 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Pausada</div>
@@ -351,36 +627,124 @@ function ProduccionContent() {
                         </span>
                       </div>
 
-                      {/* ===== ACCIONES ===== */}
                       <div className="flex flex-wrap gap-2">
-                        {/* Botón ver detalles */}
                         <button onClick={() => abrirModalDetalles(orden)} className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center gap-1">
                           <Eye className="w-3 h-3" /> Detalles
                         </button>
 
-                        {/* Productor: botones de transición + Cerrar */}
                         {vista === "productor" && orden.estado !== "entregado" && orden.estado !== "cerrada" && orden.estado !== "pausada_por_produccion" && (
                           <>
                             {["pendiente","en_produccion","finalizado","entregado"].filter(e => ESTADOS_ORDEN.indexOf(e) > ESTADOS_ORDEN.indexOf(orden.estado)).map(e => {
                               const info = ESTADOS[e as keyof typeof ESTADOS];
-                              return <button key={e} onClick={() => cambiarEstado(orden.id, e as any)} className={`text-xs px-2 py-1 rounded-full ${info.color}`}>{info.label}</button>;
+                              const enProgreso = accionesEnProgreso.has(orden.id + e);
+                              return (
+                                <button
+                                  key={e}
+                                  onClick={() => cambiarEstado(orden.id, e as any)}
+                                  disabled={enProgreso}
+                                  className={`text-xs px-2 py-1 rounded-full ${info.color} disabled:opacity-50 flex items-center gap-1`}
+                                >
+                                  {enProgreso && <Loader2 className="w-3 h-3 animate-spin" />}
+                                  {info.label}
+                                </button>
+                              );
                             })}
-                            <button onClick={() => abrirModalCierre(orden)} className="text-xs px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-1 ml-auto">
+                            <button
+                              onClick={() => abrirModalCierre(orden)}
+                              disabled={accionesEnProgreso.has("pausar-" + orden.id)}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-1 ml-auto disabled:opacity-50"
+                            >
                               <XCircle className="w-3 h-3" /> Cerrar
                             </button>
                           </>
                         )}
 
-                        {/* Admin: Confirmar cierre cuando está pausada */}
                         {vista === "admin" && orden.estado === "pausada_por_produccion" && (
-                          <button onClick={() => confirmarCierreDefinitivo(orden)} className="text-xs px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white flex items-center gap-1 ml-auto font-semibold">
-                            <CheckCircle className="w-3 h-3" /> Confirmar Cierre
+                          <button
+                            onClick={() => solicitarCierreDefinitivo(orden)}
+                            disabled={accionesEnProgreso.has("cerrar-" + orden.id)}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white flex items-center gap-1 ml-auto font-semibold disabled:opacity-50"
+                          >
+                            {accionesEnProgreso.has("cerrar-" + orden.id) ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+                            Confirmar Cierre
                           </button>
                         )}
                       </div>
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ===== VISTA JORNADA ===== */}
+        {tab === "jornada" && (
+          <>
+            <div className="bg-white rounded-2xl p-4 mb-4 border shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg text-stone-800">Resumen de Jornada</h3>
+                <input
+                  type="date"
+                  value={fechaJornada}
+                  onChange={(e) => setFechaJornada(e.target.value)}
+                  className="border rounded-xl px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-blue-50 rounded-xl p-4 text-center">
+                  <div className="text-xs text-blue-700 font-semibold">Planificado</div>
+                  <div className="text-2xl font-bold text-blue-900">{resumenJornada.planificado}</div>
+                </div>
+                <div className="bg-emerald-50 rounded-xl p-4 text-center">
+                  <div className="text-xs text-emerald-700 font-semibold">Producido</div>
+                  <div className="text-2xl font-bold text-emerald-900">{resumenJornada.vendido}</div>
+                </div>
+                <div className="bg-amber-50 rounded-xl p-4 text-center">
+                  <div className="text-xs text-amber-700 font-semibold">Pendiente</div>
+                  <div className="text-2xl font-bold text-amber-900">{resumenJornada.restante}</div>
+                </div>
+              </div>
+            </div>
+
+            {jornada.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center border">
+                <Calendar className="w-16 h-16 text-stone-400 mx-auto mb-4" />
+                <p className="text-stone-600">No hay producción registrada para esta fecha</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-stone-50">
+                    <tr>
+                      <th className="text-left p-3 font-semibold">Orden</th>
+                      <th className="text-left p-3 font-semibold">Producto</th>
+                      <th className="text-center p-3 font-semibold">Cantidad</th>
+                      <th className="text-left p-3 font-semibold">Estado</th>
+                      <th className="text-left p-3 font-semibold">Hora</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {jornada.map(o => {
+                      const info = ESTADOS[o.estado as keyof typeof ESTADOS];
+                      return (
+                        <tr key={o.id} className="border-t border-stone-100">
+                          <td className="p-3 font-mono text-xs">#{o.id.slice(0, 8)}</td>
+                          <td className="p-3 font-medium">{getNombreProducto(o)}</td>
+                          <td className="p-3 text-center">{o.cantidad_producida || 1}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${info.color}`}>
+                              {info.label}
+                            </span>
+                          </td>
+                          <td className="p-3 text-xs text-stone-600">
+                            {new Date(o.creado_en).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </>
@@ -403,29 +767,54 @@ function ProduccionContent() {
               <input type="number" min="1" value={nuevaOrden.cantidad_producida} onChange={(e) => setNuevaOrden({ ...nuevaOrden, cantidad_producida: parseInt(e.target.value) || 1 })} className="w-full border rounded-xl p-2" />
               <div>
                 <label className="block text-sm font-medium mb-1">Insumos</label>
-                {nuevaOrden.insumos.map((ins, idx) => (
-                  <div key={idx} className="flex gap-2 mb-2">
-                    <select value={ins.insumo_id} onChange={(e) => actualizarInsumo(idx, "insumo_id", e.target.value)} className="flex-1 border rounded-xl p-2 text-sm">
-                      <option value="">Insumo</option>
-                      {productos.filter(p => p.tipo_producto === "insumo").map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                    </select>
-                    <input type="number" min="0.1" step="0.1" value={ins.cantidad} onChange={(e) => actualizarInsumo(idx, "cantidad", parseFloat(e.target.value) || 0)} className="w-20 border rounded-xl p-2" />
-                    <button onClick={() => eliminarInsumo(idx)} className="text-red-500 p-2" disabled={nuevaOrden.insumos.length <= 1}><Trash2 className="w-4 h-4" /></button>
+                {nuevaOrden.insumos.map((ins, idx) => {
+                  const prodSel = productos.find(p => p.id === ins.insumo_id);
+                  const sinStock = prodSel && prodSel.stock !== undefined && prodSel.stock < ins.cantidad;
+                  return (
+                    <div key={idx} className="flex gap-2 mb-2">
+                      <select
+                        value={ins.insumo_id}
+                        onChange={(e) => actualizarInsumo(idx, "insumo_id", e.target.value)}
+                        className={`flex-1 border rounded-xl p-2 text-sm ${sinStock ? "border-red-400 bg-red-50" : ""}`}
+                      >
+                        <option value="">Insumo</option>
+                        {productos.filter(p => p.tipo_producto === "insumo").map(p => (
+                          <option key={p.id} value={p.id}>{p.nombre} ({p.stock || 0})</option>
+                        ))}
+                      </select>
+                      <input type="number" min="0.1" step="0.1" value={ins.cantidad} onChange={(e) => actualizarInsumo(idx, "cantidad", parseFloat(e.target.value) || 0)} className="w-20 border rounded-xl p-2" />
+                      <button onClick={() => eliminarInsumo(idx)} className="text-red-500 p-2" disabled={nuevaOrden.insumos.length <= 1}><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  );
+                })}
+                {nuevaOrden.insumos.some(ins => {
+                  const p = productos.find(pr => pr.id === ins.insumo_id);
+                  return p && p.stock !== undefined && p.stock < ins.cantidad;
+                }) && (
+                  <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Stock insuficiente en uno o más insumos
                   </div>
-                ))}
+                )}
                 <button onClick={agregarInsumo} className="text-sm text-emerald-600">+ Agregar insumo</button>
               </div>
               <textarea value={nuevaOrden.nota} onChange={(e) => setNuevaOrden({ ...nuevaOrden, nota: e.target.value })} className="w-full border rounded-xl p-2" placeholder="Nota..." rows={2} />
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModalOrden(false)} className="flex-1 py-2 border rounded-xl">Cancelar</button>
-              <button onClick={crearOrden} className="flex-1 py-2 bg-emerald-500 text-white rounded-xl">Crear Orden</button>
+              <button
+                onClick={crearOrden}
+                disabled={accionesEnProgreso.has("crear-orden")}
+                className="flex-1 py-2 bg-emerald-500 text-white rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {accionesEnProgreso.has("crear-orden") && <Loader2 className="w-4 h-4 animate-spin" />}
+                Crear Orden
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ===== MEJORA 1: MODAL DE CIERRE ===== */}
+      {/* ===== MODAL CIERRE (PAUSAR) ===== */}
       {showModalCierre && ordenACerrar && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -449,15 +838,20 @@ function ProduccionContent() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => { setShowModalCierre(false); setOrdenACerrar(null); }} className="flex-1 py-2 border rounded-xl">Cancelar</button>
-              <button onClick={confirmarPausaProduccion} className="flex-1 py-2 bg-orange-500 text-white rounded-xl flex items-center justify-center gap-2">
-                <XCircle className="w-4 h-4" /> Pausar Orden
+              <button
+                onClick={confirmarPausaProduccion}
+                disabled={accionesEnProgreso.has("pausar-" + ordenACerrar.id)}
+                className="flex-1 py-2 bg-orange-500 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {accionesEnProgreso.has("pausar-" + ordenACerrar.id) ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                Pausar Orden
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ===== MEJORA 3: MODAL DE DETALLES (texto negro, alto contraste) ===== */}
+      {/* ===== MODAL DETALLES ===== */}
       {showModalDetalles && ordenDetalles && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto text-stone-900 shadow-2xl">
