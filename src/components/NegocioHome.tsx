@@ -244,7 +244,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         </div>
 
           {/* BOTONES DE COMPARTIR ENLACES */}
-          <div className="flex flex-wrap gap-3 justify-center mt-6">
+          <div className="relative z-10 flex flex-wrap gap-3 justify-center mt-6">
             <button
               onClick={() => setShowSharePos(true)}
               className="bg-white/90 hover:bg-white text-amber-700 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm"
