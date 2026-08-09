@@ -5,6 +5,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
 
+import PageHeader from "@/components/PageHeader";
+
 interface Credito {
   id: string;
   responsable: string;
@@ -71,16 +73,18 @@ export default function CreditosPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
-          <ArrowLeft className="w-5 h-5 text-stone-700" />
-        </Link>
-        <h1 className="text-xl font-bold text-stone-800">Créditos - {negocio?.titulo || "Negocio"}</h1>
-        <div className="flex-1"></div>
-        <button onClick={cargarCreditos} className="p-2 hover:bg-stone-100 rounded-xl">
-          <RefreshCw className="w-5 h-5 text-stone-700" />
-        </button>
-      </header>
+      <PageHeader
+        negocioSlug={negocioSlug}
+        titulo="Créditos"
+        icono="💳"
+        subtitulo={`${creditos.length} créditos`}
+        tenantId={tenantId}
+        acciones={
+          <button onClick={cargarCreditos} className="p-2 hover:bg-stone-100 rounded-xl" title="Recargar">
+            <RefreshCw className="w-5 h-5 text-stone-700" />
+          </button>
+        }
+      />
 
       <div className="p-4 max-w-7xl mx-auto">
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-6">

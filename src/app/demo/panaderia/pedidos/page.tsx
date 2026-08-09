@@ -118,17 +118,18 @@ export default function PedidosPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <header className="bg-white shadow-sm p-4 flex items-center gap-3 sticky top-0 z-10">
-        <Link href={`/demo/${negocioSlug}`} className="p-2 hover:bg-stone-100 rounded-xl">
-          <ArrowLeft className="w-5 h-5 text-stone-700" />
-        </Link>
-        <h1 className="text-xl font-bold text-stone-800 flex-1">Pedidos - {negocio?.titulo}</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={cargarPedidos} className="p-2 hover:bg-stone-100 rounded-xl">
+      <PageHeader
+        negocioSlug={negocioSlug}
+        titulo="Pedidos"
+        icono="📦"
+        subtitulo={`${pedidos.length} pedidos`}
+        tenantId={tenantId}
+        acciones={
+          <button onClick={cargarPedidos} className="p-2 hover:bg-stone-100 rounded-xl" title="Recargar">
             <RefreshCw className="w-5 h-5 text-stone-700" />
           </button>
-        </div>
-      </header>
+        }
+      />
 
       {mensaje && (
         <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 text-emerald-700 font-medium">
