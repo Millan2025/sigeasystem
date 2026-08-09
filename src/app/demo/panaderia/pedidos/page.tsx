@@ -13,6 +13,8 @@ import {
   X,
 } from "lucide-react";
 
+import PageHeader from "@/components/PageHeader";
+
 interface PedidoItem {
   producto_id: string;
   cantidad: number;
