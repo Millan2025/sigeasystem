@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation"
@@ -724,25 +724,25 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => calcularNomina(calcularPeriodo("semana_actual"))}
-                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium hover:bg-stone-50"
+                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium text-stone-700 hover:bg-stone-50"
                 >
                   Esta Semana
                 </button>
                 <button
                   onClick={() => calcularNomina(calcularPeriodo("semana_pasada"))}
-                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium hover:bg-stone-50"
+                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium text-stone-700 hover:bg-stone-50"
                 >
                   Semana Pasada
                 </button>
                 <button
                   onClick={() => calcularNomina(calcularPeriodo("quincena"))}
-                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium hover:bg-stone-50"
+                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium text-stone-700 hover:bg-stone-50"
                 >
                   Quincena
                 </button>
                 <button
                   onClick={() => calcularNomina(calcularPeriodo("mes"))}
-                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium hover:bg-stone-50"
+                  className="flex-1 px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs font-medium text-stone-700 hover:bg-stone-50"
                 >
                   Mes
                 </button>
@@ -796,7 +796,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                 <select
                   value={metodoPagoNomina}
                   onChange={(e) => setMetodoPagoNomina(e.target.value)}
-                  className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                  className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-800"
                 >
                   <option value="efectivo">Efectivo</option>
                   <option value="nequi">Nequi</option>
@@ -811,7 +811,7 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                   value={notasNomina}
                   onChange={(e) => setNotasNomina(e.target.value)}
                   placeholder="Ej: Pago quincena"
-                  className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                  className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-800"
                 />
               </div>
             </div>
