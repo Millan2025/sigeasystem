@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -452,8 +452,8 @@ function ProduccionContent() {
             {tab === "ordenes" && (
               <>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setVista("admin")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "admin" ? "bg-emerald-500 text-white" : "bg-stone-200"}`}>Admin</button>
-                  <button onClick={() => setVista("productor")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "productor" ? "bg-blue-500 text-white" : "bg-stone-200"}`}>Productor</button>
+                  <button onClick={() => setVista("admin")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "admin" ? "bg-emerald-500 text-white" : "bg-stone-200 text-stone-700 hover:bg-stone-300"}`}>Admin</button>
+                  <button onClick={() => setVista("productor")} className={`px-3 py-1 rounded-xl text-sm font-medium ${vista === "productor" ? "bg-blue-500 text-white" : "bg-stone-200 text-stone-700 hover:bg-stone-300"}`}>Productor</button>
                 </div>
                 <button onClick={() => cargarOrdenes()} className="p-2 hover:bg-stone-100 rounded-xl"><RefreshCw className="w-5 h-5 text-stone-700" /></button>
                 <button onClick={() => setShowModalOrden(true)} className="bg-emerald-500 text-white px-3 sm:px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nueva Orden</span></button>
