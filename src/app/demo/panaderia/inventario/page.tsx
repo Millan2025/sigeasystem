@@ -15,6 +15,8 @@ import {
   X,
   Camera,
 } from "lucide-react";
+
+import PageHeader from "@/components/PageHeader";
 import * as XLSX from "xlsx";
 
 export default function InventarioPage() {
