@@ -61,35 +61,43 @@ export default function ReportesPage() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
+      // Construir URLs
       let urlVentas = `/api/ventas?tenant=${tenantId}`;
       if (filtroFecha.start) urlVentas += `&start=${filtroFecha.start}`;
       if (filtroFecha.end) urlVentas += `&end=${filtroFecha.end}`;
       if (filtroMetodoPago !== "todos") urlVentas += `&metodo_pago=${filtroMetodoPago}`;
-      const resVentas = await fetch(urlVentas);
-      const dataVentas = await resVentas.json();
-      if (dataVentas.success) setVentas(dataVentas.data || []);
 
       let urlCompras = `/api/compras?tenant=${tenantId}`;
       if (filtroFecha.start) urlCompras += `&start=${filtroFecha.start}`;
       if (filtroFecha.end) urlCompras += `&end=${filtroFecha.end}`;
-      const resCompras = await fetch(urlCompras);
-      const dataCompras = await resCompras.json();
-      if (dataCompras.success) setCompras(dataCompras.data || []);
 
-      const resFinanzas = await fetch(`/api/finanzas?tenant=${tenantId}`);
-      const dataFinanzas = await resFinanzas.json();
+      const urlFinanzas = `/api/finanzas?tenant=${tenantId}`;
+      const urlStock = `/api/inventory?tenant=${tenantId}&stock=true`;
+      const urlCreditos = `/api/creditos?tenant=${tenantId}`;
+
+      // EJECUTAR EN PARALELO (Promise.all) - 4x más rápido
+      const [resVentas, resCompras, resFinanzas, resStock, resCreditos] = await Promise.all([
+        fetch(urlVentas),
+        fetch(urlCompras),
+        fetch(urlFinanzas),
+        fetch(urlStock),
+        fetch(urlCreditos)
+      ]);
+
+      const [dataVentas, dataCompras, dataFinanzas, dataStock, dataCreditos] = await Promise.all([
+        resVentas.json(),
+        resCompras.json(),
+        resFinanzas.json(),
+        resStock.json(),
+        resCreditos.json()
+      ]);
+
+      if (dataVentas.success) setVentas(dataVentas.data || []);
+      if (dataCompras.success) setCompras(dataCompras.data || []);
       if (dataFinanzas.success) {
         setFinanzas(dataFinanzas.data || []);
         if (dataFinanzas.resumen) setResumenFinanzas(dataFinanzas.resumen);
       }
-
-      const resStock = await fetch(`/api/inventory?tenant=${tenantId}&stock=true`);
-      const dataStock = await resStock.json();
-      if (dataStock.success) setStock(dataStock.data || []);
-
-      const resCreditos = await fetch(`/api/creditos?tenant=${tenantId}`);
-      const dataCreditos = await resCreditos.json();
-      if (dataCreditos.success) setCreditos(dataCreditos.data || []);
     } catch (e) {
       console.error("Error al cargar reportes:", e);
     }
