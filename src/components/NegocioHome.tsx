@@ -30,6 +30,7 @@ import {
   ShieldCheck,
   LogOut,
 } from "lucide-react";
+import NotificationBell from './NotificationBell';
 
 const SLOGAN = "DONDE EL PAN TIENE HISTORIA Y SABOR";
 const SITIO_WEB = "https://mobirisesite.com";
@@ -268,7 +269,11 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
         <div className="relative z-10 max-w-3xl mx-auto">
 	          {/* Botón Cerrar Sesión - Esquina superior derecha */}
-          <button
+                  {/* Botón Notificaciones - junto al de Cerrar Sesión */}
+          <div className="absolute top-0 right-28 z-20">
+            <NotificationBell tenantId={tenantId} />
+          </div>  
+	<button
             onClick={cerrarSesion}
             className="absolute top-0 right-0 bg-white/90 hover:bg-white text-stone-700 font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm z-20"
             title="Cerrar sesión"
