@@ -23,6 +23,11 @@ import {
   MapPin,
   Mail,
   Globe,
+  Lock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  ShieldCheck,
 } from "lucide-react";
 
 const SLOGAN = "DONDE EL PAN TIENE HISTORIA Y SABOR";
@@ -75,6 +80,14 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const [showShareTienda, setShowShareTienda] = useState(false);
   const [copiadoPos, setCopiadoPos] = useState(false);
   const [copiadoTienda, setCopiadoTienda] = useState(false);
+  const [showCredModal, setShowCredModal] = useState(false);
+  const [credForm, setCredForm] = useState({ passwordActual: "", passwordNueva: "", passwordConfirmar: "", emailNuevo: "" });
+  const [credLoading, setCredLoading] = useState(false);
+  const [credError, setCredError] = useState<string | null>(null);
+  const [credSuccess, setCredSuccess] = useState(false);
+  const [showPassActual, setShowPassActual] = useState(false);
+  const [showPassNueva, setShowPassNueva] = useState(false);
+  const [emailActual, setEmailActual] = useState<string>("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -144,7 +157,53 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       alert("No se pudo copiar. Copia manualmente: " + texto);
     }
   };
+    // ===== CAMBIO DE CREDENCIALES (SEGURIDAD DEL DUEÑO) =====
+  const abrirModalCred = async () => {
+    setCredError(null);
+    setCredSuccess(false);
+    setCredForm({ passwordActual: "", passwordNueva: "", passwordConfirmar: "", emailNuevo: "" });
+    const { data } = await supabase.auth.getUser();
+    if (data?.user?.email) setEmailActual(data.user.email);
+    setShowCredModal(true);
+  };
 
+  const fortalezaPass = (p: string) => {
+    let s = 0;
+    if (p.length >= 8) s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
+    return s;
+  };
+
+  const cambiarCredenciales = async () => {
+    setCredError(null);
+    if (!credForm.passwordActual) { setCredError("Ingresa tu contraseña actual"); return; }
+    if (credForm.passwordNueva.length < 8) { setCredError("La nueva contraseña debe tener al menos 8 caracteres"); return; }
+    if (!/[A-Z]/.test(credForm.passwordNueva) || !/[0-9]/.test(credForm.passwordNueva)) { setCredError("La nueva contraseña debe incluir al menos 1 mayúscula y 1 número"); return; }
+    if (credForm.passwordNueva !== credForm.passwordConfirmar) { setCredError("Las contraseñas nuevas no coinciden"); return; }
+    if (credForm.passwordNueva === credForm.passwordActual) { setCredError("La nueva contraseña debe ser diferente a la actual"); return; }
+    setCredLoading(true);
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user?.email) { setCredError("No se pudo obtener tu sesión. Vuelve a iniciar sesión."); return; }
+      const emailActualSesion = userData.user.email;
+      const { error: authError } = await supabase.auth.signInWithPassword({ email: emailActualSesion, password: credForm.passwordActual });
+      if (authError) { setCredError("Contraseña actual incorrecta"); return; }
+      if (credForm.emailNuevo && credForm.emailNuevo.trim() && credForm.emailNuevo.trim() !== emailActualSesion) {
+        const { error: emailErr } = await supabase.auth.updateUser({ email: credForm.emailNuevo.trim() });
+        if (emailErr) { setCredError("Error al cambiar el email: " + emailErr.message); return; }
+      }
+      const { error: passErr } = await supabase.auth.updateUser({ password: credForm.passwordNueva });
+      if (passErr) { setCredError("Error al cambiar la contraseña: " + passErr.message); return; }
+      setCredSuccess(true);
+      setTimeout(async () => { await supabase.auth.signOut(); window.location.href = "/login"; }, 3000);
+    } catch (e) {
+      setCredError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setCredLoading(false);
+    }
+  };
   const compartirWhatsApp = (texto: string, enlace: string) => {
     const mensaje = `${texto}\\n\\n${enlace}`;
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
@@ -258,6 +317,13 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             >
               <ShoppingBag className="w-4 h-4" />
               Compartir Tienda (Clientes)
+            </button>
+	                <button
+              onClick={abrirModalCred}
+              className="bg-white/90 hover:bg-white text-stone-700 font-bold px-5 py-3 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm"
+            >
+              <Lock className="w-4 h-4" />
+              Cambiar Credenciales
             </button>
           </div>
       </header>
@@ -474,6 +540,90 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <p className="text-xs text-stone-500 text-center mt-3">
               💡 Tip: Compártelo en los grupos de WhatsApp del barrio y en tus estados
             </p>
+          </div>
+        </div>
+      )}
+            {/* MODAL: CAMBIAR CREDENCIALES */}
+      {showCredModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowCredModal(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-xl text-stone-900 flex items-center gap-2">
+                <Lock className="w-6 h-6 text-amber-600" />
+                Cambiar Credenciales
+              </h2>
+              <button onClick={() => setShowCredModal(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+                <X className="w-5 h-5 text-stone-600" />
+              </button>
+            </div>
+
+            {credSuccess ? (
+              <div className="text-center py-6">
+                <ShieldCheck className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-stone-900 mb-2">¡Credenciales actualizadas!</h3>
+                <p className="text-sm text-stone-600">Por seguridad, cerrarás sesión en unos segundos para ingresar con tu nueva contraseña.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-stone-50 border border-stone-200 rounded-2xl p-3">
+                  <p className="text-xs text-stone-500 mb-1">Usuario actual (email)</p>
+                  <p className="text-sm font-semibold text-stone-800 break-all">{emailActual || "Cargando..."}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Contraseña actual *</label>
+                  <div className="relative">
+                    <input type={showPassActual ? "text" : "password"} value={credForm.passwordActual} onChange={(e) => setCredForm({ ...credForm, passwordActual: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 pr-10 text-stone-800" placeholder="Tu contraseña actual" />
+                    <button type="button" onClick={() => setShowPassActual(!showPassActual)} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500">
+                      {showPassActual ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Nueva contraseña *</label>
+                  <div className="relative">
+                    <input type={showPassNueva ? "text" : "password"} value={credForm.passwordNueva} onChange={(e) => setCredForm({ ...credForm, passwordNueva: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 pr-10 text-stone-800" placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número" />
+                    <button type="button" onClick={() => setShowPassNueva(!showPassNueva)} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500">
+                      {showPassNueva ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {credForm.passwordNueva && (
+                    <div className="mt-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map((n) => (
+                          <div key={n} className={`h-1.5 flex-1 rounded-full ${fortalezaPass(credForm.passwordNueva) >= n ? (fortalezaPass(credForm.passwordNueva) <= 2 ? "bg-red-500" : fortalezaPass(credForm.passwordNueva) === 3 ? "bg-amber-500" : "bg-emerald-500") : "bg-stone-200"}`} />
+                        ))}
+                      </div>
+                      <p className="text-xs text-stone-500 mt-1">{fortalezaPass(credForm.passwordNueva) <= 2 ? "Débil" : fortalezaPass(credForm.passwordNueva) === 3 ? "Media" : "Fuerte"}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Confirmar nueva contraseña *</label>
+                  <input type="password" value={credForm.passwordConfirmar} onChange={(e) => setCredForm({ ...credForm, passwordConfirmar: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-stone-800" placeholder="Repite la nueva contraseña" />
+                  {credForm.passwordConfirmar && credForm.passwordConfirmar !== credForm.passwordNueva && (
+                    <p className="text-xs text-red-600 mt-1">Las contraseñas no coinciden</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Nuevo email (opcional)</label>
+                  <input type="email" value={credForm.emailNuevo} onChange={(e) => setCredForm({ ...credForm, emailNuevo: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-stone-800" placeholder="Deja vacío para mantener el email actual" />
+                  <p className="text-xs text-stone-500 mt-1">Si lo cambias, recibirás un correo de confirmación.</p>
+                </div>
+
+                {credError && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">{credError}</div>
+                )}
+
+                <button onClick={cambiarCredenciales} disabled={credLoading} className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50">
+                  <KeyRound className="w-5 h-5" />
+                  {credLoading ? "Actualizando..." : "Actualizar Credenciales"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
