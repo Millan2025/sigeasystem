@@ -28,6 +28,7 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
+  LogOut,
 } from "lucide-react";
 
 const SLOGAN = "DONDE EL PAN TIENE HISTORIA Y SABOR";
@@ -175,6 +176,16 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     if (/[^A-Za-z0-9]/.test(p)) s++;
     return s;
   };
+    // ===== CERRAR SESIÓN =====
+  const cerrarSesion = async () => {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch (e) {
+      console.error("Error al cerrar sesión:", e);
+      window.location.href = "/login";
+    }
+  };
 
   const cambiarCredenciales = async () => {
     setCredError(null);
@@ -256,6 +267,15 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       >
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
         <div className="relative z-10 max-w-3xl mx-auto">
+	          {/* Botón Cerrar Sesión - Esquina superior derecha */}
+          <button
+            onClick={cerrarSesion}
+            className="absolute top-0 right-0 bg-white/90 hover:bg-white text-stone-700 font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm z-20"
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Salir</span>
+          </button>
           {config.logo_url ? (
             <img
               src={config.logo_url}
