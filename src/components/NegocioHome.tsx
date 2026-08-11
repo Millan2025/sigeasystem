@@ -142,7 +142,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
   const generarEnlace = (modulo: string) => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://sigea-system.vercel.app";
-    return `${baseUrl}/demo/${negocioSlug || "restaurante"}/${modulo}?tenant=${tenantId}`;
+    return `${baseUrl}/${negocioSlug || "restaurante"}/${modulo}?tenant=${tenantId}`;
   };
 
   const copiarAlPortapapeles = async (texto: string, tipo: "pos" | "tienda") => {
