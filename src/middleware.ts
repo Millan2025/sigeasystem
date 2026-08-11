@@ -20,16 +20,35 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const path = request.nextUrl.pathname
 
-  // Rutas protegidas (requieren login)
+  // Rutas que requieren login
   const rutasProtegidas = ['/pos', '/inventario', '/personal', '/pedidos', '/produccion', '/reportes', '/finanzas', '/admin', '/cliente']
-  const necesitaAuth = rutasProtegidas.some(r => request.nextUrl.pathname.startsWith(r))
+  const necesitaAuth = rutasProtegidas.some(r => path.startsWith(r))
 
   if (necesitaAuth && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // ✅ ELIMINADA redirección de raíz (page.tsx la maneja)
+  // 🔒 PROTECCIÓN ADMIN: Solo admin_master puede acceder a /admin y /api/admin/*
+  const esRutaAdmin = path.startsWith('/admin') || path.startsWith('/api/admin')
+  
+  if (esRutaAdmin && user) {
+    // Verificar rol en la tabla usuarios
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('rol')
+      .eq('id', user.id)
+      .single()
+    
+    if (!usuario || usuario.rol !== 'admin_master') {
+      // Redirigir no-admins al dashboard del dueño
+      if (path.startsWith('/api/admin')) {
+        return NextResponse.json({ success: false, error: 'Acceso denegado: se requiere rol admin_master' }, { status: 403 })
+      }
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
 
   return response
 }

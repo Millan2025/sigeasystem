@@ -25,6 +25,7 @@ import {
   Upload,
   Edit,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 // ============================================
 // INTERFACES
@@ -70,6 +71,56 @@ interface Usuario {
 // COMPONENTE PRINCIPAL
 // ============================================
 export default function AdminMasterPage() {
+    const supabase = createClient();
+  const [accesoPermitido, setAccesoPermitido] = useState<boolean | null>(null);
+
+  // 🔒 VERIFICACIÓN DE ROL: Solo admin_master puede ver esta página
+  useEffect(() => {
+    const verificarRol = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id', user.id)
+        .single();
+      
+      if (!usuario || usuario.rol !== 'admin_master') {
+        setAccesoPermitido(false);
+      } else {
+        setAccesoPermitido(true);
+      }
+    };
+    verificarRol();
+  }, []);
+
+  if (accesoPermitido === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-stone-400 mx-auto mb-3 animate-spin" />
+          <p className="text-stone-600">Verificando permisos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (accesoPermitido === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="bg-white rounded-2xl p-8 shadow-xl max-w-md text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-stone-800 mb-2">Acceso Denegado</h1>
+          <p className="text-stone-600 mb-6">Esta área es exclusiva para administradores maestros.</p>
+          <Link href="/" className="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition inline-block">Volver al inicio</Link>
+        </div>
+      </div>
+    );
+  }
+
   const [tab, setTab] = useState<"clientes" | "usuarios" | "trazabilidad" | "suscripciones" | "config">("clientes");
   const [busqueda, setBusqueda] = useState("");
   const [copied, setCopied] = useState(false);
