@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  Users,
-  UserPlus,
-  Package,
+  ArrowLeft, 
+  Users, 
+  UserPlus, 
+  Package, 
   Search,
   Eye,
   Ban,
@@ -71,10 +71,38 @@ interface Usuario {
 // COMPONENTE PRINCIPAL
 // ============================================
 export default function AdminMasterPage() {
-    const supabase = createClient();
+  const supabase = createClient();
   const [accesoPermitido, setAccesoPermitido] = useState<boolean | null>(null);
+  const [tab, setTab] = useState<"clientes" | "usuarios" | "trazabilidad" | "suscripciones" | "config">("clientes");
+  const [busqueda, setBusqueda] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [clienteDetalle, setClienteDetalle] = useState<Cliente | null>(null);
+  const [showNuevoCliente, setShowNuevoCliente] = useState(false);
+  const [showProducto, setShowProducto] = useState(false);
+  const [showCargar, setShowCargar] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState("");
+  const [notificaciones, setNotificaciones] = useState<any[]>([]);
+  const [editandoUsuario, setEditandoUsuario] = useState<Usuario | null>(null);
+  const [showModalEditarUsuario, setShowImportModalEditarUsuario] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+  const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
+  const [showModalEditarCliente, setShowImportModalEditarCliente] = useState(false);
+  const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
 
-  // 🔒 VERIFICACIÓN DE ROL: Solo admin_master puede ver esta página
+  // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
+  const [showModal, setShowImportModal] = useState(false);
+  const [tenantId, settenantId] = useState<string | null>(null);
+  const [importProgress, setImportProgress] = useState<string>("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [configNegocio, setConfigNegocio] = useState<any>({});
+  const [clienteConfigId, setClienteConfigId] = useState<string>("");
+  const [guardandoConfig, setGuardandoConfig] = useState(false);
+  const [previewLogo, setPreviewLogo] = useState<string>("");
+
+ // 🔒 VERIFICACIÓN DE ROL: Solo admin_master puede ver esta página
   useEffect(() => {
     const verificarRol = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -120,35 +148,6 @@ export default function AdminMasterPage() {
       </div>
     );
   }
-
-  const [tab, setTab] = useState<"clientes" | "usuarios" | "trazabilidad" | "suscripciones" | "config">("clientes");
-  const [busqueda, setBusqueda] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [clienteDetalle, setClienteDetalle] = useState<Cliente | null>(null);
-  const [showNuevoCliente, setShowNuevoCliente] = useState(false);
-  const [showProducto, setShowProducto] = useState(false);
-  const [showCargar, setShowCargar] = useState(false);
-  const [uploadMsg, setUploadMsg] = useState("");
-  const [notificaciones, setNotificaciones] = useState<any[]>([]);
-  const [editandoUsuario, setEditandoUsuario] = useState<Usuario | null>(null);
-  const [showModalEditarUsuario, setShowImportModalEditarUsuario] = useState(false);
-  const [mensaje, setMensaje] = useState("");
-  const [editandoCliente, setEditandoCliente] = useState<Cliente | null>(null);
-  const [showModalEditarCliente, setShowImportModalEditarCliente] = useState(false);
-  const [credenciales, setCredenciales] = useState<{ email: string; password: string } | null>(null);
-
-  // 🔥 NUEVOS ESTADOS PARA IMPORTAR PRODUCTOS
-  const [showModal, setShowImportModal] = useState(false);
-  const [tenantId, settenantId] = useState<string | null>(null);
-  const [importProgress, setImportProgress] = useState<string>("");
-  const [isImporting, setIsImporting] = useState(false);
-  const [configNegocio, setConfigNegocio] = useState<any>({});
-  const [clienteConfigId, setClienteConfigId] = useState<string>("");
-  const [guardandoConfig, setGuardandoConfig] = useState(false);
-  const [previewLogo, setPreviewLogo] = useState<string>("");
 
   // ============================================
   // CARGAR DATOS
