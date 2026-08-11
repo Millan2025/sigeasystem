@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -267,7 +267,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         }}
       >
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
-        <div className="relative z-10 max-w-3xl mx-auto">
+        <div className="relative z-10 max-w-3xl mx-auto pt-14 sm:pt-0">
 	          {/* Botón Cerrar Sesión - Esquina superior derecha */}
                   {/* Botón Notificaciones - junto al de Cerrar Sesión */}
           <div className="absolute top-0 right-28 z-20">
