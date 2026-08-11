@@ -1,4 +1,4 @@
-﻿export const NEGOCIOS = {
+export const NEGOCIOS = {
   panaderia: { titulo: "Panadería Doña Rosa", categoria: "Panaderia", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   restaurante: { titulo: "Restaurante Caribe", categoria: "Restaurante", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   carniceria: { titulo: "Carnicería El Buen Sabor", categoria: "Carniceria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
@@ -6,4 +6,5 @@
   ferreteria: { titulo: "Ferretería El Tornillo", categoria: "Ferreteria", tenantId: "7e045520-5e36-4e3f-a39f-10ea7d6dce76" },
   tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
   "la-casa-del-pan": { titulo: "La Casa del Pan", categoria: "Panaderia", tenantId: "20e53ee4-44df-40d5-bcd0-cc8b5fbc8965" },
+  "pollo-broster": { titulo: "Pollo Broster", categoria: "Restaurante", tenantId: "2382b73d-0f4d-4f1a-98a0-f25ad0fb7b11" },
 };
