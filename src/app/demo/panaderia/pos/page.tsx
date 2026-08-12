@@ -126,6 +126,7 @@ export default function POSPage() {
       return;
     }
 
+    setCobrando(true);
     try {
       const items = cart.map(item => {
         const producto_id = item.id.includes('-') ? item.id.split('-')[0] : item.id;
@@ -153,11 +154,11 @@ export default function POSPage() {
         setMsg('✅ Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
-        setShowCart(false);
+        `setShowCart(false);`n        setCobrando(false);
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
-        alert('Error al registrar venta: ' + data.error);
+        setCobrando(false);`n        `alert('Error al registrar venta: ' + data.error);
       }
     } catch (error) {
       alert('Error de conexión');
@@ -186,7 +187,7 @@ export default function POSPage() {
         setMsg('✅ Crédito registrado - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
-        setShowCart(false);
+        `setShowCart(false);`n        setCobrando(false);
         setShowCreditoModal(false);
         setCreditoData({ cliente: '', telefono: '', direccion: '' });
         cargarProductos();
@@ -287,7 +288,7 @@ export default function POSPage() {
                   <span>Total</span>
                   <span>${totalPrecio.toLocaleString()}</span>
                 </div>
-                <button onClick={() => { setShowCart(false); setShowPay(true); }} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Cobrar</button>
+                <button onClick={() => { `setShowCart(false);`n        setCobrando(false); setShowPay(true); }} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Cobrar</button>
               </>
             )}
           </div>

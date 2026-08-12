@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -207,11 +207,7 @@ export default function ComprasPage() {
       alert("Selecciona al menos un producto.");
       return;
     }
-
-    if (!proveedorGeneral) {
-      alert("Ingresa el nombre del proveedor general.");
-      return;
-    }
+    // Proveedor general ahora es opcional (cada item tiene su propio proveedor)
 
     const body = {
       tenant_id: tenantId,
@@ -446,7 +442,7 @@ export default function ComprasPage() {
 
           <input
             type="text"
-            placeholder="Proveedor general *"
+            placeholder="Proveedor general (opcional)"
             value={proveedorGeneral}
             onChange={(e) => setProveedorGeneral(e.target.value)}
             className="border border-stone-300 rounded-xl px-3 py-1.5 text-sm text-stone-800 flex-1 min-w-[150px]"
