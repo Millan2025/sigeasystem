@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { NEGOCIOS } from '@/config/negocios';
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -870,7 +870,7 @@ export default function FinanzasPage() {
                 value={resetConfirmText}
                 onChange={(e) => setResetConfirmText(e.target.value)}
                 placeholder="Escribe RESETEAR"
-                className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono"
+                className="w-full p-3 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono text-stone-900"
                 autoFocus
               />
             </div>
