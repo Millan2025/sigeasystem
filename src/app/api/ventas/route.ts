@@ -1,10 +1,13 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+// Fecha en zona horaria de Colombia (YYYY-MM-DD)
+const fechaBogota = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' })
 
 export async function GET(request: Request) {
   try {
@@ -62,7 +65,7 @@ export async function POST(request: Request) {
         tenant_id,
         metodo_pago: metodo_pago || 'contado',
         total,
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: fechaBogota(),
         created_at: new Date().toISOString()
       })
       .select()
@@ -208,7 +211,7 @@ export async function POST(request: Request) {
             monto: total,
             categoria_contable_id: categoria.id,
             descripcion: `Venta #${venta.id} - ${metodo_pago}`,
-            fecha: new Date().toISOString().split('T')[0],
+            fecha: fechaBogota(),
             impuesto: 0,
             retencion: 0,
             total_con_impuestos: total,
