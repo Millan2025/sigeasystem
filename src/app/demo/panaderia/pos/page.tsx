@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -39,6 +39,7 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
+  const [cobrando, setCobrando] = useState(false);
 
   const cargarProductos = () => {
     // Cargar TODOS los productos sin filtro de categoria (categorias reales no coinciden con categoriaNegocio)
@@ -52,7 +53,7 @@ export default function POSPage() {
           setProductos(d.data.map((p: any) => ({
             id: p.id,
             nombre: p.nombre,
-            icono: p.icono || '📦',
+            icono: p.icono || '­ƒôª',
             precio: p.precio || 0,
             stock: p.stock || 0,
             cat: p.categoria || 'General',
@@ -121,13 +122,13 @@ export default function POSPage() {
   const pay = async (metodo: string) => {
     if (cart.length === 0) return;
 
-    if (metodo === 'Crédito') {
+    if (metodo === 'Cr├®dito') {
       setShowCreditoModal(true);
       return;
     }
 
-    setCobrando(true);
     try {
+      setCobrando(true);
       const items = cart.map(item => {
         const producto_id = item.id.includes('-') ? item.id.split('-')[0] : item.id;
         return {
@@ -151,17 +152,20 @@ export default function POSPage() {
 
       const data = await res.json();
       if (data.success) {
-        setMsg('✅ Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
+        setMsg('Ô£à Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
-        `setShowCart(false);`n        setCobrando(false);
+        setShowCart(false);
+        setCobrando(false);
         cargarProductos();
         setTimeout(() => setMsg(''), 4000);
       } else {
-        setCobrando(false);`n        `alert('Error al registrar venta: ' + data.error);
+        setCobrando(false);
+        alert('Error al registrar venta: ' + data.error);
       }
     } catch (error) {
-      alert('Error de conexión');
+      setCobrando(false);
+      alert('Error de conexi├│n');
     }
   };
 
@@ -184,10 +188,10 @@ export default function POSPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setMsg('✅ Crédito registrado - $' + totalPrecio.toLocaleString());
+        setMsg('Ô£à Cr├®dito registrado - $' + totalPrecio.toLocaleString());
         setCart([]);
         setShowPay(false);
-        `setShowCart(false);`n        setCobrando(false);
+        setShowCart(false);
         setShowCreditoModal(false);
         setCreditoData({ cliente: '', telefono: '', direccion: '' });
         cargarProductos();
@@ -196,7 +200,7 @@ export default function POSPage() {
         alert('Error: ' + data.error);
       }
     } catch (error) {
-      alert('Error de conexión');
+      alert('Error de conexi├│n');
     }
   };
 
@@ -205,7 +209,7 @@ export default function POSPage() {
       <PageHeader
         negocioSlug={negocioSlug}
         titulo="Nueva Venta"
-        icono="💰"
+        icono="­ƒÆ░"
         subtitulo={`POS - ${titulo}`}
         acciones={
           <>
@@ -267,7 +271,7 @@ export default function POSPage() {
               <h3 className="text-lg font-bold text-stone-800">Carrito</h3>
               <button onClick={() => setShowCart(false)}><X className="w-5 h-5 text-stone-700" /></button>
             </div>
-            {cart.length === 0 ? <p className="text-stone-500 text-center py-4">Carrito vacío</p> : (
+            {cart.length === 0 ? <p className="text-stone-500 text-center py-4">Carrito vac├¡o</p> : (
               <>
                 {cart.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 border-b border-stone-100 py-2">
@@ -288,7 +292,7 @@ export default function POSPage() {
                   <span>Total</span>
                   <span>${totalPrecio.toLocaleString()}</span>
                 </div>
-                <button onClick={() => { `setShowCart(false);`n        setCobrando(false); setShowPay(true); }} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Cobrar</button>
+                <button onClick={() => { setShowCart(false); setShowPay(true); }} className="w-full bg-emerald-500 text-white py-3 rounded-xl mt-4 font-medium">Cobrar</button>
               </>
             )}
           </div>
@@ -305,7 +309,7 @@ export default function POSPage() {
               <button onClick={() => pay('Nequi')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Nequi</button>
               <button onClick={() => pay('Bancolombia')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Bancolombia</button>
               <button onClick={() => pay('Daviplata')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Daviplata</button>
-              <button onClick={() => pay('Crédito')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Crédito</button>
+              <button onClick={() => pay('Cr├®dito')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Cr├®dito</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cancelar</button>
           </div>
@@ -337,12 +341,12 @@ export default function POSPage() {
       {showCreditoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar Crédito</h3>
+            <h3 className="text-lg font-bold text-stone-800 mb-2">Registrar Cr├®dito</h3>
             <p className="text-sm text-stone-600 mb-4">Total: ${totalPrecio.toLocaleString()}</p>
             <div className="space-y-3">
               <input type="text" placeholder="Nombre del cliente" value={creditoData.cliente} onChange={e => setCreditoData({...creditoData, cliente: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
-              <input type="text" placeholder="Teléfono" value={creditoData.telefono} onChange={e => setCreditoData({...creditoData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
-              <input type="text" placeholder="Dirección" value={creditoData.direccion} onChange={e => setCreditoData({...creditoData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              <input type="text" placeholder="Tel├®fono" value={creditoData.telefono} onChange={e => setCreditoData({...creditoData, telefono: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
+              <input type="text" placeholder="Direcci├│n" value={creditoData.direccion} onChange={e => setCreditoData({...creditoData, direccion: e.target.value})} className="w-full border border-stone-300 rounded-xl p-2 text-stone-800" />
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowCreditoModal(false); setCreditoData({ cliente: '', telefono: '', direccion: '' }); }} className="flex-1 border border-stone-300 py-2 rounded-xl text-stone-700">Cancelar</button>
@@ -362,13 +366,13 @@ export default function POSPage() {
             <p className="text-sm text-stone-600 mb-4">Comparte estos enlaces con tu equipo y clientes</p>
             <div className="space-y-3">
               <a href={`https://wa.me/?text=POS%20Vendedor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/pos`} target="_blank" rel="noopener noreferrer" className="w-full bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-green-600 transition">
-                <span className="text-xl">📱</span> POS Vendedor
+                <span className="text-xl">­ƒô▒</span> POS Vendedor
               </a>
               <a href={`https://wa.me/?text=Tienda%20Clientes%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/demo/${negocioSlug}/tienda`} target="_blank" rel="noopener noreferrer" className="w-full bg-blue-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-blue-600 transition">
-                <span className="text-xl">🛒</span> Tienda Clientes
+                <span className="text-xl">­ƒøÆ</span> Tienda Clientes
               </a>
               <a href={`https://wa.me/?text=App%20Repartidor%3A%20${typeof window !== 'undefined' ? window.location.origin : ''}/repartidor`} target="_blank" rel="noopener noreferrer" className="w-full bg-purple-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium hover:bg-purple-600 transition">
-                <span className="text-xl">🛵</span> App Repartidor
+                <span className="text-xl">­ƒøÁ</span> App Repartidor
               </a>
             </div>
             <button onClick={() => setShowShareModal(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cerrar</button>

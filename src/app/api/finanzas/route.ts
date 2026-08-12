@@ -72,44 +72,21 @@ export async function GET(request: Request) {
     const { data: dataPaginated, error: paginatedError } = await queryPaginated
     if (paginatedError) throw paginatedError
 
-    // 3. Obtener total de ventas y compras (para el resumen integral)
-    const { data: ventasData, error: ventasError } = await supabase
-      .from('ventas')
-      .select('total, metodo_pago')
-      .eq('tenant_id', tenantId)
-    if (ventasError) throw ventasError
-    const totalVentas = ventasData?.reduce((sum, v) => sum + (v.total || 0), 0) || 0
-
-    const { data: comprasData, error: comprasError } = await supabase
-      .from('compras')
-      .select('total')
-      .eq('tenant_id', tenantId)
-    if (comprasError) throw comprasError
-    const totalCompras = comprasData?.reduce((sum, c) => sum + (c.total || 0), 0) || 0
-
-    // 4. Calcular ingresos/egresos a partir de TODAS las transacciones (sin paginación)
-    const totalIngresosTransacciones = allTransacciones
+    // ✅ FUENTE ÚNICA: Solo transacciones (sin doble conteo de ventas/compras)
+    const ingresos = allTransacciones
       .filter(t => t.tipo === 'ingreso')
       .reduce((sum, t) => sum + (t.total_con_impuestos || t.monto || 0), 0)
 
-    const totalEgresosTransacciones = allTransacciones
+    const egresos = allTransacciones
       .filter(t => t.tipo === 'egreso')
       .reduce((sum, t) => sum + (t.total_con_impuestos || t.monto || 0), 0)
 
-    // 5. Totales integrales
-    const ingresos = totalVentas + totalIngresosTransacciones
-    const egresos = totalCompras + totalEgresosTransacciones
     const saldo = ingresos - egresos
     const impuestos = allTransacciones.reduce((sum, t) => sum + (t.impuesto || 0), 0)
     const retenciones = allTransacciones.reduce((sum, t) => sum + (t.retencion || 0), 0)
 
-    // 6. Desglose de pagos (ventas + TODAS las transacciones de ingreso)
+    // 6. Desglose de pagos (solo desde transacciones de ingreso)
     const desglosePagos: Record<string, number> = {}
-    ventasData?.forEach(v => {
-      let metodo = v.metodo_pago || 'Otro'
-      if (metodo === 'Otro' || metodo === 'Confirmado') metodo = 'Otros'
-      desglosePagos[metodo] = (desglosePagos[metodo] || 0) + (v.total || 0)
-    })
     allTransacciones
       .filter(t => t.tipo === 'ingreso')
       .forEach(t => {
