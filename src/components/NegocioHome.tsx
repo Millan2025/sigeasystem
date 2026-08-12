@@ -301,7 +301,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             </div>
           )}
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md text-stone-800">{config.nombre_negocio}</h1>
-          <p className="text-xl md:text-2xl font-light mt-2 text-stone-700/90 italic drop-shadow">{SLOGAN}</p>
+          <p className="text-xl md:text-2xl font-light mt-2 text-stone-700/90 italic drop-shadow">{(config as any)?.slogan || ""}</p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm md:text-base">
             <span className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-[#B8860B]">

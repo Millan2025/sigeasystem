@@ -808,7 +808,7 @@ export default function AdminMasterPage() {
                       setPreviewLogo(e.target.value);
                     }}
                     placeholder="https://..."
-                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                   />
                   {previewLogo && (
                     <div className="mt-2 flex items-center gap-2">
@@ -825,7 +825,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.nombre_negocio || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, nombre_negocio: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -834,7 +834,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.tipo_negocio || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, tipo_negocio: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                 </div>
@@ -846,7 +846,7 @@ export default function AdminMasterPage() {
                     value={configNegocio.slogan || ""}
                     onChange={(e) => setConfigNegocio({ ...configNegocio, slogan: e.target.value })}
                     placeholder="Tu frase publicitaria..."
-                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                   />
                 </div>
 
@@ -857,7 +857,7 @@ export default function AdminMasterPage() {
                     value={configNegocio.direccion || ""}
                     onChange={(e) => setConfigNegocio({ ...configNegocio, direccion: e.target.value })}
                     placeholder="Calle, ciudad, país"
-                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                    className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                   />
                 </div>
 
@@ -872,7 +872,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.telefono || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, telefono: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -881,7 +881,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.whatsapp || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, whatsapp: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -890,7 +890,7 @@ export default function AdminMasterPage() {
                       type="email"
                       value={configNegocio.correo_contacto || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, correo_contacto: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -900,7 +900,7 @@ export default function AdminMasterPage() {
                       value={configNegocio.website || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, website: e.target.value })}
                       placeholder="https://..."
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                 </div>
@@ -957,7 +957,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.gerente || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, gerente: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -966,7 +966,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.nit || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, nit: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -975,7 +975,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.cedula || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, cedula: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                 </div>
@@ -991,7 +991,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.nequi || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, nequi: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div>
@@ -1000,7 +1000,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.daviplata || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, daviplata: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -1009,7 +1009,7 @@ export default function AdminMasterPage() {
                       type="text"
                       value={configNegocio.bancolombia || ""}
                       onChange={(e) => setConfigNegocio({ ...configNegocio, bancolombia: e.target.value })}
-                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm"
+                      className="w-full p-2 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900"
                     />
                   </div>
                 </div>
