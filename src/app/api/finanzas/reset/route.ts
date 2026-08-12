@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -28,6 +28,8 @@ export async function POST(request: Request) {
 
     // Tablas a resetear (solo cifras, NO catálogos)
     const tablasAResetear = [
+      { tabla: 'sale_items', campo: 'tenant_id' },
+      { tabla: 'compras', campo: 'tenant_id' },
       { tabla: 'ventas', campo: 'tenant_id' },
       { tabla: 'pedidos', campo: 'tenant_id' },
       { tabla: 'creditos', campo: 'tenant_id' },

@@ -649,7 +649,7 @@ export default function FinanzasPage() {
                   onChange={(e) =>
                     setFormTransaccion({ ...formTransaccion, retencion: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-800 text-sm"
+                  className="w-full border border-stone-300 rounded-xl p-2 text-stone-900 text-sm"
                 />
               </div>
               <div>
