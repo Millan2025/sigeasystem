@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -130,7 +130,7 @@ export default function POSPage() {
     try {
       setCobrando(true);
       const items = cart.map(item => {
-        const producto_id = item.id.includes('-') ? item.id.split('-')[0] : item.id;
+        const producto_id = item.esPeso ? item.id.replace(/-peso$/, '') : item.id;
         return {
           producto_id: producto_id,
           cantidad: item.cantidad,
