@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
-import { NEGOCIOS } from "@/config/negocios";
+import { NEGOCIOS } from "@/config/negocios";`nimport { offlineQueue } from "@/lib/offlineQueue";`nimport { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import PageHeader from "@/components/PageHeader";
 
 interface ProductoBase {
@@ -39,7 +39,7 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
-  const [cobrando, setCobrando] = useState(false);
+  const [cobrando, setCobrando] = useState(false);`n  const isOnline = useOnlineStatus();
 
   const cargarProductos = () => {
     // Cargar TODOS los productos sin filtro de categoria (categorias reales no coinciden con categoriaNegocio)

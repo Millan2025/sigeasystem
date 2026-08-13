@@ -1,6 +1,6 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "./globals.css";`nimport OfflineBanner from "@/components/OfflineBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,7 +35,7 @@ export default function RootLayout({
         <meta name="application-name" content="SIGEA" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={inter.className}>
+      <body><OfflineBanner /> className={inter.className}>
         {children}
       </body>
     </html>

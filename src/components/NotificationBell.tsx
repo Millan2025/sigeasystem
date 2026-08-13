@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from 'react';
 import { Bell, Check, CheckCheck, X } from 'lucide-react';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
@@ -75,7 +75,7 @@ export default function NotificationBell({ tenantId }: Props) {
         {abierto && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setAbierto(false)} />
-            <div className="absolute right-0 top-12 w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border z-50 flex flex-col overflow-hidden">
+            <div className="absolute top-12 z-50 left-4 right-4 sm:left-auto sm:right-0 sm:w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden">
               <div className="p-4 border-b flex justify-between items-center">
                 <h3 className="font-bold text-stone-800">Notificaciones</h3>
                 {noLeidas > 0 && (
