@@ -75,7 +75,7 @@ export default function NotificationBell({ tenantId }: Props) {
         {abierto && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setAbierto(false)} />
-            <div className="absolute top-12 z-50 left-4 right-4 sm:left-auto sm:right-0 sm:w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden">
+            <div className="fixed top-16 z-50 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden">
               <div className="p-4 border-b flex justify-between items-center">
                 <h3 className="font-bold text-stone-800">Notificaciones</h3>
                 {noLeidas > 0 && (
