@@ -217,7 +217,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     }
   };
   const compartirWhatsApp = (texto: string, enlace: string) => {
-    const mensaje = `${texto}\\n\\n${enlace}`;
+    const mensaje = `${texto}\n\n${enlace}`;
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
   };
@@ -552,7 +552,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <button
               onClick={() =>
                 compartirWhatsApp(
-                  `🥖 *${config?.nombre_negocio || "Mi Negocio"}*\\n${config?.slogan || "Tu tienda de confianza"}\\n\\n¡Haz tu pedido a domicilio! 🚚`,
+                  `🍗 *${config?.nombre_negocio || "Mi Negocio"}*\\n${config?.slogan || "Tu tienda de confianza"}\\n\\n¡Haz tu pedido a domicilio! 🚚`,
                   generarEnlace("tienda")
                 )
               }
