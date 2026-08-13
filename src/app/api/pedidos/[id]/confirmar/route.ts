@@ -31,9 +31,9 @@ export async function PUT(
     const total = pedido.total
     const pago = metodo_pago || pedido.metodo_pago
 
-    console.log('🔒 Confirmando pedido:', id, 'Descontando stock y creando venta...')
+    console.log('🔒 Confirmando pedido:', id)
 
-    // 1. Descontar stock SIEMPRE (sin importar método de pago)
+    // 1. Descontar stock SIEMPRE
     for (const item of items) {
       const { data: prod, error: prodErr } = await supabase
         .from('productos')
@@ -118,6 +118,30 @@ export async function PUT(
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
+
+    // 5. Crear notificación de confirmación
+    const { data: usuarios } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('tenant_id', tenant_id)
+
+    if (usuarios && usuarios.length > 0) {
+      const notificaciones = usuarios.map(u => ({
+        tenant_id,
+        user_id: u.id,
+        tipo: 'venta',
+        titulo: 'Pedido confirmado',
+        mensaje: `Pedido #${id.substring(0, 8)} de ${pedido.cliente} confirmado - $${total.toLocaleString()}`,
+        icono: 'exito',
+        color: 'green',
+        datos: { pedido_id: id, venta_id: venta.id }
+      }))
+
+      await supabase.from('notificaciones').insert(notificaciones)
+      console.log('🔔 Notificaciones de confirmación creadas')
+    }
+
+    console.log('✅ Pedido confirmado:', id, 'Venta:', venta.id)
 
     return NextResponse.json({ success: true, data: venta })
 

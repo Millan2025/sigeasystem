@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -35,7 +35,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Guardar items con nombre incluido
     const itemsConNombre = items.map((item: any) => ({
       producto_id: item.producto_id,
       cantidad: item.cantidad,
@@ -43,7 +42,7 @@ export async function POST(request: Request) {
       nombre: item.nombre || 'Producto'
     }))
 
-    // Insertar pedido
+    // 🔒 NUEVA LÓGICA: Solo guardar pedido pendiente, NUNCA descontar stock ni crear venta
     const { data, error } = await supabase
       .from('pedidos')
       .insert({
@@ -54,7 +53,7 @@ export async function POST(request: Request) {
         metodo_pago,
         total,
         items: itemsConNombre,
-        estado: 'pendiente', // Siempre pendiente hasta confirmación del dueño
+        estado: 'pendiente',
         observaciones: observaciones || '',
         created_at: new Date().toISOString()
       })
@@ -66,28 +65,46 @@ export async function POST(request: Request) {
       throw error
     }
 
-    console.log('✅ Pedido insertado ID:', data.id)
+    console.log('📝 Pedido pendiente creado:', data.id)
+    console.log('💡 Esperando confirmación del dueño para descontar stock y crear venta')
 
-    // 🔒 NUEVA LÓGICA: NUNCA descontar stock ni crear venta al crear pedido
-    // Solo se procesa al CONFIRMAR (ver /api/pedidos/[id]/confirmar)
-    console.log('📝 Pedido pendiente creado. Esperando confirmación del dueño.')
-    console.log('💡 Al confirmar se descontará stock y creará venta/transacción')
+    // Crear notificación para el dueño
+    const { data: usuarios } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('tenant_id', tenant_id)
+
+    if (usuarios && usuarios.length > 0) {
+      const notificaciones = usuarios.map(u => ({
+        tenant_id,
+        user_id: u.id,
+        tipo: 'pedido',
+        titulo: 'Nuevo pedido recibido',
+        mensaje: `${cliente} hizo un pedido por $${total.toLocaleString()} (${metodo_pago})`,
+        icono: 'pedido',
+        color: 'blue',
+        datos: { pedido_id: data.id }
+      }))
+
+      await supabase.from('notificaciones').insert(notificaciones)
+      console.log('🔔 Notificaciones creadas para', usuarios.length, 'usuarios')
+    }
 
     return NextResponse.json({ success: true, data })
+
   } catch (error: any) {
     console.error('❌ Error POST /api/pedidos:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// PUT: actualizar estado, observaciones, etc.
 export async function PUT(request: Request) {
   try {
     const body = await request.json()
     const { id, estado, observaciones } = body
 
     if (!id) {
-      return NextResponse.json({ success: false, error: 'Se requiere ID' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Falta id del pedido' }, { status: 400 })
     }
 
     const updateData: any = {}
@@ -103,6 +120,7 @@ export async function PUT(request: Request) {
       .single()
 
     if (error) throw error
+
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
     console.error('❌ Error PUT /api/pedidos:', error)
