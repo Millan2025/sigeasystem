@@ -1,11 +1,13 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
 import Link from "next/link";
-import { NEGOCIOS } from "@/config/negocios";`nimport { offlineQueue } from "@/lib/offlineQueue";`nimport { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { NEGOCIOS } from "@/config/negocios";
 import PageHeader from "@/components/PageHeader";
+import { intentarVentaConFallback } from "@/lib/ventaHelper";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -39,7 +41,8 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
-  const [cobrando, setCobrando] = useState(false);`n  const isOnline = useOnlineStatus();
+  const [cobrando, setCobrando] = useState(false);
+  const isOnline = useOnlineStatus();
 
   const cargarProductos = () => {
     // Cargar TODOS los productos sin filtro de categoria (categorias reales no coinciden con categoriaNegocio)
@@ -120,54 +123,53 @@ export default function POSPage() {
   };
 
   const pay = async (metodo: string) => {
-    if (cart.length === 0) return;
+  if (cart.length === 0) return;
 
-    if (metodo === 'Crédito') {
-      setShowCreditoModal(true);
-      return;
-    }
+  if (metodo === 'Crédito') {
+    setShowCreditoModal(true);
+    return;
+  }
 
-    try {
-      setCobrando(true);
-      const items = cart.map(item => {
-        const producto_id = item.esPeso ? item.id.replace(/-peso$/, '') : item.id;
-        return {
-          producto_id: producto_id,
-          cantidad: item.cantidad,
-          precio_unitario: item.precioUnitario,
-          subtotal: item.subtotal
-        };
-      });
+  const items = cart.map(item => {
+    const producto_id = item.esPeso ? item.id.replace(/-peso$/, '') : item.id;
+    return {
+      producto_id: producto_id,
+      cantidad: item.cantidad,
+      precio_unitario: item.precioUnitario,
+      subtotal: item.subtotal
+    };
+  });
 
-      const res = await fetch('/api/ventas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          metodo_pago: metodo,
-          total: totalPrecio,
-          items: items
-        })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setMsg('✅ Venta #' + data.data.venta.id + ' registrada - $' + totalPrecio.toLocaleString());
-        setCart([]);
-        setShowPay(false);
-        setShowCart(false);
-        setCobrando(false);
-        cargarProductos();
-        setTimeout(() => setMsg(''), 4000);
-      } else {
-        setCobrando(false);
-        alert('Error al registrar venta: ' + data.error);
-      }
-    } catch (error) {
+  setCobrando(true);
+  await intentarVentaConFallback(
+    tenantId,
+    metodo,
+    totalPrecio,
+    items,
+    isOnline,
+    (msg) => {
+      setMsg(msg);
+      setCart([]);
+      setShowPay(false);
+      setShowCart(false);
       setCobrando(false);
-      alert('Error de conexión');
+      cargarProductos();
+      setTimeout(() => setMsg(''), 4000);
+    },
+    (msg) => {
+      setMsg(msg);
+      setCart([]);
+      setShowPay(false);
+      setShowCart(false);
+      setCobrando(false);
+      setTimeout(() => setMsg(''), 5000);
+    },
+    (msg) => {
+      alert(msg);
+      setCobrando(false);
     }
-  };
+  );
+};
 
   const guardarCredito = async () => {
     if (!creditoData.cliente) {
