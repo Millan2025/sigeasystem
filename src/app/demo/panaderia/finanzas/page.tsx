@@ -351,7 +351,7 @@ export default function FinanzasPage() {
               }}
               className="bg-emerald-500 text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1 whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nueva Transacción</span>
+              <Plus className="w-4 h-4" /> <span className="hidden md:inline">Nueva Transacción</span><span className="md:hidden">Nueva</span>
               <span className="sm:hidden">Nueva</span>
             </button>
             <button
@@ -374,7 +374,7 @@ export default function FinanzasPage() {
               title="Exportar a Excel"
             >
               <Download className="w-5 h-5" />
-              <span className="text-xs hidden sm:inline">Exportar</span>
+              <span className="text-xs hidden md:inline">Exportar</span>
             </button>
             <button
               onClick={() => setShowResetModal(true)}
@@ -382,7 +382,7 @@ export default function FinanzasPage() {
               title="Resetear todas las cifras financieras"
             >
               <AlertTriangle className="w-5 h-5" />
-              <span className="text-xs hidden sm:inline">Reset</span>
+              <span className="text-xs hidden md:inline">Reset</span>
             </button>
           </>
         }
