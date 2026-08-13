@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -271,7 +271,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 	          {/* Botón Cerrar Sesión - Esquina superior derecha */}
                   {/* Botón Notificaciones - junto al de Cerrar Sesión */}
           <div className="absolute top-0 right-28 z-20">
-            <NotificationBell tenantId={tenantId} />
+            <NotificationBell tenantId={tenantId} negocioSlug={negocioSlug} />
           </div>  
 	<button
             onClick={cerrarSesion}

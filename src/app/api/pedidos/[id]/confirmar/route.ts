@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -15,7 +15,6 @@ export async function PUT(
     const body = await req.json()
     const { metodo_pago } = body
 
-    // 1. Obtener pedido
     const { data: pedido, error: getErr } = await supabase
       .from('pedidos')
       .select('*')
@@ -32,9 +31,9 @@ export async function PUT(
     const total = pedido.total
     const pago = metodo_pago || pedido.metodo_pago
 
-    console.log('🔒 Confirmando pedido. Descontando stock y creando venta...')
+    console.log('🔒 Confirmando pedido:', id, 'Descontando stock y creando venta...')
 
-    // 2. Descontar stock de todos los items
+    // 1. Descontar stock SIEMPRE (sin importar método de pago)
     for (const item of items) {
       const { data: prod, error: prodErr } = await supabase
         .from('productos')
@@ -67,7 +66,7 @@ export async function PUT(
         })
     }
 
-    // 3. Crear venta
+    // 2. Crear venta SIEMPRE
     const { data: venta, error: ventaErr } = await supabase
       .from('ventas')
       .insert({
@@ -82,7 +81,7 @@ export async function PUT(
       .single()
     if (ventaErr) throw ventaErr
 
-    // 4. Registrar transacción financiera
+    // 3. Registrar transacción financiera SIEMPRE
     const { data: categoria, error: catErr } = await supabase
       .from('categorias_contables')
       .select('id')
@@ -110,7 +109,7 @@ export async function PUT(
         })
     }
 
-    // 5. Actualizar pedido
+    // 4. Actualizar pedido
     await supabase
       .from('pedidos')
       .update({
