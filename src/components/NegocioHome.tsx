@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -530,12 +530,12 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
             <div className="mb-4">
               <label className="block text-xs font-bold text-stone-700 mb-2">Enlace de la Tienda:</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   readOnly
                   value={generarEnlace("tienda")}
-                  className="flex-1 p-3 bg-stone-50 border border-stone-300 rounded-xl text-xs text-stone-700 font-mono"
+                  className="flex-1 p-3 bg-stone-50 min-w-0 truncate border border-stone-300 rounded-xl text-xs text-stone-700 font-mono"
                 />
                 <button
                   onClick={() => copiarAlPortapapeles(generarEnlace("tienda"), "tienda")}

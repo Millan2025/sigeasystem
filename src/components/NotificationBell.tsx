@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from 'react';
-import { Bell, Check, CheckCheck, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-react';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 
 interface Props {
   tenantId: string | null;
+  negocioSlug?: string;
 }
 
 const iconos: Record<string, string> = {
@@ -20,12 +22,23 @@ const colores: Record<string, string> = {
   purple: 'bg-purple-100 text-purple-700 border-purple-300',
 };
 
-export default function NotificationBell({ tenantId }: Props) {
+// Mapeo de tipo de notificación a módulo del dashboard
+const moduloPorTipo: Record<string, string> = {
+  pedido: 'pedidos',
+  stock: 'inventario',
+  orden: 'produccion',
+  pago: 'finanzas',
+  cliente: 'tienda',
+  venta: 'reportes',
+  alerta: 'inventario',
+};
+
+export default function NotificationBell({ tenantId, negocioSlug }: Props) {
   const { notificaciones, noLeidas, marcarLeida, marcarTodasLeidas } = useRealtimeNotifications(tenantId);
   const [abierto, setAbierto] = useState(false);
   const [toast, setToast] = useState<any>(null);
+  const router = useRouter();
 
-  // Escuchar notificaciones en tiempo real para mostrar toast
   useEffect(() => {
     const handler = (e: any) => {
       const n = e.detail;
@@ -37,6 +50,16 @@ export default function NotificationBell({ tenantId }: Props) {
   }, []);
 
   if (!tenantId) return null;
+
+  // Ver notificación: marca como leída y redirige al módulo
+  const verNotificacion = (n: any) => {
+    marcarLeida(n.id);
+    const modulo = moduloPorTipo[n.tipo] || moduloPorTipo[n.icono] || 'finanzas';
+    const slug = negocioSlug || 'panaderia';
+    const url = `/${slug}/${modulo}?tenant=${tenantId}`;
+    setAbierto(false);
+    router.push(url);
+  };
 
   return (
     <>
@@ -77,29 +100,31 @@ export default function NotificationBell({ tenantId }: Props) {
             <div className="fixed inset-0 z-40" onClick={() => setAbierto(false)} />
             <div className="fixed top-16 z-50 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border flex flex-col overflow-hidden">
               <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="font-bold text-stone-800">Notificaciones</h3>
+                <div>
+                  <h3 className="font-bold text-stone-800">Notificaciones</h3>
+                  <p className="text-xs text-stone-500">Hoy</p>
+                </div>
                 {noLeidas > 0 && (
                   <button
                     onClick={marcarTodasLeidas}
-                    className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                    className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium"
                   >
                     <CheckCheck className="w-3 h-3" /> Marcar todas
                   </button>
                 )}
               </div>
-              
+
               <div className="overflow-y-auto flex-1">
                 {notificaciones.length === 0 ? (
                   <div className="p-8 text-center text-stone-500 text-sm">
                     <Bell className="w-10 h-10 mx-auto mb-2 text-stone-300" />
-                    <p>Sin notificaciones</p>
+                    <p>No hay notificaciones hoy</p>
                   </div>
                 ) : (
                   notificaciones.map(n => (
                     <div
                       key={n.id}
-                      onClick={() => marcarLeida(n.id)}
-                      className={`p-3 border-b border-stone-100 hover:bg-stone-50 cursor-pointer transition ${!n.leida ? 'bg-blue-50/50' : ''}`}
+                      className={`p-3 border-b border-stone-100 transition ${!n.leida ? 'bg-blue-50/50' : ''}`}
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-2xl shrink-0">{iconos[n.icono] || iconos.default}</span>
@@ -111,13 +136,31 @@ export default function NotificationBell({ tenantId }: Props) {
                             {!n.leida && <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0" />}
                           </div>
                           <p className="text-xs text-stone-600 mt-1 line-clamp-2">{n.mensaje}</p>
-                          <p className="text-xs text-stone-400 mt-1">
-                            {new Date(n.created_at).toLocaleString('es-CO', { 
-                              hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' 
-                            })}
-                          </p>
+                          <div className="flex items-center justify-between mt-2 gap-2">
+                            <p className="text-xs text-stone-400">
+                              {new Date(n.created_at).toLocaleString('es-CO', {
+                                hour: '2-digit', minute: '2-digit'
+                              })}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              {!n.leida && (
+                                <button
+                                  onClick={() => marcarLeida(n.id)}
+                                  className="text-xs text-stone-500 hover:text-stone-700"
+                                  title="Marcar como leída"
+                                >
+                                  <Check className="w-3 h-3" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => verNotificacion(n)}
+                                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                              >
+                                <ExternalLink className="w-3 h-3" /> Ver
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        {n.leida && <Check className="w-4 h-4 text-emerald-500 shrink-0" />}
                       </div>
                     </div>
                   ))

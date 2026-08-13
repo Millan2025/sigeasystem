@@ -19,16 +19,26 @@ export function useRealtimeNotifications(tenantId: string | null) {
   const [noLeidas, setNoLeidas] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Cargar notificaciones iniciales
+  // Obtener fecha de inicio del día actual en zona horaria Colombia
+  const getInicioHoy = () => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return hoy.toISOString();
+  };
+
+  // Cargar solo notificaciones del día actual
   const cargarNotificaciones = useCallback(async () => {
     if (!tenantId) return;
     try {
+      const inicioHoy = getInicioHoy();
       const { data, error } = await supabase
         .from('notificaciones')
         .select('*')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', inicioHoy)
         .order('created_at', { ascending: false })
-        .limit(50);
-      
+        .limit(100);
+
       if (!error && data) {
         setNotificaciones(data as Notificacion[]);
         setNoLeidas(data.filter(n => !n.leida).length);
@@ -58,12 +68,16 @@ export function useRealtimeNotifications(tenantId: string | null) {
         },
         (payload) => {
           const nueva = payload.new as Notificacion;
-          setNotificaciones(prev => [nueva, ...prev].slice(0, 50));
-          if (!nueva.leida) {
-            setNoLeidas(prev => prev + 1);
+          // Solo agregar si es del día actual
+          const inicioHoy = new Date(getInicioHoy());
+          const fechaNotif = new Date(nueva.created_at);
+          if (fechaNotif >= inicioHoy) {
+            setNotificaciones(prev => [nueva, ...prev].slice(0, 100));
+            if (!nueva.leida) {
+              setNoLeidas(prev => prev + 1);
+            }
+            window.dispatchEvent(new CustomEvent('nueva-notificacion', { detail: nueva }));
           }
-          // Disparar evento custom para que otros componentes muestren toast
-          window.dispatchEvent(new CustomEvent('nueva-notificacion', { detail: nueva }));
         }
       )
       .subscribe();
@@ -73,26 +87,28 @@ export function useRealtimeNotifications(tenantId: string | null) {
     };
   }, [tenantId, cargarNotificaciones]);
 
-  // Marcar como leída
+  // Marcar una como leída
   const marcarLeida = async (id: string) => {
     const { error } = await supabase
       .from('notificaciones')
       .update({ leida: true })
-      .eq('id', id);
-    
+      .eq('id', id)
+      .eq('tenant_id', tenantId);
+
     if (!error) {
       setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true } : n));
       setNoLeidas(prev => Math.max(0, prev - 1));
     }
   };
 
-  // Marcar todas como leídas
+  // Marcar todas como leídas (SOLO del tenant actual)
   const marcarTodasLeidas = async () => {
     const { error } = await supabase
       .from('notificaciones')
       .update({ leida: true })
+      .eq('tenant_id', tenantId)
       .eq('leida', false);
-    
+
     if (!error) {
       setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
       setNoLeidas(0);
