@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, Mail, Globe } from "lucide-react";
 import { NEGOCIOS } from "@/config/negocios";
+import { createClient } from "@/lib/supabase/client";
 
 interface PageHeaderProps {
   negocioSlug: string;
@@ -54,6 +55,21 @@ export default function PageHeader({
     ...DEFAULT_CONFIG,
     nombre_negocio: negocio?.titulo || "Mi Negocio",
   });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -159,12 +175,12 @@ export default function PageHeader({
         style={{ borderColor: colorPrincipal }}
       >
         <div className="px-3 sm:px-4 py-2.5 md:py-3 max-w-7xl mx-auto flex flex-wrap items-center gap-2 sm:gap-3">
-          <Link
+          {isAuthenticated && <Link
             href={`/demo/${negocioSlug}`}
             className="p-2 hover:bg-stone-100 rounded-xl shrink-0"
           >
             <ArrowLeft className="w-5 h-5 text-stone-700" />
-          </Link>
+          </Link>}
           <div className="flex-1 min-w-0">
             <h1 className="text-base sm:text-xl font-bold text-stone-800 truncate flex items-center gap-2">
               <span className="text-2xl">{icono}</span>

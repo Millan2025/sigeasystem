@@ -434,7 +434,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           onClick={() => setShowSharePos(false)}
         >
           <div
-            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+            className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-[calc(100vw-2rem)] sm:max-w-md shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -506,7 +506,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           onClick={() => setShowShareTienda(false)}
         >
           <div
-            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+            className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-[calc(100vw-2rem)] sm:max-w-md shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
