@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { NEGOCIOS } from "@/config/negocios";
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -89,10 +89,10 @@ export default function PedidosPage() {
     if (idxNuevo <= idxActual) return;
 
     try {
-      const resUpdate = await fetch("/api/pedidos", {
+      const resUpdate = await fetch(nuevoEstado === "confirmado" ? `/api/pedidos/${id}/confirmar` : "/api/pedidos", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, estado: nuevoEstado }),
+        body: JSON.stringify(nuevoEstado === "confirmado" ? {} : { id, estado: nuevoEstado }),
       });
       const dataUpdate = await resUpdate.json();
       if (!dataUpdate.success) {
