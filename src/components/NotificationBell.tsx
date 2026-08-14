@@ -37,7 +37,6 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
   const [abierto, setAbierto] = useState(false);
   const [toast, setToast] = useState<any>(null);
   const router = useRouter();
-  console.log('🔔 NotificationBell montado:', { tenantId, negocioSlug, notificaciones: notificaciones.length });
 
   useEffect(() => {
     const handler = (e: any) => {

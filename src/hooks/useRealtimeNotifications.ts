@@ -19,39 +19,29 @@ export function useRealtimeNotifications(tenantId: string | null) {
   const [noLeidas, setNoLeidas] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Cargar via API route (SERVICE_ROLE, evita problemas de RLS)
   const cargarNotificaciones = useCallback(async () => {
-    if (!tenantId) {
-      console.log('⚠️ No hay tenantId, skip carga');
-      return;
-    }
+    if (!tenantId) return;
     try {
-      console.log('🔔 Cargando notificaciones para tenant:', tenantId);
-      
-      // Verificar autenticación
-      const { data: authData } = await supabase.auth.getUser();
-      console.log('🔐 Usuario autenticado:', authData?.user?.email || 'NO AUTENTICADO');
+      console.log('🔔 Cargando notificaciones via API para tenant:', tenantId);
+      const res = await fetch(`/api/notificaciones?tenant=${tenantId}`);
+      const json = await res.json();
 
-      const { data, error } = await supabase
-        .from('notificaciones')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) {
-        console.error('❌ Error cargando notificaciones:', error);
+      if (json.success && json.data) {
+        console.log('✅ Notificaciones cargadas via API:', json.data.length);
+        setNotificaciones(json.data);
+        setNoLeidas(json.data.filter((n: any) => !n.leida).length);
       } else {
-        console.log('✅ Notificaciones cargadas:', data?.length || 0, data);
-        setNotificaciones((data || []) as Notificacion[]);
-        setNoLeidas((data || []).filter(n => !n.leida).length);
+        console.error('❌ Error en API:', json.error);
       }
     } catch (e) {
       console.error('Error cargando notificaciones:', e);
     } finally {
       setLoading(false);
     }
-  }, [tenantId, supabase]);
+  }, [tenantId]);
 
+  // Suscripción realtime (sigue usando cliente con cookies, pero solo para nuevos eventos)
   useEffect(() => {
     if (!tenantId) return;
     cargarNotificaciones();
@@ -67,7 +57,7 @@ export function useRealtimeNotifications(tenantId: string | null) {
           filter: `tenant_id=eq.${tenantId}`,
         },
         (payload) => {
-          console.log('🔔 Nueva notificación recibida:', payload.new);
+          console.log('🔔 Nueva notificación en tiempo real:', payload.new);
           const nueva = payload.new as Notificacion;
           setNotificaciones(prev => [nueva, ...prev].slice(0, 100));
           if (!nueva.leida) {
@@ -83,33 +73,39 @@ export function useRealtimeNotifications(tenantId: string | null) {
     };
   }, [tenantId, cargarNotificaciones, supabase]);
 
+  // Marcar como leída via API
   const marcarLeida = async (id: string) => {
-    const { error } = await supabase
-      .from('notificaciones')
-      .update({ leida: true })
-      .eq('id', id)
-      .eq('tenant_id', tenantId);
-
-    if (!error) {
-      setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true } : n));
-      setNoLeidas(prev => Math.max(0, prev - 1));
-    } else {
-      console.error('❌ Error marcando leída:', error);
+    try {
+      const res = await fetch('/api/notificaciones', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, tenant_id: tenantId, leida: true }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true } : n));
+        setNoLeidas(prev => Math.max(0, prev - 1));
+      }
+    } catch (e) {
+      console.error('Error marcando leída:', e);
     }
   };
 
+  // Marcar todas como leídas via API
   const marcarTodasLeidas = async () => {
-    const { error } = await supabase
-      .from('notificaciones')
-      .update({ leida: true })
-      .eq('tenant_id', tenantId)
-      .eq('leida', false);
-
-    if (!error) {
-      setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
-      setNoLeidas(0);
-    } else {
-      console.error('❌ Error marcando todas:', error);
+    try {
+      const res = await fetch('/api/notificaciones', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: tenantId, marcar_todas: true }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
+        setNoLeidas(0);
+      }
+    } catch (e) {
+      console.error('Error marcando todas:', e);
     }
   };
 
