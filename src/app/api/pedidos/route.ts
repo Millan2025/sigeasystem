@@ -18,21 +18,20 @@ export async function GET(request: Request) {
     if (error) throw error
     return NextResponse.json({ success: true, data: data || [] })
   } catch (error: any) {
-    console.error('❌ Error GET /api/pedidos:', error)
+    console.error('Error GET /api/pedidos:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
   const startTime = Date.now()
-  console.log('⚡ INICIO creación pedido:', new Date().toISOString())
   try {
     const body = await request.json()
     const { tenant_id, cliente, direccion, telefono, metodo_pago, total, items, observaciones } = body
 
     if (!tenant_id || !cliente || !items || !total) {
       return NextResponse.json(
-        { success: false, error: 'Faltan datos obligatorios: tenant_id, cliente, items, total' },
+        { success: false, error: 'Faltan datos obligatorios' },
         { status: 400 }
       )
     }
@@ -61,48 +60,17 @@ export async function POST(request: Request) {
       .select()
       .single()
 
-    if (error) {
-      console.error('❌ Error al insertar pedido:', error)
-      throw error
-    }
+    if (error) throw error
 
-    console.log('📝 Pedido pendiente creado:', data.id, 'en', Date.now() - startTime, 'ms')
-    console.log('💡 Esperando confirmación del dueño para descontar stock y crear venta')
+    // NOTA: Las notificaciones las crea un TRIGGER en la base de datos
+    // No se crean desde el API para evitar duplicaciones
 
-    console.log('🔔 Intentando crear notificaciones...')
-    const { data: usuarios, error: usuariosErr } = await supabase
-      .from('usuarios')
-      .select('id')
-      .eq('tenant_id', tenant_id)
-
-    if (usuariosErr) {
-      console.error('❌ Error obteniendo usuarios:', usuariosErr)
-    } else {
-      console.log('✅ Usuarios encontrados:', usuarios?.length || 0)
-      if (usuarios && usuarios.length > 0) {
-        const notificaciones = usuarios.map(u => ({
-          tenant_id,
-          user_id: u.id,
-          tipo: 'pedido',
-          titulo: 'Nuevo pedido recibido',
-          mensaje: `${cliente} hizo un pedido por $${total.toLocaleString()} (${metodo_pago})`,
-          icono: 'pedido',
-          color: 'blue',
-          datos: { pedido_id: data.id }
-        }))
-
-        const { error: notifErr } = await supabase.from('notificaciones').insert(notificaciones)
-        if (notifErr) {
-          console.error('❌ Error insertando notificaciones:', notifErr)
-        } else {
-          console.log('✅ Notificaciones creadas:', notificaciones.length)
-        }
-      }
-    }
+    const totalTime = Date.now() - startTime
+    console.log('Pedido creado en', totalTime, 'ms - ID:', data.id)
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('❌ Error POST /api/pedidos:', error)
+    console.error('Error POST /api/pedidos:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
@@ -131,7 +99,7 @@ export async function PUT(request: Request) {
     if (error) throw error
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
-    console.error('❌ Error PUT /api/pedidos:', error)
+    console.error('Error PUT /api/pedidos:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
