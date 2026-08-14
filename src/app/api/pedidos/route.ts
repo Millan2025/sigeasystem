@@ -24,6 +24,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const startTime = Date.now()
+  console.log('⚡ INICIO creación pedido:', new Date().toISOString())
   try {
     const body = await request.json()
     const { tenant_id, cliente, direccion, telefono, metodo_pago, total, items, observaciones } = body
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
       throw error
     }
 
-    console.log('📝 Pedido pendiente creado:', data.id)
+    console.log('📝 Pedido pendiente creado:', data.id, 'en', Date.now() - startTime, 'ms')
     console.log('💡 Esperando confirmación del dueño para descontar stock y crear venta')
 
     console.log('🔔 Intentando crear notificaciones...')

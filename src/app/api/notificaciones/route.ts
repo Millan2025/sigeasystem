@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -15,16 +15,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Falta tenant' }, { status: 400 });
     }
 
+    // 🔒 CORTE DIARIO: Solo notificaciones del día actual (timezone Colombia UTC-5)
+    const ahora = new Date();
+    // Colombia es UTC-5, así que obtenemos la fecha de inicio del día en Colombia
+    const offsetColombia = -5 * 60; // minutos
+    const localTime = new Date(ahora.getTime() + offsetColombia * 60 * 1000);
+    const inicioDiaColombia = new Date(Date.UTC(
+      localTime.getUTCFullYear(),
+      localTime.getUTCMonth(),
+      localTime.getUTCDate(),
+      0, 0, 0
+    ));
+    // Convertir de vuelta a UTC
+    const inicioDiaUTC = new Date(inicioDiaColombia.getTime() - offsetColombia * 60 * 1000);
+    const inicioDiaISO = inicioDiaUTC.toISOString();
+
+    console.log('🕐 Inicio del día (Colombia) en UTC:', inicioDiaISO);
+
     const { data, error } = await supabase
       .from('notificaciones')
       .select('*')
       .eq('tenant_id', tenantId)
+      .gte('created_at', inicioDiaISO)  // Solo del día actual
       .order('created_at', { ascending: false })
       .limit(100);
 
     if (error) throw error;
 
-    console.log('🔔 GET /api/notificaciones:', data?.length || 0, 'notificaciones para', tenantId);
+    console.log('🔔 GET /api/notificaciones:', data?.length || 0, 'notificaciones del día para', tenantId);
     return NextResponse.json({ success: true, data: data || [] });
   } catch (error: any) {
     console.error('❌ Error GET /api/notificaciones:', error);
