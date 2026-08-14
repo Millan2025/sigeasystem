@@ -22,7 +22,6 @@ const colores: Record<string, string> = {
   purple: 'bg-purple-100 text-purple-700 border-purple-300',
 };
 
-// Mapeo de tipo de notificación a módulo del dashboard
 const moduloPorTipo: Record<string, string> = {
   pedido: 'pedidos',
   stock: 'inventario',
@@ -51,7 +50,6 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
 
   if (!tenantId) return null;
 
-  // Ver notificación: marca como leída y redirige al módulo
   const verNotificacion = (n: any) => {
     marcarLeida(n.id);
     const modulo = moduloPorTipo[n.tipo] || moduloPorTipo[n.icono] || 'finanzas';
@@ -63,7 +61,6 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
 
   return (
     <>
-      {/* Toast flotante */}
       {toast && (
         <div className={`fixed top-20 right-4 z-[100] ${colores[toast.color] || colores.blue} border-l-4 px-4 py-3 rounded-xl shadow-2xl max-w-sm animate-[slideIn_0.3s_ease-out]`}>
           <div className="flex items-start gap-3">
@@ -79,7 +76,6 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
         </div>
       )}
 
-      {/* Botón campana */}
       <div className="relative">
         <button
           onClick={() => setAbierto(!abierto)}
@@ -94,7 +90,6 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
           )}
         </button>
 
-        {/* Dropdown */}
         {abierto && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setAbierto(false)} />

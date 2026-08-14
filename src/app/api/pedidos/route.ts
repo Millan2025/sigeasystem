@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       nombre: item.nombre || 'Producto'
     }))
 
-    // 🔒 NUEVA LÓGICA: Solo guardar pedido pendiente, NUNCA descontar stock ni crear venta
     const { data, error } = await supabase
       .from('pedidos')
       .insert({
@@ -68,30 +67,38 @@ export async function POST(request: Request) {
     console.log('📝 Pedido pendiente creado:', data.id)
     console.log('💡 Esperando confirmación del dueño para descontar stock y crear venta')
 
-    // Crear notificación para el dueño
-    const { data: usuarios } = await supabase
+    console.log('🔔 Intentando crear notificaciones...')
+    const { data: usuarios, error: usuariosErr } = await supabase
       .from('usuarios')
       .select('id')
       .eq('tenant_id', tenant_id)
 
-    if (usuarios && usuarios.length > 0) {
-      const notificaciones = usuarios.map(u => ({
-        tenant_id,
-        user_id: u.id,
-        tipo: 'pedido',
-        titulo: 'Nuevo pedido recibido',
-        mensaje: `${cliente} hizo un pedido por $${total.toLocaleString()} (${metodo_pago})`,
-        icono: 'pedido',
-        color: 'blue',
-        datos: { pedido_id: data.id }
-      }))
+    if (usuariosErr) {
+      console.error('❌ Error obteniendo usuarios:', usuariosErr)
+    } else {
+      console.log('✅ Usuarios encontrados:', usuarios?.length || 0)
+      if (usuarios && usuarios.length > 0) {
+        const notificaciones = usuarios.map(u => ({
+          tenant_id,
+          user_id: u.id,
+          tipo: 'pedido',
+          titulo: 'Nuevo pedido recibido',
+          mensaje: `${cliente} hizo un pedido por $${total.toLocaleString()} (${metodo_pago})`,
+          icono: 'pedido',
+          color: 'blue',
+          datos: { pedido_id: data.id }
+        }))
 
-      await supabase.from('notificaciones').insert(notificaciones)
-      console.log('🔔 Notificaciones creadas para', usuarios.length, 'usuarios')
+        const { error: notifErr } = await supabase.from('notificaciones').insert(notificaciones)
+        if (notifErr) {
+          console.error('❌ Error insertando notificaciones:', notifErr)
+        } else {
+          console.log('✅ Notificaciones creadas:', notificaciones.length)
+        }
+      }
     }
 
     return NextResponse.json({ success: true, data })
-
   } catch (error: any) {
     console.error('❌ Error POST /api/pedidos:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -120,7 +127,6 @@ export async function PUT(request: Request) {
       .single()
 
     if (error) throw error
-
     return NextResponse.json({ success: true, data })
   } catch (error: any) {
     console.error('❌ Error PUT /api/pedidos:', error)

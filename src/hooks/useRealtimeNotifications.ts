@@ -13,20 +13,19 @@ export interface Notificacion {
   created_at: string;
 }
 
+// Obtener fecha de inicio del día actual en zona horaria Colombia
+const getInicioHoy = () => {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  return hoy.toISOString();
+};
+
 export function useRealtimeNotifications(tenantId: string | null) {
   const supabase = createClient();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [noLeidas, setNoLeidas] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Obtener fecha de inicio del día actual en zona horaria Colombia
-  const getInicioHoy = () => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    return hoy.toISOString();
-  };
-
-  // Cargar solo notificaciones del día actual
   const cargarNotificaciones = useCallback(async () => {
     if (!tenantId) return;
     try {
@@ -50,7 +49,6 @@ export function useRealtimeNotifications(tenantId: string | null) {
     }
   }, [tenantId]);
 
-  // Suscribirse a notificaciones en tiempo real
   useEffect(() => {
     if (!tenantId) return;
 
@@ -68,7 +66,6 @@ export function useRealtimeNotifications(tenantId: string | null) {
         },
         (payload) => {
           const nueva = payload.new as Notificacion;
-          // Solo agregar si es del día actual
           const inicioHoy = new Date(getInicioHoy());
           const fechaNotif = new Date(nueva.created_at);
           if (fechaNotif >= inicioHoy) {
@@ -87,7 +84,6 @@ export function useRealtimeNotifications(tenantId: string | null) {
     };
   }, [tenantId, cargarNotificaciones]);
 
-  // Marcar una como leída
   const marcarLeida = async (id: string) => {
     const { error } = await supabase
       .from('notificaciones')
@@ -101,7 +97,6 @@ export function useRealtimeNotifications(tenantId: string | null) {
     }
   };
 
-  // Marcar todas como leídas (SOLO del tenant actual)
   const marcarTodasLeidas = async () => {
     const { error } = await supabase
       .from('notificaciones')
