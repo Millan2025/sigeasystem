@@ -13,34 +13,30 @@ export interface Notificacion {
   created_at: string;
 }
 
-// Obtener fecha de inicio del día actual en zona horaria Colombia
-const getInicioHoy = () => {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  return hoy.toISOString();
-};
-
 export function useRealtimeNotifications(tenantId: string | null) {
   const supabase = createClient();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [noLeidas, setNoLeidas] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // 🔧 TEMPORALMENTE SIN FILTRO POR DÍA (diagnóstico)
   const cargarNotificaciones = useCallback(async () => {
     if (!tenantId) return;
     try {
-      const inicioHoy = getInicioHoy();
+      console.log('🔔 Cargando notificaciones para tenant:', tenantId);
       const { data, error } = await supabase
         .from('notificaciones')
         .select('*')
         .eq('tenant_id', tenantId)
-        .gte('created_at', inicioHoy)
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (!error && data) {
-        setNotificaciones(data as Notificacion[]);
-        setNoLeidas(data.filter(n => !n.leida).length);
+      if (error) {
+        console.error('❌ Error cargando notificaciones:', error);
+      } else {
+        console.log('✅ Notificaciones cargadas:', data?.length || 0);
+        setNotificaciones((data || []) as Notificacion[]);
+        setNoLeidas((data || []).filter(n => !n.leida).length);
       }
     } catch (e) {
       console.error('Error cargando notificaciones:', e);
@@ -65,16 +61,13 @@ export function useRealtimeNotifications(tenantId: string | null) {
           filter: `tenant_id=eq.${tenantId}`,
         },
         (payload) => {
+          console.log('🔔 Nueva notificación recibida:', payload.new);
           const nueva = payload.new as Notificacion;
-          const inicioHoy = new Date(getInicioHoy());
-          const fechaNotif = new Date(nueva.created_at);
-          if (fechaNotif >= inicioHoy) {
-            setNotificaciones(prev => [nueva, ...prev].slice(0, 100));
-            if (!nueva.leida) {
-              setNoLeidas(prev => prev + 1);
-            }
-            window.dispatchEvent(new CustomEvent('nueva-notificacion', { detail: nueva }));
+          setNotificaciones(prev => [nueva, ...prev].slice(0, 100));
+          if (!nueva.leida) {
+            setNoLeidas(prev => prev + 1);
           }
+          window.dispatchEvent(new CustomEvent('nueva-notificacion', { detail: nueva }));
         }
       )
       .subscribe();

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-react';
@@ -37,6 +37,7 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
   const [abierto, setAbierto] = useState(false);
   const [toast, setToast] = useState<any>(null);
   const router = useRouter();
+  console.log('🔔 NotificationBell montado:', { tenantId, negocioSlug, notificaciones: notificaciones.length });
 
   useEffect(() => {
     const handler = (e: any) => {
