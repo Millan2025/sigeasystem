@@ -6,7 +6,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Fecha en zona horaria de Colombia (YYYY-MM-DD)
 const fechaBogota = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' })
 
 export async function GET(request: Request) {
@@ -39,17 +38,18 @@ export async function GET(request: Request) {
       totales: { total, count: transacciones }
     })
   } catch (error: any) {
-    console.error('❌ Error GET /api/ventas:', error)
+    console.error('Error GET /api/ventas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
+  const startTime = Date.now()
+  console.log('POS INICIO:', new Date().toISOString())
+
   try {
     const body = await request.json()
     const { tenant_id, metodo_pago, total, items } = body
-
-    console.log('📥 POST /api/ventas - Datos:', { tenant_id, metodo_pago, total, items: items?.length })
 
     if (!tenant_id || !items || items.length === 0) {
       return NextResponse.json(
@@ -58,134 +58,68 @@ export async function POST(request: Request) {
       )
     }
 
-    // 1. Insertar cabecera de venta
-    const { data: venta, error: ventaErr } = await supabase
-      .from('ventas')
-      .insert({
-        tenant_id,
-        metodo_pago: metodo_pago || 'contado',
-        total,
-        fecha: fechaBogota(),
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single()
+    const fechaISO = new Date().toISOString()
+    const fechaStr = fechaBogota()
+    const productosIds: string[] = items.map((item: any) => item.producto_id)
 
-    if (ventaErr) {
-      console.error('❌ Error al insertar venta:', ventaErr)
-      throw ventaErr
-    }
-    console.log('✅ Venta insertada ID:', venta.id)
-
-    // 2. Insertar items (sale_items)
-    try {
-      const saleItems = items.map((item: any) => ({
-        sale_id: venta.id,
-        product_id: item.producto_id,
-        quantity: item.cantidad,
-        price_at_sale: item.precio_unitario,
-        subtotal: item.subtotal,
-        tenant_id: tenant_id
-      }))
-      const { error: itemsErr } = await supabase
-        .from('sale_items')
-        .insert(saleItems)
-      if (itemsErr) {
-        console.error('❌ Error detallado en sale_items:', itemsErr)
-      } else {
-        console.log('✅ sale_items insertados:', saleItems.length)
-      }
-    } catch (e) {
-      console.warn('⚠️ Error en items:', e)
-    }
-
-    // 3. Descontar stock (movimientos de salida) con logs detallados
-    for (const item of items) {
-      console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad)
-
-      // 1. Verificar producto
-      const { data: producto, error: prodErr } = await supabase
+    // OLA 1: PARALELO - Obtener todos los productos + categoría contable a la vez
+    const [productosResult, catResult] = await Promise.all([
+      supabase
         .from('productos')
-        .select('id, stock')
-        .eq('id', item.producto_id)
-        .eq('tenant_id', tenant_id)
-        .single()
-
-      if (prodErr) {
-        console.error('❌ Producto no encontrado o error:', prodErr)
-        continue
-      }
-      if (!producto) {
-        console.warn('⚠️ Producto no existe, saltando...')
-        continue
-      }
-      console.log('✅ Producto encontrado, stock actual:', producto.stock)
-
-      // 2. Insertar movimiento de salida
-      const { data: movData, error: movErr } = await supabase
-        .from('movimientos_inventario')
-        .insert({
-          producto_id: item.producto_id,
-          tipo: 'salida',
-          cantidad: item.cantidad,
-          motivo: `Venta #${venta.id}`,
-          tenant_id,
-          created_at: new Date().toISOString()
-        })
-        .select()
-
-      if (movErr) {
-        console.error('❌ Error al insertar movimiento:', movErr)
-        continue
-      }
-      console.log('✅ Movimiento insertado:', movData)
-
-      // 3. Recalcular stock
-      const { data: movs, error: movsErr } = await supabase
-        .from('movimientos_inventario')
-        .select('tipo, cantidad')
-        .eq('producto_id', item.producto_id)
-        .eq('tenant_id', tenant_id)
-
-      if (movsErr) {
-        console.error('❌ Error al obtener movimientos para recalcular:', movsErr)
-        continue
-      }
-
-      let nuevoStock = 0
-      movs?.forEach(m => {
-        nuevoStock += m.tipo === 'entrada' ? m.cantidad : -m.cantidad
-      })
-      console.log('📊 Nuevo stock calculado:', nuevoStock)
-
-      // 4. Actualizar stock en productos
-      const { data: updateData, error: updateErr } = await supabase
-        .from('productos')
-        .update({ stock: nuevoStock })
-        .eq('id', item.producto_id)
-        .eq('tenant_id', tenant_id)
-        .select()
-
-      if (updateErr) {
-        console.error('❌ Error al actualizar stock:', updateErr)
-      } else {
-        console.log('✅ Stock actualizado correctamente. Nuevo stock:', nuevoStock)
-      }
-    }
-
-    // 4. Registrar en Finanzas (ingreso)
-    try {
-      console.log('🔍 Buscando categoría 4-01-01')
-      let { data: categoria, error: catErr } = await supabase
+        .select('id, stock, nombre')
+        .in('id', productosIds)
+        .eq('tenant_id', tenant_id),
+      supabase
         .from('categorias_contables')
         .select('id')
         .eq('codigo', '4-01-01')
         .eq('tenant_id', tenant_id)
         .maybeSingle()
+    ])
 
-      if (!categoria) {
-        console.log('⚠️ Categoría 4-01-01 no encontrada, creándola...')
-        const { data: newCat, error: createErr } = await supabase
+    if (productosResult.error) throw productosResult.error
+    const productos: any[] = productosResult.data || []
+    let categoria = catResult.data
+    const prodMap = new Map<string, any>(productos.map((p: any) => [p.id, p]))
+
+    console.log('OLA 1 (productos + categoria):', Date.now() - startTime, 'ms')
+
+    // Validar stock suficiente
+    for (const item of items) {
+      const prod = prodMap.get(item.producto_id)
+      if (!prod) {
+        return NextResponse.json(
+          { success: false, error: 'Producto no encontrado: ' + item.producto_id },
+          { status: 400 }
+        )
+      }
+      if (prod.stock < item.cantidad) {
+        return NextResponse.json(
+          { success: false, error: 'Stock insuficiente para ' + prod.nombre },
+          { status: 400 }
+        )
+      }
+    }
+
+    // OLA 2: PARALELO - Insertar venta + crear categoría si no existe
+    let venta: any
+    const opsOla2: any[] = [
+      supabase
+        .from('ventas')
+        .insert({
+          tenant_id,
+          metodo_pago: metodo_pago || 'contado',
+          total,
+          fecha: fechaStr,
+          created_at: fechaISO
+        })
+        .select()
+        .single()
+    ]
+
+    if (!categoria) {
+      opsOla2.push(
+        supabase
           .from('categorias_contables')
           .insert({
             codigo: '4-01-01',
@@ -195,56 +129,87 @@ export async function POST(request: Request) {
           })
           .select()
           .single()
-        if (createErr) {
-          console.error('❌ Error al crear categoría:', createErr)
-        } else if (newCat) {
-          categoria = newCat
-          console.log('✅ Categoría creada:', categoria?.id)
-        }
-      }
-
-      if (categoria?.id) {
-        const { error: transError } = await supabase
-          .from('transacciones')
-          .insert({
-            tipo: 'ingreso',
-            monto: total,
-            categoria_contable_id: categoria.id,
-            descripcion: `Venta #${venta.id} - ${metodo_pago}`,
-            fecha: fechaBogota(),
-            impuesto: 0,
-            retencion: 0,
-            total_con_impuestos: total,
-            metodo_pago: metodo_pago || 'contado',
-            tenant_id: tenant_id,
-            created_at: new Date().toISOString()
-          })
-        if (transError) {
-          console.error('❌ Error en transacciones:', transError)
-        } else {
-          console.log('✅ Transacción registrada en finanzas')
-        }
-      }
-    } catch (finError) {
-      console.error('❌ Error en finanzas:', finError)
+      )
     }
+
+    const resultsOla2 = await Promise.all(opsOla2)
+    const ventaResult = resultsOla2[0]
+    if (ventaResult.error) throw ventaResult.error
+    venta = ventaResult.data
+
+    if (!categoria && resultsOla2[1]) {
+      const catResult2 = resultsOla2[1]
+      if (!catResult2.error && catResult2.data) {
+        categoria = catResult2.data
+      }
+    }
+
+    console.log('OLA 2 (venta creada):', Date.now() - startTime, 'ms')
+
+    // OLA 3: PARALELO - Insertar sale_items + movimientos + actualizar stocks
+    const saleItems = items.map((item: any) => ({
+      sale_id: venta.id,
+      product_id: item.producto_id,
+      quantity: item.cantidad,
+      price_at_sale: item.precio_unitario,
+      subtotal: item.subtotal,
+      tenant_id: tenant_id
+    }))
+
+    const movimientos = items.map((item: any) => ({
+      producto_id: item.producto_id,
+      tipo: 'salida',
+      cantidad: item.cantidad,
+      motivo: 'Venta #' + venta.id,
+      tenant_id,
+      created_at: fechaISO
+    }))
+
+    const updatesStock = items.map((item: any) => {
+      const prod = prodMap.get(item.producto_id)!
+      return supabase
+        .from('productos')
+        .update({ stock: prod.stock - item.cantidad })
+        .eq('id', item.producto_id)
+        .eq('tenant_id', tenant_id)
+    })
+
+    await Promise.all([
+      supabase.from('sale_items').insert(saleItems),
+      supabase.from('movimientos_inventario').insert(movimientos),
+      ...updatesStock
+    ])
+
+    console.log('OLA 3 (items + movimientos + stock):', Date.now() - startTime, 'ms')
+
+    // OLA 4: PARALELO - Insertar transacción financiera (solo si hay categoría)
+    if (categoria?.id) {
+      await supabase.from('transacciones').insert({
+        tipo: 'ingreso',
+        monto: total,
+        categoria_contable_id: categoria.id,
+        descripcion: 'Venta #' + venta.id + ' - ' + (metodo_pago || 'contado'),
+        fecha: fechaStr,
+        impuesto: 0,
+        retencion: 0,
+        total_con_impuestos: total,
+        metodo_pago: metodo_pago || 'contado',
+        tenant_id: tenant_id,
+        created_at: fechaISO
+      })
+    }
+
+    const totalTime = Date.now() - startTime
+    console.log('POS completado en', totalTime, 'ms - Venta:', venta.id)
 
     return NextResponse.json({
       success: true,
       data: { venta },
-      message: `Venta #${venta.id} registrada`
+      message: 'Venta #' + venta.id + ' registrada',
+      tiempo_ms: totalTime
     })
   } catch (error: any) {
-    console.error('❌ Error POST /api/ventas:', error)
+    console.error('Error POST /api/ventas:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
