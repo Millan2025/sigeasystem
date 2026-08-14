@@ -19,11 +19,18 @@ export function useRealtimeNotifications(tenantId: string | null) {
   const [noLeidas, setNoLeidas] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // 🔧 TEMPORALMENTE SIN FILTRO POR DÍA (diagnóstico)
   const cargarNotificaciones = useCallback(async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      console.log('⚠️ No hay tenantId, skip carga');
+      return;
+    }
     try {
       console.log('🔔 Cargando notificaciones para tenant:', tenantId);
+      
+      // Verificar autenticación
+      const { data: authData } = await supabase.auth.getUser();
+      console.log('🔐 Usuario autenticado:', authData?.user?.email || 'NO AUTENTICADO');
+
       const { data, error } = await supabase
         .from('notificaciones')
         .select('*')
@@ -34,7 +41,7 @@ export function useRealtimeNotifications(tenantId: string | null) {
       if (error) {
         console.error('❌ Error cargando notificaciones:', error);
       } else {
-        console.log('✅ Notificaciones cargadas:', data?.length || 0);
+        console.log('✅ Notificaciones cargadas:', data?.length || 0, data);
         setNotificaciones((data || []) as Notificacion[]);
         setNoLeidas((data || []).filter(n => !n.leida).length);
       }
@@ -43,11 +50,10 @@ export function useRealtimeNotifications(tenantId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [tenantId, supabase]);
 
   useEffect(() => {
     if (!tenantId) return;
-
     cargarNotificaciones();
 
     const channel = supabase
@@ -75,7 +81,7 @@ export function useRealtimeNotifications(tenantId: string | null) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tenantId, cargarNotificaciones]);
+  }, [tenantId, cargarNotificaciones, supabase]);
 
   const marcarLeida = async (id: string) => {
     const { error } = await supabase
@@ -87,6 +93,8 @@ export function useRealtimeNotifications(tenantId: string | null) {
     if (!error) {
       setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true } : n));
       setNoLeidas(prev => Math.max(0, prev - 1));
+    } else {
+      console.error('❌ Error marcando leída:', error);
     }
   };
 
@@ -100,6 +108,8 @@ export function useRealtimeNotifications(tenantId: string | null) {
     if (!error) {
       setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
       setNoLeidas(0);
+    } else {
+      console.error('❌ Error marcando todas:', error);
     }
   };
 
