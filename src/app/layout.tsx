@@ -1,7 +1,8 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import OfflineBanner from "@/components/OfflineBanner";
+import SWRegister from "@/components/SWRegister";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <OfflineBanner />
+        <SWRegister />
         {children}
       </body>
     </html>
