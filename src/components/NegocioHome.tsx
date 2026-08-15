@@ -139,6 +139,25 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     loadData();
   }, [supabase, tenantIdProp]);
 
+  // Calentar cache offline: pre-carga modulos y APIs cuando hay conexion
+  useEffect(() => {
+    if (!tenantId || typeof window === "undefined") return;
+    if (!navigator.onLine) return;
+    if (sessionStorage.getItem("warm-" + tenantId)) return;
+    const slug = negocioSlug || "restaurante";
+    const mods = ["pos","inventario","pedidos","finanzas","reportes","tienda","produccion","personal","compras","creditos"];
+    const apis = ["/api/products?tenant=" + tenantId, "/api/inventory?tenant=" + tenantId, "/api/ventas?tenant=" + tenantId, "/api/tenant-config?tenant=" + tenantId];
+    const timers: any[] = [];
+    mods.forEach((m, i) => {
+      timers.push(setTimeout(() => { fetch("/" + slug + "/" + m + "?tenant=" + tenantId).catch(() => {}); }, 1500 + i * 300));
+    });
+    apis.forEach((u, i) => {
+      timers.push(setTimeout(() => { fetch(u).catch(() => {}); }, 1500 + i * 300));
+    });
+    sessionStorage.setItem("warm-" + tenantId, "1");
+    return () => timers.forEach(clearTimeout);
+  }, [tenantId, negocioSlug]);
+
 
   const generarEnlace = (modulo: string) => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://sigea-system.vercel.app";
