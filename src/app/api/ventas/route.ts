@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -20,10 +20,10 @@ export async function GET(request: Request) {
       .from('ventas')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order('fecha', { ascending: false })
+      .order('created_at', { ascending: false })
 
-    if (startDate) query = query.gte('fecha', startDate)
-    if (endDate) query = query.lte('fecha', endDate)
+    if (startDate) query = query.gte('created_at', startDate)
+    if (endDate) query = query.lte('created_at', endDate)
     if (metodo_pago) query = query.eq('metodo_pago', metodo_pago)
 
     const { data, error } = await query
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
           tenant_id,
           metodo_pago: metodo_pago || 'contado',
           total,
-          fecha: fechaStr,
+          fecha: fechaISO,
           created_at: fechaISO
         })
         .select()
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
         monto: total,
         categoria_contable_id: categoria.id,
         descripcion: 'Venta #' + venta.id + ' - ' + (metodo_pago || 'contado'),
-        fecha: fechaStr,
+        fecha: fechaISO,
         impuesto: 0,
         retencion: 0,
         total_con_impuestos: total,
