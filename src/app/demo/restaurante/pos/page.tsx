@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -72,6 +72,13 @@ export default function POSPage() {
   useEffect(() => {
     cargarProductos();
   }, [tenantId, categoria]);
+
+  // Fallback inteligente: filtrar automaticamente por la categoria del negocio
+  useEffect(() => {
+    if (!categoria || productos.length === 0) return;
+    const tieneCategoria = productos.some(p => p.cat === categoria);
+    if (tieneCategoria) setCatFilter(categoria);
+  }, [categoria, productos]);
 
   const cats = ['Todo', ...Array.from(new Set(productos.map(p => p.cat)))];
   const searchFiltered = searchTerm ? productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase())) : productos;
