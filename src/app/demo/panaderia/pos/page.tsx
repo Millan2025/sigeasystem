@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -45,8 +45,8 @@ export default function POSPage() {
   const isOnline = useOnlineStatus();
 
   const cargarProductos = () => {
-    // Cargar TODOS los productos sin filtro de categoria (categorias reales no coinciden con categoriaNegocio)
-    const url = `/api/products?tenant=${tenantId}`;
+    // Filtrar por categoria si esta definida (patron igual al de carniceria/ferreteria/salsamentaria)
+    const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
       .then(d => {
