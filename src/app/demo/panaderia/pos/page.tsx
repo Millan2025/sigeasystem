@@ -46,7 +46,7 @@ export default function POSPage() {
 
   const cargarProductos = () => {
     // Filtrar por categoria si esta definida (patron igual al de carniceria/ferreteria/salsamentaria)
-    const url = categoria ? `/api/products?tenant=${tenantId}&categoria=${encodeURIComponent(categoria)}` : `/api/products?tenant=${tenantId}`;
+    const url = `/api/products?tenant=${tenantId}`;
     fetch(url)
       .then(r => r.json())
       .then(d => {
