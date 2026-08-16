@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search, Share2 } from "lucide-react";
@@ -6,7 +6,7 @@ import Link from "next/link";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
-  precio?: number; precioPorKg?: number; tipo_unidad?: string; venta_por_peso?: boolean;
+  precio?: number; precioPorKg?: number; tipo_unidad?: string; venta_por_peso?: boolean; imagen_url?: string;
 }
 
 interface CartItem {
@@ -60,7 +60,7 @@ export default function POSPage() {
             cat: p.categoria || 'General',
             esPeso: p.venta_por_peso || false,
             tipo_unidad: p.tipo_unidad || 'unidad',
-            precioPorKg: p.precioporkg || p.precio || 0,
+            precioPorKg: p.precioporkg || p.precio || 0, imagen_url: p.imagen_url || null,
           })));
         }
       })
@@ -238,7 +238,12 @@ export default function POSPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition" onClick={() => addItem(p)}>
-                <div className="text-3xl">{p.icono}</div>
+                <div className="relative w-full h-24 mb-2 overflow-hidden rounded-lg bg-stone-100 flex items-center justify-center">
+                  <div className="text-4xl">{p.icono}</div>
+                  {p.imagen_url && (
+                    <img src={p.imagen_url} alt={p.nombre} className="absolute inset-0 w-full h-full object-contain p-1 bg-stone-100" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                  )}
+                </div>
                 <div className="font-semibold text-stone-800 text-sm truncate">{p.nombre}</div>
                 <div className="text-xs text-stone-600">{p.cat}</div>
                 <div className="flex justify-between items-center mt-1">

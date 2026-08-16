@@ -253,11 +253,10 @@ export default function POSPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map(p => (
               <div key={p.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-200 cursor-pointer hover:shadow-md transition flex flex-col" onClick={() => addItem(p)}>
-                <div className="w-full h-24 mb-2 overflow-hidden rounded-lg bg-stone-100 flex items-center justify-center">
-                  {p.imagen_url ? (
-                    <img src={p.imagen_url} alt={p.nombre} className="w-full h-full object-contain p-1" />
-                  ) : (
-                    <div className="text-4xl">{p.icono}</div>
+                <div className="relative w-full h-24 mb-2 overflow-hidden rounded-lg bg-stone-100 flex items-center justify-center">
+                  <div className="text-4xl">{p.icono}</div>
+                  {p.imagen_url && (
+                    <img src={p.imagen_url} alt={p.nombre} className="absolute inset-0 w-full h-full object-contain p-1 bg-stone-100" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                   )}
                 </div>
                 <div className="font-semibold text-stone-800 text-sm truncate">{p.nombre}</div>
