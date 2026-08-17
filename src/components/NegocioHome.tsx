@@ -72,6 +72,8 @@ interface BusinessConfig {
 
 export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { negocioSlug?: string; tenantId?: string }) {
   const router = useRouter();
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  const isDemo = pathname.startsWith("/demo/");
   const supabase = createClient();
   const [config, setConfig] = useState<BusinessConfig | null>(() => {
     const n = negocioSlug ? (NEGOCIOS as any)[negocioSlug] : null;
@@ -690,13 +692,15 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           </div>
         </div>
       )}
+      {isDemo && (
       <button
         onClick={() => setShowLeadForm(true)}
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-emerald-600 text-white rounded-full px-6 py-3 font-semibold shadow-2xl hover:bg-emerald-700"
       >
         Ver más módulos
       </button>
-      {showLeadForm && (
+      )}
+      {isDemo && showLeadForm && (
         <LeadForm
           onSuccess={() => {
             setShowLeadForm(false);
