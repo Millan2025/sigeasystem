@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -7,6 +7,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getTenantId } from "@/lib/tenant";
 import { NEGOCIOS } from "@/config/negocios";
+import LeadForm from "@/components/LeadForm";
 import {
   ShoppingCart,
   DollarSign,
@@ -72,8 +73,26 @@ interface BusinessConfig {
 export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { negocioSlug?: string; tenantId?: string }) {
   const router = useRouter();
   const supabase = createClient();
-  const [config, setConfig] = useState<BusinessConfig | null>(null);
+  const [config, setConfig] = useState<BusinessConfig | null>(() => {
+    const n = negocioSlug ? (NEGOCIOS as any)[negocioSlug] : null;
+    if (n) {
+      return {
+        id: n.tenantId || "demo",
+        nombre_negocio: n.titulo,
+        gerente: "Demo",
+        correo_contacto: "",
+        telefono: "",
+        direccion: "",
+        logo_url: null,
+        color_principal: "#fdb813",
+        color_secundario: "#D4A017",
+        plan: "barrio",
+      } as BusinessConfig;
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
+  const [showLeadForm, setShowLeadForm] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const [ventasHoy, setVentasHoy] = useState({ total: 0, transacciones: 0, efectivo: 0, nequi: 0, daviplata: 0 });
@@ -670,6 +689,21 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             )}
           </div>
         </div>
+      )}
+      <button
+        onClick={() => setShowLeadForm(true)}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-emerald-600 text-white rounded-full px-6 py-3 font-semibold shadow-2xl hover:bg-emerald-700"
+      >
+        Ver más módulos
+      </button>
+      {showLeadForm && (
+        <LeadForm
+          onSuccess={() => {
+            setShowLeadForm(false);
+            alert("¡Listo! Te contactaremos pronto para darte acceso al dashboard completo.");
+          }}
+          tipoNegocio={negocioSlug || "tienda"}
+        />
       )}
     </div>
   );
