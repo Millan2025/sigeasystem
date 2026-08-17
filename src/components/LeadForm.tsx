@@ -5,11 +5,19 @@ import { createClient } from "@/lib/supabase/client";
 interface Props {
   onSuccess: () => void;
   tipoNegocio?: string;
+  fuente?: "qr_publico" | "redes" | "face_to_face";
 }
 
-export default function LeadForm({ onSuccess, tipoNegocio = "tienda" }: Props) {
+export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "qr_publico" }: Props) {
   const supabase = createClient();
-  const [form, setForm] = useState({ nombre: "", whatsapp: "", tipo_negocio: tipoNegocio });
+  const [form, setForm] = useState({
+    nombre: "",
+    whatsapp: "",
+    tipo_negocio: tipoNegocio,
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+  });
   const [loading, setLoading] = useState(false);
 
   const guardar = async () => {
@@ -23,8 +31,13 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda" }: Props) {
       whatsapp: form.whatsapp,
       tipo_negocio: form.tipo_negocio,
       estado: "demo",
-      fuente: "qr_publico",
+      fuente: fuente,
       plan_interes: "barrio",
+      notas: [
+        form.facebook ? `Facebook: ${form.facebook}` : null,
+        form.instagram ? `Instagram: ${form.instagram}` : null,
+        form.tiktok ? `TikTok: ${form.tiktok}` : null,
+      ].filter(Boolean).join(" | "),
     });
     setLoading(false);
     if (error) {
@@ -35,11 +48,11 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda" }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-        <h2 className="text-xl font-bold text-stone-800 mb-2">Accede al dashboard completo</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full my-8">
+        <h2 className="text-xl font-bold text-stone-800 mb-2">🎁 Accede al dashboard completo</h2>
         <p className="text-sm text-stone-600 mb-4">
-          Completa tus datos para ver finanzas, inventario, créditos y reportes del negocio.
+          Descubre todas las herramientas que harán crecer tu negocio
         </p>
         <div className="space-y-3">
           <input
@@ -68,13 +81,39 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda" }: Props) {
             <option value="restaurante">Restaurante</option>
             <option value="distribuidora">Distribuidora</option>
           </select>
+
+          <div className="border-t pt-3 mt-3">
+            <p className="text-xs text-stone-500 mb-2">Tus redes (opcional, para enviarte contenido):</p>
+            <input
+              placeholder="Facebook"
+              value={form.facebook}
+              onChange={(e) => setForm({ ...form, facebook: e.target.value })}
+              className="w-full border rounded-lg p-2 text-sm mb-2"
+            />
+            <input
+              placeholder="Instagram"
+              value={form.instagram}
+              onChange={(e) => setForm({ ...form, instagram: e.target.value })}
+              className="w-full border rounded-lg p-2 text-sm mb-2"
+            />
+            <input
+              placeholder="TikTok"
+              value={form.tiktok}
+              onChange={(e) => setForm({ ...form, tiktok: e.target.value })}
+              className="w-full border rounded-lg p-2 text-sm"
+            />
+          </div>
+
           <button
             onClick={guardar}
             disabled={loading}
             className="w-full bg-emerald-600 text-white rounded-lg p-3 font-semibold hover:bg-emerald-700 disabled:opacity-50"
           >
-            {loading ? "Guardando..." : "Acceder al dashboard completo"}
+            {loading ? "Guardando..." : "🚀 Acceder al dashboard completo"}
           </button>
+          <p className="text-xs text-stone-400 text-center">
+            Te contactaremos para personalizar tu experiencia
+          </p>
         </div>
       </div>
     </div>
