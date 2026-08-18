@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -56,20 +56,20 @@ export default function CRMPage() {
 
         {showForm && (
           <div className="bg-white rounded-xl p-4 mb-4 border grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input placeholder="Nombre *" value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})} className="border rounded-lg p-2"/>
-            <input placeholder="WhatsApp" value={form.whatsapp} onChange={e=>setForm({...form,whatsapp:e.target.value})} className="border rounded-lg p-2"/>
-            <input placeholder="Nombre del negocio" value={form.nombre_negocio} onChange={e=>setForm({...form,nombre_negocio:e.target.value})} className="border rounded-lg p-2"/>
-            <select value={form.tipo_negocio} onChange={e=>setForm({...form,tipo_negocio:e.target.value})} className="border rounded-lg p-2">
+            <input placeholder="Nombre *" value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2"/>
+            <input placeholder="WhatsApp" value={form.whatsapp} onChange={e=>setForm({...form,whatsapp:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2"/>
+            <input placeholder="Nombre del negocio" value={form.nombre_negocio} onChange={e=>setForm({...form,nombre_negocio:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2"/>
+            <select value={form.tipo_negocio} onChange={e=>setForm({...form,tipo_negocio:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2">
               {["tienda","panaderia","carniceria","salsamentaria","ferreteria","restaurante","distribuidora"].map(t=><option key={t}>{t}</option>)}
             </select>
-            <select value={form.fuente} onChange={e=>setForm({...form,fuente:e.target.value})} className="border rounded-lg p-2">
+            <select value={form.fuente} onChange={e=>setForm({...form,fuente:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2">
               {["centro","referido","whatsapp","contador","redes"].map(t=><option key={t}>{t}</option>)}
             </select>
-            <select value={form.plan_interes} onChange={e=>setForm({...form,plan_interes:e.target.value})} className="border rounded-lg p-2">
+            <select value={form.plan_interes} onChange={e=>setForm({...form,plan_interes:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2">
               {["barrio","negocio","distribuidora"].map(t=><option key={t}>{t}</option>)}
             </select>
-            <input type="date" value={form.proximo_seguimiento} onChange={e=>setForm({...form,proximo_seguimiento:e.target.value})} className="border rounded-lg p-2"/>
-            <input placeholder="Notas" value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} className="border rounded-lg p-2"/>
+            <input type="date" value={form.proximo_seguimiento} onChange={e=>setForm({...form,proximo_seguimiento:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2"/>
+            <input placeholder="Notas" value={form.notas} onChange={e=>setForm({...form,notas:e.target.value})} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2"/>
             <button onClick={guardar} className="bg-emerald-600 text-white rounded-lg p-2 md:col-span-2">Guardar</button>
           </div>
         )}
@@ -84,7 +84,7 @@ export default function CRMPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className={"px-2 py-1 rounded-full text-xs "+(COLORES[p.estado]||"")}>{p.estado}</span>
-                <select value={p.estado} onChange={e=>cambiarEstado(p.id, e.target.value)} className="border rounded-lg p-1 text-xs">
+                <select value={p.estado} onChange={e=>cambiarEstado(p.id, e.target.value)} className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-1 text-xs">
                   {ESTADOS.map(e=><option key={e}>{e}</option>)}
                 </select>
               </div>

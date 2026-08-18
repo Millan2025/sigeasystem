@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MessageCircle, Upload, Calendar, Send, CheckCircle, XCircle, Plus, Trash2, Clock } from "lucide-react";
@@ -158,13 +158,13 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
             placeholder="Nombre de la pieza *"
             value={form.nombre_pieza}
             onChange={(e) => setForm({ ...form, nombre_pieza: e.target.value })}
-            className="border rounded-lg p-3"
+            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
           />
           <input
             placeholder="Grupo de WhatsApp * (ej: Vecinos Barrio)"
             value={form.grupo_whatsapp}
             onChange={(e) => setForm({ ...form, grupo_whatsapp: e.target.value })}
-            className="border rounded-lg p-3"
+            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
           />
           <div className="md:col-span-2">
             <textarea
@@ -172,20 +172,20 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
               value={form.texto_mensaje}
               onChange={(e) => setForm({ ...form, texto_mensaje: e.target.value })}
               rows={3}
-              className="w-full border rounded-lg p-3"
+              className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
             />
           </div>
           <input
             placeholder="Hashtags (ej: oferta, barrio, promocion)"
             value={form.hashtag}
             onChange={(e) => setForm({ ...form, hashtag: e.target.value })}
-            className="border rounded-lg p-3"
+            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
           />
           <input
             type="datetime-local"
             value={form.fecha_programada}
             onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })}
-            className="border rounded-lg p-3"
+            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
           />
           <div className="md:col-span-2">
             <input
@@ -197,7 +197,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed rounded-lg p-4 hover:bg-stone-50 flex items-center justify-center gap-2 text-stone-600"
+              className="w-full border-2 border-dashed border-stone-400 rounded-lg p-4 hover:bg-stone-100 flex items-center justify-center gap-2 text-stone-700 font-medium"
             >
               <Upload className="w-5 h-5" />
               {form.url_archivo ? "✅ Archivo cargado" : "Subir imagen o video *"}

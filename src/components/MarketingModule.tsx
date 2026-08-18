@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MessageCircle, Plus, Calendar, Image as ImageIcon, Upload, Bell, Settings, TrendingUp } from "lucide-react";
@@ -223,14 +223,14 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
             <h2 className="text-lg font-bold text-stone-800 mb-4">Conectar red social</h2>
             <div className="space-y-3">
-              <select className="w-full border rounded-lg p-3">
+              <select className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3">
                 <option value="facebook">Facebook</option>
                 <option value="instagram">Instagram</option>
                 <option value="tiktok">TikTok</option>
                 <option value="whatsapp">WhatsApp Business</option>
               </select>
-              <input placeholder="Nombre de cuenta / @usuario" className="w-full border rounded-lg p-3" />
-              <input placeholder="Token de API / Contraseña" type="password" className="w-full border rounded-lg p-3" />
+              <input placeholder="Nombre de cuenta / @usuario" className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
+              <input placeholder="Token de API / Contraseña" type="password" className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
               <p className="text-xs text-stone-500">
                 🔒 Tus credenciales se almacenan de forma segura y encriptada
               </p>
@@ -254,8 +254,8 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-stone-800 mb-4">Nueva pieza publicitaria</h2>
             <div className="space-y-3">
-              <input placeholder="Nombre de la pieza *" className="w-full border rounded-lg p-3" />
-              <select className="w-full border rounded-lg p-3">
+              <input placeholder="Nombre de la pieza *" className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
+              <select className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3">
                 <option value="imagen">Imagen</option>
                 <option value="video">Video</option>
                 <option value="carrusel">Carrusel</option>
@@ -266,8 +266,8 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
                 <p className="text-sm text-stone-600">Subir archivo</p>
                 <p className="text-xs text-stone-400">PNG, JPG, MP4 (máx 50MB)</p>
               </div>
-              <textarea placeholder="Texto del post (opcional)" rows={3} className="w-full border rounded-lg p-3" />
-              <input placeholder="Hashtags (separados por coma)" className="w-full border rounded-lg p-3" />
+              <textarea placeholder="Texto del post (opcional)" rows={3} className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
+              <input placeholder="Hashtags (separados por coma)" className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
               <div>
                 <label className="text-sm font-medium text-stone-700 mb-2 block">Plataformas destino:</label>
                 <div className="flex gap-2 flex-wrap">
@@ -298,15 +298,15 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
             <h2 className="text-lg font-bold text-stone-800 mb-4">Programar publicación</h2>
             <div className="space-y-3">
-              <select className="w-full border rounded-lg p-3">
+              <select className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3">
                 <option>Selecciona una pieza...</option>
                 {piezas.map((p: any) => <option key={p.id}>{p.nombre}</option>)}
               </select>
-              <select className="w-full border rounded-lg p-3">
+              <select className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3">
                 <option>Selecciona red social...</option>
                 {redesConectadas.map((r: any) => <option key={r.id}>{r.plataforma} - {r.cuenta}</option>)}
               </select>
-              <input type="datetime-local" className="w-full border rounded-lg p-3" />
+              <input type="datetime-local" className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
               <div className="flex gap-2">
                 <button onClick={() => setShowModal(null)} className="flex-1 bg-stone-100 text-stone-700 rounded-lg p-3 font-medium">Cancelar</button>
                 <button

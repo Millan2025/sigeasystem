@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -59,19 +59,19 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
             placeholder="Tu nombre *"
             value={form.nombre}
             onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-            className="w-full border rounded-lg p-3"
+            className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
           />
           <input
             placeholder="WhatsApp (solo números) *"
             value={form.whatsapp}
             onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-            className="w-full border rounded-lg p-3"
+            className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
             type="tel"
           />
           <select
             value={form.tipo_negocio}
             onChange={(e) => setForm({ ...form, tipo_negocio: e.target.value })}
-            className="w-full border rounded-lg p-3"
+            className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
           >
             <option value="tienda">Tienda</option>
             <option value="panaderia">Panadería</option>
@@ -88,19 +88,19 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
               placeholder="Facebook"
               value={form.facebook}
               onChange={(e) => setForm({ ...form, facebook: e.target.value })}
-              className="w-full border rounded-lg p-2 text-sm mb-2"
+              className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2 text-sm mb-2"
             />
             <input
               placeholder="Instagram"
               value={form.instagram}
               onChange={(e) => setForm({ ...form, instagram: e.target.value })}
-              className="w-full border rounded-lg p-2 text-sm mb-2"
+              className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2 text-sm mb-2"
             />
             <input
               placeholder="TikTok"
               value={form.tiktok}
               onChange={(e) => setForm({ ...form, tiktok: e.target.value })}
-              className="w-full border rounded-lg p-2 text-sm"
+              className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-2 text-sm"
             />
           </div>
 
