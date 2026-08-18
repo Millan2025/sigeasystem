@@ -134,7 +134,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
   const publicadas = publicaciones.filter(p => p.estado === "publicado");
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6 w-full max-w-full overflow-x-hidden">
       {/* HEADER */}
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-6">
         <div className="flex items-center gap-3">
@@ -153,7 +153,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
         <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2">
           <Plus className="w-5 h-5" /> Nueva publicación
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full min-w-0">
           <input
             placeholder="Nombre de la pieza *"
             value={form.nombre_pieza}
@@ -233,8 +233,8 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                   )}
                   <div className="flex-1">
                     <div className="font-semibold text-stone-800">{pub.nombre_pieza}</div>
-                    <div className="text-xs text-stone-500">📱 Grupo: {pub.grupo_whatsapp}</div>
-                    <div className="text-xs text-stone-500">📅 {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
+                    <div className="text-xs text-stone-600">📱 Grupo: {pub.grupo_whatsapp}</div>
+                    <div className="text-xs text-stone-600">📅 {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
                     {pub.texto_mensaje && <div className="text-xs text-stone-600 mt-1 line-clamp-2">{pub.texto_mensaje}</div>}
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
                 <div className="flex-1 text-sm">
                   <div className="font-medium text-stone-800">{pub.nombre_pieza}</div>
-                  <div className="text-xs text-stone-500">{pub.grupo_whatsapp} · {new Date(pub.fecha_publicacion_real).toLocaleString("es-CO")}</div>
+                  <div className="text-xs text-stone-600">{pub.grupo_whatsapp} · {new Date(pub.fecha_publicacion_real).toLocaleString("es-CO")}</div>
                 </div>
               </div>
             ))}

@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MessageCircle, Plus, Calendar, Image as ImageIcon, Upload, Bell, Settings, TrendingUp } from "lucide-react";
+import WhatsAppMarketing from "@/components/WhatsAppMarketing";
 
 interface Props {
   tenantId: string;
@@ -53,8 +54,8 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
       </div>
 
       {/* Tabs */}
-      <div className="max-w-6xl mx-auto p-4">
-        <div className="flex gap-2 mb-6 bg-white rounded-xl p-1 border shadow-sm">
+      <div className="max-w-6xl mx-auto p-4 overflow-x-hidden w-full max-w-full">
+        <div className="flex gap-2 mb-6 bg-white rounded-xl p-1 border shadow-sm overflow-x-auto">
           {[
             { id: "whatsapp", label: "WhatsApp Grupos", icon: MessageCircle },
             { id: "redes", label: "Otras Redes", icon: Settings },
@@ -72,6 +73,11 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
             </button>
           ))}
         </div>
+
+        {/* TAB WHATSAPP - FUNCIONAL */}
+        {tab === "whatsapp" && (
+          <WhatsAppMarketing tenantId={tenantId} negocioNombre={negocioNombre} />
+        )}
 
         {/* TAB REDES */}
         {tab === "redes" && (
