@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -24,6 +24,9 @@ import {
   Download,
   Upload,
   Edit,
+  TrendingUp,
+  MessageSquare,
+  Rocket,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -73,7 +76,7 @@ interface Usuario {
 export default function AdminMasterPage() {
   const supabase = createClient();
   const [accesoPermitido, setAccesoPermitido] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<"clientes" | "usuarios" | "trazabilidad" | "suscripciones" | "config">("clientes");
+  const [tab, setTab] = useState<"clientes" | "usuarios" | "trazabilidad" | "suscripciones" | "config" | "crm" | "marketing">("clientes");
   const [busqueda, setBusqueda] = useState("");
   const [copied, setCopied] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -468,6 +471,8 @@ export default function AdminMasterPage() {
             { id: "trazabilidad" as const, label: "Trazabilidad", icon: Activity },
             { id: "suscripciones" as const, label: "Planes", icon: CreditCard },
             { id: "config" as const, label: "Config", icon: Settings },
+            { id: "crm" as const, label: "CRM", icon: MessageSquare },
+            { id: "marketing" as const, label: "Marketing", icon: Rocket },
           ].map((t) => (
             <button
               key={t.id}
@@ -1043,6 +1048,60 @@ export default function AdminMasterPage() {
             )}
           </div>
         )}
+
+      {/* TAB CRM */}
+      {tab === "crm" && (
+        <div className="p-4 max-w-6xl mx-auto">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-6 mb-4">
+            <div className="flex items-center gap-3 mb-2">
+              <MessageSquare className="w-8 h-8" />
+              <div>
+                <h2 className="text-2xl font-bold">CRM - Prospectos</h2>
+                <p className="text-emerald-100 text-sm">Gestión comercial de leads y seguimiento</p>
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/admin/crm"
+            className="block bg-white rounded-xl p-6 border-2 border-emerald-200 hover:border-emerald-500 hover:shadow-xl transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-stone-800">Abrir CRM completo</h3>
+                <p className="text-sm text-stone-500 mt-1">Gestiona prospectos, demos, pruebas y ventas cerradas</p>
+              </div>
+              <div className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold">Ir →</div>
+            </div>
+          </Link>
+        </div>
+      )}
+
+      {/* TAB MARKETING */}
+      {tab === "marketing" && (
+        <div className="p-4 max-w-6xl mx-auto">
+          <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-2xl p-6 mb-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Rocket className="w-8 h-8" />
+              <div>
+                <h2 className="text-2xl font-bold">Marketing Digital</h2>
+                <p className="text-violet-100 text-sm">Gestiona piezas publicitarias en redes sociales</p>
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/admin/marketing"
+            className="block bg-white rounded-xl p-6 border-2 border-violet-200 hover:border-violet-500 hover:shadow-xl transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-stone-800">Abrir módulo de Marketing</h3>
+                <p className="text-sm text-stone-500 mt-1">Redes sociales · Piezas publicitarias · Cronograma de publicaciones</p>
+              </div>
+              <div className="bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold">Ir →</div>
+            </div>
+          </Link>
+        </div>
+      )}
       </div>
 
       {/* ============================================
