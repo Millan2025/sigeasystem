@@ -17,7 +17,7 @@ const REDES = [
 
 export default function MarketingModule({ tenantId, negocioNombre }: Props) {
   const supabase = createClient();
-  const [tab, setTab] = useState<"redes" | "piezas" | "cronograma">("redes");
+  const [tab, setTab] = useState<"whatsapp" | "redes" | "piezas" | "cronograma">("whatsapp");
   const [redesConectadas, setRedesConectadas] = useState<any[]>([]);
   const [piezas, setPiezas] = useState<any[]>([]);
   const [publicaciones, setPublicaciones] = useState<any[]>([]);
@@ -56,7 +56,8 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
       <div className="max-w-6xl mx-auto p-4">
         <div className="flex gap-2 mb-6 bg-white rounded-xl p-1 border shadow-sm">
           {[
-            { id: "redes", label: "Redes Sociales", icon: Settings },
+            { id: "whatsapp", label: "WhatsApp Grupos", icon: MessageCircle },
+            { id: "redes", label: "Otras Redes", icon: Settings },
             { id: "piezas", label: "Piezas Publicitarias", icon: ImageIcon },
             { id: "cronograma", label: "Cronograma", icon: Calendar },
           ].map((t) => (
