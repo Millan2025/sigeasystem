@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Upload, Calendar, Send, CheckCircle, XCircle, Plus, Trash2, Clock } from "lucide-react";
+import { MessageCircle, Upload, Calendar, Send, CheckCircle, XCircle, Plus, Trash2, Clock, Bell } from "lucide-react";
 
 interface Props {
   tenantId: string;
@@ -23,6 +23,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     texto_mensaje: "",
     hashtag: "",
     grupo_whatsapp: "",
+    numero_whatsapp: "",
     fecha_programada: "",
   });
 
@@ -43,6 +44,11 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
   useEffect(() => { cargar(); }, [tenantId]);
 
+  // Publicaciones vencidas (cronograma "automatico": avisa al abrir)
+  const vencidas = publicaciones.filter(p => p.estado === "pendiente" && new Date(p.fecha_programada) <= new Date());
+  const pendientes = publicaciones.filter(p => p.estado === "pendiente" && new Date(p.fecha_programada) > new Date());
+  const publicadas = publicaciones.filter(p => p.estado === "publicado");
+
   const subirArchivo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -56,13 +62,13 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     }
     const { data } = supabase.storage.from("marketing").getPublicUrl(fileName);
     setForm({ ...form, url_archivo: data.publicUrl, tipo_archivo: file.type.startsWith("video") ? "video" : "imagen" });
-    showToast("✅ Archivo subido");
+    showToast("✅ Archivo cargado");
     setLoading(false);
   };
 
   const programar = async () => {
     if (!form.nombre_pieza || !form.url_archivo || !form.grupo_whatsapp || !form.fecha_programada) {
-      showToast("Completa todos los campos obligatorios", "error");
+      showToast("Completa nombre, archivo, grupo y fecha", "error");
       return;
     }
     setLoading(true);
@@ -74,52 +80,57 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       texto_mensaje: form.texto_mensaje,
       hashtag: form.hashtag,
       grupo_whatsapp: form.grupo_whatsapp,
+      numero_whatsapp: form.numero_whatsapp,
       fecha_programada: new Date(form.fecha_programada).toISOString(),
       estado: "pendiente",
     });
     if (error) {
       showToast("Error al programar: " + error.message, "error");
     } else {
-      showToast("✅ Publicación programada correctamente");
-      setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", fecha_programada: "" });
+      showToast("✅ Publicación programada");
+      setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "" });
       cargar();
     }
     setLoading(false);
   };
 
   const publicarAhora = async (pub: any) => {
-    const mensajeCompleto = `${pub.texto_mensaje || ""}\n\n${pub.hashtag ? "#" + pub.hashtag.replace(/#/g, "").replace(/,/g, " #") : ""}\n\n📎 ${pub.url_archivo}`.trim();
+    const mensajeCompleto = `${pub.texto_mensaje || ""}\n\n${pub.hashtag ? "#" + String(pub.hashtag).replace(/#/g, "").split(",").map((h: string) => h.trim()).join(" #") : ""}\n\n📎 ${pub.url_archivo}`.trim();
 
-    // Intentar Web Share API (nativa del navegador - incluye WhatsApp grupos)
+    // Si hay numero de WhatsApp, abrir wa.me directo
+    if (pub.numero_whatsapp) {
+      const digits = String(pub.numero_whatsapp).replace(/\D/g, "");
+      const url = `https://wa.me/${digits}?text=${encodeURIComponent(mensajeCompleto)}`;
+      window.open(url, "_blank");
+      await supabase.from("publicaciones_whatsapp").update({
+        estado: "publicado",
+        fecha_publicacion_real: new Date().toISOString(),
+        enlace_compartido: url,
+      }).eq("id", pub.id);
+      showToast("✅ Abriendo WhatsApp con el mensaje listo");
+      cargar();
+      return;
+    }
+
+    // Si no, Web Share API (incluye grupos)
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: pub.nombre_pieza,
-          text: mensajeCompleto,
-          url: pub.url_archivo,
-        });
-        // Compartir exitoso
+        await navigator.share({ title: pub.nombre_pieza, text: mensajeCompleto, url: pub.url_archivo });
         await supabase.from("publicaciones_whatsapp").update({
-          estado: "publicado",
-          fecha_publicacion_real: new Date().toISOString(),
-          enlace_compartido: pub.url_archivo,
+          estado: "publicado", fecha_publicacion_real: new Date().toISOString(), enlace_compartido: pub.url_archivo,
         }).eq("id", pub.id);
-        showToast("✅ Publicado exitosamente en WhatsApp");
+        showToast("✅ Publicado en WhatsApp");
         cargar();
       } catch (err: any) {
         if (err.name !== "AbortError") {
-          await supabase.from("publicaciones_whatsapp").update({ estado: "fallido" }).eq("id", pub.id);
-          showToast("❌ Error al compartir: " + err.message, "error");
+          showToast("❌ Error al compartir", "error");
         } else {
-          await supabase.from("publicaciones_whatsapp").update({ estado: "cancelado" }).eq("id", pub.id);
-          showToast("Cancelado por el usuario", "error");
+          showToast("Cancelado", "error");
         }
-        cargar();
       }
     } else {
-      // Fallback: copiar al portapapeles
       await navigator.clipboard.writeText(mensajeCompleto);
-      showToast("📋 Texto copiado. Pégalo en el grupo de WhatsApp", "success");
+      showToast("📋 Texto copiado. Pégalo en el grupo", "success");
     }
   };
 
@@ -130,17 +141,12 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     cargar();
   };
 
-  const pendientes = publicaciones.filter(p => p.estado === "pendiente");
-  const publicadas = publicaciones.filter(p => p.estado === "publicado");
-
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6 w-full max-w-full overflow-x-hidden">
       {/* HEADER */}
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-6">
         <div className="flex items-center gap-3">
-          <div className="bg-white/20 p-3 rounded-xl">
-            <MessageCircle className="w-8 h-8" />
-          </div>
+          <div className="bg-white/20 p-3 rounded-xl"><MessageCircle className="w-8 h-8" /></div>
           <div>
             <h1 className="text-2xl font-bold">Marketing WhatsApp</h1>
             <p className="text-green-100 text-sm">{negocioNombre || "Tu negocio"} · Grupos de barrio</p>
@@ -148,122 +154,75 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
         </div>
       </div>
 
-      {/* FORMULARIO NUEVA PUBLICACIÓN */}
-      <div className="bg-white rounded-2xl p-6 border shadow-sm">
-        <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2">
-          <Plus className="w-5 h-5" /> Nueva publicación
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full min-w-0">
-          <input
-            placeholder="Nombre de la pieza *"
-            value={form.nombre_pieza}
-            onChange={(e) => setForm({ ...form, nombre_pieza: e.target.value })}
-            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
-          />
-          <input
-            placeholder="Grupo de WhatsApp * (ej: Vecinos Barrio)"
-            value={form.grupo_whatsapp}
-            onChange={(e) => setForm({ ...form, grupo_whatsapp: e.target.value })}
-            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
-          />
-          <div className="md:col-span-2">
-            <textarea
-              placeholder="Texto del mensaje (opcional)"
-              value={form.texto_mensaje}
-              onChange={(e) => setForm({ ...form, texto_mensaje: e.target.value })}
-              rows={3}
-              className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
-            />
+      {/* BANNER: PUBLICACIONES VENCIDAS (cronograma automatico al abrir) */}
+      {vencidas.length > 0 && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Bell className="w-5 h-5 text-amber-600" />
+            <h3 className="font-bold text-amber-900">⏰ Es hora de publicar ({vencidas.length})</h3>
           </div>
-          <input
-            placeholder="Hashtags (ej: oferta, barrio, promocion)"
-            value={form.hashtag}
-            onChange={(e) => setForm({ ...form, hashtag: e.target.value })}
-            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
-          />
-          <input
-            type="datetime-local"
-            value={form.fecha_programada}
-            onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })}
-            className="border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
-          />
-          <div className="md:col-span-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,video/*"
-              onChange={subirArchivo}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-stone-400 rounded-lg p-4 hover:bg-stone-100 flex items-center justify-center gap-2 text-stone-700 font-medium"
-            >
-              <Upload className="w-5 h-5" />
-              {form.url_archivo ? "✅ Archivo cargado" : "Subir imagen o video *"}
-            </button>
-            {form.url_archivo && form.tipo_archivo === "imagen" && (
-              <img src={form.url_archivo} alt="preview" className="mt-2 rounded-lg max-h-40 object-contain" />
-            )}
-          </div>
-          <button
-            onClick={programar}
-            disabled={loading}
-            className="md:col-span-2 bg-green-600 text-white rounded-lg p-3 font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            <Calendar className="w-5 h-5" /> {loading ? "Procesando..." : "Programar publicación"}
-          </button>
-        </div>
-      </div>
-
-      {/* PUBLICACIONES PENDIENTES */}
-      {pendientes.length > 0 && (
-        <div className="bg-white rounded-2xl p-6 border shadow-sm">
-          <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-amber-600" /> Pendientes ({pendientes.length})
-          </h2>
-          <div className="space-y-3">
-            {pendientes.map((pub) => (
-              <div key={pub.id} className="border rounded-xl p-4">
-                <div className="flex gap-3">
-                  {pub.tipo_archivo === "imagen" ? (
-                    <img src={pub.url_archivo} className="w-20 h-20 object-cover rounded-lg" alt="" />
-                  ) : (
-                    <video src={pub.url_archivo} className="w-20 h-20 object-cover rounded-lg" />
-                  )}
-                  <div className="flex-1">
-                    <div className="font-semibold text-stone-800">{pub.nombre_pieza}</div>
-                    <div className="text-xs text-stone-600">📱 Grupo: {pub.grupo_whatsapp}</div>
-                    <div className="text-xs text-stone-600">📅 {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
-                    {pub.texto_mensaje && <div className="text-xs text-stone-600 mt-1 line-clamp-2">{pub.texto_mensaje}</div>}
-                  </div>
+          <div className="space-y-2">
+            {vencidas.map((pub) => (
+              <div key={pub.id} className="flex items-center gap-2 bg-white rounded-lg p-2">
+                <div className="flex-1 text-sm">
+                  <div className="font-medium text-stone-800">{pub.nombre_pieza}</div>
+                  <div className="text-xs text-stone-600">📱 {pub.grupo_whatsapp}</div>
                 </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => publicarAhora(pub)}
-                    className="flex-1 bg-green-600 text-white rounded-lg py-2 text-sm font-semibold flex items-center justify-center gap-1 hover:bg-green-700"
-                  >
-                    <Send className="w-4 h-4" /> Publicar ahora
-                  </button>
-                  <button
-                    onClick={() => eliminar(pub.id)}
-                    className="bg-stone-100 text-stone-700 rounded-lg p-2 hover:bg-stone-200"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <button onClick={() => publicarAhora(pub)} className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-1">
+                  <Send className="w-4 h-4" /> Enviar
+                </button>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* PUBLICACIONES EXITOSAS */}
+      {/* FORMULARIO */}
+      <div className="bg-white rounded-2xl p-6 border shadow-sm">
+        <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Plus className="w-5 h-5" /> Nueva publicación</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full min-w-0">
+          <input placeholder="Nombre de la pieza *" value={form.nombre_pieza} onChange={(e) => setForm({ ...form, nombre_pieza: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
+          <input placeholder="Grupo de WhatsApp * (ej: Vecinos Barrio)" value={form.grupo_whatsapp} onChange={(e) => setForm({ ...form, grupo_whatsapp: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
+          <input placeholder="Número WhatsApp destino (opcional, ej: 573001234567)" value={form.numero_whatsapp} onChange={(e) => setForm({ ...form, numero_whatsapp: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500 md:col-span-2" type="tel" />
+          <textarea placeholder="Texto del mensaje (opcional)" value={form.texto_mensaje} onChange={(e) => setForm({ ...form, texto_mensaje: e.target.value })} rows={2} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500 md:col-span-2" />
+          <input placeholder="Hashtags (ej: oferta, barrio)" value={form.hashtag} onChange={(e) => setForm({ ...form, hashtag: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
+          <input type="datetime-local" value={form.fecha_programada} onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800" />
+          <div className="md:col-span-2">
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={subirArchivo} className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="w-full border-2 border-dashed border-stone-400 rounded-lg p-4 hover:bg-stone-100 flex items-center justify-center gap-2 text-stone-700 font-medium">
+              <Upload className="w-5 h-5" /> {form.url_archivo ? "✅ Archivo cargado" : "Subir imagen o video *"}
+            </button>
+            {form.url_archivo && form.tipo_archivo === "imagen" && <img src={form.url_archivo} alt="preview" className="mt-2 rounded-lg max-h-40 object-contain" />}
+          </div>
+          <button onClick={programar} disabled={loading} className="md:col-span-2 bg-green-600 text-white rounded-lg p-3 font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
+            <Calendar className="w-5 h-5" /> {loading ? "Procesando..." : "Programar publicación"}
+          </button>
+        </div>
+      </div>
+
+      {/* PENDIENTES FUTURAS */}
+      {pendientes.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 border shadow-sm">
+          <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Clock className="w-5 h-5 text-amber-600" /> Programadas ({pendientes.length})</h2>
+          <div className="space-y-3">
+            {pendientes.map((pub) => (
+              <div key={pub.id} className="border rounded-xl p-3 flex gap-3">
+                {pub.tipo_archivo === "imagen" ? <img src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" alt="" /> : <video src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" />}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-stone-800 text-sm">{pub.nombre_pieza}</div>
+                  <div className="text-xs text-stone-600">📱 {pub.grupo_whatsapp} · 📅 {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
+                </div>
+                <button onClick={() => eliminar(pub.id)} className="bg-stone-100 text-stone-700 rounded-lg p-2"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* PUBLICADAS */}
       {publicadas.length > 0 && (
         <div className="bg-white rounded-2xl p-6 border shadow-sm">
-          <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-emerald-600" /> Publicadas ({publicadas.length})
-          </h2>
+          <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5 text-emerald-600" /> Publicadas ({publicadas.length})</h2>
           <div className="space-y-2">
             {publicadas.slice(0, 5).map((pub) => (
               <div key={pub.id} className="flex items-center gap-3 border-b pb-2 last:border-0">
@@ -278,19 +237,15 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
         </div>
       )}
 
-      {/* OTRAS REDES EN DESARROLLO */}
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
         <h3 className="font-semibold text-amber-900 mb-2">🚧 Próximamente</h3>
-        <p className="text-sm text-amber-800">Integración con Facebook, Instagram y TikTok en desarrollo.</p>
+        <p className="text-sm text-amber-800">Envío 100% automático y otras redes (Facebook, Instagram, TikTok) en desarrollo.</p>
       </div>
 
-      {/* TOAST */}
       {toast && (
-        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-xl shadow-2xl z-50 max-w-sm flex items-center gap-2 ${
-          toast.type === "success" ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
-        }`}>
+        <div className={`fixed bottom-4 right-4 left-4 md:left-auto px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-2 ${toast.type === "success" ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`}>
           {toast.type === "success" ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-          {toast.msg}
+          <span className="text-sm">{toast.msg}</span>
         </div>
       )}
     </div>
