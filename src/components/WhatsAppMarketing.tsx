@@ -65,7 +65,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     const fin = inicio + dias * 24 * 3600 * 1000;
     const filas = [];
     let t = inicio;
-    while (t <= fin && filas.length < 30) {
+    while (t <= fin && filas.length < 60) {
       filas.push({
         tenant_id: tenantId, nombre_pieza: form.nombre_pieza, tipo_archivo: form.tipo_archivo, url_archivo: form.url_archivo,
         texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: form.grupo_whatsapp,
@@ -195,9 +195,14 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
           <input type="datetime-local" value={form.fecha_programada} onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800" />
           <select value={form.repetir_cada} onChange={(e) => setForm({ ...form, repetir_cada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800">
             <option value="0">Sin repeticion (1 envio)</option>
+            <option value="1">Repetir cada 1 hora</option>
+            <option value="2">Repetir cada 2 horas</option>
+            <option value="3">Repetir cada 3 horas</option>
+            <option value="4">Repetir cada 4 horas</option>
             <option value="6">Repetir cada 6 horas</option>
+            <option value="8">Repetir cada 8 horas</option>
             <option value="12">Repetir cada 12 horas</option>
-            <option value="24">Repetir cada dia</option>
+            <option value="24">Repetir cada dia (24 h)</option>
           </select>
           <select value={form.duracion_dias} onChange={(e) => setForm({ ...form, duracion_dias: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800">
             <option value="1">Durante 24 horas</option>
