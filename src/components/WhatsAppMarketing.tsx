@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MessageCircle, Upload, Calendar, CheckCircle, XCircle, Plus, Trash2, Clock, Bell, Share2, Smartphone, Settings } from "lucide-react";
@@ -124,10 +124,10 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
   const BotonesEnvio = ({ pub }: { pub: any }) => (
     <div className="flex gap-2 mt-2">
       <button onClick={() => enviarADueno(pub)} className="flex-1 bg-green-600 text-white rounded-lg py-2 text-sm font-semibold flex items-center justify-center gap-1 hover:bg-green-700">
-        <Smartphone className="w-4 h-4" /> A mi WhatsApp
+        <Smartphone className="w-4 h-4" /> Respaldo: abrir WhatsApp
       </button>
       <button onClick={() => compartirGrupo(pub)} className="flex-1 bg-emerald-100 text-emerald-800 rounded-lg py-2 text-sm font-semibold flex items-center justify-center gap-1 hover:bg-emerald-200">
-        <Share2 className="w-4 h-4" /> A grupos
+        <Share2 className="w-4 h-4" /> Respaldo: grupos
       </button>
       <button onClick={() => eliminar(pub.id)} className="bg-stone-100 text-stone-700 rounded-lg px-2 hover:bg-stone-200"><Trash2 className="w-4 h-4" /></button>
     </div>
@@ -156,7 +156,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
       {vencidas.length > 0 && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">⏰ Es hora de publicar ({vencidas.length})</h3></div>
+          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">⏰ Es hora de publicar ({vencidas.length}) - envio automatico al dueno en curso</h3></div>
           <div className="space-y-3">
             {vencidas.map((pub) => (
               <div key={pub.id} className="bg-white rounded-xl p-3">
