@@ -1,33 +1,18 @@
-﻿import { createClient } from "@supabase/supabase-js";
-import { redirect } from "next/navigation";
+﻿import MarketingModule from "@/components/MarketingModule";
 import WhatsAppMarketing from "@/components/WhatsAppMarketing";
 
-export const dynamic = "force-dynamic";
+const DEMO_TENANT_ID = "tienda-demo-tenant";
 
-export default async function MarketingPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: tenant } = await supabase
-    .from("tenants")
-    .select("id, nombre")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (!tenant) redirect("/404");
-
+export default function MarketingPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="max-w-7xl mx-auto p-4 space-y-6">
         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-6">
           <h1 className="text-3xl font-bold">Marketing Digital</h1>
-          <p className="text-emerald-100 mt-1">{tenant.nombre}</p>
+          <p className="text-emerald-100 mt-1">
+ienda</p>
         </div>
-
+        
         <div className="flex flex-wrap gap-2">
           <button className="bg-white text-stone-800 rounded-lg px-4 py-2 font-semibold border-2 border-stone-200">WhatsApp</button>
           <button className="bg-white text-stone-500 rounded-lg px-4 py-2 border border-stone-200">Piezas</button>
@@ -35,7 +20,8 @@ export default async function MarketingPage({ params }: { params: Promise<{ slug
           <button className="bg-white text-stone-500 rounded-lg px-4 py-2 border border-stone-200">Cronograma</button>
         </div>
 
-        <WhatsAppMarketing tenantId={tenant.id} negocioNombre={tenant.nombre} />
+        <WhatsAppMarketing tenantId={DEMO_TENANT_ID} negocioNombre="
+ienda" />
       </div>
     </div>
   );
