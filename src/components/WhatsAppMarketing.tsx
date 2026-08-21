@@ -12,7 +12,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
   const [numeroDueno, setNumeroDueno] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{msg: string; type: "success" | "error"} | null>(null);
-  const [form, setForm] = useState({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "" });
+  const [form, setForm] = useState({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "", repetir_cada: "0", duracion_dias: "1" });
 
   const showToast = (msg: string, type: "success" | "error" = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 4000); };
 
@@ -59,15 +59,26 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       showToast("Completa nombre, archivo, grupo y fecha", "error"); return;
     }
     setLoading(true);
-    const { error } = await supabase.from("publicaciones_whatsapp").insert({
-      tenant_id: tenantId, nombre_pieza: form.nombre_pieza, tipo_archivo: form.tipo_archivo, url_archivo: form.url_archivo,
-      texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: form.grupo_whatsapp,
-      numero_whatsapp: form.numero_whatsapp || numeroDueno, fecha_programada: new Date(form.fecha_programada).toISOString(), estado: "pendiente",
-    });
+    const inicio = new Date(form.fecha_programada).getTime();
+    const cada = parseInt(form.repetir_cada || "0", 10);
+    const dias = parseInt(form.duracion_dias || "1", 10);
+    const fin = inicio + dias * 24 * 3600 * 1000;
+    const filas = [];
+    let t = inicio;
+    while (t <= fin && filas.length < 30) {
+      filas.push({
+        tenant_id: tenantId, nombre_pieza: form.nombre_pieza, tipo_archivo: form.tipo_archivo, url_archivo: form.url_archivo,
+        texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: form.grupo_whatsapp,
+        numero_whatsapp: form.numero_whatsapp || numeroDueno, fecha_programada: new Date(t).toISOString(), estado: "pendiente",
+      });
+      if (cada <= 0) break;
+      t += cada * 3600 * 1000;
+    }
+    const { error } = await supabase.from("publicaciones_whatsapp").insert(filas);
     if (error) { showToast("Error al programar: " + error.message, "error"); }
     else {
-      showToast("✅ Publicacion programada");
-      setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "" });
+      showToast("✅ " + filas.length + " envio(s) programado(s)");
+      setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "", repetir_cada: "0", duracion_dias: "1" });
       cargar();
     }
     setLoading(false);
@@ -182,6 +193,17 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
           <textarea placeholder="Texto del mensaje (opcional)" value={form.texto_mensaje} onChange={(e) => setForm({ ...form, texto_mensaje: e.target.value })} rows={2} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           <input placeholder="Hashtags (ej: oferta, barrio)" value={form.hashtag} onChange={(e) => setForm({ ...form, hashtag: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           <input type="datetime-local" value={form.fecha_programada} onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800" />
+          <select value={form.repetir_cada} onChange={(e) => setForm({ ...form, repetir_cada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800">
+            <option value="0">Sin repeticion (1 envio)</option>
+            <option value="6">Repetir cada 6 horas</option>
+            <option value="12">Repetir cada 12 horas</option>
+            <option value="24">Repetir cada dia</option>
+          </select>
+          <select value={form.duracion_dias} onChange={(e) => setForm({ ...form, duracion_dias: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800">
+            <option value="1">Durante 24 horas</option>
+            <option value="3">Durante 3 dias</option>
+            <option value="7">Durante 1 semana</option>
+          </select>
           <div>
             <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={subirArchivo} className="hidden" />
             <button onClick={() => fileInputRef.current?.click()} className="w-full border-2 border-dashed border-stone-400 rounded-lg p-4 hover:bg-stone-100 flex items-center justify-center gap-2 text-stone-700 font-medium">

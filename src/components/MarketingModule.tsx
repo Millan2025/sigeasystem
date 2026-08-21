@@ -269,7 +269,7 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
               <textarea placeholder="Texto del post (opcional)" rows={3} className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
               <input placeholder="Hashtags (separados por coma)" className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3" />
               <div>
-                <label className="text-sm font-medium text-stone-700 mb-2 block">Plataformas destino:</label>
+                <label className="text-sm font-medium text-stone-700 mb-2 block"><strong className="text-stone-900 font-semibold">Plataformas destino:</strong></label>
                 <div className="flex gap-2 flex-wrap">
                   {REDES.map((r) => (
                     <label key={r.id} className="flex items-center gap-1 text-sm">
