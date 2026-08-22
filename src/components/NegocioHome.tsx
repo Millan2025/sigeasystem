@@ -98,7 +98,25 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
-  useEffect(() => { if (typeof window !== "undefined") setUnlocked(localStorage.getItem("sigea_demo_unlocked") === "1"); }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // En demos, SIEMPRE iniciar bloqueado (para pruebas)
+      // El usuario puede desbloquear con el lead
+      if (isDemo) {
+        const wasUnlocked = localStorage.getItem("sigea_demo_unlocked") === "1";
+        // Si nunca se ha desbloqueado, o si hay un flag de reset, iniciar bloqueado
+        const forceLock = localStorage.getItem("sigea_demo_force_lock") === "1";
+        if (forceLock || !wasUnlocked) {
+          setUnlocked(false);
+        } else {
+          setUnlocked(true);
+        }
+      } else {
+        // En producción, siempre desbloqueado
+        setUnlocked(true);
+      }
+    }
+  }, [isDemo]);
   const searchParams = useSearchParams();
   const [ventasHoy, setVentasHoy] = useState({ total: 0, transacciones: 0, efectivo: 0, nequi: 0, daviplata: 0 });
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
@@ -312,7 +330,21 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       >
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
         <div className="relative z-10 max-w-3xl mx-auto pt-14 sm:pt-0">
-	          {/* Botón Cerrar Sesión - Esquina superior derecha */}
+	          {/* Botón Reset AIDA (solo demos) */}
+          {isDemo && (
+            <button
+              onClick={() => {
+                localStorage.removeItem("sigea_demo_unlocked");
+                localStorage.setItem("sigea_demo_force_lock", "1");
+                window.location.reload();
+              }}
+              className="absolute top-0 left-0 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-xs z-20 border border-rose-300"
+              title="Resetear demo (para probar el gate AIDA)"
+            >
+              🔄 Reset Demo
+            </button>
+          )}
+          {/* Botón Cerrar Sesión - Esquina superior derecha */}
                   {/* Botón Notificaciones - junto al de Cerrar Sesión */}
           <div className="absolute top-0 right-28 z-20">
             <NotificationBell tenantId={tenantId} negocioSlug={negocioSlug} />
@@ -730,6 +762,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             setShowLeadForm(false);
             setUnlocked(true);
             localStorage.setItem("sigea_demo_unlocked", "1");
+            localStorage.removeItem("sigea_demo_force_lock");
             alert("🎉 ¡Desbloqueado! Ya tienes el dashboard completo con Marketing automático.");
           }}
           tipoNegocio={negocioSlug || "tienda"}
