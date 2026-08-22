@@ -452,12 +452,12 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <Link
               key={m.id}
               href={m.href}
-              className={`${m.color} rounded-2xl p-5 text-left border-2 border-[#B8860B] shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
+              className={`${m.color} rounded-2xl p-3 sm:p-5 text-center sm:text-left border-2 border-[#B8860B] shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 no-underline block relative overflow-hidden`}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none"></div>
               <m.icon className="w-7 h-7 mb-2 relative z-10" />
-              <span className="font-semibold text-stone-800 block relative z-10">{m.label}</span>
-              <span className="text-xs text-stone-500 relative z-10">Toca para ingresar</span>
+              <span className="font-semibold text-stone-800 block relative z-10 text-sm sm:text-base break-words">{m.label}</span>
+              <span className="text-[10px] sm:text-xs text-stone-500 relative z-10">Toca para ingresar</span>
             </Link>
           ))}
         </div>

@@ -146,12 +146,12 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6 w-full max-w-full overflow-x-hidden">
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-6">
-        <div className="flex items-center gap-3">
+      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4 sm:p-6">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="bg-white/20 p-3 rounded-xl"><MessageCircle className="w-8 h-8" /></div>
           <div>
-            <h1 className="text-2xl font-bold">Marketing WhatsApp</h1>
-            <p className="text-green-100 text-sm">{negocioNombre || "Tu negocio"} · Grupos de barrio · Sin Meta</p>
+            <h1 className="text-xl sm:text-2xl font-bold break-words">Marketing WhatsApp</h1>
+            <p className="text-green-100 text-xs sm:text-sm break-words">{negocioNombre || "Tu negocio"} · Grupos de barrio · Sin Meta</p>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       {/* CONFIG NUMERO DUENO */}
       <div className="bg-white rounded-2xl p-4 border shadow-sm">
         <div className="flex items-center gap-2 mb-2"><Settings className="w-4 h-4 text-stone-600" /><h3 className="font-semibold text-stone-800 text-sm">WhatsApp del dueño (recibe el anuncio listo, 1 tap)</h3></div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-col sm:flex-row">
           <input placeholder={numeroDueno ? `Actual: ${numeroDueno}` : "Ej: 573001234567"} value={numeroDueno} onChange={(e) => setNumeroDueno(e.target.value)} className="flex-1 border-2 border-stone-300 bg-white rounded-lg p-2 text-stone-800 placeholder:text-stone-500" type="tel" />
           <button onClick={guardarNumeroDueno} className="bg-stone-800 text-white rounded-lg px-4 text-sm font-semibold">Guardar</button>
         </div>
