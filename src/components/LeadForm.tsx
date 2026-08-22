@@ -22,11 +22,11 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
   const [loading, setLoading] = useState(false);
 
   const guardar = async () => {
-    if (!form.nombre || !form.whatsapp) {
-      alert("Nombre y WhatsApp son obligatorios");
+    if (!form.nombre || !form.whatsapp || !form.email) {
+      alert("Nombre, WhatsApp y correo son obligatorios");
       return;
     }
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       alert("El correo electrónico no es válido");
       return;
     }
@@ -76,7 +76,7 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
             type="tel"
           />
           <input
-            placeholder="Correo electrónico (opcional)"
+            placeholder="Correo electrónico *"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
