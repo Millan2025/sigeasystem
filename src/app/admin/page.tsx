@@ -25,7 +25,7 @@ import {
   Upload,
   Edit,
   TrendingUp,
-  MessageSquare,
+
   Rocket,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -468,15 +468,14 @@ export default function AdminMasterPage() {
           {[
             { id: "clientes" as const, label: "Clientes", icon: Users },
             { id: "usuarios" as const, label: "Usuarios", icon: UserCog },
-            { id: "trazabilidad" as const, label: "Trazabilidad", icon: Activity },
+            { id: "trazabilidad" as const, label: "CRM", icon: Activity },
             { id: "suscripciones" as const, label: "Planes", icon: CreditCard },
             { id: "config" as const, label: "Config", icon: Settings },
-            { id: "crm" as const, label: "CRM", icon: MessageSquare },
             { id: "marketing" as const, label: "Marketing", icon: Rocket },
           ].map((t) => (
             <button
               key={t.id}
-              onClick={() => { if (t.id === "marketing") { window.location.href = "/admin/marketing"; } else if (t.id === "clientes" || t.id === "trazabilidad") { window.location.href = "/admin/crm"; } else { setTab(t.id); } }}
+              onClick={() => { if (t.id === "marketing") { window.location.href = "/admin/marketing"; } else if (t.id === "trazabilidad") { window.location.href = "/admin/crm"; } else { setTab(t.id); } }}
               className={
                 "flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-medium whitespace-nowrap " +
                 (tab === t.id
@@ -1048,33 +1047,6 @@ export default function AdminMasterPage() {
             )}
           </div>
         )}
-
-      {/* TAB CRM */}
-      {tab === "crm" && (
-        <div className="p-4 max-w-6xl mx-auto">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-6 mb-4">
-            <div className="flex items-center gap-3 mb-2">
-              <MessageSquare className="w-8 h-8" />
-              <div>
-                <h2 className="text-2xl font-bold">CRM - Prospectos</h2>
-                <p className="text-emerald-100 text-sm">Gestión comercial de leads y seguimiento</p>
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/admin/crm"
-            className="block bg-white rounded-xl p-6 border-2 border-emerald-200 hover:border-emerald-500 hover:shadow-xl transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-stone-800">Abrir CRM completo</h3>
-                <p className="text-sm text-stone-500 mt-1">Gestiona prospectos, demos, pruebas y ventas cerradas</p>
-              </div>
-              <div className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold">Ir →</div>
-            </div>
-          </Link>
-        </div>
-      )}
 
       {/* TAB MARKETING */}
       {tab === "marketing" && (
