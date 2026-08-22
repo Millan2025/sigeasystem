@@ -446,7 +446,7 @@ export default function AdminMasterPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 mb-3">
           <a
             href="/demo"
             target="_blank"
