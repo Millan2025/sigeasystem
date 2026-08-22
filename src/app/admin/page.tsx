@@ -476,7 +476,7 @@ export default function AdminMasterPage() {
           ].map((t) => (
             <button
               key={t.id}
-              onClick={() => { if (t.id === "crm" || t.id === "CRM") { window.location.href = "/admin/crm"; } else if (t.id === "marketing" || t.id === "Marketing") { window.location.href = "/admin/marketing"; } else { setTab(t.id); } }}
+              onClick={() => { if (t.id === "marketing") { window.location.href = "/admin/marketing"; } else if (t.id === "clientes" || t.id === "trazabilidad") { window.location.href = "/admin/crm"; } else { setTab(t.id); } }}
               className={
                 "flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-medium whitespace-nowrap " +
                 (tab === t.id
