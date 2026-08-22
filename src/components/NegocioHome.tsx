@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -47,6 +47,7 @@ const beneficiosPorModulo: Record<string, { titulo: string; icono: string; benef
   tienda: { titulo: "Tienda Online", icono: "🛒", beneficios: ["Catálogo actualizado", "Búsqueda", "Carrito", "Checkout"], color: "bg-orange-500" },
   compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
   creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
+  marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN de WhatsApp", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
 };
 
 interface BusinessConfig {
