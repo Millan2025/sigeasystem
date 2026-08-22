@@ -47,6 +47,7 @@ const beneficiosPorModulo: Record<string, { titulo: string; icono: string; benef
   tienda: { titulo: "Tienda Online", icono: "🛒", beneficios: ["Catálogo actualizado", "Búsqueda", "Carrito", "Checkout"], color: "bg-orange-500" },
   compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
   creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
+  marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
   marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN de WhatsApp", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
 };
 
@@ -296,6 +297,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-2 border-[#B8860B] text-orange-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `/${negocioSlug || "restaurante"}/compras?tenant=${tenantId}` },
     { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `/${negocioSlug || "restaurante"}/creditos?tenant=${tenantId}` },
+    { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `/${negocioSlug || "restaurante"}/marketing?tenant=${tenantId}` },
   ];
 
   return (
