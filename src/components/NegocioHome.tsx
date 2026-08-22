@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -29,7 +29,7 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  LogOut,
+  LogOut, Megaphone,
 } from "lucide-react";
 import NotificationBell from './NotificationBell';
 
