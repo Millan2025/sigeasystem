@@ -23,7 +23,6 @@ import {
   Receipt,
   MapPin,
   Mail,
-  Globe,
   Lock,
   KeyRound,
   Eye,
@@ -33,8 +32,6 @@ import {
 } from "lucide-react";
 import NotificationBell from './NotificationBell';
 
-const SLOGAN = "DONDE EL PAN TIENE HISTORIA Y SABOR";
-const SITIO_WEB = "https://mobirisesite.com";
 
 const beneficiosPorModulo: Record<string, { titulo: string; icono: string; beneficios: string[]; color: string }> = {
   pos: { titulo: "Punto de Venta Inteligente", icono: "💰", beneficios: ["Productos por peso", "Cobro: Efectivo, Nequi, Daviplata", "Búsqueda rápida", "Descuento automático de inventario"], color: "bg-emerald-500" },
@@ -391,9 +388,6 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 <Mail className="w-4 h-4 text-stone-700" /> <span className="text-stone-800">{config.correo_contacto}</span>
               </span>
             )}
-            <span className="flex items-center gap-2 bg-white/40 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-md border border-[#B8860B]">
-              <Globe className="w-4 h-4 text-stone-700" /> <span className="text-stone-800">{SITIO_WEB}</span>
-            </span>
           </div>
 
           <div className="mt-6">

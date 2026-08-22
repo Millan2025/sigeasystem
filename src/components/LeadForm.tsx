@@ -13,6 +13,7 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
   const [form, setForm] = useState({
     nombre: "",
     whatsapp: "",
+    email: "",
     tipo_negocio: tipoNegocio,
     facebook: "",
     instagram: "",
@@ -25,15 +26,21 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
       alert("Nombre y WhatsApp son obligatorios");
       return;
     }
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      alert("El correo electrónico no es válido");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.from("crm_prospectos").insert({
       nombre: form.nombre,
       whatsapp: form.whatsapp,
+      email: form.email || null,
       tipo_negocio: form.tipo_negocio,
       estado: "demo",
       fuente: fuente,
       plan_interes: "barrio",
       notas: [
+        form.email ? `Email: ${form.email}` : null,
         form.facebook ? `Facebook: ${form.facebook}` : null,
         form.instagram ? `Instagram: ${form.instagram}` : null,
         form.tiktok ? `TikTok: ${form.tiktok}` : null,
@@ -67,6 +74,13 @@ export default function LeadForm({ onSuccess, tipoNegocio = "tienda", fuente = "
             onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
             className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
             type="tel"
+          />
+          <input
+            placeholder="Correo electrónico (opcional)"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="w-full border-2 border-stone-300 bg-white rounded-lg text-stone-800 placeholder:text-stone-500 focus:outline-none focus:border-emerald-600 p-3"
+            type="email"
           />
           <select
             value={form.tipo_negocio}
