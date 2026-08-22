@@ -4,20 +4,30 @@ import WhatsAppMarketing from "@/components/WhatsAppMarketing";
 
 export const dynamic = "force-dynamic";
 
-export default async function MarketingPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function MarketingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tenant?: string }>;
+}) {
   const { slug } = await params;
+  const sp = await searchParams;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { data: tenant } = await supabase
-    .from("tenants")
-    .select("id, nombre")
-    .eq("slug", slug)
-    .maybeSingle();
-
+  let tenant: { id: string; nombre: string } | null = null;
+  if (sp.tenant) {
+    const { data } = await supabase.from("tenants").select("id, nombre").eq("id", sp.tenant).maybeSingle();
+    tenant = data;
+  }
+  if (!tenant) {
+    const { data } = await supabase.from("tenants").select("id, nombre").eq("slug", slug).maybeSingle();
+    tenant = data;
+  }
   if (!tenant) redirect("/404");
 
   return (
@@ -27,14 +37,6 @@ export default async function MarketingPage({ params }: { params: Promise<{ slug
           <h1 className="text-3xl font-bold">Marketing Digital</h1>
           <p className="text-emerald-100 mt-1">{tenant.nombre}</p>
         </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button className="bg-white text-stone-800 rounded-lg px-4 py-2 font-semibold border-2 border-stone-200">WhatsApp</button>
-          <button className="bg-white text-stone-500 rounded-lg px-4 py-2 border border-stone-200">Piezas</button>
-          <button className="bg-white text-stone-500 rounded-lg px-4 py-2 border border-stone-200">Otras Redes</button>
-          <button className="bg-white text-stone-500 rounded-lg px-4 py-2 border border-stone-200">Cronograma</button>
-        </div>
-
         <WhatsAppMarketing tenantId={tenant.id} negocioNombre={tenant.nombre} />
       </div>
     </div>
