@@ -48,7 +48,6 @@ const beneficiosPorModulo: Record<string, { titulo: string; icono: string; benef
   compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
   creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
   marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
-  marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN de WhatsApp", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
 };
 
 interface BusinessConfig {
@@ -97,7 +96,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   });
   const [loading, setLoading] = useState(true);
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  useEffect(() => { if (typeof window !== "undefined") setUnlocked(localStorage.getItem("sigea_demo_unlocked") === "1"); }, []);
   const searchParams = useSearchParams();
   const [ventasHoy, setVentasHoy] = useState({ total: 0, transacciones: 0, efectivo: 0, nequi: 0, daviplata: 0 });
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
@@ -421,7 +422,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
-          {modulos.map((m) => (
+          {modulos.filter((m) => !isDemo || unlocked || m.id === "pos").map((m) => (
             <Link
               key={m.id}
               href={m.href}
@@ -435,6 +436,14 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           ))}
         </div>
       </div>
+
+      {isDemo && !unlocked && (
+        <button onClick={() => setShowLeadForm(true)} className="mt-6 w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-6 text-left shadow-xl hover:shadow-2xl transition border-2 border-emerald-700">
+          <span className="block text-2xl font-bold">🔥 Tu negocio puede mucho más</span>
+          <span className="block mt-2 text-emerald-50 text-sm">Marketing automático en grupos del barrio 📣 · Reportes · Finanzas · Pedidos · Tienda online y 6 módulos más te esperan.</span>
+          <span className="inline-block mt-4 bg-white text-emerald-700 font-bold px-5 py-2 rounded-full text-sm">🔓 Desbloquear gratis con mis datos</span>
+        </button>
+      )}
 
       {/* Modal de beneficios (sin cambios) */}
       {moduloActivo && beneficiosPorModulo[moduloActivo] && (
@@ -700,14 +709,16 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         onClick={() => setShowLeadForm(true)}
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-emerald-600 text-white rounded-full px-6 py-3 font-semibold shadow-2xl hover:bg-emerald-700"
       >
-        Ver más módulos
+        🔓 Desbloquear más módulos (gratis)
       </button>
       )}
       {isDemo && showLeadForm && (
         <LeadForm
           onSuccess={() => {
             setShowLeadForm(false);
-            alert("¡Listo! Te contactaremos pronto para darte acceso al dashboard completo.");
+            setUnlocked(true);
+            localStorage.setItem("sigea_demo_unlocked", "1");
+            alert("🎉 ¡Desbloqueado! Ya tienes el dashboard completo con Marketing automático.");
           }}
           tipoNegocio={negocioSlug || "tienda"}
         />
