@@ -1,8 +1,38 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-react';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
+
+// Reproducir sonido de notificación
+const playNotificationSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  } catch (e) {
+    console.log('Audio no disponible');
+  }
+};
+
+// Vibración en móvil
+const vibrateDevice = () => {
+  if ('vibrate' in navigator) {
+    navigator.vibrate([200, 100, 200]);
+  }
+};
 
 interface Props {
   tenantId: string | null;
@@ -10,8 +40,8 @@ interface Props {
 }
 
 const iconos: Record<string, string> = {
-  pedido: '🛵', stock: '📦', orden: '🏭', pago: '💰',
-  cliente: '👤', alerta: '⚠️', exito: '✅', default: '🔔'
+  pedido: 'ðŸ›µ', stock: 'ðŸ“¦', orden: 'ðŸ­', pago: 'ðŸ’°',
+  cliente: 'ðŸ‘¤', alerta: 'âš ï¸', exito: 'âœ…', default: 'ðŸ””'
 };
 
 const colores: Record<string, string> = {
@@ -42,10 +72,32 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
     const handler = (e: any) => {
       const n = e.detail;
       setToast(n);
+      
+      // Reproducir sonido y vibración
+      playNotificationSound();
+      vibrateDevice();
+      
+      // Mostrar notificación del navegador si tiene permisos
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(n.titulo, {
+          body: n.mensaje,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          requireInteraction: false,
+        });
+      }
+      
       setTimeout(() => setToast(null), 5000);
     };
     window.addEventListener('nueva-notificacion', handler);
     return () => window.removeEventListener('nueva-notificacion', handler);
+  }, []);
+
+  // Solicitar permisos de notificación al montar
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   }, []);
 
   if (!tenantId) return null;
@@ -142,7 +194,7 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
                                 <button
                                   onClick={() => marcarLeida(n.id)}
                                   className="text-xs text-stone-500 hover:text-stone-700"
-                                  title="Marcar como leída"
+                                  title="Marcar como leÃ­da"
                                 >
                                   <Check className="w-3 h-3" />
                                 </button>
@@ -168,3 +220,4 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
     </>
   );
 }
+

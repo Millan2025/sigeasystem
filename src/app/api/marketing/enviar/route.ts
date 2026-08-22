@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     const destino = String(pub.numero_whatsapp || "").replace(/\D/g, "");
     if (!destino) return NextResponse.json({ ok: false, error: "sin numero del dueno" }, { status: 400 });
-    const texto = caption(pub);
+    const texto = await caption(pub);
 
     // PROVIDER 1: META OFICIAL
     const metaToken = process.env.WHATSAPP_META_TOKEN;
@@ -56,3 +56,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: e?.message }, { status: 500 });
   }
 }
+
