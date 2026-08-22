@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -438,10 +438,22 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       </div>
 
       {isDemo && !unlocked && (
-        <button onClick={() => setShowLeadForm(true)} className="mt-6 w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-6 text-left shadow-xl hover:shadow-2xl transition border-2 border-emerald-700">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3">
+          {modulos.filter((m) => m.id !== "pos").map((m) => (
+            <button key={m.id} onClick={() => setShowLeadForm(true)} className="rounded-xl p-3 text-left border-2 border-dashed border-[#B8860B]/60 bg-stone-100 hover:bg-amber-50 transition">
+              <m.icon className="w-4 h-4 mb-1 text-stone-400" />
+              <span className="font-semibold text-stone-500 block text-xs">{m.label}</span>
+              <span className="text-[10px] text-amber-700 flex items-center gap-1"><Lock className="w-3 h-3" /> Desbloquear</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isDemo && !unlocked && (
+        <button onClick={() => setShowLeadForm(true)} className="mt-6 w-full bg-gradient-to-r from-[#fdb813] to-[#e8a800] text-stone-900 rounded-2xl p-6 text-left shadow-xl hover:shadow-2xl transition border-2 border-[#B8860B]">
           <span className="block text-2xl font-bold">🔥 Tu negocio puede mucho más</span>
-          <span className="block mt-2 text-emerald-50 text-sm">Marketing automático en grupos del barrio 📣 · Reportes · Finanzas · Pedidos · Tienda online y 6 módulos más te esperan.</span>
-          <span className="inline-block mt-4 bg-white text-emerald-700 font-bold px-5 py-2 rounded-full text-sm">🔓 Desbloquear gratis con mis datos</span>
+          <span className="block mt-2 text-stone-800 text-sm">Marketing automático en grupos del barrio 📣 · Reportes · Finanzas · Pedidos · Tienda online y 6 módulos más te esperan.</span>
+          <span className="inline-block mt-4 bg-stone-900 text-amber-400 font-bold px-5 py-2 rounded-full text-sm">🤝 Vamos a conocernos</span>
         </button>
       )}
 
@@ -704,12 +716,12 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           </div>
         </div>
       )}
-      {isDemo && (
+      {isDemo && !unlocked && (
       <button
         onClick={() => setShowLeadForm(true)}
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-emerald-600 text-white rounded-full px-6 py-3 font-semibold shadow-2xl hover:bg-emerald-700"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#fdb813] text-stone-900 border-2 border-[#B8860B] rounded-full px-6 py-3 font-bold shadow-2xl hover:bg-[#e8a800]"
       >
-        🔓 Desbloquear más módulos (gratis)
+        🤝 Vamos a conocernos
       </button>
       )}
       {isDemo && showLeadForm && (
