@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-react';
@@ -40,8 +40,8 @@ interface Props {
 }
 
 const iconos: Record<string, string> = {
-  pedido: 'ðŸ›µ', stock: 'ðŸ“¦', orden: 'ðŸ­', pago: 'ðŸ’°',
-  cliente: 'ðŸ‘¤', alerta: 'âš ï¸', exito: 'âœ…', default: 'ðŸ””'
+  pedido: '🛵', stock: '📦', orden: '🏭', pago: '💰',
+  cliente: '👤', alerta: '⚠️', exito: '✅', default: '🔔'
 };
 
 const colores: Record<string, string> = {

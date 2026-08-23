@@ -189,7 +189,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
         <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Plus className="w-5 h-5" /> Nueva publicación</h2>
         <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
           <input placeholder="Nombre de la pieza *" value={form.nombre_pieza} onChange={(e) => setForm({ ...form, nombre_pieza: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
-          <input placeholder="Grupo de WhatsApp * (ej: Vecinos Barrio)" value={form.grupo_whatsapp} onChange={(e) => setForm({ ...form, grupo_whatsapp: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
+          
           <textarea placeholder="Texto del mensaje (opcional)" value={form.texto_mensaje} onChange={(e) => setForm({ ...form, texto_mensaje: e.target.value })} rows={2} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           <input placeholder="Hashtags (ej: oferta, barrio)" value={form.hashtag} onChange={(e) => setForm({ ...form, hashtag: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           <input type="datetime-local" value={form.fecha_programada} onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800" />
