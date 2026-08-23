@@ -68,7 +68,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     while (t <= fin && filas.length < 60) {
       filas.push({
         tenant_id: tenantId, nombre_pieza: form.nombre_pieza, tipo_archivo: form.tipo_archivo, url_archivo: form.url_archivo,
-        texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: "Grupos del barrio",
+        texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: "Grupos del barrio", enlace_tienda: (typeof window !== "undefined" ? window.location.origin + window.location.pathname.replace(/\/marketing$/, "") + "/tienda?tenant=" + tenantId : ""),
         numero_whatsapp: form.numero_whatsapp || numeroDueno, fecha_programada: new Date(t).toISOString(), estado: "pendiente",
       });
       if (cada <= 0) break;

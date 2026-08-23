@@ -8,8 +8,7 @@ async function caption(pub: any) {
   const tags = pub.hashtag ? "#" + String(pub.hashtag).replace(/#/g, "").split(",").map((h: string) => h.trim()).filter(Boolean).join(" #") : "";
   let enlace = "";
   try {
-    const { data: tenant } = await supabase.from("tenants").select("slug").eq("id", pub.tenant_id).maybeSingle();
-    if (tenant && tenant.slug) enlace = "\n\n🛵 Pide a domicilio: https://sigea-system.vercel.app/" + tenant.slug + "/tienda?tenant=" + pub.tenant_id;
+    if (pub.enlace_tienda) enlace = "\n\n🛵 Pide a domicilio: " + pub.enlace_tienda;
   } catch (e) {}
   return ((pub.texto_mensaje || "") + (tags ? "\n\n" + tags : "") + enlace).trim() || pub.nombre_pieza;
 }
