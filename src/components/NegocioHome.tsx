@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -310,7 +310,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-2 border-[#B8860B] text-sky-600", href: `/${negocioSlug || "restaurante"}/pedidos?tenant=${tenantId}` },
     { id: "reportes", label: "Reportes", icon: BarChart3, color: "bg-rose-50 border-2 border-[#B8860B] text-rose-600", href: `/${negocioSlug || "restaurante"}/reportes?tenant=${tenantId}` },
     { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-2 border-[#B8860B] text-teal-600", href: `/${negocioSlug || "restaurante"}/finanzas?tenant=${tenantId}` },
-    { id: "tienda", label: "Tienda", icon: ShoppingCart, color: "bg-orange-50 border-2 border-[#B8860B] text-orange-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
+    { id: "tienda", label: "Domicilios", icon: Truck, color: "bg-blue-50 border-2 border-[#B8860B] text-blue-600", href: `/${negocioSlug || "restaurante"}/tienda?tenant=${tenantId}` },
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `/${negocioSlug || "restaurante"}/compras?tenant=${tenantId}` },
     { id: "creditos", label: "CrÃ©ditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `/${negocioSlug || "restaurante"}/creditos?tenant=${tenantId}` },
     { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `/${negocioSlug || "restaurante"}/marketing?tenant=${tenantId}` },
@@ -602,7 +602,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900 flex items-center gap-2">
                 <ShoppingBag className="w-6 h-6 text-orange-600" />
-                Compartir Tienda
+                Compartir Domicilios
               </h2>
               <button onClick={() => setShowShareTienda(false)} className="p-2 hover:bg-stone-100 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />

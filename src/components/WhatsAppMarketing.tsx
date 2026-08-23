@@ -55,8 +55,8 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
   };
 
   const programar = async () => {
-    if (!form.nombre_pieza || !form.url_archivo || !form.grupo_whatsapp || !form.fecha_programada) {
-      showToast("Completa nombre, archivo, grupo y fecha", "error"); return;
+    if (!form.nombre_pieza || !form.url_archivo || !form.fecha_programada) {
+      showToast("Completa nombre, archivo y fecha", "error"); return;
     }
     setLoading(true);
     const inicio = new Date(form.fecha_programada).getTime();
@@ -68,7 +68,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     while (t <= fin && filas.length < 60) {
       filas.push({
         tenant_id: tenantId, nombre_pieza: form.nombre_pieza, tipo_archivo: form.tipo_archivo, url_archivo: form.url_archivo,
-        texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: form.grupo_whatsapp,
+        texto_mensaje: form.texto_mensaje, hashtag: form.hashtag, grupo_whatsapp: "Grupos del barrio",
         numero_whatsapp: form.numero_whatsapp || numeroDueno, fecha_programada: new Date(t).toISOString(), estado: "pendiente",
       });
       if (cada <= 0) break;
@@ -160,7 +160,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       <div className="bg-white rounded-2xl p-4 border shadow-sm">
         <div className="flex items-center gap-2 mb-2"><Settings className="w-4 h-4 text-stone-600" /><h3 className="font-semibold text-stone-800 text-sm">WhatsApp del dueño (recibe el anuncio listo, 1 tap)</h3></div>
         <div className="flex gap-2 flex-col sm:flex-row">
-          <input placeholder={numeroDueno ? `Actual: ${numeroDueno}` : "Ej: 573001234567"} value={numeroDueno} onChange={(e) => setNumeroDueno(e.target.value)} className="flex-1 border-2 border-stone-300 bg-white rounded-lg p-2 text-stone-800 placeholder:text-stone-500" type="tel" />
+          <input placeholder={numeroDueno ? `Actual: ${numeroDueno}` : "Ej: 3001234567"} value={numeroDueno} onChange={(e) => setNumeroDueno(e.target.value)} className="flex-1 border-2 border-stone-300 bg-white rounded-lg p-2 text-stone-800 placeholder:text-stone-500" type="tel" />
           <button onClick={guardarNumeroDueno} className="bg-stone-800 text-white rounded-lg px-4 text-sm font-semibold">Guardar</button>
         </div>
       </div>

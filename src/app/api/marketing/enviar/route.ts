@@ -1,12 +1,17 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
-// Caption LIMPIO: solo mensaje + hashtags (SIN url)
-function caption(pub: any) {
+// Caption: mensaje + hashtags + enlace a domicilios
+async function caption(pub: any) {
   const tags = pub.hashtag ? "#" + String(pub.hashtag).replace(/#/g, "").split(",").map((h: string) => h.trim()).filter(Boolean).join(" #") : "";
-  return `${pub.texto_mensaje || ""}${tags ? "\n\n" + tags : ""}`.trim() || pub.nombre_pieza;
+  let enlace = "";
+  try {
+    const { data: tenant } = await supabase.from("tenants").select("slug").eq("id", pub.tenant_id).maybeSingle();
+    if (tenant && tenant.slug) enlace = "\n\n🛵 Pide a domicilio: https://sigea-system.vercel.app/" + tenant.slug + "/tienda?tenant=" + pub.tenant_id;
+  } catch (e) {}
+  return ((pub.texto_mensaje || "") + (tags ? "\n\n" + tags : "") + enlace).trim() || pub.nombre_pieza;
 }
 
 export async function POST(req: Request) {
@@ -18,7 +23,8 @@ export async function POST(req: Request) {
     const { data: pub } = await supabase.from("publicaciones_whatsapp").select("*").eq("id", publicacionId).single();
     if (!pub) return NextResponse.json({ ok: false, error: "no encontrada" }, { status: 404 });
 
-    const destino = String(pub.numero_whatsapp || "").replace(/\D/g, "");
+    let destino = String(pub.numero_whatsapp || "").replace(/\D/g, "");
+    if (destino.length === 10) destino = "57" + destino;
     if (!destino) return NextResponse.json({ ok: false, error: "sin numero del dueno" }, { status: 400 });
     const texto = await caption(pub);
 
