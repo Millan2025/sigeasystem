@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>SIGEA · Propuesta de Inversión</title>
 <style>
-:root{--gold:#fdb813;--gold2:#e8a800;--bg:#0b1220;--card:#121c33;--line:#26334d;--text:#eef2f9;--mut:#9fb0c9;--wa:#25D366}
+:root{--gold:#fdb813;--gold2:#e8a800;--bg:#0b1220;--card:#121c33;--line:#26334d;--text:#eef2f9;--mut:#9fb0c9;--wa:#25D366;--green:#22c55e;--rose:#f43f5e}
 *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.65}
 .wrap{max-width:780px;margin:0 auto;padding:0 18px}
@@ -17,6 +17,7 @@ h1{font-size:clamp(40px,9vw,64px);color:var(--gold);letter-spacing:4px;margin:14
 .btn{display:inline-block;margin:6px 6px 0;padding:14px 26px;border-radius:14px;font-weight:700;text-decoration:none;font-size:16px}
 .btn-gold{background:linear-gradient(145deg,var(--gold),var(--gold2));color:#1a1a1a}
 .btn-wa{background:var(--wa);color:#fff}
+.btn-demo{background:linear-gradient(145deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 8px 30px rgba(59,130,246,.4)}
 section{padding:44px 0 8px}
 h2{color:var(--gold);font-size:clamp(22px,5.5vw,30px);margin-bottom:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
@@ -28,12 +29,26 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 th{color:var(--gold)}
 .chip{display:inline-block;background:#1c2a4d;border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:3px;font-size:13px;color:var(--mut)}
+.chip-soon{border-color:var(--rose);color:var(--rose)}
 .hl{color:var(--gold);font-weight:700}
 .big{font-size:clamp(26px,7vw,40px);color:var(--gold);font-weight:800}
 .wa-float{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99;box-shadow:0 8px 30px rgba(37,211,102,.4)}
 ul{padding-left:20px}li{margin:6px 0}
 footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 .quote{border-left:4px solid var(--gold);padding:12px 16px;background:#16223d;border-radius:0 12px 12px 0;margin:14px 0;font-style:italic}
+.benefit{background:#0e1b35;border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0;display:flex;gap:12px;align-items:flex-start}
+.benefit-icon{font-size:24px;flex-shrink:0}
+.benefit b{color:var(--gold);display:block;margin-bottom:4px}
+.benefit p{color:var(--mut);font-size:14px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+.col-up{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:14px;padding:16px}
+.col-down{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.3);border-radius:14px;padding:16px}
+.col-up h3{color:var(--green);margin-bottom:8px;font-size:16px}
+.col-down h3{color:var(--rose);margin-bottom:8px;font-size:16px}
+.demo-banner{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border-radius:18px;padding:20px;text-align:center;margin:20px 0;border:1px solid #3b82f6}
+.demo-banner h3{color:#fff;font-size:20px;margin-bottom:8px}
+.demo-banner p{color:#bfdbfe;margin-bottom:14px;font-size:14px}
 </style>
 </head>
 <body>
@@ -42,6 +57,7 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <h1>SIGEA</h1>
 <p class="tag">No vendemos software.<br>Vendemos <span class="hl">paz y dignidad</span> al dueño de negocio.</p>
 <p class="sub">El socio silencioso de las 2.3 millones de PYMES de Colombia.</p>
+<a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Ver el DEMO en vivo</a>
 <a class="btn btn-gold" href="#propuesta">Ver la oportunidad ↓</a>
 <a class="btn btn-wa" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20quiero%20hablar%20hoy" target="_blank">💬 Hablemos hoy</a>
 </header>
@@ -70,7 +86,50 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <p style="margin-top:10px">Y lo respalda un sistema <b>100% funcional y en producción hoy</b>:</p>
 <p><span class="chip">POS</span><span class="chip">Inventario</span><span class="chip">Producción</span><span class="chip">Pedidos y domicilios</span><span class="chip">Finanzas</span><span class="chip">Reportes</span><span class="chip">Personal</span><span class="chip">Marketing WhatsApp automático 📣</span></p></div></section>
 
-<section class="wrap"><h2>4 · El modelo: ingresos recurrentes</h2>
+<section class="wrap"><h2>4 · Cómo SIGEA multiplica ingresos y elimina pérdidas</h2>
+<p style="color:var(--mut);margin-bottom:14px">El dueño no paga por módulos. Paga porque su negocio gane más y pierda menos. Esta es la <span class="hl">monetización real</span> que le ofrecemos:</p>
+
+<div class="two-col">
+<div class="col-up">
+<h3>📈 AUMENTA INGRESOS</h3>
+<ul style="font-size:14px">
+<li>Nuevos clientes por <b>módulo de domicilios</b> (ventas 24/7)</li>
+<li>Confianza al cliente: ve stock real y <b>compra más</b></li>
+<li>Pedidos desde la mesa (sin esperar mesero)</li>
+<li>Mejor atención → clientes fieles y recurrentes</li>
+<li>Marketing WhatsApp automático reactiva clientes dormidos</li>
+</ul>
+</div>
+<div class="col-down">
+<h3>📉 DISMINUYE PÉRDIDAS</h3>
+<ul style="font-size:14px">
+<li>Control total del inventario: <b>cero fugas</b> de productos</li>
+<li>Compra inteligente a proveedores: solo lo necesario</li>
+<li>Libera capital para invertir en lo que más vende</li>
+<li>No pierde clientes por tener el producto agotado</li>
+<li>El cliente compra TODO en un solo lugar (no se va a la competencia)</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<p><b>Ejemplo real:</b> Una panadería pierde $300.000/mes por mermas no detectadas y deja de vender $500.000/mes por faltantes de productos clave. Con SIGEA recupera <span class="hl">$800.000/mes</span> en menos de 30 días. El sistema se paga solo.</p>
+</div>
+
+<div class="card">
+<p><b>Próximas funciones (ya en desarrollo):</b></p>
+<p><span class="chip chip-soon">Próximamente · Módulo Mesero</span> Pedido desde la mesa en comidas rápidas</p>
+<p><span class="chip chip-soon">Próximamente · Administración por sedes</span> Control y monitoreo de múltiples ubicaciones desde un solo panel</p>
+<p style="margin-top:8px;color:var(--mut);font-size:13px">Esto posiciona a SIGEA como <b>la solución única para negocios en crecimiento</b>: de 1 a 50 sedes, el sistema escala con ellos.</p>
+</div>
+
+<div class="demo-banner">
+<h3>🎮 Pruébalo tú mismo ahora</h3>
+<p>Entra al demo funcional con 6 negocios precargados. Toca los botones, haz una venta, programa una publicación.</p>
+<a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Abrir DEMO en vivo</a>
+</div></section>
+
+<section class="wrap"><h2>5 · El modelo: ingresos recurrentes</h2>
 <div class="card"><ul>
 <li>Membresía mensual: <span class="hl">$150.000/mes por cliente</span> (de por vida).</li>
 <li>Costo de operación casi cero → <span class="hl">margen 85-90%</span>.</li>
@@ -78,7 +137,7 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <li>Cada cliente refiere 2-3 más: bola de nieve.</li>
 </ul></div></section>
 
-<section class="wrap"><h2>5 · El plan de ventas (listo para ejecutar)</h2>
+<section class="wrap"><h2>6 · El plan de ventas (listo para ejecutar)</h2>
 <div class="card"><table>
 <tr><th>Canal</th><th>Acción</th><th>Cierres</th></tr>
 <tr><td>Face-to-face (70%)</td><td>420 visitas en 6 días: Caribe Verde + Centro, demo en vivo con neuroventas</td><td>15-20</td></tr>
@@ -87,7 +146,7 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 </table>
 <p style="margin-top:8px">Nichos ganadores: panaderías (85% cierre), carnicerías (80%), tiendas (75%), restaurantes (70%).</p></div></section>
 
-<section class="wrap"><h2>6 · Los números (escenario conservador)</h2>
+<section class="wrap"><h2>7 · Los números (escenario conservador)</h2>
 <div class="card"><table>
 <tr><th>Mes</th><th>Clientes activos</th><th>Ingreso</th><th>Utilidad</th></tr>
 <tr><td>1</td><td>15-20</td><td>$5.2-7.0M</td><td>$4.7-6.5M</td></tr>
@@ -95,7 +154,7 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <tr><td>3</td><td>40-55</td><td>$9.7-11.5M</td><td>$9.0-10.8M</td></tr>
 </table></div></section>
 
-<section class="wrap" id="propuesta"><h2>7 · La propuesta: $5.000.000</h2>
+<section class="wrap" id="propuesta"><h2>8 · La propuesta: $5.000.000</h2>
 <div class="card"><p class="big">$5.000.000</p>
 <p>Uso del capital:</p>
 <table>
@@ -111,31 +170,35 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <li>Mes 2: reembolso de <span class="hl">$2.000.000</span> (capital 100% recuperado)</li>
 <li>Mes 3: utilidades adicionales <span class="hl">$3.0-5.0M</span></li>
 </ul>
-<p class="quote">Recibes $8-10M en 90 días → ROI 60-100%, y además te quedas con el 60% de la empresa.</p></div></section>
+<p class="quote">Recibes $8-10M en 90 días → ROI 60-100%, y además te quedas con el 20% de la empresa.</p></div></section>
 
-<section class="wrap"><h2>8 · La sociedad y la visión</h2>
+<section class="wrap"><h2>9 · La sociedad y la visión</h2>
 <div class="grid">
-<div class="stat"><b>60%</b><span>para el inversionista</span></div>
-<div class="stat"><b>40%</b><span>para el operador (yo)</span></div>
-<div class="stat"><b>$7.2M/mes</b><span>tu ingreso pasivo con 100 clientes</span></div>
-<div class="stat"><b>$1.500M</b><span>valor de tu 60% en el año 5</span></div>
+<div class="stat"><b>20%</b><span>para el inversionista</span></div>
+<div class="stat"><b>80%</b><span>para el operador (yo)</span></div>
+<div class="stat"><b>$2.4M/mes</b><span>tu ingreso pasivo con 100 clientes</span></div>
+<div class="stat"><b>$500M</b><span>valor de tu 20% en el año 5</span></div>
 </div>
-<div class="card" style="margin-top:14px"><p><b>Escalado:</b> $5M (Barranquilla) → $10M (Costa Caribe) → $20M (nacional) → 3.000 clientes y valoración de $2.500M en 5 años.</p></div></section>
+<div class="card" style="margin-top:14px"><p><b>Por qué 20/80:</b> Yo pongo el producto ya desarrollado, la ejecución diaria full-time, el conocimiento técnico y comercial, y asumo la operación. Tú pones el capital que acelera el despegue y te llevas un ingreso pasivo real sin trabajar un minuto. El 20% de una empresa rentable vale infinitamente más que el 100% de una que no existe.</p></div>
+<div class="card"><p><b>Escalado:</b> $5M (Barranquilla) → $10M (Costa Caribe) → $20M (nacional) → 3.000 clientes y valoración de $2.500M en 5 años. Tu 20% = <span class="hl">$500 millones COP</span>.</p></div></section>
 
-<section class="wrap"><h2>9 · Riesgo controlado</h2>
+<section class="wrap"><h2>10 · Riesgo controlado</h2>
 <div class="card"><ul>
-<li>✅ El producto <b>ya existe y está en producción</b>: riesgo técnico cero.</li>
+<li>✅ El producto <b>ya existe y está en producción</b>: riesgo técnico cero. <a href="https://sigea-system.vercel.app/demo" target="_blank" style="color:var(--gold)">Ver demo →</a></li>
 <li>✅ Transparencia total: cuentas, métricas y reportes semanales.</li>
-<li>✅ Garantía: si en 3 meses no recupero tu capital, te cedo el 50% de la empresa.</li>
+<li>✅ Garantía: si en 3 meses no recupero tu capital, te cedo el 30% de la empresa.</li>
 <li>✅ Comparativa: CDT 12% anual · Finca raíz 10% · <span class="hl">SIGEA 60-100% en 90 días</span>.</li>
 </ul></div></section>
 
-<section class="wrap"><h2>10 · La decisión</h2>
-<div class="card"><p>Hoy tienes tres opciones: dejar el dinero en el banco al 12% anual… o ser <span class="hl">socio fundador</span> de la empresa que le devolverá la paz a 2.3 millones de negocios.</p>
-<p class="quote">"Yo pongo el producto, el plan y el sudor. Tú pones el combustible. En 3 meses tienes tu dinero de vuelta; en 5 años, un activo que vale 300 veces tu inversión."</p>
-<p style="text-align:center"><a class="btn btn-wa" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20quiero%20hablar%20hoy" target="_blank">💬 Quiero ser socio — Hablemos hoy</a></p></div></section>
+<section class="wrap"><h2>11 · La decisión</h2>
+<div class="card"><p>Hoy tienes tres opciones: dejar el dinero en el banco al 12% anual… o ser <span class="hl">socio inversionista</span> de la empresa que le devolverá la paz a 2.3 millones de negocios.</p>
+<p class="quote">"Yo pongo el producto, el plan y el sudor. Tú pones el combustible. En 3 meses tienes tu dinero de vuelta; en 5 años, un activo que vale 100 veces tu inversión."</p>
+<p style="text-align:center">
+<a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Ver el DEMO</a>
+<a class="btn btn-wa" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20quiero%20hablar%20hoy" target="_blank">💬 Hablemos hoy</a>
+</p></div></section>
 
 <footer>SIGEA System · Barranquilla, Colombia · Documento confidencial para el inversionista</footer>
-<a class="btn btn-wa wa-float" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20quiero%20hablar%20hoy" target="_blank">💬 Hablemos</a>
+<a class="btn btn-wa wa-float" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20hablar%20hoy" target="_blank">💬 Hablemos</a>
 </body>
 </html>
