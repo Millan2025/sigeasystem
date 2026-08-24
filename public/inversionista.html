@@ -23,7 +23,7 @@ h2{color:var(--gold);font-size:clamp(22px,5.5vw,30px);margin-bottom:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}
-.stat b{display:block;font-size:clamp(22px,6vw,30px);color:var(--gold)}
+.stat b{display:block;font-size:clamp(20px,5.5vw,28px);color:var(--gold)}
 .stat span{color:var(--mut);font-size:13px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
@@ -37,9 +37,6 @@ ul{padding-left:20px}li{margin:6px 0}
 footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 .quote{border-left:4px solid var(--gold);padding:12px 16px;background:#16223d;border-radius:0 12px 12px 0;margin:14px 0;font-style:italic}
 .benefit{background:#0e1b35;border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0;display:flex;gap:12px;align-items:flex-start}
-.benefit-icon{font-size:24px;flex-shrink:0}
-.benefit b{color:var(--gold);display:block;margin-bottom:4px}
-.benefit p{color:var(--mut);font-size:14px}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:600px){.two-col{grid-template-columns:1fr}}
 .col-up{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:14px;padding:16px}
@@ -49,6 +46,8 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 .demo-banner{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border-radius:18px;padding:20px;text-align:center;margin:20px 0;border:1px solid #3b82f6}
 .demo-banner h3{color:#fff;font-size:20px;margin-bottom:8px}
 .demo-banner p{color:#bfdbfe;margin-bottom:14px;font-size:14px}
+.tq{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:14px;padding:16px;margin:10px 0}
+.tq b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -87,8 +86,6 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <p><span class="chip">POS</span><span class="chip">Inventario</span><span class="chip">Producción</span><span class="chip">Pedidos y domicilios</span><span class="chip">Finanzas</span><span class="chip">Reportes</span><span class="chip">Personal</span><span class="chip">Marketing WhatsApp automático 📣</span></p></div></section>
 
 <section class="wrap"><h2>4 · Cómo SIGEA multiplica ingresos y elimina pérdidas</h2>
-<p style="color:var(--mut);margin-bottom:14px">El dueño no paga por módulos. Paga porque su negocio gane más y pierda menos. Esta es la <span class="hl">monetización real</span> que le ofrecemos:</p>
-
 <div class="two-col">
 <div class="col-up">
 <h3>📈 AUMENTA INGRESOS</h3>
@@ -97,7 +94,7 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <li>Confianza al cliente: ve stock real y <b>compra más</b></li>
 <li>Pedidos desde la mesa (sin esperar mesero)</li>
 <li>Mejor atención → clientes fieles y recurrentes</li>
-<li>Marketing WhatsApp automático reactiva clientes dormidos</li>
+<li>Marketing WhatsApp reactiva clientes dormidos</li>
 </ul>
 </div>
 <div class="col-down">
@@ -107,25 +104,17 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <li>Compra inteligente a proveedores: solo lo necesario</li>
 <li>Libera capital para invertir en lo que más vende</li>
 <li>No pierde clientes por tener el producto agotado</li>
-<li>El cliente compra TODO en un solo lugar (no se va a la competencia)</li>
+<li>El cliente compra TODO en un solo lugar</li>
 </ul>
 </div>
 </div>
-
-<div class="card">
-<p><b>Ejemplo real:</b> Una panadería pierde $300.000/mes por mermas no detectadas y deja de vender $500.000/mes por faltantes de productos clave. Con SIGEA recupera <span class="hl">$800.000/mes</span> en menos de 30 días. El sistema se paga solo.</p>
-</div>
-
-<div class="card">
-<p><b>Próximas funciones (ya en desarrollo):</b></p>
+<div class="card"><p><b>Ejemplo real:</b> una panadería pierde $300.000/mes por mermas no detectadas y deja de vender $500.000/mes por faltantes. Con SIGEA recupera <span class="hl">$800.000/mes</span>. El sistema se paga solo.</p></div>
+<div class="card"><p><b>Próximas funciones (ya en desarrollo):</b></p>
 <p><span class="chip chip-soon">Próximamente · Módulo Mesero</span> Pedido desde la mesa en comidas rápidas</p>
-<p><span class="chip chip-soon">Próximamente · Administración por sedes</span> Control y monitoreo de múltiples ubicaciones desde un solo panel</p>
-<p style="margin-top:8px;color:var(--mut);font-size:13px">Esto posiciona a SIGEA como <b>la solución única para negocios en crecimiento</b>: de 1 a 50 sedes, el sistema escala con ellos.</p>
-</div>
-
+<p><span class="chip chip-soon">Próximamente · Administración por sedes</span> Control multi-ubicación desde un solo panel</p></div>
 <div class="demo-banner">
 <h3>🎮 Pruébalo tú mismo ahora</h3>
-<p>Entra al demo funcional con 6 negocios precargados. Toca los botones, haz una venta, programa una publicación.</p>
+<p>Entra al demo funcional con 6 negocios precargados. Haz una venta, programa una publicación.</p>
 <a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Abrir DEMO en vivo</a>
 </div></section>
 
@@ -146,41 +135,37 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 </table>
 <p style="margin-top:8px">Nichos ganadores: panaderías (85% cierre), carnicerías (80%), tiendas (75%), restaurantes (70%).</p></div></section>
 
-<section class="wrap"><h2>7 · Los números (escenario conservador)</h2>
-<div class="card"><table>
-<tr><th>Mes</th><th>Clientes activos</th><th>Ingreso</th><th>Utilidad</th></tr>
-<tr><td>1</td><td>15-20</td><td>$5.2-7.0M</td><td>$4.7-6.5M</td></tr>
-<tr><td>2</td><td>25-35</td><td>$5.7-7.5M</td><td>$5.2-7.0M</td></tr>
-<tr><td>3</td><td>40-55</td><td>$9.7-11.5M</td><td>$9.0-10.8M</td></tr>
-</table></div></section>
-
-<section class="wrap" id="propuesta"><h2>8 · La propuesta: $5.000.000</h2>
+<section class="wrap" id="propuesta"><h2>7 · La propuesta: entra con $5M</h2>
 <div class="card"><p class="big">$5.000.000</p>
-<p>Uso del capital:</p>
-<table>
-<tr><td>Landing web + embudo digital</td><td>$1.5M</td></tr>
-<tr><td>Publicidad digital (3 meses)</td><td>$1.5M</td></tr>
-<tr><td>Materiales de venta (certificados, stickers, demos)</td><td>$0.5M</td></tr>
-<tr><td>Capital de trabajo</td><td>$1.0M</td></tr>
-<tr><td>Reserva</td><td>$0.5M</td></tr>
-</table></div>
-<div class="card"><p><b>Tu retorno en 90 días:</b></p>
-<ul>
-<li>Mes 1: reembolso de <span class="hl">$3.000.000</span></li>
-<li>Mes 2: reembolso de <span class="hl">$2.000.000</span> (capital 100% recuperado)</li>
-<li>Mes 3: utilidades adicionales <span class="hl">$3.0-5.0M</span></li>
-</ul>
-<p class="quote">Recibes $8-10M en 90 días → ROI 60-100%, y además te quedas con el 20% de la empresa.</p></div></section>
+<p>Capital de entrada para arrancar la operación en Barranquilla: web + embudo digital, publicidad, materiales de venta y capital de trabajo.</p>
+<p class="quote">Dos caminos: <b>me prestas</b> y te devuelvo capital + 20% mensual en 3 meses… o <b>te haces socio</b> y construimos los $50M juntos. Tú eliges.</p></div></section>
 
-<section class="wrap"><h2>9 · La sociedad y la visión</h2>
+<section class="wrap"><h2>8 · Proyección: de $5M a $50M en 12 meses</h2>
+<p style="color:var(--mut);margin-bottom:14px">Modelo de capitalización escalonada: aportas entre <span class="hl">$5M y $7M por trimestre</span>. En el segundo semestre aportas menos, porque <span class="hl">las propias utilidades del negocio van completando la inversión</span>.</p>
+
+<div class="tq"><b>Trimestre 1 ·</b> Entras con $5M. El capital genera utilidades del 20% mensual que se reinvierten y lo multiplican.</div>
+<div class="tq"><b>Trimestre 2 ·</b> Refuerzas con $5-7M. El capital acumulado acelera las utilidades.</div>
+<div class="tq"><b>Trimestre 3 ·</b> Aportas $5-7M. Las utilidades ya cubren una parte importante del crecimiento.</div>
+<div class="tq"><b>Trimestre 4 ·</b> Aporte mínimo o cero: las utilidades reinvertidas completan la meta.</div>
+
+<div class="card">
+<p class="big">$50.000.000</p>
+<p>capital invertido acumulado al cierre del año 1: tus aportes + las utilidades que el negocio generó por ti.</p>
+<div class="grid" style="margin-top:12px">
+<div class="stat"><b>$250M</b><span>valoración de la empresa al año 1</span></div>
+<div class="stat"><b>20%</b><span>tu participación = $50M</span></div>
+<div class="stat"><b>+1.7M/mes</b><span>ingreso pasivo desde el mes 13</span></div>
+</div>
+</div>
+<p class="quote">"Aportes que bajan, utilidades que suben: en el segundo semestre el negocio financia su propio crecimiento con tu dinero ya trabajando."</p></section>
+
+<section class="wrap"><h2>9 · La sociedad: 20% para ti, 80% para mí</h2>
 <div class="grid">
 <div class="stat"><b>20%</b><span>para el inversionista</span></div>
 <div class="stat"><b>80%</b><span>para el operador (yo)</span></div>
-<div class="stat"><b>$2.4M/mes</b><span>tu ingreso pasivo con 100 clientes</span></div>
-<div class="stat"><b>$500M</b><span>valor de tu 20% en el año 5</span></div>
 </div>
-<div class="card" style="margin-top:14px"><p><b>Por qué 20/80:</b> Yo pongo el producto ya desarrollado, la ejecución diaria full-time, el conocimiento técnico y comercial, y asumo la operación. Tú pones el capital que acelera el despegue y te llevas un ingreso pasivo real sin trabajar un minuto. El 20% de una empresa rentable vale infinitamente más que el 100% de una que no existe.</p></div>
-<div class="card"><p><b>Escalado:</b> $5M (Barranquilla) → $10M (Costa Caribe) → $20M (nacional) → 3.000 clientes y valoración de $2.500M en 5 años. Tu 20% = <span class="hl">$500 millones COP</span>.</p></div></section>
+<div class="card" style="margin-top:14px"><p><b>Por qué funciona:</b> yo pongo el producto ya desarrollado, la ejecución diaria full-time y todo el conocimiento técnico y comercial. Tú pones el combustible que acelera el despegue. El 20% de una empresa rentable vale infinitamente más que el 100% de una que no existe.</p></div>
+<div class="card"><p><b>Escalado:</b> $5M (Barranquilla) → $10M (Costa Caribe) → $50M (nacional) → 3.000 clientes y valoración de $2.500M en 5 años. Tu 20% = <span class="hl">$500 millones</span>.</p></div></section>
 
 <section class="wrap"><h2>10 · Riesgo controlado</h2>
 <div class="card"><ul>
@@ -191,14 +176,14 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 </ul></div></section>
 
 <section class="wrap"><h2>11 · La decisión</h2>
-<div class="card"><p>Hoy tienes tres opciones: dejar el dinero en el banco al 12% anual… o ser <span class="hl">socio inversionista</span> de la empresa que le devolverá la paz a 2.3 millones de negocios.</p>
-<p class="quote">"Yo pongo el producto, el plan y el sudor. Tú pones el combustible. En 3 meses tienes tu dinero de vuelta; en 5 años, un activo que vale 100 veces tu inversión."</p>
+<div class="card"><p>Hoy tienes dos opciones: dejar el dinero en el banco al 12% anual… o ser <span class="hl">socio fundador</span> de la empresa que le devolverá la paz a 2.3 millones de negocios.</p>
+<p class="quote">"Yo pongo el producto, el plan y el sudor. Tú pones el combustible. En 12 meses tienes $50M de patrimonio; en 5 años, un activo que vale 100 veces tu inversión."</p>
 <p style="text-align:center">
 <a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Ver el DEMO</a>
 <a class="btn btn-wa" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20quiero%20hablar%20hoy" target="_blank">💬 Hablemos hoy</a>
 </p></div></section>
 
 <footer>SIGEA System · Barranquilla, Colombia · Documento confidencial para el inversionista</footer>
-<a class="btn btn-wa wa-float" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20hablar%20hoy" target="_blank">💬 Hablemos</a>
+<a class="btn btn-wa wa-float" href="https://wa.me/573016111412?text=Vi%20la%20propuesta%20de%20SIGEA%2C%20quiero%20hablar%20hoy" target="_blank">💬 Hablemos</a>
 </body>
 </html>
