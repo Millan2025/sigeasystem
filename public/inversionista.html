@@ -2,54 +2,99 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5"/>
 <title>SIGEA · Propuesta para Diego Edinso Calle Osorio</title>
 <style>
 :root{--gold:#fdb813;--gold2:#e8a800;--bg:#0b1220;--card:#121c33;--line:#26334d;--text:#eef2f9;--mut:#9fb0c9;--wa:#25D366;--green:#22c55e;--rose:#f43f5e}
-*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.65}
-.wrap{max-width:780px;margin:0 auto;padding:0 18px}
-header{padding:64px 18px 44px;text-align:center;background:radial-gradient(circle at 50% 0%,#1c2a4d 0%,var(--bg) 70%);border-bottom:2px solid var(--gold)}
-.badge{display:inline-block;background:#1c2a4d;border:1px solid var(--gold);color:var(--gold);font-size:12px;letter-spacing:2px;padding:6px 14px;border-radius:999px;text-transform:uppercase}
-h1{font-size:clamp(40px,9vw,64px);color:var(--gold);letter-spacing:4px;margin:14px 0 6px}
-.tag{font-size:clamp(17px,4.5vw,22px);font-weight:600}
-.sub{color:var(--mut);margin-top:8px}
-.btn{display:inline-block;margin:6px 6px 0;padding:14px 26px;border-radius:14px;font-weight:700;text-decoration:none;font-size:16px}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.6;overflow-x:hidden;word-wrap:break-word}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px}
+header{padding:48px 16px 32px;text-align:center;background:radial-gradient(circle at 50% 0%,#1c2a4d 0%,var(--bg) 70%);border-bottom:2px solid var(--gold)}
+.badge{display:inline-block;background:#1c2a4d;border:1px solid var(--gold);color:var(--gold);font-size:10px;letter-spacing:1.5px;padding:5px 10px;border-radius:999px;text-transform:uppercase;max-width:90%;line-height:1.3}
+h1{font-size:clamp(36px,11vw,64px);color:var(--gold);letter-spacing:3px;margin:12px 0 6px;line-height:1}
+.tag{font-size:clamp(15px,4.5vw,20px);font-weight:600;line-height:1.3}
+.sub{color:var(--mut);margin-top:8px;font-size:clamp(13px,3.8vw,15px)}
+.btn{display:inline-block;margin:5px 3px;padding:12px 18px;border-radius:12px;font-weight:700;text-decoration:none;font-size:14px;text-align:center;line-height:1.2}
 .btn-gold{background:linear-gradient(145deg,var(--gold),var(--gold2));color:#1a1a1a}
 .btn-wa{background:var(--wa);color:#fff}
-.btn-demo{background:linear-gradient(145deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 8px 30px rgba(59,130,246,.4)}
-section{padding:44px 0 8px}
-h2{color:var(--gold);font-size:clamp(22px,5.5vw,30px);margin-bottom:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}
-.stat b{display:block;font-size:clamp(20px,5.5vw,28px);color:var(--gold)}
-.stat span{color:var(--mut);font-size:13px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-td,th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--gold)}
-.chip{display:inline-block;background:#1c2a4d;border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin:3px;font-size:13px;color:var(--mut)}
+.btn-demo{background:linear-gradient(145deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 6px 20px rgba(59,130,246,.3)}
+section{padding:32px 0 8px}
+h2{color:var(--gold);font-size:clamp(18px,5.5vw,26px);margin-bottom:12px;line-height:1.25}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;font-size:clamp(13px,3.8vw,15px)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-size:clamp(18px,5.5vw,26px);color:var(--gold);line-height:1.1}
+.stat span{color:var(--mut);font-size:11px;line-height:1.2}
+table{width:100%;border-collapse:collapse;font-size:clamp(12px,3.5vw,14px)}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;word-wrap:break-word}
+th{color:var(--gold);font-size:clamp(11px,3.2vw,13px)}
+.chip{display:inline-block;background:#1c2a4d;border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin:2px;font-size:clamp(11px,3vw,13px);color:var(--mut)}
 .chip-soon{border-color:var(--rose);color:var(--rose)}
 .hl{color:var(--gold);font-weight:700}
-.big{font-size:clamp(26px,7vw,40px);color:var(--gold);font-weight:800}
-.wa-float{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99;box-shadow:0 8px 30px rgba(37,211,102,.4)}
-ul{padding-left:20px}li{margin:6px 0}
-footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
-.quote{border-left:4px solid var(--gold);padding:12px 16px;background:#16223d;border-radius:0 12px 12px 0;margin:14px 0;font-style:italic}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.two-col{grid-template-columns:1fr}}
-.col-up{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:14px;padding:16px}
-.col-down{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.3);border-radius:14px;padding:16px}
-.col-up h3{color:var(--green);margin-bottom:8px;font-size:16px}
-.col-down h3{color:var(--rose);margin-bottom:8px;font-size:16px}
-.demo-banner{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border-radius:18px;padding:20px;text-align:center;margin:20px 0;border:1px solid #3b82f6}
-.demo-banner h3{color:#fff;font-size:20px;margin-bottom:8px}
-.demo-banner p{color:#bfdbfe;margin-bottom:14px;font-size:14px}
-.tq{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:14px;padding:16px;margin:10px 0}
+.big{font-size:clamp(24px,8vw,36px);color:var(--gold);font-weight:800;line-height:1.1;margin-bottom:8px}
+.wa-float{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:99;box-shadow:0 6px 20px rgba(37,211,102,.4);padding:10px 16px!important;font-size:13px!important}
+ul{padding-left:18px}li{margin:5px 0;font-size:clamp(13px,3.8vw,15px)}
+footer{padding:32px 16px 80px;text-align:center;color:var(--mut);font-size:11px;line-height:1.4}
+.quote{border-left:3px solid var(--gold);padding:10px 12px;background:#16223d;border-radius:0 10px 10px 0;margin:12px 0;font-style:italic;font-size:clamp(13px,3.8vw,15px)}
+.two-col{display:grid;grid-template-columns:1fr;gap:10px}
+.col-up{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:14px}
+.col-down{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.3);border-radius:12px;padding:14px}
+.col-up h3{color:var(--green);margin-bottom:8px;font-size:14px}
+.col-down h3{color:var(--rose);margin-bottom:8px;font-size:14px}
+.col-up ul,.col-down ul{font-size:13px;padding-left:16px}
+.col-up li,.col-down li{margin:4px 0}
+.demo-banner{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border-radius:14px;padding:16px;text-align:center;margin:16px 0;border:1px solid #3b82f6}
+.demo-banner h3{color:#fff;font-size:clamp(16px,4.5vw,20px);margin-bottom:6px}
+.demo-banner p{color:#bfdbfe;margin-bottom:12px;font-size:13px}
+.tq{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0;font-size:clamp(13px,3.8vw,15px)}
 .tq b{color:var(--gold)}
-.letter{background:linear-gradient(145deg,#16223d,#121c33);border:1px solid var(--gold);border-radius:18px;padding:24px;margin-bottom:14px}
-.letter p{margin:10px 0}
-.firma{color:var(--gold);font-weight:700;font-style:italic}
+.letter{background:linear-gradient(145deg,#16223d,#121c33);border:1px solid var(--gold);border-radius:14px;padding:18px 16px;margin-bottom:12px;font-size:clamp(13px,3.8vw,15px)}
+.letter p{margin:8px 0}
+.firma{color:var(--gold);font-weight:700;font-style:italic;margin-top:12px!important}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+@media(max-width:480px){
+  header{padding:36px 12px 24px}
+  .badge{font-size:9px;letter-spacing:1px;padding:4px 8px}
+  h1{font-size:42px;letter-spacing:2px}
+  .btn{display:block;width:100%;margin:5px 0;padding:12px 16px}
+  .wa-float{width:calc(100% - 32px);text-align:center}
+  section{padding:24px 0 6px}
+  .wrap{padding:0 12px}
+  .card{padding:14px;margin-bottom:10px}
+  .quote{padding:8px 10px;margin:10px 0}
+  .letter{padding:14px 12px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat{padding:10px 6px}
+  .stat b{font-size:20px}
+  .stat span{font-size:10px}
+  table{font-size:12px}
+  td,th{padding:6px 4px}
+  .chip{padding:2px 8px;margin:2px 1px;font-size:11px}
+  .big{font-size:32px}
+  .two-col{gap:8px}
+  .col-up,.col-down{padding:12px}
+  .col-up h3,.col-down h3{font-size:13px}
+  .col-up ul,.col-down ul{font-size:12px}
+  .demo-banner{padding:14px 12px;margin:12px 0}
+  .tq{padding:10px 12px;margin:6px 0;font-size:13px}
+  footer{padding:24px 12px 76px;font-size:10px}
+}
+
+/* ===== TABLET (iPad) ===== */
+@media(min-width:481px) and (max-width:768px){
+  .two-col{grid-template-columns:1fr 1fr}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  .btn{padding:12px 20px}
+}
+
+/* ===== DESKTOP ===== */
+@media(min-width:769px){
+  .two-col{grid-template-columns:1fr 1fr}
+  .btn{display:inline-block;width:auto;margin:6px 6px 0}
+  .wa-float{width:auto}
+}
 </style>
 </head>
 <body>
@@ -58,9 +103,11 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <h1>SIGEA</h1>
 <p class="tag">No vendemos software.<br>Vendemos <span class="hl">paz y dignidad</span> al dueño de negocio.</p>
 <p class="sub">El socio silencioso de las 2.3 millones de PYMES de Colombia.</p>
+<div style="margin-top:14px">
 <a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Ver el DEMO en vivo</a>
 <a class="btn btn-gold" href="#propuesta">Ver la oportunidad ↓</a>
 <a class="btn btn-wa" href="https://wa.me/573016111412?text=Hermano%2C%20soy%20Diego%2C%20vi%20la%20propuesta.%20Hablemos%20hoy." target="_blank">💬 Hablemos hoy</a>
+</div>
 </header>
 
 <section class="wrap"><h2>Una carta para Diego</h2>
@@ -79,9 +126,9 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <section class="wrap"><h2>2 · El mercado que tenemos al frente</h2>
 <div class="grid">
 <div class="stat"><b>2.3M</b><span>PYMES en Colombia</span></div>
-<div class="stat"><b>87%</b><span>sin ningún software de gestión</span></div>
-<div class="stat"><b>$200-400K</b><span>pérdida mensual por descontrol</span></div>
-<div class="stat"><b>$350-500K</b><span>ticket que pagan por resolverlo</span></div>
+<div class="stat"><b>87%</b><span>sin software de gestión</span></div>
+<div class="stat"><b>$200-400K</b><span>pérdida mensual</span></div>
+<div class="stat"><b>$350-500K</b><span>ticket que pagan</span></div>
 </div></section>
 
 <section class="wrap"><h2>3 · Lo que construimos: una experiencia, no módulos</h2>
@@ -94,38 +141,44 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 <li>😌 <b>Alivio:</b> "Por fin voy a dormir tranquilo."</li>
 </ul>
 <p style="margin-top:10px">Y lo respalda un sistema <b>100% funcional y en producción hoy</b>:</p>
-<p><span class="chip">POS</span><span class="chip">Inventario</span><span class="chip">Producción</span><span class="chip">Pedidos y domicilios</span><span class="chip">Finanzas</span><span class="chip">Reportes</span><span class="chip">Personal</span><span class="chip">Marketing WhatsApp automático 📣</span></p></div></section>
+<div style="margin-top:8px">
+<span class="chip">POS</span><span class="chip">Inventario</span><span class="chip">Producción</span><span class="chip">Pedidos</span><span class="chip">Finanzas</span><span class="chip">Reportes</span><span class="chip">Personal</span><span class="chip">Marketing WhatsApp 📣</span>
+</div>
+</div></section>
 
 <section class="wrap"><h2>4 · Cómo SIGEA multiplica ingresos y elimina pérdidas</h2>
 <div class="two-col">
 <div class="col-up">
 <h3>📈 AUMENTA INGRESOS</h3>
-<ul style="font-size:14px">
-<li>Nuevos clientes por <b>módulo de domicilios</b> (ventas 24/7)</li>
-<li>Confianza al cliente: ve stock real y <b>compra más</b></li>
-<li>Pedidos desde la mesa (sin esperar mesero)</li>
-<li>Mejor atención → clientes fieles y recurrentes</li>
-<li>Marketing WhatsApp reactiva clientes dormidos</li>
+<ul>
+<li>Nuevos clientes por <b>domicilios</b> (ventas 24/7)</li>
+<li>Stock real visible → <b>cliente compra más</b></li>
+<li>Pedidos desde la mesa (sin mesero)</li>
+<li>Mejor atención → clientes fieles</li>
+<li>Marketing WhatsApp reactiva clientes</li>
 </ul>
 </div>
 <div class="col-down">
 <h3>📉 DISMINUYE PÉRDIDAS</h3>
-<ul style="font-size:14px">
-<li>Control total del inventario: <b>cero fugas</b> de productos</li>
-<li>Compra inteligente a proveedores: solo lo necesario</li>
-<li>Libera capital para invertir en lo que más vende</li>
-<li>No pierde clientes por tener el producto agotado</li>
-<li>El cliente compra TODO en un solo lugar</li>
+<ul>
+<li>Control total del inventario: <b>cero fugas</b></li>
+<li>Compra inteligente a proveedores</li>
+<li>Libera capital para lo que más vende</li>
+<li>No pierde clientes por faltantes</li>
+<li>Cliente compra TODO en un lugar</li>
 </ul>
 </div>
 </div>
-<div class="card"><p><b>Ejemplo real:</b> una panadería pierde $300.000/mes por mermas no detectadas y deja de vender $500.000/mes por faltantes. Con SIGEA recupera <span class="hl">$800.000/mes</span>. Diego, el sistema se paga solo.</p></div>
+<div class="card"><p><b>Ejemplo real:</b> una panadería pierde $300.000/mes por mermas y deja de vender $500.000/mes por faltantes. Con SIGEA recupera <span class="hl">$800.000/mes</span>. Diego, el sistema se paga solo.</p></div>
 <div class="card"><p><b>Próximas funciones (ya en desarrollo):</b></p>
-<p><span class="chip chip-soon">Próximamente · Módulo Mesero</span> Pedido desde la mesa en comidas rápidas</p>
-<p><span class="chip chip-soon">Próximamente · Administración por sedes</span> Control multi-ubicación desde un solo panel</p></div>
+<div style="margin-top:6px">
+<span class="chip chip-soon">Próximamente · Módulo Mesero</span>
+<span class="chip chip-soon">Próximamente · Administración por sedes</span>
+</div>
+</div>
 <div class="demo-banner">
 <h3>🎮 Diego, pruébalo tú mismo ahora</h3>
-<p>Entra al demo funcional con 6 negocios precargados. Haz una venta, programa una publicación. Tócalo, que lo veas con tus ojos.</p>
+<p>Entra al demo con 6 negocios precargados. Haz una venta, programa una publicación.</p>
 <a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Abrir DEMO en vivo</a>
 </div></section>
 
@@ -138,61 +191,62 @@ footer{padding:40px 18px 90px;text-align:center;color:var(--mut);font-size:13px}
 </ul></div></section>
 
 <section class="wrap"><h2>6 · El plan de ventas: ya está en la calle</h2>
-<div class="card"><table>
+<div class="card">
+<table>
 <tr><th>Canal</th><th>Acción</th><th>Cierres</th></tr>
-<tr><td>Face-to-face (70%)</td><td>420 visitas en 6 días: Caribe Verde + Centro, demo en vivo con neuroventas</td><td>15-20</td></tr>
-<tr><td>Digital (30%)</td><td>Redes con 5K seguidores, Marketplace, landing web</td><td>8-13</td></tr>
-<tr><td>Referidos</td><td>$35K por referido + club de dueños</td><td>5-10</td></tr>
+<tr><td>Face-to-face (70%)</td><td>420 visitas en 6 días</td><td>15-20</td></tr>
+<tr><td>Digital (30%)</td><td>Redes 5K, Marketplace, landing</td><td>8-13</td></tr>
+<tr><td>Referidos</td><td>$35K + club dueños</td><td>5-10</td></tr>
 </table>
-<p style="margin-top:8px">Nichos ganadores: panaderías (85% cierre), carnicerías (80%), tiendas (75%), restaurantes (70%).</p></div></section>
+<p style="margin-top:8px">Nichos ganadores: panaderías (85%), carnicerías (80%), tiendas (75%), restaurantes (70%).</p></div></section>
 
 <section class="wrap" id="propuesta"><h2>7 · Diego, la puerta de entrada: $5M</h2>
 <div class="card"><p class="big">$5.000.000</p>
 <p>Con ese capital arrancamos fuerte en Barranquilla: web + embudo digital, publicidad, materiales de venta y capital de trabajo.</p>
-<p class="quote">Diego, hermano, dos caminos: <b>me prestas</b> y te devuelvo capital + 20% mensual en 3 meses… o <b>te haces socio</b> y construimos los $50M juntos. Tú eliges, y cualquiera de los dos queda bueno para ti.</p></div></section>
+<p class="quote">Diego, hermano, dos caminos: <b>me prestas</b> y te devuelvo capital + 20% mensual en 3 meses… o <b>te haces socio</b> y construimos los $50M juntos. Tú eliges.</p></div></section>
 
-<section class="wrap"><h2>8 · Diego, así crece tu plata: de $5M a $50M en 12 meses</h2>
-<p style="color:var(--mut);margin-bottom:14px">Modelo de capitalización escalonada: aportas entre <span class="hl">$5M y $7M por trimestre</span>. En el segundo semestre aportas menos, porque <span class="hl">las propias utilidades del negocio van completando la inversión</span>.</p>
-<div class="tq"><b>Trimestre 1 ·</b> Entras con $5M. El capital genera utilidades del 20% mensual que se reinvierten y lo multiplican.</div>
+<section class="wrap"><h2>8 · De $5M a $50M en 12 meses</h2>
+<p style="color:var(--mut);margin-bottom:12px;font-size:clamp(13px,3.8vw,15px)">Aportas entre <span class="hl">$5M y $7M por trimestre</span>. En el segundo semestre aportas menos, porque <span class="hl">las propias utilidades completan la inversión</span>.</p>
+<div class="tq"><b>Trimestre 1 ·</b> Entras con $5M. El capital genera utilidades del 20% mensual que se reinvierten.</div>
 <div class="tq"><b>Trimestre 2 ·</b> Refuerzas con $5-7M. El capital acumulado acelera las utilidades.</div>
-<div class="tq"><b>Trimestre 3 ·</b> Aportas $5-7M. Las utilidades ya cubren una parte importante del crecimiento.</div>
-<div class="tq"><b>Trimestre 4 ·</b> Aporte mínimo o cero: las utilidades reinvertidas completan la meta.</div>
+<div class="tq"><b>Trimestre 3 ·</b> Aportas $5-7M. Las utilidades cubren parte del crecimiento.</div>
+<div class="tq"><b>Trimestre 4 ·</b> Aporte mínimo: las utilidades completan la meta.</div>
 <div class="card">
 <p class="big">$50.000.000</p>
-<p>capital invertido acumulado al cierre del año 1: tus aportes, Diego, + las utilidades que el negocio generó por ti.</p>
+<p>Capital acumulado al año 1: tus aportes + utilidades reinvertidas.</p>
 <div class="grid" style="margin-top:12px">
-<div class="stat"><b>$250M</b><span>valoración de la empresa al año 1</span></div>
+<div class="stat"><b>$250M</b><span>valoración empresa año 1</span></div>
 <div class="stat"><b>20%</b><span>tu participación = $50M</span></div>
-<div class="stat"><b>+1.7M/mes</b><span>ingreso pasivo desde el mes 13</span></div>
+<div class="stat"><b>+1.7M/mes</b><span>ingreso pasivo mes 13+</span></div>
 </div>
 </div>
-<p class="quote">"Aportes que bajan, utilidades que suben: en el segundo semestre el negocio financia su propio crecimiento con tu dinero ya trabajando."</p></section>
+<p class="quote">"Aportes que bajan, utilidades que suben: en el segundo semestre el negocio financia su propio crecimiento."</p></section>
 
-<section class="wrap"><h2>9 · La sociedad: 20% para Diego, 80% para mí</h2>
-<div class="grid">
+<section class="wrap"><h2>9 · La sociedad: 20% Diego, 80% yo</h2>
+<div class="grid" style="grid-template-columns:1fr 1fr">
 <div class="stat"><b>20%</b><span>para Diego, mi socio</span></div>
-<div class="stat"><b>80%</b><span>para mí, que opero todos los días</span></div>
+<div class="stat"><b>80%</b><span>para mí, que opero</span></div>
 </div>
-<div class="card" style="margin-top:14px"><p><b>Por qué funciona, Diego:</b> yo pongo el producto ya desarrollado, la ejecución diaria full-time y todo el conocimiento técnico y comercial. Tú pones el combustible que acelera el despegue. El 20% de una empresa rentable vale infinitamente más que el 100% de una que no existe.</p></div>
+<div class="card" style="margin-top:12px"><p><b>Por qué funciona, Diego:</b> yo pongo el producto ya desarrollado, la ejecución diaria full-time y todo el conocimiento técnico y comercial. Tú pones el combustible. El 20% de una empresa rentable vale infinitamente más que el 100% de una que no existe.</p></div>
 <div class="card"><p><b>Escalado:</b> $5M (Barranquilla) → $10M (Costa Caribe) → $50M (nacional) → 3.000 clientes y valoración de $2.500M en 5 años. Tu 20%, Diego = <span class="hl">$500 millones</span>.</p></div></section>
 
 <section class="wrap"><h2>10 · Diego, tu plata está cuidada</h2>
 <div class="card"><ul>
 <li>✅ El producto <b>ya existe y está en producción</b>: riesgo técnico cero. <a href="https://sigea-system.vercel.app/demo" target="_blank" style="color:var(--gold)">Ver demo →</a></li>
-<li>✅ Transparencia total: cuentas, métricas y reportes semanales para ti, hermano.</li>
+<li>✅ Transparencia total: cuentas, métricas y reportes semanales.</li>
 <li>✅ Garantía: si en 3 meses no recupero tu capital, te cedo el 30% de la empresa.</li>
 <li>✅ Comparativa: CDT 12% anual · Finca raíz 10% · <span class="hl">SIGEA 60-100% en 90 días</span>.</li>
 </ul></div></section>
 
 <section class="wrap"><h2>11 · Diego, hermano: la decisión es tuya</h2>
 <div class="card"><p>Hoy tienes dos opciones: dejar la plata en el banco al 12% anual… o ser <span class="hl">socio fundador</span> de la empresa que le devolverá la paz a 2.3 millones de negocios.</p>
-<p class="quote">"Diego, yo pongo el producto, el plan y el sudor. Tú pones el combustible. En 12 meses tienes $50M de patrimonio; en 5 años, un activo que vale 100 veces tu inversión. Y lo más importante: lo hacemos entre hermanos, con la palabra y los papeles en orden."</p>
-<p style="text-align:center">
+<p class="quote">"Diego, yo pongo el producto, el plan y el sudor. Tú pones el combustible. En 12 meses tienes $50M de patrimonio; en 5 años, un activo que vale 100 veces tu inversión. Y lo hacemos entre hermanos, con la palabra y los papeles en orden."</p>
+<div style="margin-top:14px;text-align:center">
 <a class="btn btn-demo" href="https://sigea-system.vercel.app/demo" target="_blank">▶ Ver el DEMO</a>
 <a class="btn btn-wa" href="https://wa.me/573016111412?text=Hermano%2C%20soy%20Diego%2C%20vi%20la%20propuesta.%20Hablemos%20hoy." target="_blank">💬 Hablemos hoy</a>
-</p></div></section>
+</div></div></section>
 
-<footer>Hecho para Diego Edinso Calle Osorio · con aprecio y números claros · SIGEA System, Barranquilla</footer>
-<a class="btn btn-wa wa-float" href="https://wa.me/573016111412?text=Hermano%2C%20soy%20Diego%2C%20vi%20la%20propuesta.%20Hablemos%20hoy." target="_blank">💬 Hablemos</a>
+<footer>Hecho para Diego Edinso Calle Osorio · con aprecio y números claros<br>SIGEA System · Barranquilla, Colombia</footer>
+<a class="btn btn-wa wa-float" href="https://wa.me/573016111412?text=Hermano%2C%20soy%20Diego%2C%20vi%20la%20propuesta.%20Hablemos%20hoy." target="_blank">💬 Hablemos hoy</a>
 </body>
 </html>
