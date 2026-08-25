@@ -149,7 +149,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         }
 
         try {
-          const res = await fetch(`/api/ventas?tenant=${tenant}&start=${new Date().toISOString().split("T")[0]}`);
+          const res = await fetch(`/api/ventas?tenant=${tenant}&start=${new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" }) + "T05:00:00.000Z"}`);
           const data = await res.json();
           if (data.success) {
             const total = data.data.reduce((sum: number, v: any) => sum + v.total, 0);
