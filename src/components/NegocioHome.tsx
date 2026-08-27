@@ -45,6 +45,7 @@ const beneficiosPorModulo: Record<string, { titulo: string; icono: string; benef
   compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
   creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
   marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
+  mesas: { titulo: "Gestión de Mesas", icono: "🪑", beneficios: ["Clientes piden desde su celular", "QR por mesa", "Stock en tiempo real", "Notificaciones a cocina", "Cuentas digitales", "Sin mesero intermedio"], color: "bg-yellow-500" },
 };
 
 interface BusinessConfig {
