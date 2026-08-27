@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const TENANT_ID = "demo-rest-001";
+const TENANT_ID = "11111111-1111-1111-1111-111111111111";
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 type Prod = { id: string; nombre: string; precio: number; categoria?: string; descripcion?: string };
@@ -28,9 +28,8 @@ export default function MesaPage() {
     const m = new URLSearchParams(window.location.search).get("m") || "";
     setMesa(m.toUpperCase());
     (async () => {
-      const { data: prods } = await sb.from("products").select("*").eq("tenant_id", TENANT_ID).order("categoria").order("nombre");
+      const { data: prods } = await sb.from("productos").select("*").eq("tenant_id", TENANT_ID).order("categoria").order("nombre");
       setProductos((prods as Prod[]) || []);
-      
       const r = await fetch(`/api/tenant-config?tenant=${TENANT_ID}`);
       const j = await r.json();
       if (j.success && j.data) setConfig(j.data);
@@ -55,10 +54,9 @@ export default function MesaPage() {
     setCarrito((c) => {
       const e = c.find((x) => x.producto_id === p.id && !x.obs);
       if (e) return c.map((x) => (x === e ? { ...x, cantidad: x.cantidad + 1 } : x));
-      return [...c, { producto_id: p.id, nombre: p.nombre, precio: p.precio, cantidad: 1, obs: "" }];
+      return [...c, { producto_id: p.id, nombre: p.nombre, precio: Number(p.precio), cantidad: 1, obs: "" }];
     });
   };
-
   const setObs = (idx: number, obs: string) => setCarrito((c) => c.map((x, i) => (i === idx ? { ...x, obs } : x)));
   const setQty = (idx: number, cantidad: number) => setCarrito((c) => c.map((x, i) => (i === idx ? { ...x, cantidad: Math.max(1, cantidad) } : x)));
   const del = (idx: number) => setCarrito((c) => c.filter((_, i) => i !== idx));
@@ -77,7 +75,6 @@ export default function MesaPage() {
     const items = carrito.map((x) => ({ producto_id: x.producto_id, nombre: x.nombre, precio: x.precio, cantidad: x.cantidad }));
     const obsGlobal = carrito.filter((x) => x.obs).map((x) => `${x.nombre} x${x.cantidad}: ${x.obs}`).join(" | ");
     const obsFinal = `COMENSALES:${comensales} | CLIENTE:${nombre}` + (obsGlobal ? " | " + obsGlobal : "");
-    
     const r = await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -94,13 +91,8 @@ export default function MesaPage() {
     });
     const j = await r.json();
     setEnviando(false);
-    if (j.success) {
-      setOk("✅ Pedido enviado a cocina");
-      setCarrito([]);
-      setVista("estado");
-    } else {
-      alert("Error: " + (j.error || "desconocido"));
-    }
+    if (j.success) { setOk("✅ Pedido enviado a cocina"); setCarrito([]); setVista("estado"); }
+    else { alert("Error: " + (j.error || "desconocido")); }
   };
 
   const pedirCuenta = async () => {
@@ -124,29 +116,17 @@ export default function MesaPage() {
     setTimeout(() => setOk(null), 4000);
   };
 
-  const estadoColor = (e: string) => {
-    if (e === "pendiente") return "bg-amber-500";
-    if (e === "listo" || e === "despachado") return "bg-emerald-500";
-    return "bg-stone-400";
-  };
-  const estadoLabel = (e: string) => {
-    if (e === "pendiente") return "En preparación";
-    if (e === "listo" || e === "despachado") return "Listo, mesero en camino";
-    return "En preparación";
-  };
+  const estadoColor = (e: string) => e === "pendiente" ? "bg-amber-500" : (e === "listo" || e === "despachado") ? "bg-emerald-500" : "bg-stone-400";
+  const estadoLabel = (e: string) => e === "pendiente" ? "En preparación" : (e === "listo" || e === "despachado") ? "Listo, mesero en camino" : "En preparación";
 
-  if (!mesa) return (
-    <div className="min-h-screen bg-stone-900 text-stone-100 p-6 flex items-center justify-center">
-      <p>⚠️ Falta el código de mesa en el QR (usa <code>?m=A1</code>)</p>
-    </div>
-  );
+  if (!mesa) return <div className="min-h-screen bg-stone-900 text-white p-6 flex items-center justify-center">⚠️ Falta el código de mesa en el QR (usa ?m=A1)</div>;
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 pb-24">
       <div className="bg-stone-900 text-white px-4 py-4 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-[10px] tracking-widest uppercase text-stone-400">Restaurante Demo</p>
+            <p className="text-[10px] tracking-widest uppercase text-stone-400">Restaurante Demo SIGEA</p>
             <h1 className="text-2xl font-extrabold text-[#fdb813]">🍽️ MESA {mesa}</h1>
           </div>
           <div className="flex gap-2">
@@ -177,7 +157,8 @@ export default function MesaPage() {
             </div>
 
             <div className="mb-4">
-              <p className="font-extrabold text-lg mb-2">📋 Menú</p>
+              <p className="font-extrabold text-lg mb-2">📋 Menú ({productos.length} platos)</p>
+              {productos.length === 0 && <p className="text-stone-500 text-sm">Cargando menú...</p>}
               {Array.from(new Set(productos.map((p) => p.categoria || "Otros"))).map((cat) => (
                 <div key={cat} className="mb-3">
                   <p className="font-bold text-sm text-stone-600 uppercase tracking-wide mb-1">{cat}</p>
@@ -187,7 +168,7 @@ export default function MesaPage() {
                         <div className="flex-1">
                           <p className="font-bold">{p.nombre}</p>
                           {p.descripcion && <p className="text-xs text-stone-500 mt-0.5">{p.descripcion}</p>}
-                          <p className="text-emerald-700 font-bold mt-1">${p.precio.toLocaleString()}</p>
+                          <p className="text-emerald-700 font-bold mt-1">${Number(p.precio).toLocaleString()}</p>
                         </div>
                         <button onClick={() => add(p)} className="bg-stone-900 text-[#fdb813] rounded-lg px-3 py-2 text-sm font-bold">+ Añadir</button>
                       </div>
@@ -215,50 +196,31 @@ export default function MesaPage() {
                     <input value={x.obs} onChange={(e) => setObs(i, e.target.value)} placeholder="Observaciones: sin cebolla, término medio..." className="mt-1 w-full bg-stone-50 border border-stone-200 rounded px-2 py-1 text-xs" />
                   </div>
                 ))}
-                
+
                 <div className="mt-3 pt-3 border-t border-stone-200">
                   <p className="font-bold mb-2">💳 Forma de pago</p>
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button onClick={() => setMetodo_pago("Efectivo")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Efectivo" ? "bg-emerald-600 text-white" : "bg-stone-100")}>
-                      💵 Efectivo
-                    </button>
-                    <button onClick={() => setMetodo_pago("Tarjeta")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Tarjeta" ? "bg-emerald-600 text-white" : "bg-stone-100")}>
-                      💳 Tarjeta
-                    </button>
+                    <button onClick={() => setMetodo_pago("Efectivo")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Efectivo" ? "bg-emerald-600 text-white" : "bg-stone-100")}>💵 Efectivo</button>
+                    <button onClick={() => setMetodo_pago("Tarjeta")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Tarjeta" ? "bg-emerald-600 text-white" : "bg-stone-100")}>💳 Tarjeta</button>
                   </div>
-                  
-                  <p className="font-bold text-sm mb-2">📱 Transferencia digital</p>
+
+                  <p className="font-bold text-sm mb-2">📱 Transferencia digital (toca para copiar)</p>
                   {config.nequi && (
                     <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg p-2 mb-2">
-                      <div>
-                        <p className="text-xs text-purple-600 font-bold">NEQUI</p>
-                        <p className="font-bold">{config.nequi}</p>
-                      </div>
-                      <button onClick={() => copiar(config.nequi!, "nequi")} className="bg-purple-600 text-white rounded px-3 py-1 text-xs font-bold">
-                        {copiado === "nequi" ? "✓" : "Copiar"}
-                      </button>
+                      <div><p className="text-xs text-purple-600 font-bold">NEQUI</p><p className="font-bold">{config.nequi}</p></div>
+                      <button onClick={() => copiar(config.nequi!, "nequi")} className="bg-purple-600 text-white rounded px-3 py-1 text-xs font-bold">{copiado === "nequi" ? "✓ Copiado" : "Copiar"}</button>
                     </div>
                   )}
                   {config.daviplata && (
                     <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
-                      <div>
-                        <p className="text-xs text-red-600 font-bold">DAVIPLATA</p>
-                        <p className="font-bold">{config.daviplata}</p>
-                      </div>
-                      <button onClick={() => copiar(config.daviplata!, "daviplata")} className="bg-red-600 text-white rounded px-3 py-1 text-xs font-bold">
-                        {copiado === "daviplata" ? "✓" : "Copiar"}
-                      </button>
+                      <div><p className="text-xs text-red-600 font-bold">DAVIPLATA</p><p className="font-bold">{config.daviplata}</p></div>
+                      <button onClick={() => copiar(config.daviplata!, "daviplata")} className="bg-red-600 text-white rounded px-3 py-1 text-xs font-bold">{copiado === "daviplata" ? "✓ Copiado" : "Copiar"}</button>
                     </div>
                   )}
                   {config.bancolombia && (
                     <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-lg p-2">
-                      <div>
-                        <p className="text-xs text-yellow-700 font-bold">BANCOLOMBIA</p>
-                        <p className="font-bold">{config.bancolombia}</p>
-                      </div>
-                      <button onClick={() => copiar(config.bancolombia!, "bancolombia")} className="bg-yellow-600 text-white rounded px-3 py-1 text-xs font-bold">
-                        {copiado === "bancolombia" ? "✓" : "Copiar"}
-                      </button>
+                      <div><p className="text-xs text-yellow-700 font-bold">BANCOLOMBIA</p><p className="font-bold">{config.bancolombia}</p></div>
+                      <button onClick={() => copiar(config.bancolombia!, "bancolombia")} className="bg-yellow-600 text-white rounded px-3 py-1 text-xs font-bold">{copiado === "bancolombia" ? "✓ Copiado" : "Copiar"}</button>
                     </div>
                   )}
                 </div>
@@ -289,7 +251,7 @@ export default function MesaPage() {
                   <p className="text-xs text-stone-500">{new Date(p.created_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}</p>
                   <span className={"text-white text-xs rounded-full px-2 py-0.5 font-bold " + estadoColor(p.estado)}>{estadoLabel(p.estado)}</span>
                 </div>
-                <p className="font-bold">${p.total.toLocaleString()}</p>
+                <p className="font-bold">${Number(p.total).toLocaleString()}</p>
                 {p.observaciones && <p className="text-xs text-stone-500 mt-1">{p.observaciones}</p>}
               </div>
             ))}
