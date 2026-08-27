@@ -587,7 +587,7 @@ export default function AdminMasterPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => verCliente(c)}
-                        className="flex-1 bg-stone-100 hover:bg-stone-200 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1"
+                        className="flex-1 bg-stone-900 hover:bg-stone-200 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1"
                       >
                         <Eye className="w-3 h-3" /> Ver
                       </button>
@@ -681,7 +681,7 @@ export default function AdminMasterPage() {
                                   ? "bg-purple-100 text-purple-700"
                                   : u.rol === "admin"
                                   ? "bg-blue-100 text-blue-700"
-                                  : "bg-stone-100 text-stone-700"
+                                  : "bg-stone-900 text-stone-700"
                               }`}
                             >
                               {u.rol}
@@ -1092,7 +1092,7 @@ export default function AdminMasterPage() {
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900">{clienteDetalle.nombre_negocio}</h2>
-              <button onClick={() => setClienteDetalle(null)} className="p-2 hover:bg-stone-100 rounded-xl">
+              <button onClick={() => setClienteDetalle(null)} className="p-2 hover:bg-stone-900 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
             </div>
@@ -1240,7 +1240,7 @@ export default function AdminMasterPage() {
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900">✅ Cliente creado con éxito</h2>
-              <button onClick={() => setCredenciales(null)} className="p-2 hover:bg-stone-100 rounded-xl">
+              <button onClick={() => setCredenciales(null)} className="p-2 hover:bg-stone-900 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
             </div>
@@ -1550,7 +1550,7 @@ export default function AdminMasterPage() {
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-xl text-stone-900">Cargar Productos</h2>
-              <button onClick={() => setShowImportModal(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+              <button onClick={() => setShowImportModal(false)} className="p-2 hover:bg-stone-900 rounded-xl">
                 <X className="w-5 h-5 text-stone-600" />
               </button>
             </div>

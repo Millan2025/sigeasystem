@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { NEGOCIOS } from "@/config/negocios";
 
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 const TENANT_DEMO = "11111111-1111-1111-1111-111111111111";
@@ -18,6 +19,7 @@ export default function AdminMesas() {
   const [desde, setDesde] = useState(1);
   const [hasta, setHasta] = useState(8);
   const [msg, setMsg] = useState("");
+  const [bloqueado, setBloqueado] = useState(false);
 
   const cargar = async () => {
     const { data } = await sb.from("mesas").select("*").eq("tenant_id", tenantSel).order("codigo");
@@ -38,7 +40,13 @@ export default function AdminMesas() {
     } catch {}
   };
 
-  useEffect(() => { cargarTenants(); }, []);
+  useEffect(() => {
+    const origen = new URLSearchParams(window.location.search).get("origen") || "";
+    const slug = decodeURIComponent(origen).split("/").filter(Boolean).pop() || "";
+    const neg = (NEGOCIOS as any)[slug];
+    if (neg && neg.tenantId) { setTenantSel(neg.tenantId); setBloqueado(true); }
+    cargarTenants();
+  }, []);
   useEffect(() => { cargar(); cargarConfig(); }, [tenantSel]);
 
   const tenantsFiltrados = tenants.filter((t) => nombreDe(t).toLowerCase().includes(busqueda.toLowerCase()));
@@ -73,6 +81,7 @@ export default function AdminMesas() {
           <Link href="/admin" className="bg-stone-700 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-stone-600">← Volver</Link>
         </div>
 
+        {!bloqueado && (
         <div className="bg-stone-800 rounded-xl p-4 mb-4">
           <p className="font-bold mb-2 text-sm">🔎 Busca y selecciona el negocio (por nombre)</p>
           <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Escribe el nombre: Pollo, Casa, Restaurante..." className="w-full bg-stone-700 text-white placeholder-stone-400 rounded-lg px-3 py-2 outline-none mb-2" />
@@ -83,6 +92,9 @@ export default function AdminMesas() {
             ))}
           </select>
         </div>
+        )}
+
+        {bloqueado && <p className="text-stone-300 text-sm mb-3">🔒 Gestionando mesas de: <b className="text-[#fdb813]">{config.nombre_negocio || "tu negocio"}</b> · <Link className="underline" href="/admin/mesas">Admin Master</Link></p>}
 
         {config.nombre_negocio && (
           <div className="bg-gradient-to-r from-[#fdb813] to-[#e8a800] text-stone-900 rounded-xl p-4 mb-4 shadow-lg">
@@ -123,6 +135,7 @@ export default function AdminMesas() {
           {mesas.map((m) => (
             <div key={m.id} className="bg-stone-800 border border-stone-700 rounded-lg p-3 text-center">
               <p className="font-bold text-[#fdb813] text-lg">{lbl(m.codigo)}</p>
+              <a href={origin + "/mesa?m=" + encodeURIComponent(m.codigo) + "&t=" + tenantSel} className="block bg-[#fdb813] text-stone-900 rounded-lg px-2 py-1 text-xs font-extrabold mt-2">🍽️ Entrar</a>
               <button onClick={() => eliminar(m.id)} className="text-xs text-rose-400 mt-2">Eliminar</button>
             </div>
           ))}
@@ -140,7 +153,7 @@ export default function AdminMesas() {
                 <div key={m.id} className="bg-white text-stone-900 rounded-xl p-3 text-center border-2 border-stone-800">
                   <p className="font-extrabold text-base leading-tight">{config.nombre_negocio || "Restaurante"}</p>
                   {config.slogan && <p className="text-[9px] italic text-stone-500 mt-0.5">"{config.slogan}"</p>}
-                  <img src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(origin + "/demo/restaurante/mesa?m=" + m.codigo)} alt={m.codigo} className="w-36 h-36 mx-auto mt-2" />
+                  <img src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(origin + "/mesa?m=" + m.codigo + "&t=" + tenantSel)} alt={m.codigo} className="w-36 h-36 mx-auto mt-2" />
                   <p className="font-extrabold text-2xl text-[#fdb813] mt-1">{lbl(m.codigo)}</p>
                   {config.telefono && <p className="text-[10px] text-stone-600 mt-1">📞 {config.telefono}</p>}
                   {config.direccion && <p className="text-[9px] text-stone-500 mt-0.5">{config.direccion}</p>}

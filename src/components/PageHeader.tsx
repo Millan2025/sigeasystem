@@ -35,8 +35,8 @@ const DEFAULT_CONFIG: ConfigNegocio = {
   telefono: "",
   correo_contacto: "",
   logo_url: "",
-  color_principal: "#F7B500",
-  color_secundario: "#FFC107",
+  color_principal: "#fdb813",
+  color_secundario: "#0b1220",
   website: "",
 };
 

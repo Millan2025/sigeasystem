@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 
 const TENANT_ID = "11111111-1111-1111-1111-111111111111";
@@ -11,6 +11,7 @@ type Config = { nequi?: string; bancolombia?: string; daviplata?: string; nombre
 
 export default function MesaPage() {
   const [mesa, setMesa] = useState("");
+  const [tenantId, setTenantId] = useState(TENANT_ID);
   const [etiqueta, setEtiqueta] = useState("");
   const [productos, setProductos] = useState<Prod[]>([]);
   const [config, setConfig] = useState<Config>({});
@@ -27,19 +28,22 @@ export default function MesaPage() {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    const m = new URLSearchParams(window.location.search).get("m") || "";
+    const params = new URLSearchParams(window.location.search);
+    const m = params.get("m") || "";
+    const t = params.get("t") || TENANT_ID;
+    setTenantId(t);
     setMesa(m.trim().toUpperCase());
     setEtiqueta(lbl(m));
     (async () => {
       try {
-        const r = await fetch(`/api/products?tenant=${TENANT_ID}`);
+        const r = await fetch(`/api/products?tenant=${t}`);
         const j = await r.json();
         const arr: any[] = j.data || [];
         arr.sort((a, b) => String(a.categoria || "").localeCompare(String(b.categoria || "")) || String(a.nombre).localeCompare(String(b.nombre)));
         setProductos(arr.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️", stock: Number(p.stock || 0) })));
       } catch (e) {}
       try {
-        const r2 = await fetch(`/api/tenant-config?tenant=${TENANT_ID}`);
+        const r2 = await fetch(`/api/tenant-config?tenant=${t}`);
         const j2 = await r2.json();
         if (j2.success && j2.data) setConfig(j2.data);
       } catch (e) {}
@@ -50,7 +54,7 @@ export default function MesaPage() {
   useEffect(() => {
     const refrescar = async () => {
       try {
-        const r = await fetch(`/api/products?tenant=${TENANT_ID}`);
+        const r = await fetch(`/api/products?tenant=${t}`);
         const j = await r.json();
         const arr: any[] = j.data || [];
         setProductos((prev) => prev.map((p) => {
@@ -67,7 +71,7 @@ export default function MesaPage() {
     if (!etiqueta) return;
     const cargar = async () => {
       try {
-        const r = await fetch(`/api/pedidos?tenant=${TENANT_ID}`);
+        const r = await fetch(`/api/pedidos?tenant=${tenantId}`);
         const j = await r.json();
         const todos: Pedido[] = j.data || j || [];
         setPedidosMesa(todos.filter((p) => (p.direccion || "").toUpperCase() === etiqueta));
@@ -106,7 +110,7 @@ export default function MesaPage() {
     const r = await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenant_id: TENANT_ID, cliente: `${nombre} (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago, total, items, observaciones: obsFinal }),
+      body: JSON.stringify({ tenant_id: tenantId, cliente: `${nombre} (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago, total, items, observaciones: obsFinal }),
     });
     const j = await r.json();
     setEnviando(false);
@@ -124,7 +128,7 @@ export default function MesaPage() {
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenant_id: TENANT_ID, cliente: `SOLICITA MESERO (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago: "Solicita mesero", total: 0, items: [{ producto_id: "mesero", nombre: "Solicita mesero/cuenta", precio: 0, cantidad: 1 }], observaciones: `${etiqueta} solicita mesero para verificar cuenta y despedida` }),
+      body: JSON.stringify({ tenant_id: tenantId, cliente: `SOLICITA MESERO (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago: "Solicita mesero", total: 0, items: [{ producto_id: "mesero", nombre: "Solicita mesero/cuenta", precio: 0, cantidad: 1 }], observaciones: `${etiqueta} solicita mesero para verificar cuenta y despedida` }),
     });
     setEnviando(false);
     setOk("🙋 Mesero notificado, viene en camino");

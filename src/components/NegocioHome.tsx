@@ -281,7 +281,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   };
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center"><button onClick={() => { if (typeof window !== "undefined") window.location.href = "/admin/mesas?origen=" + encodeURIComponent(window.location.pathname); }} className="fixed bottom-4 left-4 z-40 bg-[#fdb813] text-stone-900 rounded-xl px-4 py-3 font-extrabold shadow-xl border-2 border-stone-900">🪑 Mesas</button>
         <div className="text-stone-500">Cargando...</div>
       </div>
     );
