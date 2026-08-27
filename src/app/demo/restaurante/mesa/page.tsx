@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 const TENANT_ID = "11111111-1111-1111-1111-111111111111";
 const lbl = (c: string) => { const u = c.trim().toUpperCase(); return u.startsWith("MESA") ? u : "MESA " + u; };
 
-type Prod = { id: string; nombre: string; precio: number; categoria?: string; descripcion?: string; imagen_url?: string; icono?: string };
+type Prod = { id: string; nombre: string; precio: number; categoria?: string; descripcion?: string; imagen_url?: string; icono?: string; stock?: number };
 type Item = { producto_id: string; nombre: string; precio: number; cantidad: number; obs: string; imagen_url?: string; icono?: string };
 type Pedido = { id: string; estado: string; total: number; created_at: string; observaciones: string; direccion?: string };
-type Config = { nequi?: string; bancolombia?: string; daviplata?: string };
+type Config = { nequi?: string; bancolombia?: string; daviplata?: string; nombre_negocio?: string };
 
 export default function MesaPage() {
   const [mesa, setMesa] = useState("");
@@ -24,6 +24,7 @@ export default function MesaPage() {
   const [vista, setVista] = useState<"menu" | "estado">("menu");
   const [copiado, setCopiado] = useState("");
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("m") || "";
@@ -35,7 +36,7 @@ export default function MesaPage() {
         const j = await r.json();
         const arr: any[] = j.data || [];
         arr.sort((a, b) => String(a.categoria || "").localeCompare(String(b.categoria || "")) || String(a.nombre).localeCompare(String(b.nombre)));
-        setProductos(arr.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️" })));
+        setProductos(arr.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️", stock: Number(p.stock || 0) })));
       } catch (e) {}
       try {
         const r2 = await fetch(`/api/tenant-config?tenant=${TENANT_ID}`);
@@ -43,6 +44,23 @@ export default function MesaPage() {
         if (j2.success && j2.data) setConfig(j2.data);
       } catch (e) {}
     })();
+  }, []);
+
+  // Polling cada 5s para refrescar stock y pedidos
+  useEffect(() => {
+    const refrescar = async () => {
+      try {
+        const r = await fetch(`/api/products?tenant=${TENANT_ID}`);
+        const j = await r.json();
+        const arr: any[] = j.data || [];
+        setProductos((prev) => prev.map((p) => {
+          const nuevo = arr.find((x: any) => x.id === p.id);
+          return nuevo ? { ...p, stock: Number(nuevo.stock || 0) } : p;
+        }));
+      } catch {}
+    };
+    const t = setInterval(refrescar, 5000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
@@ -61,6 +79,7 @@ export default function MesaPage() {
   }, [etiqueta]);
 
   const add = (p: Prod) => {
+    if ((p.stock || 0) <= 0) { setOk("❌ Producto agotado"); setTimeout(() => setOk(null), 2000); return; }
     setCarrito((c) => {
       const e = c.find((x) => x.producto_id === p.id && !x.obs);
       if (e) return c.map((x) => (x === e ? { ...x, cantidad: x.cantidad + 1 } : x));
@@ -117,12 +136,18 @@ export default function MesaPage() {
 
   if (!mesa) return <div className="min-h-screen bg-stone-900 text-white p-6 flex items-center justify-center">⚠️ Falta el código de mesa en el QR (usa ?m=A1)</div>;
 
+  const stockBadge = (s: number) => {
+    if (s <= 0) return <span className="absolute top-2 left-2 bg-rose-600 text-white rounded-full px-2 py-0.5 text-[10px] font-bold shadow">AGOTADO</span>;
+    if (s <= 3) return <span className="absolute top-2 left-2 bg-amber-500 text-white rounded-full px-2 py-0.5 text-[10px] font-bold shadow">Últimas {s}</span>;
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 pb-32">
       <div className="bg-stone-900 text-white px-4 py-4 sticky top-0 z-10 shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-[10px] tracking-widest uppercase text-stone-400">Restaurante Demo SIGEA</p>
+            <p className="text-[10px] tracking-widest uppercase text-stone-400">{config.nombre_negocio || "Restaurante"}</p>
             <h1 className="text-2xl font-extrabold text-[#fdb813]">🍽️ {etiqueta}</h1>
           </div>
           <div className="flex gap-2">
@@ -153,29 +178,38 @@ export default function MesaPage() {
             </div>
 
             <div className="mb-4">
-              <p className="font-extrabold text-lg mb-2">📋 Menú ({productos.length} platos)</p>
+              <p className="font-extrabold text-lg mb-2">📋 Menú ({productos.length} platos) · Stock en vivo</p>
               {productos.length === 0 && <p className="text-stone-500 text-sm">Cargando menú…</p>}
               {Array.from(new Set(productos.map((p) => p.categoria || "Otros"))).map((cat) => (
                 <div key={cat} className="mb-4">
                   <p className="font-extrabold text-sm text-stone-700 uppercase tracking-wide mb-2 border-b-2 border-[#fdb813] pb-1">{cat}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {productos.filter((p) => (p.categoria || "Otros") === cat).map((p) => (
-                      <div key={p.id} className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition">
-                        <div className="h-32 bg-gradient-to-br from-stone-100 to-stone-200 relative overflow-hidden">
-                          {p.imagen_url ? (
-                            <img src={p.imagen_url} alt={p.nombre} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-5xl">{p.icono}</div>
-                          )}
-                          <div className="absolute top-2 right-2 bg-stone-900 text-[#fdb813] rounded-full px-2 py-1 text-xs font-bold shadow-lg">${(p.precio/1000).toFixed(0)}K</div>
+                    {productos.filter((p) => (p.categoria || "Otros") === cat).map((p) => {
+                      const agotado = (p.stock || 0) <= 0;
+                      return (
+                        <div key={p.id} className={"bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm " + (agotado ? "opacity-60" : "hover:shadow-md transition")}>
+                          <div className="h-32 bg-gradient-to-br from-stone-100 to-stone-200 relative overflow-hidden">
+                            {p.imagen_url ? (
+                              <img src={p.imagen_url} alt={p.nombre} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-5xl">{p.icono}</div>
+                            )}
+                            <div className="absolute top-2 right-2 bg-stone-900 text-[#fdb813] rounded-full px-2 py-1 text-xs font-bold shadow-lg">${(p.precio/1000).toFixed(0)}K</div>
+                            {stockBadge(p.stock || 0)}
+                          </div>
+                          <div className="p-3">
+                            <p className="font-extrabold text-sm">{p.nombre}</p>
+                            {p.descripcion && <p className="text-xs text-stone-500 mt-1 line-clamp-2">{p.descripcion}</p>}
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-[10px] text-stone-500">Stock: {p.stock || 0}</span>
+                              <button onClick={() => add(p)} disabled={agotado} className={"rounded-lg py-1.5 px-3 text-xs font-bold " + (agotado ? "bg-stone-200 text-stone-400 cursor-not-allowed" : "bg-stone-900 text-[#fdb813] hover:bg-stone-800 transition")}>
+                                {agotado ? "Agotado" : "+ Añadir"}
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="p-3">
-                          <p className="font-extrabold text-sm">{p.nombre}</p>
-                          {p.descripcion && <p className="text-xs text-stone-500 mt-1 line-clamp-2">{p.descripcion}</p>}
-                          <button onClick={() => add(p)} className="mt-2 w-full bg-stone-900 text-[#fdb813] rounded-lg py-2 text-sm font-bold hover:bg-stone-800 transition">+ Añadir</button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -211,7 +245,6 @@ export default function MesaPage() {
         )}
       </div>
 
-      {/* ===== CANASTA FLOTANTE ===== */}
       {carrito.length > 0 && vista === "menu" && (
         <button onClick={() => setModalAbierto(true)} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-stone-900 text-white rounded-full shadow-2xl flex items-center gap-3 px-5 py-3 hover:scale-105 transition border-2 border-[#fdb813]">
           <span className="text-2xl">🛒</span>
@@ -223,7 +256,6 @@ export default function MesaPage() {
         </button>
       )}
 
-      {/* ===== MODAL DE PAGO ===== */}
       {modalAbierto && (
         <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setModalAbierto(false)}>
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -239,11 +271,7 @@ export default function MesaPage() {
               {carrito.map((x, i) => (
                 <div key={i} className="flex gap-3 border-b border-stone-100 py-3">
                   <div className="w-16 h-16 bg-stone-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {x.imagen_url ? (
-                      <img src={x.imagen_url} alt={x.nombre} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">{x.icono}</div>
-                    )}
+                    {x.imagen_url ? <img src={x.imagen_url} alt={x.nombre} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl">{x.icono}</div>}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
@@ -267,7 +295,7 @@ export default function MesaPage() {
                   <button onClick={() => setMetodo_pago("Efectivo")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Efectivo" ? "bg-emerald-600 text-white" : "bg-stone-100")}>💵 Efectivo</button>
                   <button onClick={() => setMetodo_pago("Tarjeta")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Tarjeta" ? "bg-emerald-600 text-white" : "bg-stone-100")}>💳 Tarjeta</button>
                 </div>
-                <p className="font-bold text-sm mb-2">📱 Transferencia digital (toca para copiar)</p>
+                <p className="font-bold text-sm mb-2">📱 Transferencia digital</p>
                 {config.nequi && (
                   <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg p-2 mb-2">
                     <div><p className="text-xs text-purple-600 font-bold">NEQUI</p><p className="font-bold">{config.nequi}</p></div>
@@ -289,10 +317,6 @@ export default function MesaPage() {
               </div>
 
               <div className="mt-4 pt-4 border-t-2 border-stone-200 bg-stone-50 rounded-xl p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-stone-600">Subtotal</span>
-                  <span className="font-bold">${total.toLocaleString()}</span>
-                </div>
                 <div className="flex items-center justify-between text-lg">
                   <span className="font-extrabold">TOTAL</span>
                   <span className="font-extrabold text-emerald-700">${total.toLocaleString()}</span>
@@ -302,7 +326,7 @@ export default function MesaPage() {
               <button onClick={enviar} disabled={enviando} className="w-full mt-4 bg-[#fdb813] text-stone-900 rounded-xl py-4 font-extrabold text-lg disabled:opacity-50 hover:bg-[#e8a800] transition shadow-lg">
                 {enviando ? "Enviando a cocina..." : `✓ Confirmar pedido · $${total.toLocaleString()}`}
               </button>
-              <p className="text-xs text-stone-500 text-center mt-2">El pedido llegará a cocina y verás el estado en la pestaña "Estado"</p>
+              <p className="text-xs text-stone-500 text-center mt-2">Al confirmar, el stock se descuenta automáticamente en inventario</p>
             </div>
           </div>
         </div>
