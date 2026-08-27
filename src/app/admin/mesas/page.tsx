@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
+const lbl = (x: string) => { const u = x.trim().toUpperCase(); return u.startsWith("MESA") ? u : "MESA " + u; };
 const TENANT = "11111111-1111-1111-1111-111111111111";
 
 export default function AdminMesas() {
@@ -74,7 +75,7 @@ export default function AdminMesas() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-6">
           {mesas.map((m) => (
             <div key={m.id} className="bg-stone-800 border border-stone-700 rounded-lg p-3 text-center">
-              <p className="font-bold text-[#fdb813] text-lg">MESA {m.codigo}</p>
+              <p className="font-bold text-[#fdb813] text-lg">{lbl(m.codigo)}</p>
               <button onClick={() => eliminar(m.id)} className="text-xs text-rose-400 mt-2">Eliminar</button>
             </div>
           ))}

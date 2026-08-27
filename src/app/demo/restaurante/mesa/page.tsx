@@ -1,17 +1,17 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 
 const TENANT_ID = "11111111-1111-1111-1111-111111111111";
-const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+const lbl = (c: string) => { const u = c.trim().toUpperCase(); return u.startsWith("MESA") ? u : "MESA " + u; };
 
 type Prod = { id: string; nombre: string; precio: number; categoria?: string; descripcion?: string };
 type Item = { producto_id: string; nombre: string; precio: number; cantidad: number; obs: string };
-type Pedido = { id: string; estado: string; total: number; created_at: string; observaciones: string };
+type Pedido = { id: string; estado: string; total: number; created_at: string; observaciones: string; direccion?: string };
 type Config = { nequi?: string; bancolombia?: string; daviplata?: string };
 
 export default function MesaPage() {
   const [mesa, setMesa] = useState("");
+  const [etiqueta, setEtiqueta] = useState("");
   const [productos, setProductos] = useState<Prod[]>([]);
   const [config, setConfig] = useState<Config>({});
   const [nombre, setNombre] = useState("");
@@ -26,35 +26,44 @@ export default function MesaPage() {
 
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("m") || "";
-    setMesa(m.toUpperCase());
+    setMesa(m.trim().toUpperCase());
+    setEtiqueta(lbl(m));
     (async () => {
-      const { data: prods } = await sb.from("productos").select("*").eq("tenant_id", TENANT_ID).order("categoria").order("nombre");
-      setProductos((prods as Prod[]) || []);
-      const r = await fetch(`/api/tenant-config?tenant=${TENANT_ID}`);
-      const j = await r.json();
-      if (j.success && j.data) setConfig(j.data);
+      try {
+        const r = await fetch(`/api/products?tenant=${TENANT_ID}`);
+        const j = await r.json();
+        const arr: any[] = j.data || [];
+        arr.sort((a, b) => String(a.categoria || "").localeCompare(String(b.categoria || "")) || String(a.nombre).localeCompare(String(b.nombre)));
+        setProductos(arr.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion })));
+      } catch (e) {}
+      try {
+        const r2 = await fetch(`/api/tenant-config?tenant=${TENANT_ID}`);
+        const j2 = await r2.json();
+        if (j2.success && j2.data) setConfig(j2.data);
+      } catch (e) {}
     })();
   }, []);
 
   useEffect(() => {
-    if (!mesa) return;
+    if (!etiqueta) return;
     const cargar = async () => {
-      const r = await fetch(`/api/pedidos?tenant=${TENANT_ID}`);
-      const j = await r.json();
-      const todos: Pedido[] = j.data || j || [];
-      const mios = todos.filter((p: any) => (p.direccion || "").toUpperCase() === "MESA " + mesa);
-      setPedidosMesa(mios);
+      try {
+        const r = await fetch(`/api/pedidos?tenant=${TENANT_ID}`);
+        const j = await r.json();
+        const todos: Pedido[] = j.data || j || [];
+        setPedidosMesa(todos.filter((p) => (p.direccion || "").toUpperCase() === etiqueta));
+      } catch (e) {}
     };
     cargar();
     const t = setInterval(cargar, 5000);
     return () => clearInterval(t);
-  }, [mesa]);
+  }, [etiqueta]);
 
   const add = (p: Prod) => {
     setCarrito((c) => {
       const e = c.find((x) => x.producto_id === p.id && !x.obs);
       if (e) return c.map((x) => (x === e ? { ...x, cantidad: x.cantidad + 1 } : x));
-      return [...c, { producto_id: p.id, nombre: p.nombre, precio: Number(p.precio), cantidad: 1, obs: "" }];
+      return [...c, { producto_id: p.id, nombre: p.nombre, precio: p.precio, cantidad: 1, obs: "" }];
     });
   };
   const setObs = (idx: number, obs: string) => setCarrito((c) => c.map((x, i) => (i === idx ? { ...x, obs } : x)));
@@ -62,11 +71,7 @@ export default function MesaPage() {
   const del = (idx: number) => setCarrito((c) => c.filter((_, i) => i !== idx));
   const total = carrito.reduce((a, x) => a + x.precio * x.cantidad, 0);
 
-  const copiar = (texto: string, tipo: string) => {
-    navigator.clipboard.writeText(texto);
-    setCopiado(tipo);
-    setTimeout(() => setCopiado(""), 2000);
-  };
+  const copiar = (texto: string, tipo: string) => { navigator.clipboard.writeText(texto); setCopiado(tipo); setTimeout(() => setCopiado(""), 2000); };
 
   const enviar = async () => {
     if (!nombre.trim()) return alert("Ingresa tu nombre");
@@ -78,16 +83,7 @@ export default function MesaPage() {
     const r = await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tenant_id: TENANT_ID,
-        cliente: `${nombre} (MESA ${mesa})`,
-        direccion: `MESA ${mesa}`,
-        telefono: "",
-        metodo_pago,
-        total,
-        items,
-        observaciones: obsFinal,
-      }),
+      body: JSON.stringify({ tenant_id: TENANT_ID, cliente: `${nombre} (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago, total, items, observaciones: obsFinal }),
     });
     const j = await r.json();
     setEnviando(false);
@@ -100,16 +96,7 @@ export default function MesaPage() {
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tenant_id: TENANT_ID,
-        cliente: `SOLICITA MESERO (MESA ${mesa})`,
-        direccion: `MESA ${mesa}`,
-        telefono: "",
-        metodo_pago: "Solicita mesero",
-        total: 0,
-        items: [{ producto_id: "mesero", nombre: "Solicita mesero/cuenta", precio: 0, cantidad: 1 }],
-        observaciones: `MESA ${mesa} solicita mesero para verificar cuenta y despedida`,
-      }),
+      body: JSON.stringify({ tenant_id: TENANT_ID, cliente: `SOLICITA MESERO (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago: "Solicita mesero", total: 0, items: [{ producto_id: "mesero", nombre: "Solicita mesero/cuenta", precio: 0, cantidad: 1 }], observaciones: `${etiqueta} solicita mesero para verificar cuenta y despedida` }),
     });
     setEnviando(false);
     setOk("🙋 Mesero notificado, viene en camino");
@@ -127,7 +114,7 @@ export default function MesaPage() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
             <p className="text-[10px] tracking-widest uppercase text-stone-400">Restaurante Demo SIGEA</p>
-            <h1 className="text-2xl font-extrabold text-[#fdb813]">🍽️ MESA {mesa}</h1>
+            <h1 className="text-2xl font-extrabold text-[#fdb813]">🍽️ {etiqueta}</h1>
           </div>
           <div className="flex gap-2">
             <button onClick={() => setVista("menu")} className={"px-3 py-1.5 rounded-lg text-xs font-bold " + (vista === "menu" ? "bg-[#fdb813] text-stone-900" : "bg-stone-700")}>Menú</button>
@@ -158,7 +145,7 @@ export default function MesaPage() {
 
             <div className="mb-4">
               <p className="font-extrabold text-lg mb-2">📋 Menú ({productos.length} platos)</p>
-              {productos.length === 0 && <p className="text-stone-500 text-sm">Cargando menú...</p>}
+              {productos.length === 0 && <p className="text-stone-500 text-sm">Cargando menú…</p>}
               {Array.from(new Set(productos.map((p) => p.categoria || "Otros"))).map((cat) => (
                 <div key={cat} className="mb-3">
                   <p className="font-bold text-sm text-stone-600 uppercase tracking-wide mb-1">{cat}</p>
@@ -168,7 +155,7 @@ export default function MesaPage() {
                         <div className="flex-1">
                           <p className="font-bold">{p.nombre}</p>
                           {p.descripcion && <p className="text-xs text-stone-500 mt-0.5">{p.descripcion}</p>}
-                          <p className="text-emerald-700 font-bold mt-1">${Number(p.precio).toLocaleString()}</p>
+                          <p className="text-emerald-700 font-bold mt-1">${p.precio.toLocaleString()}</p>
                         </div>
                         <button onClick={() => add(p)} className="bg-stone-900 text-[#fdb813] rounded-lg px-3 py-2 text-sm font-bold">+ Añadir</button>
                       </div>
@@ -203,7 +190,6 @@ export default function MesaPage() {
                     <button onClick={() => setMetodo_pago("Efectivo")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Efectivo" ? "bg-emerald-600 text-white" : "bg-stone-100")}>💵 Efectivo</button>
                     <button onClick={() => setMetodo_pago("Tarjeta")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Tarjeta" ? "bg-emerald-600 text-white" : "bg-stone-100")}>💳 Tarjeta</button>
                   </div>
-
                   <p className="font-bold text-sm mb-2">📱 Transferencia digital (toca para copiar)</p>
                   {config.nequi && (
                     <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg p-2 mb-2">
@@ -238,7 +224,7 @@ export default function MesaPage() {
 
         {vista === "estado" && (
           <div>
-            <p className="font-extrabold text-lg mb-3">📋 Pedidos de tu mesa</p>
+            <p className="font-extrabold text-lg mb-3">📋 Pedidos de {etiqueta}</p>
             {pedidosMesa.length === 0 && (
               <div className="bg-white rounded-xl p-6 text-center border border-stone-200">
                 <p className="text-stone-500">Aún no has pedido nada</p>
