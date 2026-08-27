@@ -25,6 +25,8 @@ export default function MesaPage() {
   const [vista, setVista] = useState<"menu" | "estado">("menu");
   const [copiado, setCopiado] = useState("");
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalSolicitud, setModalSolicitud] = useState(false);
+  const [textoSolicitud, setTextoSolicitud] = useState("");
   const [tick, setTick] = useState(0);
 
   useEffect(() => {

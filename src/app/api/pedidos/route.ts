@@ -85,8 +85,24 @@ export async function POST(request: Request) {
       console.error('Stock no descontado:', e)
     }
 
-    // NOTA: Las notificaciones las crea un TRIGGER en la base de datos
-    // No se crean desde el API para evitar duplicaciones
+    // ===== NOTIFICACIONES REALES =====
+    try {
+      const tipoNotif = cliente.includes("SOLICITA MESERO") ? "mesero" : "pedido";
+      const mensaje = tipoNotif === "mesero" 
+        ? `${direccion} solicita mesero`
+        : `Nuevo pedido de ${cliente} - $${total}`;
+      
+      await supabase.from("notificaciones").insert({
+        tenant_id,
+        tipo: tipoNotif,
+        titulo: tipoNotif === "mesero" ? "🙋 Solicitud de Mesero" : "🍽️ Nuevo Pedido",
+        mensaje,
+        leido: false,
+        created_at: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error("Notificación no creada:", e);
+    }
 
     const totalTime = Date.now() - startTime
     console.log('Pedido creado en', totalTime, 'ms - ID:', data.id)
