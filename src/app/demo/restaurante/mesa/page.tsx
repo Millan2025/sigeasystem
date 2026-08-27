@@ -125,15 +125,20 @@ export default function MesaPage() {
     } else { alert("Error: " + (j.error || "desconocido")); }
   };
 
-  const pedirCuenta = async () => {
+  const abrirSolicitud = () => { setTextoSolicitud(""); setModalSolicitud(true); };
+
+  const enviarSolicitud = async (tipo: "cuenta" | "texto") => {
+    if (tipo === "texto" && !textoSolicitud.trim()) { alert("Escribe qué necesitas"); return; }
     setEnviando(true);
+    const obs = tipo === "cuenta" ? `${etiqueta} solicita la CUENTA para pagar y despedida` : `${etiqueta} solicita: ${textoSolicitud.trim()}`;
+    const nombreItem = tipo === "cuenta" ? "Solicita la CUENTA" : `Solicitud: ${textoSolicitud.trim().substring(0, 60)}`;
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenant_id: tenantId, cliente: `SOLICITA MESERO (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago: "Solicita mesero", total: 0, items: [{ producto_id: "mesero", nombre: "Solicita mesero/cuenta", precio: 0, cantidad: 1 }], observaciones: `${etiqueta} solicita mesero para verificar cuenta y despedida` }),
+      body: JSON.stringify({ tenant_id: tenantId, cliente: `SOLICITA MESERO (${etiqueta})`, direccion: etiqueta, telefono: "", metodo_pago: tipo === "cuenta" ? "Solicita cuenta" : "Solicitud mesero", total: 0, items: [{ producto_id: "solicitud", nombre: nombreItem, precio: 0, cantidad: 1 }], observaciones: obs }),
     });
-    setEnviando(false);
-    setOk("🙋 Mesero notificado, viene en camino");
+    setEnviando(false); setModalSolicitud(false); setTextoSolicitud("");
+    setOk(tipo === "cuenta" ? "🧾 Cuenta solicitada, mesero en camino" : "🙋 Solicitud enviada al mesero");
     setTimeout(() => setOk(null), 4000);
   };
 
@@ -243,8 +248,8 @@ export default function MesaPage() {
               </div>
             ))}
             {pedidosMesa.length > 0 && (
-              <button onClick={pedirCuenta} disabled={enviando} className="w-full mt-4 bg-stone-900 text-[#fdb813] rounded-xl py-3 font-extrabold disabled:opacity-50">
-                🙋 {enviando ? "Notificando..." : "Solicitar mesero / cuenta"}
+              <button onClick={abrirSolicitud} className="w-full mt-4 bg-stone-900 text-[#fdb813] rounded-xl py-3 font-extrabold">
+                🙋 Solicitar al mesero
               </button>
             )}
           </div>
@@ -333,6 +338,28 @@ export default function MesaPage() {
                 {enviando ? "Enviando a cocina..." : `✓ Confirmar pedido · $${total.toLocaleString()}`}
               </button>
               <p className="text-xs text-stone-500 text-center mt-2">Al confirmar, el stock se descuenta automáticamente en inventario</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MODAL SOLICITUD AL MESERO ===== */}
+      {modalSolicitud && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => !enviando && setModalSolicitud(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between">
+              <p className="font-extrabold text-lg">🙋 ¿Qué necesitas?</p>
+              <button onClick={() => setModalSolicitud(false)} className="bg-stone-100 rounded-full w-8 h-8 text-stone-600">✕</button>
+            </div>
+            <div className="p-4">
+              <p className="text-sm text-stone-600 mb-3">Elige una opción o escríbenos:</p>
+              <button onClick={() => enviarSolicitud("cuenta")} disabled={enviando} className="w-full bg-emerald-600 text-white rounded-xl py-3 font-bold mb-3 disabled:opacity-50">🧾 Pedir la cuenta</button>
+              <div className="border-t border-stone-200 pt-3">
+                <p className="text-sm font-bold mb-2">💬 O escribe lo que necesitas:</p>
+                <textarea value={textoSolicitud} onChange={(e) => setTextoSolicitud(e.target.value)} placeholder="Ej: más servilletas, otra cerveza, cambiar plato..." className="w-full bg-stone-50 border border-stone-300 rounded-lg p-3 text-sm h-24 resize-none outline-none focus:border-[#fdb813]" maxLength={200} />
+                <p className="text-xs text-stone-500 text-right mt-1">{textoSolicitud.length}/200</p>
+                <button onClick={() => enviarSolicitud("texto")} disabled={enviando || !textoSolicitud.trim()} className="w-full mt-2 bg-[#fdb813] text-stone-900 rounded-xl py-3 font-extrabold disabled:opacity-50">{enviando ? "Enviando..." : "📤 Enviar solicitud"}</button>
+              </div>
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ import { getTenantId } from "@/lib/tenant";
 import { NEGOCIOS } from "@/config/negocios";
 import LeadForm from "@/components/LeadForm";
 import {
+  Armchair,
   ShoppingCart,
   DollarSign,
   Package,
