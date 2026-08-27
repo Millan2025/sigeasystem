@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -127,7 +127,7 @@ export default function PageHeader({
                 {config.nombre_negocio || negocio?.titulo || "Mi Negocio"}
               </h2>
               {config.slogan && (
-                <p className="text-[10px] md:text-sm text-stone-800 italic truncate font-medium hidden sm:block">
+                <p className="text-[10px] md:text-sm text-white italic truncate font-medium hidden sm:block">
                   {config.slogan}
                 </p>
               )}
@@ -145,7 +145,7 @@ export default function PageHeader({
 
           {/* FILA 2: Dirección y contacto */}
           {(config.direccion || config.telefono || config.correo_contacto) && (
-            <div className="flex flex-col gap-0.5 mt-1 md:mt-2 text-[11px] md:text-xs text-stone-800 font-medium">
+            <div className="flex flex-col gap-0.5 mt-1 md:mt-2 text-[11px] md:text-xs text-white font-medium">
               {config.direccion && (
                 <div className="flex items-center gap-1.5 md:gap-2">
                   <MapPin className="w-3 h-3 flex-shrink-0" />
@@ -182,12 +182,12 @@ export default function PageHeader({
             <ArrowLeft className="w-5 h-5 text-stone-700" />
           </Link>}
           <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-xl font-bold text-stone-800 truncate flex items-center gap-2">
+            <h1 className="text-base sm:text-xl font-bold text-white truncate flex items-center gap-2">
               <span className="text-2xl">{icono}</span>
               <span>{titulo}</span>
             </h1>
             {subtitulo && (
-              <p className="text-xs sm:text-sm text-stone-500 truncate mt-0.5">
+              <p className="text-xs sm:text-sm text-stone-300 truncate mt-0.5">
                 {subtitulo}
               </p>
             )}
