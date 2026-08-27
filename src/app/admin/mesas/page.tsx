@@ -20,6 +20,8 @@ export default function AdminMesas() {
   const [hasta, setHasta] = useState(8);
   const [msg, setMsg] = useState("");
   const [bloqueado, setBloqueado] = useState(false);
+  const [negDemo, setNegDemo] = useState<any>(null);
+  const [slugOrig, setSlugOrig] = useState("");
 
   const cargar = async () => {
     const { data } = await sb.from("mesas").select("*").eq("tenant_id", tenantSel).order("codigo");
@@ -44,12 +46,23 @@ export default function AdminMesas() {
     const origen = new URLSearchParams(window.location.search).get("origen") || "";
     const slug = decodeURIComponent(origen).split("/").filter(Boolean).pop() || "";
     const neg = (NEGOCIOS as any)[slug];
-    if (neg && neg.tenantId) { setTenantSel(neg.tenantId); setBloqueado(true); }
+    if (neg && neg.tenantId) { setTenantSel(neg.tenantId); setBloqueado(true); setNegDemo(neg); setSlugOrig(slug); }
     cargarTenants();
   }, []);
   useEffect(() => { cargar(); cargarConfig(); }, [tenantSel]);
 
   const tenantsFiltrados = tenants.filter((t) => nombreDe(t).toLowerCase().includes(busqueda.toLowerCase()));
+
+  const DEMO_IDENTIDAD: any = {
+    panaderia: { slogan: "Pan fresco cada mañana", direccion: "Cra 8 #45-12, Barranquilla" },
+    carniceria: { slogan: "La mejor carne del barrio", direccion: "Calle 30 #18-05, Barranquilla" },
+    salsamentaria: { slogan: "Sabor especial para tu mesa", direccion: "Cra 21 #68-40, Barranquilla" },
+    ferreteria: { slogan: "Todo para tu hogar y obra", direccion: "Av. Boyaca #106-15, Barranquilla" },
+    tienda: { slogan: "Tu esquina de confianza", direccion: "Calle 106 #8-52, Barranquilla" },
+  };
+  const nombreShow = negDemo?.titulo || config.nombre_negocio || "Tu Negocio";
+  const sloganShow = DEMO_IDENTIDAD[slugOrig]?.slogan || config.slogan;
+  const dirShow = DEMO_IDENTIDAD[slugOrig]?.direccion || config.direccion;
 
   const agregar = async (c: string) => {
     const codigoUp = c.toUpperCase().trim();
@@ -94,15 +107,15 @@ export default function AdminMesas() {
         </div>
         )}
 
-        {bloqueado && <p className="text-stone-300 text-sm mb-3">🔒 Gestionando mesas de: <b className="text-[#fdb813]">{config.nombre_negocio || "tu negocio"}</b> · <Link className="underline" href="/admin/mesas">Admin Master</Link></p>}
+        {bloqueado && <p className="text-stone-300 text-sm mb-3">🔒 Gestionando mesas de: <b className="text-[#fdb813]">{nombreShow || "tu negocio"}</b> · <Link className="underline" href="/admin/mesas">Admin Master</Link></p>}
 
-        {config.nombre_negocio && (
+        {nombreShow && (
           <div className="bg-gradient-to-r from-[#fdb813] to-[#e8a800] text-stone-900 rounded-xl p-4 mb-4 shadow-lg">
             <p className="text-xs font-bold uppercase tracking-wider opacity-70">Identidad del negocio (se imprime en el QR)</p>
-            <p className="font-extrabold text-xl mt-1">{config.nombre_negocio}</p>
-            {config.slogan && <p className="text-sm italic mt-0.5">"{config.slogan}"</p>}
+            <p className="font-extrabold text-xl mt-1">{nombreShow}</p>
+            {sloganShow && <p className="text-sm italic mt-0.5">"{sloganShow}"</p>}
             <div className="flex flex-wrap gap-3 mt-2 text-sm">
-              {config.direccion && <span>📍 {config.direccion}</span>}
+              {dirShow && <span>📍 {dirShow}</span>}
               {config.telefono && <span>📞 {config.telefono}</span>}
               {config.whatsapp && <span>💬 {config.whatsapp}</span>}
             </div>
@@ -135,7 +148,7 @@ export default function AdminMesas() {
           {mesas.map((m) => (
             <div key={m.id} className="bg-stone-800 border border-stone-700 rounded-lg p-3 text-center">
               <p className="font-bold text-[#fdb813] text-lg">{lbl(m.codigo)}</p>
-              <a href={origin + "/mesa?m=" + encodeURIComponent(m.codigo) + "&t=" + tenantSel} className="block bg-[#fdb813] text-stone-900 rounded-lg px-2 py-1 text-xs font-extrabold mt-2">🍽️ Entrar</a>
+              <a href={origin + "/mesa?m=" + encodeURIComponent(m.codigo) + "&t=" + tenantSel + (slugOrig ? "&neg=" + slugOrig : "")} className="block bg-[#fdb813] text-stone-900 rounded-lg px-2 py-1 text-xs font-extrabold mt-2">🍽️ Entrar</a>
               <button onClick={() => eliminar(m.id)} className="text-xs text-rose-400 mt-2">Eliminar</button>
             </div>
           ))}
@@ -151,12 +164,12 @@ export default function AdminMesas() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {mesas.map((m) => (
                 <div key={m.id} className="bg-white text-stone-900 rounded-xl p-3 text-center border-2 border-stone-800">
-                  <p className="font-extrabold text-base leading-tight">{config.nombre_negocio || "Restaurante"}</p>
-                  {config.slogan && <p className="text-[9px] italic text-stone-500 mt-0.5">"{config.slogan}"</p>}
-                  <img src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(origin + "/mesa?m=" + m.codigo + "&t=" + tenantSel)} alt={m.codigo} className="w-36 h-36 mx-auto mt-2" />
+                  <p className="font-extrabold text-base leading-tight">{nombreShow || "Restaurante"}</p>
+                  {sloganShow && <p className="text-[9px] italic text-stone-500 mt-0.5">"{sloganShow}"</p>}
+                  <img src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(origin + "/mesa?m=" + m.codigo + "&t=" + tenantSel + (slugOrig ? "&neg=" + slugOrig : ""))} alt={m.codigo} className="w-36 h-36 mx-auto mt-2" />
                   <p className="font-extrabold text-2xl text-[#fdb813] mt-1">{lbl(m.codigo)}</p>
                   {config.telefono && <p className="text-[10px] text-stone-600 mt-1">📞 {config.telefono}</p>}
-                  {config.direccion && <p className="text-[9px] text-stone-500 mt-0.5">{config.direccion}</p>}
+                  {dirShow && <p className="text-[9px] text-stone-500 mt-0.5">{dirShow}</p>}
                   <p className="text-[9px] text-stone-400 mt-1">Escanea para pedir desde tu celular</p>
                 </div>
               ))}

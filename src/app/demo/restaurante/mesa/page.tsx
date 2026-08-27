@@ -1,4 +1,5 @@
 "use client";
+import { NEGOCIOS } from "@/config/negocios";
 import { useEffect, useState } from "react";
 
 const TENANT_ID = "11111111-1111-1111-1111-111111111111";
@@ -24,6 +25,7 @@ export default function MesaPage() {
   const [pedidosMesa, setPedidosMesa] = useState<Pedido[]>([]);
   const [vista, setVista] = useState<"menu" | "estado">("menu");
   const [copiado, setCopiado] = useState("");
+  const [nombreNeg, setNombreNeg] = useState("");
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modalSolicitud, setModalSolicitud] = useState(false);
   const [textoSolicitud, setTextoSolicitud] = useState("");
@@ -34,6 +36,9 @@ export default function MesaPage() {
     const m = params.get("m") || "";
     const t = params.get("t") || TENANT_ID;
     setTenantId(t);
+    const negKey = params.get("neg") || "";
+    const negCfg = (NEGOCIOS as any)[negKey];
+    if (negCfg && negCfg.titulo) setNombreNeg(negCfg.titulo);
     setMesa(m.trim().toUpperCase());
     setEtiqueta(lbl(m));
     (async () => {
@@ -158,7 +163,7 @@ export default function MesaPage() {
       <div className="bg-stone-900 text-white px-4 py-4 sticky top-0 z-10 shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <p className="text-[10px] tracking-widest uppercase text-stone-400">{config.nombre_negocio || "Restaurante"}</p>
+            <p className="text-[10px] tracking-widest uppercase text-stone-400">{nombreNeg || config.nombre_negocio || "Restaurante"}</p>
             <h1 className="text-2xl font-extrabold text-[#fdb813]">🍽️ {etiqueta}</h1>
           </div>
           <div className="flex gap-2">
