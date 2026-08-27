@@ -463,6 +463,7 @@ export default function AdminMasterPage() {
           <button onClick={cargarDatos} className="bg-stone-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-stone-700 inline-flex items-center gap-1">
             <RefreshCw className="w-5 h-5" /> Recargar
           </button>
+          <button onClick={() => window.location.href="/admin/mesas"} className="bg-[#fdb813] text-stone-900 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-[#e8a800] inline-flex items-center gap-1 ml-2">🪑 Mesas</button>
         </div>
         <div className="flex gap-1 bg-stone-700 rounded-xl p-1 overflow-x-auto">
           {[
