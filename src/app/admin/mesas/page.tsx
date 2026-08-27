@@ -107,7 +107,7 @@ export default function AdminMesas() {
         </div>
         )}
 
-        {bloqueado && <p className="text-stone-300 text-sm mb-3">🔒 Gestionando mesas de: <b className="text-[#fdb813]">{nombreShow || "tu negocio"}</b> · <Link className="underline" href="/admin/mesas">Admin Master</Link></p>}
+        {bloqueado && <p className="text-stone-300 text-sm mb-3">🔒 Gestionando mesas de: <b className="text-[#fdb813]">{nombreShow || "tu negocio"}</b></p>}
 
         {nombreShow && (
           <div className="bg-gradient-to-r from-[#fdb813] to-[#e8a800] text-stone-900 rounded-xl p-4 mb-4 shadow-lg">
