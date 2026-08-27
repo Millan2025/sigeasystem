@@ -1,18 +1,19 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import Link from "next/link";
 
-const TENANT = "demo-restaurante";
+const TENANT_ID = "demo-rest-001";
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
-type Prod = { id: string; nombre: string; precio: number; categoria?: string; imagen?: string; descripcion?: string };
+type Prod = { id: string; nombre: string; precio: number; categoria?: string; descripcion?: string };
 type Item = { producto_id: string; nombre: string; precio: number; cantidad: number; obs: string };
 type Pedido = { id: string; estado: string; total: number; created_at: string; observaciones: string };
+type Config = { nequi?: string; bancolombia?: string; daviplata?: string };
 
 export default function MesaPage() {
   const [mesa, setMesa] = useState("");
   const [productos, setProductos] = useState<Prod[]>([]);
+  const [config, setConfig] = useState<Config>({});
   const [nombre, setNombre] = useState("");
   const [comensales, setComensales] = useState(1);
   const [carrito, setCarrito] = useState<Item[]>([]);
@@ -21,21 +22,25 @@ export default function MesaPage() {
   const [ok, setOk] = useState<string | null>(null);
   const [pedidosMesa, setPedidosMesa] = useState<Pedido[]>([]);
   const [vista, setVista] = useState<"menu" | "estado">("menu");
+  const [copiado, setCopiado] = useState("");
 
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("m") || "";
     setMesa(m.toUpperCase());
     (async () => {
-      const { data } = await sb.from("products").select("*").eq("tenant_id", TENANT).order("nombre");
-      setProductos((data as Prod[]) || []);
+      const { data: prods } = await sb.from("products").select("*").eq("tenant_id", TENANT_ID).order("categoria").order("nombre");
+      setProductos((prods as Prod[]) || []);
+      
+      const r = await fetch(`/api/tenant-config?tenant=${TENANT_ID}`);
+      const j = await r.json();
+      if (j.success && j.data) setConfig(j.data);
     })();
   }, []);
 
-  // Polling cada 5s de pedidos de ESTA mesa (identificados por direccion="MESA XX")
   useEffect(() => {
     if (!mesa) return;
     const cargar = async () => {
-      const r = await fetch(`/api/pedidos?tenant=${TENANT}`);
+      const r = await fetch(`/api/pedidos?tenant=${TENANT_ID}`);
       const j = await r.json();
       const todos: Pedido[] = j.data || j || [];
       const mios = todos.filter((p: any) => (p.direccion || "").toUpperCase() === "MESA " + mesa);
@@ -53,26 +58,31 @@ export default function MesaPage() {
       return [...c, { producto_id: p.id, nombre: p.nombre, precio: p.precio, cantidad: 1, obs: "" }];
     });
   };
+
   const setObs = (idx: number, obs: string) => setCarrito((c) => c.map((x, i) => (i === idx ? { ...x, obs } : x)));
   const setQty = (idx: number, cantidad: number) => setCarrito((c) => c.map((x, i) => (i === idx ? { ...x, cantidad: Math.max(1, cantidad) } : x)));
   const del = (idx: number) => setCarrito((c) => c.filter((_, i) => i !== idx));
-
   const total = carrito.reduce((a, x) => a + x.precio * x.cantidad, 0);
+
+  const copiar = (texto: string, tipo: string) => {
+    navigator.clipboard.writeText(texto);
+    setCopiado(tipo);
+    setTimeout(() => setCopiado(""), 2000);
+  };
 
   const enviar = async () => {
     if (!nombre.trim()) return alert("Ingresa tu nombre");
     if (carrito.length === 0) return alert("Agrega algo al pedido");
     setEnviando(true);
-    const items = carrito.map((x) => ({
-      producto_id: x.producto_id, nombre: x.nombre, precio: x.precio, cantidad: x.cantidad,
-    }));
+    const items = carrito.map((x) => ({ producto_id: x.producto_id, nombre: x.nombre, precio: x.precio, cantidad: x.cantidad }));
     const obsGlobal = carrito.filter((x) => x.obs).map((x) => `${x.nombre} x${x.cantidad}: ${x.obs}`).join(" | ");
     const obsFinal = `COMENSALES:${comensales} | CLIENTE:${nombre}` + (obsGlobal ? " | " + obsGlobal : "");
+    
     const r = await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        tenant_id: TENANT,
+        tenant_id: TENANT_ID,
         cliente: `${nombre} (MESA ${mesa})`,
         direccion: `MESA ${mesa}`,
         telefono: "",
@@ -94,13 +104,12 @@ export default function MesaPage() {
   };
 
   const pedirCuenta = async () => {
-    if (!nombre.trim() && !window.confirm("¿Sin nombre? Sigue igual")) return;
     setEnviando(true);
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        tenant_id: TENANT,
+        tenant_id: TENANT_ID,
         cliente: `SOLICITA MESERO (MESA ${mesa})`,
         direccion: `MESA ${mesa}`,
         telefono: "",
@@ -117,15 +126,12 @@ export default function MesaPage() {
 
   const estadoColor = (e: string) => {
     if (e === "pendiente") return "bg-amber-500";
-    if (e === "en_preparacion" || e === "en cocina") return "bg-blue-500";
     if (e === "listo" || e === "despachado") return "bg-emerald-500";
-    if (e === "entregado") return "bg-stone-500";
     return "bg-stone-400";
   };
   const estadoLabel = (e: string) => {
     if (e === "pendiente") return "En preparación";
     if (e === "listo" || e === "despachado") return "Listo, mesero en camino";
-    if (e === "entregado") return "Entregado";
     return "En preparación";
   };
 
@@ -137,7 +143,6 @@ export default function MesaPage() {
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800 pb-24">
-      {/* Header mesa */}
       <div className="bg-stone-900 text-white px-4 py-4 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
@@ -158,7 +163,6 @@ export default function MesaPage() {
 
         {vista === "menu" && (
           <>
-            {/* Datos cliente */}
             <div className="bg-white rounded-xl p-4 border border-stone-200 mb-4">
               <p className="font-bold mb-2">👤 Tus datos</p>
               <div className="grid grid-cols-2 gap-2">
@@ -172,7 +176,6 @@ export default function MesaPage() {
               </div>
             </div>
 
-            {/* Menu por categorias */}
             <div className="mb-4">
               <p className="font-extrabold text-lg mb-2">📋 Menú</p>
               {Array.from(new Set(productos.map((p) => p.categoria || "Otros"))).map((cat) => (
@@ -194,7 +197,6 @@ export default function MesaPage() {
               ))}
             </div>
 
-            {/* Carrito */}
             {carrito.length > 0 && (
               <div className="bg-white rounded-xl p-4 border-2 border-[#fdb813] mb-4">
                 <p className="font-extrabold mb-2">🛒 Tu pedido ({carrito.length})</p>
@@ -213,14 +215,54 @@ export default function MesaPage() {
                     <input value={x.obs} onChange={(e) => setObs(i, e.target.value)} placeholder="Observaciones: sin cebolla, término medio..." className="mt-1 w-full bg-stone-50 border border-stone-200 rounded px-2 py-1 text-xs" />
                   </div>
                 ))}
+                
                 <div className="mt-3 pt-3 border-t border-stone-200">
-                  <p className="font-bold mb-2">💳 Forma de pago (regístrala al mesero)</p>
-                  <div className="grid grid-cols-4 gap-1">
-                    {["Efectivo", "Nequi", "Daviplata", "Tarjeta"].map((m) => (
-                      <button key={m} onClick={() => setMetodo_pago(m)} className={"rounded-lg py-2 text-xs font-bold " + (metodo_pago === m ? "bg-emerald-600 text-white" : "bg-stone-100 text-stone-700")}>{m}</button>
-                    ))}
+                  <p className="font-bold mb-2">💳 Forma de pago</p>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button onClick={() => setMetodo_pago("Efectivo")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Efectivo" ? "bg-emerald-600 text-white" : "bg-stone-100")}>
+                      💵 Efectivo
+                    </button>
+                    <button onClick={() => setMetodo_pago("Tarjeta")} className={"rounded-lg py-2 text-sm font-bold " + (metodo_pago === "Tarjeta" ? "bg-emerald-600 text-white" : "bg-stone-100")}>
+                      💳 Tarjeta
+                    </button>
                   </div>
+                  
+                  <p className="font-bold text-sm mb-2">📱 Transferencia digital</p>
+                  {config.nequi && (
+                    <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg p-2 mb-2">
+                      <div>
+                        <p className="text-xs text-purple-600 font-bold">NEQUI</p>
+                        <p className="font-bold">{config.nequi}</p>
+                      </div>
+                      <button onClick={() => copiar(config.nequi!, "nequi")} className="bg-purple-600 text-white rounded px-3 py-1 text-xs font-bold">
+                        {copiado === "nequi" ? "✓" : "Copiar"}
+                      </button>
+                    </div>
+                  )}
+                  {config.daviplata && (
+                    <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
+                      <div>
+                        <p className="text-xs text-red-600 font-bold">DAVIPLATA</p>
+                        <p className="font-bold">{config.daviplata}</p>
+                      </div>
+                      <button onClick={() => copiar(config.daviplata!, "daviplata")} className="bg-red-600 text-white rounded px-3 py-1 text-xs font-bold">
+                        {copiado === "daviplata" ? "✓" : "Copiar"}
+                      </button>
+                    </div>
+                  )}
+                  {config.bancolombia && (
+                    <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                      <div>
+                        <p className="text-xs text-yellow-700 font-bold">BANCOLOMBIA</p>
+                        <p className="font-bold">{config.bancolombia}</p>
+                      </div>
+                      <button onClick={() => copiar(config.bancolombia!, "bancolombia")} className="bg-yellow-600 text-white rounded px-3 py-1 text-xs font-bold">
+                        {copiado === "bancolombia" ? "✓" : "Copiar"}
+                      </button>
+                    </div>
+                  )}
                 </div>
+
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-stone-200">
                   <p className="font-extrabold text-lg">Total: <span className="text-emerald-700">${total.toLocaleString()}</span></p>
                   <button onClick={enviar} disabled={enviando} className="bg-[#fdb813] text-stone-900 rounded-lg px-5 py-3 font-extrabold disabled:opacity-50">

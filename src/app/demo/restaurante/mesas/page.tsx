@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const TENANT = "demo-restaurante";
+const TENANT = "demo-rest-001";
 const DEFAULTS = ["A1","A2","A3","A4","A5","A6","A7","A8"];
 
 export default function MesasQR() {
@@ -22,7 +22,7 @@ export default function MesasQR() {
     <div className="min-h-screen bg-white text-stone-800 p-6">
       <div className="flex items-center justify-between max-w-5xl mx-auto no-print">
         <h1 className="text-xl font-extrabold">🍽️ Mesas · QR para imprimir y pegar</h1>
-        <button onClick={() => window.print()} className="bg-stone-900 text-white rounded-lg px-4 py-2 font-bold">🖨️ Imprimir</button>
+        <button onClick={() => window.print()} className="bg-stone-900 text-white rounded-lg px-4 py-2 font-bold">🖨️ Imprimir / Guardar PDF</button>
       </div>
       <p className="text-center text-sm text-stone-500 mt-2">Restaurante demo · cada QR abre el menú de su mesa</p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-5xl mx-auto mt-6">
