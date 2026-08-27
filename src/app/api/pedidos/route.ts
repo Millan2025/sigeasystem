@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -61,6 +61,29 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
+
+    // ===== SINCRONISMO INVENTARIO: descuenta stock al crear pedido =====
+    try {
+      for (const item of itemsConNombre) {
+        const qty = Number(item.cantidad || 0)
+        if (item.producto_id && item.producto_id !== 'mesero' && qty > 0) {
+          const { data: prod } = await supabase
+            .from('productos')
+            .select('stock')
+            .eq('id', item.producto_id)
+            .single()
+          if (prod) {
+            const nuevo = Math.max(0, Number(prod.stock || 0) - qty)
+            await supabase
+              .from('productos')
+              .update({ stock: nuevo, updated_at: new Date().toISOString() })
+              .eq('id', item.producto_id)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Stock no descontado:', e)
+    }
 
     // NOTA: Las notificaciones las crea un TRIGGER en la base de datos
     // No se crean desde el API para evitar duplicaciones
