@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
@@ -75,11 +75,11 @@ export default function AdminMesas() {
 
         <div className="bg-stone-800 rounded-xl p-4 mb-4">
           <p className="font-bold mb-2 text-sm">🔎 Busca y selecciona el negocio (por nombre)</p>
-          <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Escribe el nombre: Pollo, Casa, Restaurante..." className="w-full bg-stone-700 rounded-lg px-3 py-2 outline-none mb-2" />
-          <select value={tenantSel} onChange={(e) => setTenantSel(e.target.value)} className="w-full bg-stone-700 rounded-lg px-3 py-2 outline-none">
-            <option value={TENANT_DEMO}>Restaurante Demo SIGEA</option>
+          <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Escribe el nombre: Pollo, Casa, Restaurante..." className="w-full bg-stone-700 text-white placeholder-stone-400 rounded-lg px-3 py-2 outline-none mb-2" />
+          <select value={tenantSel} onChange={(e) => setTenantSel(e.target.value)} className="w-full bg-stone-700 text-white rounded-lg px-3 py-2 outline-none">
+            <option value={TENANT_DEMO} className="bg-stone-800 text-white">Restaurante Demo SIGEA</option>
             {tenantsFiltrados.filter((t) => t.id !== TENANT_DEMO).map((t) => (
-              <option key={t.id} value={t.id}>{nombreDe(t)}</option>
+              <option key={t.id} value={t.id} className="bg-stone-800 text-white">{nombreDe(t)}</option>
             ))}
           </select>
         </div>
@@ -101,17 +101,17 @@ export default function AdminMesas() {
           <div className="bg-stone-800 rounded-xl p-4">
             <p className="font-bold mb-2">Agregar mesa personalizada</p>
             <div className="flex gap-2">
-              <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ej: TERRAZA1 / VIP2" className="flex-1 bg-stone-700 rounded-lg px-3 py-2 outline-none" />
+              <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ej: TERRAZA1 / VIP2" className="flex-1 bg-stone-700 text-white placeholder-stone-400 rounded-lg px-3 py-2 outline-none" />
               <button onClick={() => agregar(codigo)} className="bg-emerald-600 rounded-lg px-4 font-bold">+ Añadir</button>
             </div>
           </div>
           <div className="bg-stone-800 rounded-xl p-4">
             <p className="font-bold mb-2">Generar rango automático</p>
             <div className="flex gap-2 items-center flex-wrap">
-              <input value={pref} onChange={(e) => setPref(e.target.value)} className="w-16 bg-stone-700 rounded-lg px-2 py-2 outline-none text-center font-bold" />
-              <input type="number" value={desde} onChange={(e) => setDesde(parseInt(e.target.value || "1"))} className="w-20 bg-stone-700 rounded-lg px-2 py-2 outline-none text-center" />
+              <input value={pref} onChange={(e) => setPref(e.target.value)} className="w-16 bg-stone-700 text-white rounded-lg px-2 py-2 outline-none text-center font-bold" />
+              <input type="number" value={desde} onChange={(e) => setDesde(parseInt(e.target.value || "1"))} className="w-20 bg-stone-700 text-white rounded-lg px-2 py-2 outline-none text-center" />
               <span>→</span>
-              <input type="number" value={hasta} onChange={(e) => setHasta(parseInt(e.target.value || "8"))} className="w-20 bg-stone-700 rounded-lg px-2 py-2 outline-none text-center" />
+              <input type="number" value={hasta} onChange={(e) => setHasta(parseInt(e.target.value || "8"))} className="w-20 bg-stone-700 text-white rounded-lg px-2 py-2 outline-none text-center" />
               <button onClick={generarRango} className="bg-[#fdb813] text-stone-900 rounded-lg px-4 font-bold">Generar</button>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function AdminMesas() {
               <button onClick={() => eliminar(m.id)} className="text-xs text-rose-400 mt-2">Eliminar</button>
             </div>
           ))}
-          {mesas.length === 0 && <p className="text-stone-400 text-sm col-span-full text-center">Sin mesas aún para este negocio.</p>}
+          {mesas.length === 0 && <p className="text-stone-300 text-sm col-span-full text-center">Sin mesas aún para este negocio.</p>}
         </div>
 
         {mesas.length > 0 && (
@@ -151,7 +151,7 @@ export default function AdminMesas() {
           </div>
         )}
 
-        <p className="text-stone-500 text-xs mt-6 text-center no-print">Total: <b className="text-[#fdb813]">{mesas.length}</b> mesas</p>
+        <p className="text-stone-300 text-xs mt-6 text-center no-print">Total: <b className="text-[#fdb813]">{mesas.length}</b> mesas</p>
       </div>
       <style>{"@media print { .no-print { display:none !important } body { background:white !important } }"}</style>
     </div>
