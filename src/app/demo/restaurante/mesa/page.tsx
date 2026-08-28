@@ -8,6 +8,16 @@ const lbl = (c: string) => { const u = c.trim().toUpperCase(); return u.startsWi
 type Prod = { id: string; nombre: string; precio: number; categoria?: string; descripcion?: string; imagen_url?: string; icono?: string; stock?: number };
 type Item = { producto_id: string; nombre: string; precio: number; cantidad: number; obs: string; imagen_url?: string; icono?: string };
 type Pedido = { id: string; estado: string; total: number; created_at: string; observaciones: string; direccion?: string };
+
+const CATEGORIAS_POR_NEGOCIO: Record<string, string[]> = {
+  panaderia: ["Panes", "Pastelería", "Tortas", "Galletas", "Postres", "Bebidas"],
+  restaurante: ["Platos Fuertes", "Hamburguesas", "Pizzas", "Ensaladas", "Acompañamientos", "Bebidas", "Postres", "Almuerzos", "Perros Calientes", "Salchipapas"],
+  carniceria: ["Carnes", "Embutidos", "Pollos", "Pescados", "Mariscos", "Acompañamientos"],
+  salsamentaria: ["Embutidos", "Quesos", "Jamones", "Acompañamientos", "Bebidas"],
+  ferreteria: ["Herramientas", "Eléctricos", "Plomería", "Pinturas", "Tornillería"],
+  tienda: ["Aseo", "Snacks", "Bebidas", "Granos", "Enlatados", "Lácteos"],
+};
+
 type Config = { nequi?: string; bancolombia?: string; daviplata?: string; nombre_negocio?: string };
 
 export default function MesaPage() {
@@ -50,7 +60,12 @@ export default function MesaPage() {
         const j = await r.json();
         const arr: any[] = j.data || [];
         arr.sort((a, b) => String(a.categoria || "").localeCompare(String(b.categoria || "")) || String(a.nombre).localeCompare(String(b.nombre)));
-        setProductos(arr.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️", stock: Number(p.stock || 0) })));
+        const negKey = params.get("neg") || "";
+        const categoriasPermitidas = CATEGORIAS_POR_NEGOCIO[negKey] || [];
+        const productosFiltrados = categoriasPermitidas.length > 0
+          ? arr.filter((p: any) => categoriasPermitidas.includes(p.categoria || ""))
+          : arr;
+        setProductos(productosFiltrados.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️", stock: Number(p.stock || 0) })));
       } catch (e) {}
       try {
         const r2 = await fetch(`/api/tenant-config?tenant=${t}`);

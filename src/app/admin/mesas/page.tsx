@@ -91,7 +91,7 @@ export default function AdminMesas() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
           <h1 className="text-2xl font-extrabold text-[#fdb813]">🪑 Admin Master · Mesas y QR</h1>
-          <Link href="/admin" className="bg-stone-700 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-stone-600">← Volver</Link>
+          <Link href={typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("origen") ? decodeURIComponent(new URLSearchParams(window.location.search).get("origen")!) : "/admin") : "/admin"} className="bg-stone-700 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-stone-600">← Volver</Link>
         </div>
 
         {!bloqueado && (
