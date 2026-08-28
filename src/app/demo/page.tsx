@@ -37,6 +37,10 @@ const MODULOS = [
   { Icon: BarChart3, nombre: "Reportes", color: "border-rose-300 bg-rose-50", icon: "text-rose-600", beneficios: ["Top de productos ganadores", "Ventas por hora y por día", "Decisiones con datos, no susto"] },
   { Icon: TrendingUp, nombre: "Finanzas", color: "border-teal-300 bg-teal-50", icon: "text-teal-600", beneficios: ["Ganancia real al día", "Cierre de caja cuadrado", "Listo para el contador"] },
   { Icon: MessageCircle, nombre: "Marketing WhatsApp", color: "border-green-300 bg-green-50", icon: "text-green-600", beneficios: ["Tu anuncio en los grupos del barrio", "Programas 1 vez, publica la semana", "Sin pagarle publicidad a Meta"] },
+  { Icon: ShoppingBag, nombre: "Compras a Proveedores", color: "border-indigo-300 bg-indigo-50", icon: "text-indigo-600", beneficios: ["Recomendación automática por bajo stock", "Lista de compras por proveedor", "Órdenes de compra con historial"] },
+  { Icon: Receipt, nombre: "Gestión de Créditos", color: "border-pink-300 bg-pink-50", icon: "text-pink-600", beneficios: ["Control de saldos sin errores", "Abonos parciales o totales", "Historial completo por cliente"] },
+  { Icon: Store, nombre: "Tienda Online", color: "border-blue-300 bg-blue-50", icon: "text-blue-600", beneficios: ["Clientes piden desde el celular", "Catálogo con carrito de compras", "Enlace listo para WhatsApp"] },
+  { Icon: Armchair, nombre: "Mesas con QR", color: "border-yellow-300 bg-yellow-50", icon: "text-yellow-600", beneficios: ["Cliente pide desde su mesa", "Notificación directa a cocina", "Solicita cuenta o mesero al instante"] },
 ];
 
 export default function DemoIntro() {
