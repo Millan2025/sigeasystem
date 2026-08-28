@@ -9,13 +9,13 @@ type Prod = { id: string; nombre: string; precio: number; categoria?: string; de
 type Item = { producto_id: string; nombre: string; precio: number; cantidad: number; obs: string; imagen_url?: string; icono?: string };
 type Pedido = { id: string; estado: string; total: number; created_at: string; observaciones: string; direccion?: string };
 
-const CATEGORIAS_POR_NEGOCIO: Record<string, string[]> = {
-  panaderia: ["Panes", "Pastelería", "Tortas", "Galletas", "Postres", "Bebidas"],
-  restaurante: ["Platos Fuertes", "Hamburguesas", "Pizzas", "Ensaladas", "Acompañamientos", "Bebidas", "Postres", "Almuerzos", "Perros Calientes", "Salchipapas"],
-  carniceria: ["Carnes", "Embutidos", "Pollos", "Pescados", "Mariscos", "Acompañamientos"],
-  salsamentaria: ["Embutidos", "Quesos", "Jamones", "Acompañamientos", "Bebidas"],
-  ferreteria: ["Herramientas", "Eléctricos", "Plomería", "Pinturas", "Tornillería"],
-  tienda: ["Aseo", "Snacks", "Bebidas", "Granos", "Enlatados", "Lácteos"],
+const FILTRO_POR_NEGOCIO: Record<string, string[]> = {
+  panaderia: ["pan", "pastel", "torta", "galleta", "postre", "cafe", "café", "panader"],
+  restaurante: ["plato", "hamburguesa", "pizza", "ensalada", "acompa", "bebida", "postre", "almuerzo", "perro", "salchipapa", "fuerte", "sopa", "restaurante"],
+  carniceria: ["carn", "res", "cerdo", "pollo", "pescado", "marisco", "embutido", "carnicer"],
+  salsamentaria: ["salsament", "embutido", "queso", "jamon", "jamón"],
+  ferreteria: ["herram", "electric", "eléctric", "plomer", "pintur", "tornill", "ferre", "cemento"],
+  tienda: ["tienda", "aseo", "snack", "bebida", "grano", "enlatado", "lacteo", "lácteo", "abarrotes"],
 };
 
 type Config = { nequi?: string; bancolombia?: string; daviplata?: string; nombre_negocio?: string };
@@ -45,7 +45,8 @@ export default function MesaPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const m = params.get("m") || "";
-    const t = params.get("t") || TENANT_ID;
+    const negParam = params.get("neg") || "";
+    const t = negParam === "restaurante" ? "11111111-1111-1111-1111-111111111111" : (params.get("t") || TENANT_ID);
     setTenantId(t);
     const negKey = params.get("neg") || "";
     const negCfg = (NEGOCIOS as any)[negKey];
@@ -61,11 +62,13 @@ export default function MesaPage() {
         const arr: any[] = j.data || [];
         arr.sort((a, b) => String(a.categoria || "").localeCompare(String(b.categoria || "")) || String(a.nombre).localeCompare(String(b.nombre)));
         const negKey = params.get("neg") || "";
-        const categoriasPermitidas = CATEGORIAS_POR_NEGOCIO[negKey] || [];
-        const productosFiltrados = categoriasPermitidas.length > 0
-          ? arr.filter((p: any) => categoriasPermitidas.includes(p.categoria || ""))
-          : arr;
-        setProductos(productosFiltrados.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️", stock: Number(p.stock || 0) })));
+        const kws = FILTRO_POR_NEGOCIO[negKey] || [];
+        let lista = arr;
+        if (kws.length > 0) {
+          const filtrada = arr.filter((p: any) => { const cat = String(p.categoria || "").toLowerCase(); return kws.some((k) => cat.includes(k)); });
+          if (filtrada.length > 0) lista = filtrada;
+        }
+        setProductos(lista.map((p) => ({ id: p.id, nombre: p.nombre, precio: Number(p.precio), categoria: p.categoria, descripcion: p.descripcion, imagen_url: p.imagen_url, icono: p.icono || "🍽️", stock: Number(p.stock || 0) })));
       } catch (e) {}
       try {
         const r2 = await fetch(`/api/tenant-config?tenant=${t}`);
