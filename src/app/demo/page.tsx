@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-import {
+import { ShoppingBag, Receipt, Store, Armchair,
   ShoppingCart, ChefHat, Package, Users, Truck, BarChart3, TrendingUp,
   MessageCircle, ArrowRight, CheckCircle2, Zap,
 } from "lucide-react";
@@ -96,7 +96,7 @@ export default function DemoIntro() {
               </div>
             ))}
           </div>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-center mt-10">8 módulos trabajando por ti <span className="text-[#fdb813]">desde el día 1</span></h3>
+          <h3 className="text-xl sm:text-2xl font-extrabold text-center mt-10">12 módulos trabajando por ti <span className="text-[#fdb813]">desde el día 1</span></h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
             {MODULOS.map((m) => (
               <div key={m.nombre} className={"rounded-2xl border-2 p-4 " + m.color}>
