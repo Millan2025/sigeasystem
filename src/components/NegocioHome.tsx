@@ -451,7 +451,16 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
-          {modulos.filter((m) => !isDemo || unlocked || m.id === "pos").map((m) => (
+          {modulos
+              .filter((m) => {
+                // Mesas solo para Restaurante y Panaderia (incluye produccion)
+                if (m.id === "mesas") {
+                  const cat = String((NEGOCIOS as any)[negocioSlug || ""]?.categoria || "").toLowerCase();
+                  return cat.includes("restaurante") || cat.includes("panader");
+                }
+                return true;
+              })
+              .filter((m) => !isDemo || unlocked || m.id === "pos").map((m) => (
             <Link
               key={m.id}
               href={m.href}
