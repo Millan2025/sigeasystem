@@ -62,7 +62,7 @@ export default function DemoIntro() {
         </div>
         <div className="mt-6 max-w-xl mx-auto bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-4 text-left shadow-xl">
           <p className="text-emerald-100 text-[11px] tracking-widest uppercase">Ventas de hoy (demo en vivo)</p>
-          <p className="text-3xl font-extrabold">$450.000</p>
+          <p className="text-3xl font-extrabold">$1.980.000</p>
           <p className="text-emerald-100 text-xs mt-1">24 transacciones · Efectivo 65% · Nequi 20% · Daviplata 15%</p>
         </div>
         <div className="mt-5 flex flex-col sm:flex-row justify-center gap-2">
