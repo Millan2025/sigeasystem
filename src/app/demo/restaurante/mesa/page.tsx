@@ -26,6 +26,7 @@ export default function MesaPage() {
   const [vista, setVista] = useState<"menu" | "estado">("menu");
   const [copiado, setCopiado] = useState("");
   const [nombreNeg, setNombreNeg] = useState("");
+  const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modalSolicitud, setModalSolicitud] = useState(false);
   const [textoSolicitud, setTextoSolicitud] = useState("");
@@ -40,6 +41,8 @@ export default function MesaPage() {
     const negCfg = (NEGOCIOS as any)[negKey];
     if (negCfg && negCfg.titulo) setNombreNeg(negCfg.titulo);
     setMesa(m.trim().toUpperCase());
+    const yaVio = localStorage.getItem("sigea_bienvenida_" + m.toUpperCase());
+    if (!yaVio) setMostrarBienvenida(true);
     setEtiqueta(lbl(m));
     (async () => {
       try {
@@ -348,6 +351,56 @@ export default function MesaPage() {
         </div>
       )}
 
+      
+      {/* ===== MODAL BIENVENIDA ===== */}
+      {mostrarBienvenida && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-br from-[#fdb813] to-[#e8a800] p-6 text-center">
+              <p className="text-5xl mb-2">👋</p>
+              <h2 className="text-2xl font-extrabold text-stone-900">¡Bienvenido a {nombreNeg || "nuestro restaurante"}!</h2>
+              <p className="text-stone-800 text-sm mt-1">Estás en <b>{etiqueta}</b></p>
+            </div>
+            <div className="p-6">
+              <p className="text-stone-700 font-bold mb-4">¿Cómo funciona?</p>
+              <div className="space-y-3">
+                <div className="flex gap-3 items-start">
+                  <span className="bg-[#fdb813] text-stone-900 rounded-full w-7 h-7 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <div>
+                    <p className="font-bold text-sm">Explora el menú</p>
+                    <p className="text-xs text-stone-600">Navega por las categorías y agrega lo que quieras probar</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <span className="bg-[#fdb813] text-stone-900 rounded-full w-7 h-7 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <div>
+                    <p className="font-bold text-sm">Haz tu pedido</p>
+                    <p className="text-xs text-stone-600">Toca la canasta flotante para revisar, ajustar cantidades y confirmar</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <span className="bg-[#fdb813] text-stone-900 rounded-full w-7 h-7 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <div>
+                    <p className="font-bold text-sm">Recibe en tu mesa</p>
+                    <p className="text-xs text-stone-600">Tu pedido llega directo a cocina y el mesero te lo trae</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <span className="bg-[#fdb813] text-stone-900 rounded-full w-7 h-7 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <div>
+                    <p className="font-bold text-sm">¿Necesitas algo?</p>
+                    <p className="text-xs text-stone-600">En "Estado" puedes pedir la cuenta o escribirle al mesero</p>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => { setMostrarBienvenida(false); localStorage.setItem("sigea_bienvenida_" + mesa, "1"); }} className="w-full mt-6 bg-stone-900 text-[#fdb813] rounded-xl py-4 font-extrabold text-lg hover:bg-stone-800 transition">
+                ✓ Entendido, empezar a pedir
+              </button>
+              <p className="text-[10px] text-stone-400 text-center mt-2">Este mensaje no volverá a aparecer en esta mesa</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ===== MODAL SOLICITUD AL MESERO ===== */}
       {modalSolicitud && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => !enviando && setModalSolicitud(false)}>
