@@ -60,7 +60,7 @@ export default function AdminMesas() {
   const tenantsFiltrados = tenants.filter((t) => nombreDe(t).toLowerCase().includes(busqueda.toLowerCase()));
 
   const DEMO_IDENTIDAD: any = {
-    panaderia: { slogan: "Pan fresco cada maÃ±ana", direccion: "Cra 8 #45-12, Barranquilla" },
+    panaderia: { slogan: "Pan fresco cada mañana", direccion: "Cra 8 #45-12, Barranquilla" },
     carniceria: { slogan: "La mejor carne del barrio", direccion: "Calle 30 #18-05, Barranquilla" },
     salsamentaria: { slogan: "Sabor especial para tu mesa", direccion: "Cra 21 #68-40, Barranquilla" },
     ferreteria: { slogan: "Todo para tu hogar y obra", direccion: "Av. Boyaca #106-15, Barranquilla" },
@@ -96,12 +96,12 @@ export default function AdminMesas() {
     <div className="min-h-screen bg-stone-50 text-stone-800 p-6">
       <div className="max-w-5xl mx-auto">
         <div className="mb-4">
-        <PageHeader negocioSlug={slugOrig || "restaurante"} titulo="Mesas y QR" icono="ðŸª‘" subtitulo="GestiÃ³n de mesas y cÃ³digos QR" tenantId={tenantSel} />
+        <PageHeader negocioSlug={slugOrig || "restaurante"} titulo="Mesas y QR" icono="🪑" subtitulo="Gestión de mesas y códigos QR" tenantId={tenantSel} />
       </div>
 
         {!bloqueado && (
         <div className="bg-white border border-stone-200 rounded-xl p-4 mb-4">
-          <p className="font-bold mb-2 text-sm">ðŸ”Ž Busca y selecciona el negocio (por nombre)</p>
+          <p className="font-bold mb-2 text-sm">🔎 Busca y selecciona el negocio (por nombre)</p>
           <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Escribe el nombre: Pollo, Casa, Restaurante..." className="w-full bg-white border border-stone-300 text-stone-800 placeholder-stone-500 rounded-lg px-3 py-2 outline-none mb-2" />
           <select value={tenantSel} onChange={(e) => setTenantSel(e.target.value)} className="w-full bg-white border border-stone-200 text-white rounded-lg px-3 py-2 outline-none">
             <option value={TENANT_DEMO} className="bg-white border border-stone-200 text-white">Restaurante Demo SIGEA</option>
@@ -118,15 +118,15 @@ export default function AdminMesas() {
             <p className="font-bold mb-2">Agregar mesa personalizada</p>
             <div className="flex gap-2">
               <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ej: TERRAZA1 / VIP2" className="flex-1 bg-white border border-stone-300 text-stone-800 placeholder-stone-500 rounded-lg px-3 py-2 outline-none" />
-              <button onClick={() => agregar(codigo)} className="bg-emerald-600 rounded-lg px-4 font-bold">+ AÃ±adir</button>
+              <button onClick={() => agregar(codigo)} className="bg-emerald-600 rounded-lg px-4 font-bold">+ Añadir</button>
             </div>
           </div>
           <div className="bg-white border border-stone-200 rounded-xl p-4">
-            <p className="font-bold mb-2">Generar rango automÃ¡tico</p>
+            <p className="font-bold mb-2">Generar rango automático</p>
             <div className="flex gap-2 items-center flex-wrap">
               <input value={pref} onChange={(e) => setPref(e.target.value)} className="w-16 bg-white border border-stone-200 text-white rounded-lg px-2 py-2 outline-none text-center font-bold" />
               <input type="number" value={desde} onChange={(e) => setDesde(parseInt(e.target.value || "1"))} className="w-20 bg-white border border-stone-200 text-white rounded-lg px-2 py-2 outline-none text-center" />
-              <span>â†’</span>
+              <span>→</span>
               <input type="number" value={hasta} onChange={(e) => setHasta(parseInt(e.target.value || "8"))} className="w-20 bg-white border border-stone-200 text-white rounded-lg px-2 py-2 outline-none text-center" />
               <button onClick={generarRango} className="bg-[#fdb813] text-stone-900 rounded-lg px-4 font-bold">Generar</button>
             </div>
@@ -139,17 +139,17 @@ export default function AdminMesas() {
           {mesas.map((m) => (
             <div key={m.id} className="bg-white border border-stone-200 border border-stone-300 rounded-lg p-3 text-center">
               <p className="font-bold text-amber-600 text-lg">{lbl(m.codigo)}</p>
-              <a href={origin + "/mesa?m=" + encodeURIComponent(m.codigo) + "&t=" + tenantSel + (slugOrig ? "&neg=" + slugOrig : "")} className="block bg-[#fdb813] text-stone-900 rounded-lg px-2 py-1 text-xs font-extrabold mt-2">ðŸ½ï¸ Entrar</a>
+              <a href={origin + "/mesa?m=" + encodeURIComponent(m.codigo) + "&t=" + tenantSel + (slugOrig ? "&neg=" + slugOrig : "")} className="block bg-[#fdb813] text-stone-900 rounded-lg px-2 py-1 text-xs font-extrabold mt-2">🍽️ Entrar</a>
               <button onClick={() => eliminar(m.id)} className="text-xs text-rose-400 mt-2">Eliminar</button>
             </div>
           ))}
-          {mesas.length === 0 && <p className="text-stone-700 text-sm col-span-full text-center">Sin mesas aÃºn para este negocio.</p>}
+          {mesas.length === 0 && <p className="text-stone-700 text-sm col-span-full text-center">Sin mesas aún para este negocio.</p>}
         </div>
 
         {mesas.length > 0 && (
           <div className="mt-8">
             <div className="flex items-center justify-between mb-3 no-print">
-              <h2 className="text-xl font-extrabold text-amber-600">ðŸ–¨ï¸ Hoja de QR para imprimir</h2>
+              <h2 className="text-xl font-extrabold text-amber-600">🖨️ Hoja de QR para imprimir</h2>
               <button onClick={() => window.print()} className="bg-[#fdb813] text-stone-900 rounded-lg px-4 py-2 font-bold">Imprimir / Guardar PDF</button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -159,7 +159,7 @@ export default function AdminMesas() {
                   {sloganShow && <p className="text-[9px] italic text-stone-600 mt-0.5">"{sloganShow}"</p>}
                   <img src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(origin + "/mesa?m=" + m.codigo + "&t=" + tenantSel + (slugOrig ? "&neg=" + slugOrig : ""))} alt={m.codigo} className="w-36 h-36 mx-auto mt-2" />
                   <p className="font-extrabold text-2xl text-amber-600 mt-1">{lbl(m.codigo)}</p>
-                  {config.telefono && <p className="text-[10px] text-stone-600 mt-1">ðŸ“ž {config.telefono}</p>}
+                  {config.telefono && <p className="text-[10px] text-stone-600 mt-1">📞 {config.telefono}</p>}
                   {dirShow && <p className="text-[9px] text-stone-600 mt-0.5">{dirShow}</p>}
                   <p className="text-[9px] text-stone-600 mt-1">Escanea para pedir desde tu celular</p>
                 </div>
