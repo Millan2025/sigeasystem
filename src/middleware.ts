@@ -38,19 +38,24 @@ export async function middleware(request: NextRequest) {
   const esRutaAdmin = path.startsWith('/admin') || path.startsWith('/api/admin')
   
   if (esRutaAdmin && user) {
-    // Verificar rol en la tabla usuarios
-    const { data: usuario } = await supabase
-      .from('usuarios')
-      .select('rol')
-      .eq('id', user.id)
-      .single()
-    
-    if (!usuario || usuario.rol !== 'admin_master') {
-      // Redirigir no-admins al dashboard del dueño
-      if (path.startsWith('/api/admin')) {
-        return NextResponse.json({ success: false, error: 'Acceso denegado: se requiere rol admin_master' }, { status: 403 })
+    // Excepción: /admin/mesas permite dueños autenticados (no requiere admin_master)
+    if (path === '/admin/mesas' || path.startsWith('/admin/mesas?')) {
+      // Permitir acceso a dueños autenticados
+    } else {
+      // Verificar rol en la tabla usuarios
+      const { data: usuario } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id', user.id)
+        .single()
+
+      if (!usuario || usuario.rol !== 'admin_master') {
+        // Redirigir no-admins al dashboard del dueño
+        if (path.startsWith('/api/admin')) {
+          return NextResponse.json({ success: false, error: 'Acceso denegado: se requiere rol admin_master' }, { status: 403 })
+        }
+        return NextResponse.redirect(new URL('/login', request.url))
       }
-      return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
