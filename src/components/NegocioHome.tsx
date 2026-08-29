@@ -74,7 +74,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const router = useRouter();
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
   const isDemo = pathname.startsWith("/demo/");
-  const prefix = isDemo ? "/demo/" + (negocioSlug || "restaurante") : "/" + (negocioSlug || "restaurante");
+  const prefix = isDemo ? `/demo/${negocioSlug || "restaurante"}` : `/${negocioSlug || "restaurante"}`;
   const supabase = createClient();
   const [config, setConfig] = useState<BusinessConfig | null>(() => {
     const n = negocioSlug ? (NEGOCIOS as any)[negocioSlug] : null;
@@ -380,7 +380,8 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 .slice(0, 2)}
             </div>
           )}
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md text-stone-800">{config.nombre_negocio}</h1>
+          {config?.logo_url && <img src={config.logo_url} alt="logo" className="w-16 h-16 rounded-full object-cover border-2 border-[#fdb813] mx-auto mb-2" onError={(e) => e.currentTarget.remove()} />}
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md text-stone-800">{config.nombre_negocio}</h1>
           <p className="text-xl md:text-2xl font-light mt-2 text-stone-700/90 italic drop-shadow">{(config as any)?.slogan || ""}</p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm md:text-base">
