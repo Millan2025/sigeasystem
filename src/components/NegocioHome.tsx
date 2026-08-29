@@ -74,7 +74,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const router = useRouter();
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
   const isDemo = pathname.startsWith("/demo/");
-  const prefix = isDemo ? `/demo/${negocioSlug || "restaurante"}` : `/${negocioSlug || "restaurante"}`;
+  const pathParts = pathname.split("/").filter(Boolean);
+  const currentSlug = isDemo ? pathParts[1] : pathParts[0];
+  const prefix = isDemo ? `/demo/${currentSlug}` : `/${currentSlug}`;
   const supabase = createClient();
   const [config, setConfig] = useState<BusinessConfig | null>(() => {
     const n = negocioSlug ? (NEGOCIOS as any)[negocioSlug] : null;
@@ -319,7 +321,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `${prefix}/compras?tenant=${tenantId}` },
     { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/creditos?tenant=${tenantId}` },
     { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `${prefix}/marketing?tenant=${tenantId}` },
-    { id: "mesas", label: "Mesas", icon: Armchair, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/admin/mesas?origen=${encodeURIComponent("/" + (negocioSlug || "restaurante"))}` },
+    { id: "mesas", label: "Mesas", icon: Armchair, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/mesas?origen=${encodeURIComponent(pathname)}` },
   ];
 
   return (
@@ -380,7 +382,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 .slice(0, 2)}
             </div>
           )}
-          {config?.logo_url && <img src={config.logo_url} alt="logo" className="w-16 h-16 rounded-full object-cover border-2 border-[#fdb813] mx-auto mb-2" onError={(e) => e.currentTarget.remove()} />}
+          
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight drop-shadow-md text-stone-800">{config.nombre_negocio}</h1>
           <p className="text-xl md:text-2xl font-light mt-2 text-stone-700/90 italic drop-shadow">{(config as any)?.slogan || ""}</p>
 
