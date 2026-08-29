@@ -74,9 +74,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const router = useRouter();
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
   const isDemo = pathname.startsWith("/demo/");
-  const pathParts = pathname.split("/").filter(Boolean);
-  const currentSlug = isDemo ? pathParts[1] : pathParts[0];
-  const prefix = isDemo ? `/demo/${currentSlug}` : `/${currentSlug}`;
+  const prefix = isDemo ? `/demo/${negocioSlug || "restaurante"}` : `/${negocioSlug || "restaurante"}`;
   const supabase = createClient();
   const [config, setConfig] = useState<BusinessConfig | null>(() => {
     const n = negocioSlug ? (NEGOCIOS as any)[negocioSlug] : null;
@@ -321,7 +319,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `${prefix}/compras?tenant=${tenantId}` },
     { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/creditos?tenant=${tenantId}` },
     { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `${prefix}/marketing?tenant=${tenantId}` },
-    { id: "mesas", label: "Mesas", icon: Armchair, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/mesas?origen=${encodeURIComponent(pathname)}` },
+    { id: "mesas", label: "Mesas", icon: Armchair, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/admin/mesas?origen=${encodeURIComponent("/" + (negocioSlug || "restaurante"))}` },
   ];
 
   return (
@@ -367,9 +365,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 <img
               src={config.logo_url}
               alt={config.nombre_negocio}
-              crossOrigin="anonymous"
-              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#fdb813] shadow-lg mx-auto mb-2"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              className="w-48 h-48 rounded-full object-cover border-4 border-[#B8860B] shadow-2xl mx-auto mb-4 transition-transform hover:scale-105"
             />
           ) : (
             <div
