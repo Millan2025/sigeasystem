@@ -77,7 +77,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     const { error } = await supabase.from("publicaciones_whatsapp").insert(filas);
     if (error) { showToast("Error al programar: " + error.message, "error"); }
     else {
-      showToast("Ã¢Å“â€¦ " + filas.length + " envio(s) programado(s)");
+      showToast("Ã¢Å“â€¦ " + filas.length + " envío(s) programado(s)");
       setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "", repetir_cada: "0", duracion_dias: "1" });
       cargar();
     }
@@ -149,7 +149,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
       {/* CONFIG NUMERO DUENO */}
       <div className="bg-white rounded-2xl p-4 border shadow-sm">
-        <div className="flex items-center gap-2 mb-2"><Settings className="w-4 h-4 text-stone-600" /><h3 className="font-semibold text-stone-800 text-sm">WhatsApp del dueÃƒÂ±o (recibe el anuncio listo, 1 tap)</h3></div>
+        <div className="flex items-center gap-2 mb-2"><Settings className="w-4 h-4 text-stone-600" /><h3 className="font-semibold text-stone-800 text-sm">WhatsApp del dueño (recibe el anuncio listo, 1 tap)</h3></div>
         <div className="flex gap-2 flex-col sm:flex-row">
           <input placeholder={numeroDueno ? `Actual: ${numeroDueno}` : "Ej: 3001234567"} value={numeroDueno} onChange={(e) => setNumeroDueno(e.target.value)} className="flex-1 border-2 border-stone-300 bg-white rounded-lg p-2 text-stone-800 placeholder:text-stone-500" type="tel" />
           <button onClick={guardarNumeroDueno} className="bg-stone-800 text-white rounded-lg px-4 text-sm font-semibold">Guardar</button>
@@ -158,7 +158,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
       {vencidas.length > 0 && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">Ã¢ÂÂ° Es hora de publicar ({vencidas.length}) - envio automatico al dueno en curso</h3></div>
+          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">Ã¢ÂÂ° Es hora de publicar ({vencidas.length}) - envío automatico al dueno en curso</h3></div>
           <div className="space-y-3">
             {vencidas.map((pub) => (
               <div key={pub.id} className="bg-white rounded-xl p-3">
@@ -177,7 +177,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       )}
 
       <div className="bg-white rounded-2xl p-6 border shadow-sm">
-        <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Plus className="w-5 h-5" /> Nueva publicaciÃƒÂ³n</h2>
+        <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Plus className="w-5 h-5" /> Nueva publicación</h2>
         <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
           <input placeholder="Nombre de la pieza *" value={form.nombre_pieza} onChange={(e) => setForm({ ...form, nombre_pieza: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           
@@ -185,7 +185,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
           <input placeholder="Hashtags (ej: oferta, barrio)" value={form.hashtag} onChange={(e) => setForm({ ...form, hashtag: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           <input type="datetime-local" value={form.fecha_programada} onChange={(e) => setForm({ ...form, fecha_programada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800" />
           <select value={form.repetir_cada} onChange={(e) => setForm({ ...form, repetir_cada: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800">
-            <option value="0">Sin repeticion (1 envio)</option>
+            <option value="0">Sin repetición (1 envío)</option>
             <option value="1">Repetir cada 1 hora</option>
             <option value="2">Repetir cada 2 horas</option>
             <option value="3">Repetir cada 3 horas</option>
@@ -208,7 +208,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
             {form.url_archivo && form.tipo_archivo === "imagen" && <img src={form.url_archivo} alt="preview" className="mt-2 rounded-lg max-h-40 object-contain" />}
           </div>
           <button onClick={programar} disabled={loading} className="bg-green-600 text-white rounded-lg p-3 font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
-            <Calendar className="w-5 h-5" /> {loading ? "Procesando..." : "Programar publicaciÃƒÂ³n"}
+            <Calendar className="w-5 h-5" /> {loading ? "Procesando..." : "Programar publicación"}
           </button>
         </div>
       </div>
@@ -251,8 +251,8 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       )}
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-        <h3 className="font-semibold text-amber-900 mb-2">Ã°Å¸Å¡Â§ PrÃƒÂ³ximamente</h3>
-        <p className="text-sm text-amber-800">EnvÃƒÂ­o 100% automÃƒÂ¡tico (API oficial Meta) y otras redes en desarrollo.</p>
+        <h3 className="font-semibold text-amber-900 mb-2">📣 Próximamente</h3>
+        <p className="text-sm text-amber-800">Envío 100% automático (API oficial Meta) y otras redes en desarrollo.</p>
       </div>
 
       {toast && (
