@@ -321,7 +321,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `${prefix}/compras?tenant=${tenantId}` },
     { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/creditos?tenant=${tenantId}` },
     { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `${prefix}/marketing?tenant=${tenantId}` },
-    { id: "mesas", label: "Mesas", icon: Armchair, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/admin/mesas?origen=${encodeURIComponent(pathname)}` },
+    { id: "mesas", label: "Mesas", icon: Armchair, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/mesas-gestion?origen=${encodeURIComponent(pathname)}` },
   ];
 
   return (

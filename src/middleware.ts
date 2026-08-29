@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   // Rutas que requieren login
   const rutasProtegidas = ['/pos', '/inventario', '/personal', '/pedidos', '/produccion', '/reportes', '/finanzas', '/admin', '/cliente']
   // Rutas publicas que NO requieren login
-  const rutasPublicas = ['/mesa', '/mesas', '/login', '/registro', '/demo', '/intro', '/']
+  const rutasPublicas = ['/mesa', '/mesas', '/mesas-gestion', '/login', '/registro', '/demo', '/intro', '/']
   const esPublica = rutasPublicas.some(r => path === r || path.startsWith(r + '/'))
   
   const necesitaAuth = rutasProtegidas.some(r => path.startsWith(r))
