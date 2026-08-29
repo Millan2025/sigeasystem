@@ -1,0 +1,442 @@
+{
+  "imageUrls": [
+    "https://lykefood.sivipos.co/img/profile5.jpg",
+    "https://lykefood.sivipos.co/img/tenemos_soluciones.png?v=1",
+    "https://lykefood.sivipos.co/img/sucursales-enurba-tienda.png",
+    "https://app.sivipos.co/img/empresa/20.jpg?v=5",
+    "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+    "https://lykefood.sivipos.co/lib/slick/slick/ajax-loader.gif",
+    "https://app.sivipos.co/img/portadas/20/2.png?v=1",
+    "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+    "https://app.sivipos.co/img/banners/20/1.png?v=1",
+    "https://app.sivipos.co/img/productos/20/1192.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1309.jpeg?v=5",
+    "https://app.sivipos.co/img/portadas/20/1.png?v=1",
+    "https://app.sivipos.co/img/productos/20/1081.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1196.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1193.jpeg?v=5",
+    "https://app.sivipos.co/img/tipo_producto/20/2.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/37.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/3.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/4.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/5.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/8.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/6.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/7.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/9.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/13.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/29.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/12.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/20.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/11.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/34.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/21.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/10.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/38.jpeg?v=7",
+    "https://app.sivipos.co/img/tipo_producto/20/41.jpeg?v=7",
+    "https://www.google.com.co/ads/ga-audiences?v=1&t=sr&slf_rd=1&_r=4&tid=G-CRZ7VLH098&cid=1600275428.1788043924&gtm=45je68q1h1v9118998979za200zd9118998979&rcb=16&aip=1&dma=0&gcd=13l3l3l3l1l1&npa=0&frm=0&tag_exp=115616985~115938466~115938469~118897920~118897930~120385422&z=1989603144",
+    "https://lykefood.sivipos.co/img/empresa/20.ico",
+    "https://lykefood.sivipos.co/icon/icon_lykefood_192.png",
+    "https://app.sivipos.co/img/productos/20/1034.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1251.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1035.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1037.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1250.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1036.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1038.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1228.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1104.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1085.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1105.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1106.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1141.jpeg?v=5",
+    "https://app.sivipos.co/img/productos/20/1142.jpeg?v=5"
+  ],
+  "imgs": [
+    {
+      "index": 0,
+      "src": "https://lykefood.sivipos.co/img/profile5.jpg",
+      "currentSrc": "https://lykefood.sivipos.co/img/profile5.jpg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "profile",
+      "width": 129,
+      "height": 129,
+      "visible": true
+    },
+    {
+      "index": 1,
+      "src": "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "LA BANDIDA",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 2,
+      "src": "https://app.sivipos.co/img/portadas/20/1.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/1.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "PRINCIPAL",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 3,
+      "src": "https://app.sivipos.co/img/portadas/20/2.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/2.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "PROMO",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 4,
+      "src": "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "LA BANDIDA",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 5,
+      "src": "https://app.sivipos.co/img/portadas/20/1.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/1.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "PRINCIPAL",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 6,
+      "src": "https://app.sivipos.co/img/portadas/20/2.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/2.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "PROMO",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 7,
+      "src": "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+      "currentSrc": "https://app.sivipos.co/img/portadas/20/4.png?v=1",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "LA BANDIDA",
+      "width": 1282,
+      "height": 487,
+      "visible": true
+    },
+    {
+      "index": 8,
+      "src": "https://app.sivipos.co/img/productos/20/1196.jpeg?v=5",
+      "currentSrc": "https://app.sivipos.co/img/productos/20/1196.jpeg?v=5",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Promo 6",
+      "width": 500,
+      "height": 500,
+      "visible": true
+    },
+    {
+      "index": 9,
+      "src": "https://app.sivipos.co/img/productos/20/1193.jpeg?v=5",
+      "currentSrc": "https://app.sivipos.co/img/productos/20/1193.jpeg?v=5",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Promoción 3",
+      "width": 500,
+      "height": 500,
+      "visible": true
+    },
+    {
+      "index": 10,
+      "src": "https://app.sivipos.co/img/productos/20/1309.jpeg?v=5",
+      "currentSrc": "https://app.sivipos.co/img/productos/20/1309.jpeg?v=5",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Hamburbandi",
+      "width": 500,
+      "height": 500,
+      "visible": true
+    },
+    {
+      "index": 11,
+      "src": "https://app.sivipos.co/img/productos/20/1192.jpeg?v=5",
+      "currentSrc": "https://app.sivipos.co/img/productos/20/1192.jpeg?v=5",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Promoción 5",
+      "width": 500,
+      "height": 500,
+      "visible": true
+    },
+    {
+      "index": 12,
+      "src": "https://app.sivipos.co/img/productos/20/1081.jpeg?v=5",
+      "currentSrc": "https://app.sivipos.co/img/productos/20/1081.jpeg?v=5",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Promo2",
+      "width": 500,
+      "height": 500,
+      "visible": true
+    },
+    {
+      "index": 13,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 14,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/2.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/2.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Salchipapas",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 15,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 16,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/37.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/37.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Shawarma",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 17,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 18,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/3.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/3.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Salvajadas",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 19,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 20,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/4.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/4.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Perros",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 21,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 22,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/5.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/5.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Sandwich",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 23,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 24,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/6.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/6.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Mazorcas",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 25,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 26,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/8.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/8.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Hamburguesas",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 27,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    },
+    {
+      "index": 28,
+      "src": "https://app.sivipos.co/img/tipo_producto/20/7.jpeg?v=7",
+      "currentSrc": "https://app.sivipos.co/img/tipo_producto/20/7.jpeg?v=7",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "Asados",
+      "width": 400,
+      "height": 200,
+      "visible": true
+    },
+    {
+      "index": 29,
+      "src": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "currentSrc": "https://lykefood.sivipos.co/img/connections_share_icon.svg",
+      "dataSrc": "",
+      "dataLazy": "",
+      "alt": "",
+      "width": 150,
+      "height": 150,
+      "visible": true
+    }
+  ],
+  "bgImages": [
+    {
+      "tag": "SELECT",
+      "class": "custom-select custom-select-sm mr-sm-2",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3"
+    },
+    {
+      "tag": "SELECT",
+      "class": "custom-select custom-select-sm mr-sm-2",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3"
+    },
+    {
+      "tag": "SELECT",
+      "class": "custom-select custom-select-sm mr-sm-2",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3"
+    },
+    {
+      "tag": "SPAN",
+      "class": "carousel-control-prev-icon",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 8 8'%3e%3cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2."
+    },
+    {
+      "tag": "SPAN",
+      "class": "carousel-control-next-icon",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 8 8'%3e%3cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1."
+    },
+    {
+      "tag": "SPAN",
+      "class": "carousel-control-prev-icon",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 8 8'%3e%3cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2."
+    },
+    {
+      "tag": "SPAN",
+      "class": "carousel-control-next-icon",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 8 8'%3e%3cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1."
+    },
+    {
+      "tag": "SELECT",
+      "class": "custom-select custom-select-sm my-1 mr-sm-2 mr-1",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3"
+    },
+    {
+      "tag": "SELECT",
+      "class": "custom-select custom-select-sm my-1 mr-1 mr-sm-2",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3"
+    },
+    {
+      "tag": "SELECT",
+      "class": "custom-select custom-select-sm",
+      "bg": "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3"
+    }
+  ],
+  "productCard": "NO ENCONTRADA",
+  "jsonUrls": []
+}

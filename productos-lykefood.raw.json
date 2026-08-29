@@ -72,6 +72,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 2000,
+    "categoria": "Adicionales",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Pollo",
     "precio": 6000,
     "categoria": "Adicionales",
@@ -149,6 +157,14 @@
     "categoria": "Asados",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 28000,
+    "categoria": "Asados",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -248,6 +264,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 3000,
+    "categoria": "Bebidas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Postobon 1.7",
     "precio": 9000,
     "categoria": "Bebidas",
@@ -336,6 +360,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 22000,
+    "categoria": "Hamburguesas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Mixta",
     "precio": 26000,
     "categoria": "Hamburguesas",
@@ -363,8 +395,8 @@
     "nombre": "Menú",
     "precio": 25000,
     "categoria": "Lasanas",
-    "descripcion": "",
-    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -397,6 +429,14 @@
     "categoria": "Mazorcas",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/20/1046.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 21000,
+    "categoria": "Mazorcas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -443,8 +483,8 @@
     "nombre": "Menú",
     "precio": 18000,
     "categoria": "Menú Infantil",
-    "descripcion": "",
-    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -496,6 +536,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 28000,
+    "categoria": "Panzerotti",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Mixto",
     "precio": 30000,
     "categoria": "Panzerotti",
@@ -541,6 +589,14 @@
     "categoria": "Patacones",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/20/1188.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 21000,
+    "categoria": "Patacones",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -632,6 +688,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 8000,
+    "categoria": "Perros",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Mixto Carne Pollo",
     "precio": 20000,
     "categoria": "Perros",
@@ -704,6 +768,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 45000,
+    "categoria": "Picadas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Tradicional",
     "precio": 45000,
     "categoria": "Picadas",
@@ -733,6 +805,14 @@
     "categoria": "Pizzas",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/20/1106.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 10000,
+    "categoria": "Pizzas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -779,8 +859,8 @@
     "nombre": "Menú",
     "precio": 38000,
     "categoria": "Pizzas Premium",
-    "descripcion": "",
-    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -805,6 +885,14 @@
     "categoria": "Pizzas",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/20/1104.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 30000,
+    "categoria": "Promociones",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -853,6 +941,14 @@
     "categoria": "Salchipapas",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/20/1006.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 15000,
+    "categoria": "Salchipapas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -1000,6 +1096,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 65000,
+    "categoria": "Salvajadas",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Superlyke Extra",
     "precio": 75000,
     "categoria": "Salvajadas",
@@ -1048,6 +1152,14 @@
     "fuente": "dom"
   },
   {
+    "nombre": "Menú",
+    "precio": 16000,
+    "categoria": "Sandwich",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
     "nombre": "Mixto",
     "precio": 25000,
     "categoria": "Sandwich",
@@ -1075,8 +1187,8 @@
     "nombre": "Menú",
     "precio": 28000,
     "categoria": "Shawarma",
-    "descripcion": "",
-    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
@@ -1093,6 +1205,14 @@
     "categoria": "Shawarma",
     "descripcion": "",
     "imagen": "https://app.sivipos.co/img/productos/20/1296.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 8000,
+    "categoria": "Soda",
+    "descripcion": "🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - PRINCIPAL VILLAS DE SAN PABLO Barranquilla (Atlantico) - Seleccionar... Seleccionar... 0 Indicaciones - 🛵 A Domicilio | 🏪 En Sitio | 📦 Recoger - Para iniciar el proceso verificaremos tu número de teléfono móvil mediante un código de seguridad. - Actualizar tipo de cliente",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
     "fuente": "dom"
   },
   {
