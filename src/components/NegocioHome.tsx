@@ -132,6 +132,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const [showPassNueva, setShowPassNueva] = useState(false);
   const [emailActual, setEmailActual] = useState<string>("");
 
+  const [tipoNegocio, setTipoNegocio] = useState<string>("");
   useEffect(() => {
     const loadData = async () => {
       const tenantFromUrl = searchParams.get("tenant");
@@ -453,10 +454,10 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         <div className="grid grid-cols-2 gap-4">
           {modulos
               .filter((m) => {
-                // Mesas solo para Restaurante y Panaderia (incluye produccion)
+                // Mesas solo para tipo de negocio restaurante o panaderia (lee de la BD, funciona para cualquier nombre)
                 if (m.id === "mesas") {
-                  const cat = String((NEGOCIOS as any)[negocioSlug || ""]?.categoria || "").toLowerCase();
-                  return cat.includes("restaurante") || cat.includes("panader");
+                  const t = String(tipoNegocio || (NEGOCIOS as any)[negocioSlug || ""]?.categoria || "").toLowerCase();
+                  return t.includes("restaurante") || t.includes("panader");
                 }
                 return true;
               })
