@@ -146,6 +146,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           const dataApi = await res.json();
           if (dataApi.success && dataApi.data) {
             setConfig(dataApi.data);
+            if (dataApi.data.tipo_negocio) setTipoNegocio(String(dataApi.data.tipo_negocio).toLowerCase());
           }
         } catch (e) {
           console.error("Error cargando config:", e);
