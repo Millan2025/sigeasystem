@@ -1,0 +1,1122 @@
+[
+  {
+    "nombre": "Bollo",
+    "precio": 2000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Butifarra",
+    "precio": 2000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 6000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Chorizo",
+    "precio": 2000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Gratinado Mediano",
+    "precio": 8000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Gratinado Personal",
+    "precio": 6000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Gratinado Super",
+    "precio": 12000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jamon",
+    "precio": 2000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Maiz Tierno",
+    "precio": 5000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 6000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Porcion De Papas",
+    "precio": 7000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Ranchera",
+    "precio": 5000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchicha",
+    "precio": 4000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Suiza",
+    "precio": 9000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Tocineta",
+    "precio": 3000,
+    "categoria": "Adicionales",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne 300 Grs",
+    "precio": 32000,
+    "categoria": "Asados",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne 400 Grs",
+    "precio": 36000,
+    "categoria": "Asados",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Cerdo 300 Grs",
+    "precio": 28000,
+    "categoria": "Asados",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Cerdo 400 Grs",
+    "precio": 32000,
+    "categoria": "Asados",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pechuga 300 Grs",
+    "precio": 28000,
+    "categoria": "Asados",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pechuga 400 Grs",
+    "precio": 32000,
+    "categoria": "Asados",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Agua Con Gas",
+    "precio": 3000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Agua De Manzana Personal",
+    "precio": 4000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1284.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Coca Cola 1.0",
+    "precio": 8000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Coca Cola 1.5l",
+    "precio": 9000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1064.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Coca Cola 2.5",
+    "precio": 12000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Coca Cola Personal",
+    "precio": 4000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1063.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Del Valle 1.5",
+    "precio": 9000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1287.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jugo De Corozo",
+    "precio": 4000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1253.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jugo Hit Litro",
+    "precio": 7000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1066.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jugo Hit Personal",
+    "precio": 4000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1067.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Postobon 1.7",
+    "precio": 9000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1283.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Quatro 1.5",
+    "precio": 9000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1286.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Quatro Personal",
+    "precio": 4000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1285.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Refresco Hit 1.5",
+    "precio": 9000,
+    "categoria": "Bebidas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1288.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 22000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1034.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Cerdo",
+    "precio": 22000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1251.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Doble Carne",
+    "precio": 26000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1037.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Doble Cerdo",
+    "precio": 26000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1252.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Doble Pollo",
+    "precio": 26000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1250.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Hamburguesa La Bandida",
+    "precio": 35000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1309.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Lyke Food",
+    "precio": 30000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1038.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixta",
+    "precio": 26000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1036.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 22000,
+    "categoria": "Hamburguesas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1035.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 25000,
+    "categoria": "Lasanas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1082.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 25000,
+    "categoria": "Lasanas",
+    "descripcion": "",
+    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixta",
+    "precio": 28000,
+    "categoria": "Lasanas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1084.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 25000,
+    "categoria": "Lasanas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1083.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 30000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1043.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Lyke Food",
+    "precio": 40000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1046.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixta",
+    "precio": 35000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1045.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 30000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1040.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Ranchera",
+    "precio": 30000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Sencilla",
+    "precio": 21000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1039.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Suiza",
+    "precio": 30000,
+    "categoria": "Mazorcas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1041.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 18000,
+    "categoria": "Menú Infantil",
+    "descripcion": "",
+    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Nuggets + Bebida",
+    "precio": 18000,
+    "categoria": "Menú Infantil",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1298.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pechuga Kids + Bebida",
+    "precio": 18000,
+    "categoria": "Menú Infantil",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1299.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pizza Kids + Bebida",
+    "precio": 18000,
+    "categoria": "Menú Infantil",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Campesino",
+    "precio": 28000,
+    "categoria": "Panzerotti",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1271.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Hawaiano",
+    "precio": 28000,
+    "categoria": "Panzerotti",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1272.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jamón",
+    "precio": 28000,
+    "categoria": "Panzerotti",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1267.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixto",
+    "precio": 30000,
+    "categoria": "Panzerotti",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1269.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Ranchero",
+    "precio": 28000,
+    "categoria": "Panzerotti",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1270.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Tocineta",
+    "precio": 28000,
+    "categoria": "Panzerotti",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1268.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 23000,
+    "categoria": "Patacones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1183.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Costeño",
+    "precio": 21000,
+    "categoria": "Patacones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1186.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Lykefood",
+    "precio": 40000,
+    "categoria": "Patacones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1188.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixto",
+    "precio": 28000,
+    "categoria": "Patacones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1185.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 23000,
+    "categoria": "Patacones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1182.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Trifasico",
+    "precio": 30000,
+    "categoria": "Patacones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1184.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Artiqueño",
+    "precio": 12000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Choributiperro",
+    "precio": 12000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Gemelo",
+    "precio": 12000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Italiano",
+    "precio": 20000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jamonado",
+    "precio": 10000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1068.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Lyke Food",
+    "precio": 23000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Medio Suizopollo",
+    "precio": 20000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mediosuizo",
+    "precio": 12000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixto Carne Pollo",
+    "precio": 20000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Perripollo",
+    "precio": 12000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Perro Ranchero",
+    "precio": 12000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Plancha",
+    "precio": 8000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Sencillo Super",
+    "precio": 8000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Suizo",
+    "precio": 18000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1025.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Suizo Hawaiano",
+    "precio": 20000,
+    "categoria": "Perros",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Leyenda",
+    "precio": 65000,
+    "categoria": "Picadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Lyke Food",
+    "precio": 75000,
+    "categoria": "Picadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Tradicional",
+    "precio": 45000,
+    "categoria": "Picadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Extra Large",
+    "precio": 55000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1142.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Large",
+    "precio": 45000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1141.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Medium",
+    "precio": 34000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1106.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Personal",
+    "precio": 16000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1085.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Porción Pizza",
+    "precio": 10000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1228.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Extra Large",
+    "precio": 80000,
+    "categoria": "Pizzas Premium",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1260.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Large",
+    "precio": 60000,
+    "categoria": "Pizzas Premium",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1261.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Medium",
+    "precio": 45000,
+    "categoria": "Pizzas Premium",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1262.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 38000,
+    "categoria": "Pizzas Premium",
+    "descripcion": "",
+    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Small",
+    "precio": 38000,
+    "categoria": "Pizzas Premium",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1265.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Small",
+    "precio": 28000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1105.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Triangular",
+    "precio": 22000,
+    "categoria": "Pizzas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1104.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Promocion 1",
+    "precio": 30000,
+    "categoria": "Promociones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1080.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Promoción 2",
+    "precio": 30000,
+    "categoria": "Promociones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1081.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Promoción 3",
+    "precio": 40000,
+    "categoria": "Promociones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1193.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Promoción 5",
+    "precio": 35000,
+    "categoria": "Promociones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1192.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Promoción 6",
+    "precio": 38000,
+    "categoria": "Promociones",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1196.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Combinada",
+    "precio": 22000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1006.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixta",
+    "precio": 28000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1011.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixta Premium Personal",
+    "precio": 24000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1195.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Polloranchera",
+    "precio": 28000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchiartiqueña",
+    "precio": 18000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchicarne",
+    "precio": 22000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchilomito",
+    "precio": 22000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchipapa Antioqueña",
+    "precio": 21000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchipapa Santandereana",
+    "precio": 21000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchiparrilla",
+    "precio": 21000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchipollo",
+    "precio": 22000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchiranchera",
+    "precio": 25000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchisuiza",
+    "precio": 23000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchiternera",
+    "precio": 18000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Salchitexana",
+    "precio": 21000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Sencilla Especial",
+    "precio": 15000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1001.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Suizapollo",
+    "precio": 28000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Supercarnes",
+    "precio": 45000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Superespecial 4 Carnes",
+    "precio": 32000,
+    "categoria": "Salchipapas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1191.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Superlyke Extra",
+    "precio": 75000,
+    "categoria": "Salvajadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Superlyke Full",
+    "precio": 115000,
+    "categoria": "Salvajadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Superlyke Minium",
+    "precio": 65000,
+    "categoria": "Salvajadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Superlyke Mix",
+    "precio": 95000,
+    "categoria": "Salvajadas",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 22000,
+    "categoria": "Sandwich",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Jamon",
+    "precio": 16000,
+    "categoria": "Sandwich",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixto",
+    "precio": 25000,
+    "categoria": "Sandwich",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 22000,
+    "categoria": "Sandwich",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/default.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Carne",
+    "precio": 28000,
+    "categoria": "Shawarma",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1295.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Menú",
+    "precio": 28000,
+    "categoria": "Shawarma",
+    "descripcion": "",
+    "imagen": "https://lykefood.sivipos.co/img/profile5.jpg",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Mixto",
+    "precio": 30000,
+    "categoria": "Shawarma",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1297.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Pollo",
+    "precio": 28000,
+    "categoria": "Shawarma",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1296.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Soda Con Todo",
+    "precio": 14000,
+    "categoria": "Soda",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1320.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Sodas Clasica Dolce",
+    "precio": 8000,
+    "categoria": "Soda",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1318.jpeg?v=5",
+    "fuente": "dom"
+  },
+  {
+    "nombre": "Sodas Especial Dolce",
+    "precio": 12000,
+    "categoria": "Soda",
+    "descripcion": "",
+    "imagen": "https://app.sivipos.co/img/productos/20/1319.jpeg?v=5",
+    "fuente": "dom"
+  }
+]

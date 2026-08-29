@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import * as XLSX from 'xlsx'
 
@@ -97,7 +97,6 @@ export async function POST(request: Request) {
       const observaciones = (row.OBSERVACIONES || '').toString().trim() || ''
       const fecha_caducidad = (row.FECHA_CADUCIDAD || '').toString().trim() || null
       const ubicacion = (row.UBICACION || '').toString().trim() || ''
-      const imagen_url = (row.IMAGEN_URL || row.IMAGEN || row.IMAGE || '').toString().trim() || null
 
       try {
         const { error } = await supabase
@@ -121,7 +120,6 @@ export async function POST(request: Request) {
             observaciones,
             fecha_caducidad: fecha_caducidad || null,
             ubicacion,
-            imagen_url,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
