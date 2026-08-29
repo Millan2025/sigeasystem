@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Plus, Calendar, Image as ImageIcon, Upload, Bell, Settings, TrendingUp } from "lucide-react";
+import { MessageCircle, Plus, Calendar, Image as ImageIcon, Upload, Bell, Settings} from "lucide-react";
 import WhatsAppMarketing from "@/components/WhatsAppMarketing";
+import PageHeader from "@/components/PageHeader";
 
 interface Props {
   tenantId: string;
   negocioNombre?: string;
+  negocioSlug?: string;
 }
 
 const REDES = [
@@ -16,7 +18,7 @@ const REDES = [
   { id: "whatsapp", nombre: "WhatsApp Business", emoji: "💬", color: "bg-green-600" },
 ];
 
-export default function MarketingModule({ tenantId, negocioNombre }: Props) {
+export default function MarketingModule({ tenantId, negocioNombre, negocioSlug }: Props) {
   const supabase = createClient();
   const [tab, setTab] = useState<"whatsapp" | "redes" | "piezas" | "cronograma">("whatsapp");
   const [redesConectadas, setRedesConectadas] = useState<any[]>([]);
@@ -24,6 +26,13 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
   const [publicaciones, setPublicaciones] = useState<any[]>([]);
   const [showModal, setShowModal] = useState<"red" | "pieza" | "publicacion" | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [nombreNegocio, setNombreNegocio] = useState(negocioNombre || "");
+  useEffect(() => {
+    if (negocioNombre) { setNombreNegocio(negocioNombre); return; }
+    fetch(`/api/tenant-config?tenant=${tenantId}`).then((r) => r.json()).then((j) => {
+      if (j.success && j.data?.nombre_negocio) setNombreNegocio(j.data.nombre_negocio);
+    }).catch(() => {});
+  }, [tenantId, negocioNombre]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -43,15 +52,8 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white p-6">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-7 h-7" /> Marketing Digital
-          </h1>
-          <p className="text-violet-100 mt-1">{negocioNombre || "Tu negocio"}</p>
-        </div>
-      </div>
+      {/* Header estandarizado */}
+      <PageHeader negocioSlug={negocioSlug || "restaurante"} titulo="Marketing Digital" icono="📣" subtitulo="Marketing WhatsApp y redes sociales" tenantId={tenantId} />
 
       {/* Tabs */}
       <div className="max-w-6xl mx-auto p-4 overflow-x-hidden w-full max-w-full">
@@ -76,7 +78,7 @@ export default function MarketingModule({ tenantId, negocioNombre }: Props) {
 
         {/* TAB WHATSAPP - FUNCIONAL */}
         {tab === "whatsapp" && (
-          <WhatsAppMarketing tenantId={tenantId} negocioNombre={negocioNombre} />
+          <WhatsAppMarketing tenantId={tenantId} negocioNombre={nombreNegocio} />
         )}
 
         {/* TAB REDES */}
