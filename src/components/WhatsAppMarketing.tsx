@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Upload, Calendar, CheckCircle, XCircle, Plus, Trash2, Clock, Bell, Share2, Smartphone, Settings } from "lucide-react";
+import { Upload, Calendar, CheckCircle, XCircle, Plus, Trash2, Clock, Bell, Share2, Smartphone, Settings } from "lucide-react";
 
 interface Props { tenantId: string; negocioNombre?: string; }
 
@@ -34,7 +34,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     } else {
       await supabase.from("config_whatsapp").insert({ tenant_id: tenantId, numero_negocio: digits });
     }
-    showToast("âœ… Numero del dueno guardado");
+    showToast("Ã¢Å“â€¦ Numero del dueno guardado");
   };
 
   const vencidas = publicaciones.filter(p => p.estado === "pendiente" && new Date(p.fecha_programada) <= new Date());
@@ -50,7 +50,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     if (error) { showToast("Error al subir: " + error.message, "error"); setLoading(false); return; }
     const { data } = supabase.storage.from("marketing").getPublicUrl(fileName);
     setForm({ ...form, url_archivo: data.publicUrl, tipo_archivo: file.type.startsWith("video") ? "video" : "imagen" });
-    showToast("âœ… Archivo cargado");
+    showToast("Ã¢Å“â€¦ Archivo cargado");
     setLoading(false);
   };
 
@@ -77,7 +77,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     const { error } = await supabase.from("publicaciones_whatsapp").insert(filas);
     if (error) { showToast("Error al programar: " + error.message, "error"); }
     else {
-      showToast("âœ… " + filas.length + " envio(s) programado(s)");
+      showToast("Ã¢Å“â€¦ " + filas.length + " envio(s) programado(s)");
       setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "", repetir_cada: "0", duracion_dias: "1" });
       cargar();
     }
@@ -86,12 +86,12 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
   const construirTexto = (pub: any) => {
     const tags = pub.hashtag ? "#" + String(pub.hashtag).replace(/#/g, "").split(",").map((h: string) => h.trim()).filter(Boolean).join(" #") : "";
-    return `${pub.texto_mensaje || ""}${tags ? "\n\n" + tags : ""}\n\nðŸ“Ž ${pub.url_archivo}`.trim();
+    return `${pub.texto_mensaje || ""}${tags ? "\n\n" + tags : ""}\n\nÃ°Å¸â€œÅ½ ${pub.url_archivo}`.trim();
   };
 
   const marcarPublicado = async (id: string, enlace: string) => {
     await supabase.from("publicaciones_whatsapp").update({ estado: "publicado", fecha_publicacion_real: new Date().toISOString(), enlace_compartido: enlace }).eq("id", id);
-    showToast("âœ… Marcada como publicada");
+    showToast("Ã¢Å“â€¦ Marcada como publicada");
     cargar();
   };
 
@@ -121,15 +121,15 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         await navigator.clipboard.writeText(texto).catch(() => {});
-        showToast("ðŸ“‹ Copiado. Pegalo en el grupo", "success");
+        showToast("Ã°Å¸â€œâ€¹ Copiado. Pegalo en el grupo", "success");
       }
     }
   };
 
   const eliminar = async (id: string) => {
-    if (!confirm("Â¿Eliminar esta publicacion?")) return;
+    if (!confirm("Ã‚Â¿Eliminar esta publicacion?")) return;
     await supabase.from("publicaciones_whatsapp").delete().eq("id", id);
-    showToast("ðŸ—‘ï¸ Eliminada"); cargar();
+    showToast("Ã°Å¸â€”â€˜Ã¯Â¸Â Eliminada"); cargar();
   };
 
   const BotonesEnvio = ({ pub }: { pub: any }) => (
@@ -146,15 +146,10 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6 w-full max-w-full overflow-x-hidden">
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4 sm:p-6">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="bg-white/20 p-3 rounded-xl"><MessageCircle className="w-8 h-8" /></div>
-        </div>
-      </div>
 
       {/* CONFIG NUMERO DUENO */}
       <div className="bg-white rounded-2xl p-4 border shadow-sm">
-        <div className="flex items-center gap-2 mb-2"><Settings className="w-4 h-4 text-stone-600" /><h3 className="font-semibold text-stone-800 text-sm">WhatsApp del dueÃ±o (recibe el anuncio listo, 1 tap)</h3></div>
+        <div className="flex items-center gap-2 mb-2"><Settings className="w-4 h-4 text-stone-600" /><h3 className="font-semibold text-stone-800 text-sm">WhatsApp del dueÃƒÂ±o (recibe el anuncio listo, 1 tap)</h3></div>
         <div className="flex gap-2 flex-col sm:flex-row">
           <input placeholder={numeroDueno ? `Actual: ${numeroDueno}` : "Ej: 3001234567"} value={numeroDueno} onChange={(e) => setNumeroDueno(e.target.value)} className="flex-1 border-2 border-stone-300 bg-white rounded-lg p-2 text-stone-800 placeholder:text-stone-500" type="tel" />
           <button onClick={guardarNumeroDueno} className="bg-stone-800 text-white rounded-lg px-4 text-sm font-semibold">Guardar</button>
@@ -163,7 +158,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
       {vencidas.length > 0 && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">â° Es hora de publicar ({vencidas.length}) - envio automatico al dueno en curso</h3></div>
+          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">Ã¢ÂÂ° Es hora de publicar ({vencidas.length}) - envio automatico al dueno en curso</h3></div>
           <div className="space-y-3">
             {vencidas.map((pub) => (
               <div key={pub.id} className="bg-white rounded-xl p-3">
@@ -171,7 +166,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                   {pub.tipo_archivo === "imagen" ? <img src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" alt="" /> : <video src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" />}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-stone-800 text-sm">{pub.nombre_pieza}</div>
-                    <div className="text-xs text-stone-600">ðŸ“± {pub.grupo_whatsapp}</div>
+                    <div className="text-xs text-stone-600">Ã°Å¸â€œÂ± {pub.grupo_whatsapp}</div>
                   </div>
                 </div>
                 <BotonesEnvio pub={pub} />
@@ -182,7 +177,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       )}
 
       <div className="bg-white rounded-2xl p-6 border shadow-sm">
-        <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Plus className="w-5 h-5" /> Nueva publicaciÃ³n</h2>
+        <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Plus className="w-5 h-5" /> Nueva publicaciÃƒÂ³n</h2>
         <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
           <input placeholder="Nombre de la pieza *" value={form.nombre_pieza} onChange={(e) => setForm({ ...form, nombre_pieza: e.target.value })} className="w-full border-2 border-stone-300 bg-white rounded-lg p-3 text-stone-800 placeholder:text-stone-500" />
           
@@ -208,12 +203,12 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
           <div>
             <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={subirArchivo} className="hidden" />
             <button onClick={() => fileInputRef.current?.click()} className="w-full border-2 border-dashed border-stone-400 rounded-lg p-4 hover:bg-stone-100 flex items-center justify-center gap-2 text-stone-700 font-medium">
-              <Upload className="w-5 h-5" /> {form.url_archivo ? "âœ… Archivo cargado" : "Subir imagen o video *"}
+              <Upload className="w-5 h-5" /> {form.url_archivo ? "Ã¢Å“â€¦ Archivo cargado" : "Subir imagen o video *"}
             </button>
             {form.url_archivo && form.tipo_archivo === "imagen" && <img src={form.url_archivo} alt="preview" className="mt-2 rounded-lg max-h-40 object-contain" />}
           </div>
           <button onClick={programar} disabled={loading} className="bg-green-600 text-white rounded-lg p-3 font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
-            <Calendar className="w-5 h-5" /> {loading ? "Procesando..." : "Programar publicaciÃ³n"}
+            <Calendar className="w-5 h-5" /> {loading ? "Procesando..." : "Programar publicaciÃƒÂ³n"}
           </button>
         </div>
       </div>
@@ -228,7 +223,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                   {pub.tipo_archivo === "imagen" ? <img src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" alt="" /> : <video src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" />}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-stone-800 text-sm">{pub.nombre_pieza}</div>
-                    <div className="text-xs text-stone-600">ðŸ“± {pub.grupo_whatsapp} Â· ðŸ“… {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
+                    <div className="text-xs text-stone-600">Ã°Å¸â€œÂ± {pub.grupo_whatsapp} Ã‚Â· Ã°Å¸â€œâ€¦ {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
                   </div>
                 </div>
                 <BotonesEnvio pub={pub} />
@@ -247,7 +242,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
                 <div className="flex-1 text-sm">
                   <div className="font-medium text-stone-800">{pub.nombre_pieza}</div>
-                  <div className="text-xs text-stone-600">{pub.grupo_whatsapp} Â· {new Date(pub.fecha_publicacion_real).toLocaleString("es-CO")}</div>
+                  <div className="text-xs text-stone-600">{pub.grupo_whatsapp} Ã‚Â· {new Date(pub.fecha_publicacion_real).toLocaleString("es-CO")}</div>
                 </div>
               </div>
             ))}
@@ -256,8 +251,8 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
       )}
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-        <h3 className="font-semibold text-amber-900 mb-2">ðŸš§ PrÃ³ximamente</h3>
-        <p className="text-sm text-amber-800">EnvÃ­o 100% automÃ¡tico (API oficial Meta) y otras redes en desarrollo.</p>
+        <h3 className="font-semibold text-amber-900 mb-2">Ã°Å¸Å¡Â§ PrÃƒÂ³ximamente</h3>
+        <p className="text-sm text-amber-800">EnvÃƒÂ­o 100% automÃƒÂ¡tico (API oficial Meta) y otras redes en desarrollo.</p>
       </div>
 
       {toast && (
