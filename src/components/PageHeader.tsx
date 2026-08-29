@@ -187,7 +187,7 @@ export default function PageHeader({
               <span>{titulo}</span>
             </h1>
             {subtitulo && (
-              <p className="text-xs sm:text-sm text-stone-300 truncate mt-0.5">
+              <p className="text-xs sm:text-sm text-stone-700 truncate mt-0.5">
                 {subtitulo}
               </p>
             )}
