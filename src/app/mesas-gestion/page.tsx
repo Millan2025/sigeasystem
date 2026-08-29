@@ -29,9 +29,12 @@ export default function AdminMesas() {
   };
   const cargarTenants = async () => {
     try {
-      const r = await fetch("/api/admin/tenants");
+      const r = await fetch("/api/tenant-config?tenant=" + tenantSel);
       const j = await r.json();
-      setTenants(j.data || j || []);
+      // Para /mesas-gestion, solo mostramos el tenant actual (no lista completa)
+      if (j.success && j.data) {
+        setTenants([j.data]);
+      }
     } catch {}
   };
   const cargarConfig = async () => {
