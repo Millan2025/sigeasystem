@@ -1,4 +1,4 @@
-﻿import { createServerClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -24,9 +24,13 @@ export async function middleware(request: NextRequest) {
 
   // Rutas que requieren login
   const rutasProtegidas = ['/pos', '/inventario', '/personal', '/pedidos', '/produccion', '/reportes', '/finanzas', '/admin', '/cliente']
+  // Rutas publicas que NO requieren login
+  const rutasPublicas = ['/mesa', '/mesas', '/login', '/registro', '/demo', '/intro', '/']
+  const esPublica = rutasPublicas.some(r => path === r || path.startsWith(r + '/'))
+  
   const necesitaAuth = rutasProtegidas.some(r => path.startsWith(r))
 
-  if (necesitaAuth && !user) {
+  if (necesitaAuth && !user && !esPublica) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
