@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { NEGOCIOS } from "@/config/negocios";
+import PageHeader from "@/components/PageHeader";
 
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 const TENANT_DEMO = "11111111-1111-1111-1111-111111111111";
@@ -46,6 +47,8 @@ export default function AdminMesas() {
   };
 
   useEffect(() => {
+    const tParam = new URLSearchParams(window.location.search).get("tenant");
+    if (tParam) { setTenantSel(tParam); setBloqueado(true); }
     const origen = new URLSearchParams(window.location.search).get("origen") || "";
     const slug = decodeURIComponent(origen).split("/").filter(Boolean).pop() || "";
     const neg = (NEGOCIOS as any)[slug];
@@ -92,10 +95,9 @@ export default function AdminMesas() {
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800 p-6">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-          <h1 className="text-2xl font-extrabold text-amber-600">🪑 Admin Master · Mesas y QR</h1>
-          <Link href={typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("origen") ? decodeURIComponent(new URLSearchParams(window.location.search).get("origen")!) : "/admin") : "/admin"} className="bg-white border border-stone-200 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-white border border-stone-300">← Volver</Link>
-        </div>
+        <div className="mb-4">
+        <PageHeader negocioSlug={slugOrig || "restaurante"} titulo="Mesas y QR" icono="🪑" subtitulo="Gestión de mesas y códigos QR" tenantId={tenantSel} />
+      </div>
 
         {!bloqueado && (
         <div className="bg-white border border-stone-200 rounded-xl p-4 mb-4">

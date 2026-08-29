@@ -181,7 +181,7 @@ export default function PageHeader({
       >
         <div className="px-3 sm:px-4 py-2.5 md:py-3 max-w-7xl mx-auto flex flex-wrap items-center gap-2 sm:gap-3">
           {isAuthenticated && <Link
-            href={typeof window !== "undefined" && !window.location.pathname.startsWith("/demo/") ? `/${window.location.pathname.split("/")[1]}` : `/demo/${negocioSlug}`}
+            href={typeof window !== "undefined" ? (() => { const o = new URLSearchParams(window.location.search).get("origen"); if (o) return decodeURIComponent(o); return !window.location.pathname.startsWith("/demo/") ? `/${window.location.pathname.split("/")[1]}` : `/demo/${negocioSlug}`; })() : `/demo/${negocioSlug}`}
             className="p-2 hover:bg-stone-100 rounded-xl shrink-0"
           >
             <ArrowLeft className="w-5 h-5 text-stone-700" />
