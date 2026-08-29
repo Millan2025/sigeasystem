@@ -160,7 +160,7 @@ export default function TiendaPage() {
         negocioSlug={negocioSlug}
         titulo="Tienda"
         icono="🛒"
-        subtitulo={`Tienda Virtual - ${negocio?.titulo}`}
+        subtitulo={negocio?.titulo ? `Tienda Virtual - ${negocio.titulo}` : "Tienda Virtual"}
         acciones={
           <>
             <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">

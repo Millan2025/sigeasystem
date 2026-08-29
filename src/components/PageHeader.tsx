@@ -49,7 +49,12 @@ export default function PageHeader({
   tenantId,
 }: PageHeaderProps) {
   const negocio = NEGOCIOS[negocioSlug as keyof typeof NEGOCIOS];
-  const effectiveTenantId = tenantId || negocio?.tenantId;
+  const [urlTenant, setUrlTenant] = useState<string | null>(null);
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tenant");
+    if (t) setUrlTenant(t);
+  }, []);
+  const effectiveTenantId = tenantId || urlTenant || negocio?.tenantId;
 
   const [config, setConfig] = useState<ConfigNegocio>({
     ...DEFAULT_CONFIG,
