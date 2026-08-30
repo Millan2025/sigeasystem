@@ -6,9 +6,12 @@ import SWRegister from "@/components/SWRegister";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport = {
+  themeColor: "#fdb813",
+};
+
 export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
-  themeColor: "#fdb813",
   icons: {
     icon: [
       { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
