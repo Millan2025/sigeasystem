@@ -103,10 +103,10 @@ export default function AdminMesas() {
         <div className="bg-white border border-stone-200 rounded-xl p-4 mb-4">
           <p className="font-bold mb-2 text-sm">🔎 Busca y selecciona el negocio (por nombre)</p>
           <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Escribe el nombre: Pollo, Casa, Restaurante..." className="w-full bg-white border border-stone-300 text-stone-800 placeholder-stone-500 rounded-lg px-3 py-2 outline-none mb-2" />
-          <select value={tenantSel} onChange={(e) => setTenantSel(e.target.value)} className="w-full bg-white border border-stone-200 text-white rounded-lg px-3 py-2 outline-none">
-            <option value={TENANT_DEMO} className="bg-white border border-stone-200 text-white">Restaurante Demo SIGEA</option>
+          <select value={tenantSel} onChange={(e) => setTenantSel(e.target.value)} className="w-full bg-white border border-stone-300 text-stone-800 rounded-lg px-3 py-2 outline-none">
+            <option value={TENANT_DEMO} className="bg-white border border-stone-300 text-stone-800">Restaurante Demo SIGEA</option>
             {tenantsFiltrados.filter((t) => t.id !== TENANT_DEMO).map((t) => (
-              <option key={t.id} value={t.id} className="bg-white border border-stone-200 text-white">{nombreDe(t)}</option>
+              <option key={t.id} value={t.id} className="bg-white border border-stone-300 text-stone-800">{nombreDe(t)}</option>
             ))}
           </select>
         </div>
@@ -124,10 +124,10 @@ export default function AdminMesas() {
           <div className="bg-white border border-stone-200 rounded-xl p-4">
             <p className="font-bold mb-2">Generar rango automático</p>
             <div className="flex gap-2 items-center flex-wrap">
-              <input value={pref} onChange={(e) => setPref(e.target.value)} className="w-16 bg-white border border-stone-200 text-white rounded-lg px-2 py-2 outline-none text-center font-bold" />
-              <input type="number" value={desde} onChange={(e) => setDesde(parseInt(e.target.value || "1"))} className="w-20 bg-white border border-stone-200 text-white rounded-lg px-2 py-2 outline-none text-center" />
+              <input value={pref} onChange={(e) => setPref(e.target.value)} className="w-16 bg-white border border-stone-300 text-stone-800 rounded-lg px-2 py-2 outline-none text-center font-bold" />
+              <input type="number" value={desde} onChange={(e) => setDesde(parseInt(e.target.value || "1"))} className="w-20 bg-white border border-stone-300 text-stone-800 rounded-lg px-2 py-2 outline-none text-center" />
               <span>→</span>
-              <input type="number" value={hasta} onChange={(e) => setHasta(parseInt(e.target.value || "8"))} className="w-20 bg-white border border-stone-200 text-white rounded-lg px-2 py-2 outline-none text-center" />
+              <input type="number" value={hasta} onChange={(e) => setHasta(parseInt(e.target.value || "8"))} className="w-20 bg-white border border-stone-300 text-stone-800 rounded-lg px-2 py-2 outline-none text-center" />
               <button onClick={generarRango} className="bg-[#fdb813] text-stone-900 rounded-lg px-4 font-bold">Generar</button>
             </div>
           </div>

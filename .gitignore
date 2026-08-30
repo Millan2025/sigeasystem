@@ -53,3 +53,6 @@ sigea_backup_*
 backup_*
 *.7z
 *.rar
+
+*.docx
+~$*
