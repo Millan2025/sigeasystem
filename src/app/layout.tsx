@@ -7,6 +7,7 @@ import SWRegister from "@/components/SWRegister";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  manifest: "/manifest.webmanifest",
   themeColor: "#fdb813",
   icons: {
     icon: [
@@ -18,7 +19,6 @@ export const metadata: Metadata = {
   },
   title: "SIGEA System - Gestión Empresarial",
   description: "Sistema Integral de Gestión Empresarial Adaptativa",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     title: "SIGEA",

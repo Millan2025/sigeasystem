@@ -2,8 +2,8 @@
   "name": "SIGEA System - Gestión Empresarial",
   "short_name": "SIGEA",
   "description": "Tu negocio bajo control: POS, inventario, finanzas, pedidos, mesas y más.",
-  "id": "/",
-  "start_url": "/",
+  "id": "/?app=sigea-v2",
+  "start_url": "/?app=sigea-v2",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,8 +11,23 @@
   "theme_color": "#fdb813",
   "lang": "es",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-192.png?v=2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
