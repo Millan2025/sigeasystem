@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -28,7 +28,7 @@ export default function ProductosAdminPage() {
     unidad: 'unidad',
     tipo_unidad: 'unidad',
     venta_por_peso: false,
-    icono: 'ðŸ“¦'
+    icono: '📦'
   });
 
   const pathParts = pathname?.split('/') || [];
@@ -64,7 +64,7 @@ export default function ProductosAdminPage() {
     if (data.success) {
       setShowImportModal(false);
       setEditing(null);
-      setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: 'ðŸ“¦' });
+      setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' });
       cargarProductos();
     } else {
       alert(data.error || 'Error al guardar');
@@ -72,7 +72,7 @@ export default function ProductosAdminPage() {
   };
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm('Â¿Eliminar este producto?')) return;
+    if (!confirm('¿Eliminar este producto?')) return;
     const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
@@ -92,7 +92,7 @@ export default function ProductosAdminPage() {
       unidad: p.unidad || 'unidad',
       tipo_unidad: p.tipo_unidad || 'unidad',
       venta_por_peso: p.venta_por_peso || false,
-      icono: p.icono || 'ðŸ“¦'
+      icono: p.icono || '📦'
     });
     setShowImportModal(true);
   };
@@ -108,7 +108,7 @@ export default function ProductosAdminPage() {
         <button onClick={cargarProductos} className="p-2 hover:bg-stone-100 rounded-xl">
           <RefreshCw className="w-5 h-5" />
         </button>
-        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: 'ðŸ“¦' }); setShowImportModal(true); }} 
+        <button onClick={() => { setEditing(null); setForm({ nombre: '', categoria: '', precio: 0, stock: 0, unidad: 'unidad', tipo_unidad: 'unidad', venta_por_peso: false, icono: '📦' }); setShowImportModal(true); }} 
           className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1">
           <Plus className="w-4 h-4" /> Nuevo
         </button>
@@ -133,13 +133,13 @@ export default function ProductosAdminPage() {
               <tbody>
                 {productos.map((p: any) => (
                   <tr key={p.id} className="border-b border-stone-100">
-                    <td className="p-2 text-2xl">{p.icono || 'ðŸ“¦'}</td>
+                    <td className="p-2 text-2xl">{p.icono || '📦'}</td>
                     <td className="p-2 font-medium">{p.nombre}</td>
                     <td className="p-2 text-stone-700">{p.categoria}</td>
                     <td className="p-2">${p.precio?.toLocaleString()}</td>
                     <td className="p-2">{p.stock}</td>
                     <td className="p-2 text-stone-700">{p.tipo_unidad}</td>
-                    <td className="p-2">{p.venta_por_peso ? 'âœ…' : 'âŒ'}</td>
+                    <td className="p-2">{p.venta_por_peso ? '✅' : '❌'}</td>
                     <td className="p-2 flex gap-2">
                       <button onClick={() => editarProducto(p)} className="p-1 hover:bg-stone-100 rounded"><Edit className="w-4 h-4" /></button>
                       <button onClick={() => eliminarProducto(p.id)} className="p-1 hover:bg-red-50 text-red-500 rounded"><Trash2 className="w-4 h-4" /></button>

@@ -74,8 +74,8 @@ export default function AdminMesas() {
     const codigoUp = c.toUpperCase().trim();
     if (!codigoUp) return;
     const { error } = await sb.from("mesas").insert({ tenant_id: tenantSel, codigo: codigoUp });
-    if (error) setMsg("âš ï¸ " + error.message);
-    else { setMsg("âœ… Mesa " + codigoUp + " creada"); setCodigo(""); }
+    if (error) setMsg("⚠️ " + error.message);
+    else { setMsg("✅ Mesa " + codigoUp + " creada"); setCodigo(""); }
     cargar();
   };
   const generarRango = async () => {
@@ -84,7 +84,7 @@ export default function AdminMesas() {
       const { error } = await sb.from("mesas").insert({ tenant_id: tenantSel, codigo: (pref + i).toUpperCase() });
       if (!error) creadas++;
     }
-    setMsg("âœ… " + creadas + " mesas creadas (" + pref + desde + " a " + pref + hasta + ")");
+    setMsg("✅ " + creadas + " mesas creadas (" + pref + desde + " a " + pref + hasta + ")");
     cargar();
   };
   const eliminar = async (id: string) => { await sb.from("mesas").delete().eq("id", id); cargar(); };

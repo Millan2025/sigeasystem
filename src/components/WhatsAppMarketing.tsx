@@ -34,7 +34,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     } else {
       await supabase.from("config_whatsapp").insert({ tenant_id: tenantId, numero_negocio: digits });
     }
-    showToast("Ã¢Å“â€¦ Numero del dueno guardado");
+    showToast("âœ… Numero del dueno guardado");
   };
 
   const vencidas = publicaciones.filter(p => p.estado === "pendiente" && new Date(p.fecha_programada) <= new Date());
@@ -50,7 +50,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     if (error) { showToast("Error al subir: " + error.message, "error"); setLoading(false); return; }
     const { data } = supabase.storage.from("marketing").getPublicUrl(fileName);
     setForm({ ...form, url_archivo: data.publicUrl, tipo_archivo: file.type.startsWith("video") ? "video" : "imagen" });
-    showToast("Ã¢Å“â€¦ Archivo cargado");
+    showToast("âœ… Archivo cargado");
     setLoading(false);
   };
 
@@ -77,7 +77,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     const { error } = await supabase.from("publicaciones_whatsapp").insert(filas);
     if (error) { showToast("Error al programar: " + error.message, "error"); }
     else {
-      showToast("Ã¢Å“â€¦ " + filas.length + " envío(s) programado(s)");
+      showToast("âœ… " + filas.length + " envío(s) programado(s)");
       setForm({ nombre_pieza: "", tipo_archivo: "imagen", url_archivo: "", texto_mensaje: "", hashtag: "", grupo_whatsapp: "", numero_whatsapp: "", fecha_programada: "", repetir_cada: "0", duracion_dias: "1" });
       cargar();
     }
@@ -86,12 +86,12 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
   const construirTexto = (pub: any) => {
     const tags = pub.hashtag ? "#" + String(pub.hashtag).replace(/#/g, "").split(",").map((h: string) => h.trim()).filter(Boolean).join(" #") : "";
-    return `${pub.texto_mensaje || ""}${tags ? "\n\n" + tags : ""}\n\nÃ°Å¸â€œÅ½ ${pub.url_archivo}`.trim();
+    return `${pub.texto_mensaje || ""}${tags ? "\n\n" + tags : ""}\n\nðŸ“Ž ${pub.url_archivo}`.trim();
   };
 
   const marcarPublicado = async (id: string, enlace: string) => {
     await supabase.from("publicaciones_whatsapp").update({ estado: "publicado", fecha_publicacion_real: new Date().toISOString(), enlace_compartido: enlace }).eq("id", id);
-    showToast("Ã¢Å“â€¦ Marcada como publicada");
+    showToast("âœ… Marcada como publicada");
     cargar();
   };
 
@@ -121,15 +121,15 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
     } catch (e: any) {
       if (e?.name !== "AbortError") {
         await navigator.clipboard.writeText(texto).catch(() => {});
-        showToast("Ã°Å¸â€œâ€¹ Copiado. Pegalo en el grupo", "success");
+        showToast("ðŸ“‹ Copiado. Pegalo en el grupo", "success");
       }
     }
   };
 
   const eliminar = async (id: string) => {
-    if (!confirm("Ã‚Â¿Eliminar esta publicacion?")) return;
+    if (!confirm("Â¿Eliminar esta publicacion?")) return;
     await supabase.from("publicaciones_whatsapp").delete().eq("id", id);
-    showToast("Ã°Å¸â€”â€˜Ã¯Â¸Â Eliminada"); cargar();
+    showToast("ðŸ—‘ï¸ Eliminada"); cargar();
   };
 
   const BotonesEnvio = ({ pub }: { pub: any }) => (
@@ -158,7 +158,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
 
       {vencidas.length > 0 && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">Ã¢ÂÂ° Es hora de publicar ({vencidas.length}) - envío automatico al dueno en curso</h3></div>
+          <div className="flex items-center gap-2 mb-3"><Bell className="w-5 h-5 text-amber-600" /><h3 className="font-bold text-amber-900">â° Es hora de publicar ({vencidas.length}) - envío automatico al dueno en curso</h3></div>
           <div className="space-y-3">
             {vencidas.map((pub) => (
               <div key={pub.id} className="bg-white rounded-xl p-3">
@@ -166,7 +166,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                   {pub.tipo_archivo === "imagen" ? <img src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" alt="" /> : <video src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" />}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-stone-800 text-sm">{pub.nombre_pieza}</div>
-                    <div className="text-xs text-stone-600">Ã°Å¸â€œÂ± {pub.grupo_whatsapp}</div>
+                    <div className="text-xs text-stone-600">ðŸ“± {pub.grupo_whatsapp}</div>
                   </div>
                 </div>
                 <BotonesEnvio pub={pub} />
@@ -203,7 +203,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
           <div>
             <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={subirArchivo} className="hidden" />
             <button onClick={() => fileInputRef.current?.click()} className="w-full border-2 border-dashed border-stone-400 rounded-lg p-4 hover:bg-stone-100 flex items-center justify-center gap-2 text-stone-700 font-medium">
-              <Upload className="w-5 h-5" /> {form.url_archivo ? "Ã¢Å“â€¦ Archivo cargado" : "Subir imagen o video *"}
+              <Upload className="w-5 h-5" /> {form.url_archivo ? "âœ… Archivo cargado" : "Subir imagen o video *"}
             </button>
             {form.url_archivo && form.tipo_archivo === "imagen" && <img src={form.url_archivo} alt="preview" className="mt-2 rounded-lg max-h-40 object-contain" />}
           </div>
@@ -223,7 +223,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                   {pub.tipo_archivo === "imagen" ? <img src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" alt="" /> : <video src={pub.url_archivo} className="w-16 h-16 object-cover rounded-lg" />}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-stone-800 text-sm">{pub.nombre_pieza}</div>
-                    <div className="text-xs text-stone-600">Ã°Å¸â€œÂ± {pub.grupo_whatsapp} Ã‚Â· Ã°Å¸â€œâ€¦ {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
+                    <div className="text-xs text-stone-600">ðŸ“± {pub.grupo_whatsapp} Â· ðŸ“… {new Date(pub.fecha_programada).toLocaleString("es-CO")}</div>
                   </div>
                 </div>
                 <BotonesEnvio pub={pub} />
@@ -242,7 +242,7 @@ export default function WhatsAppMarketing({ tenantId, negocioNombre }: Props) {
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
                 <div className="flex-1 text-sm">
                   <div className="font-medium text-stone-800">{pub.nombre_pieza}</div>
-                  <div className="text-xs text-stone-600">{pub.grupo_whatsapp} Ã‚Â· {new Date(pub.fecha_publicacion_real).toLocaleString("es-CO")}</div>
+                  <div className="text-xs text-stone-600">{pub.grupo_whatsapp} Â· {new Date(pub.fecha_publicacion_real).toLocaleString("es-CO")}</div>
                 </div>
               </div>
             ))}

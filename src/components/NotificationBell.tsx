@@ -194,7 +194,7 @@ export default function NotificationBell({ tenantId, negocioSlug }: Props) {
                                 <button
                                   onClick={() => marcarLeida(n.id)}
                                   className="text-xs text-stone-500 hover:text-stone-700"
-                                  title="Marcar como leÃ­da"
+                                  title="Marcar como leída"
                                 >
                                   <Check className="w-3 h-3" />
                                 </button>

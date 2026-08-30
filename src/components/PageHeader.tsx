@@ -43,7 +43,7 @@ const DEFAULT_CONFIG: ConfigNegocio = {
 export default function PageHeader({
   negocioSlug,
   titulo,
-  icono = "ðŸ“¦",
+  icono = "📦",
   subtitulo,
   acciones,
   tenantId,
@@ -105,7 +105,7 @@ export default function PageHeader({
 
   return (
     <>
-      {/* Franja institucional con colores dinÃ¡micos */}
+      {/* Franja institucional con colores dinámicos */}
       <div
         className="border-b-2"
         style={{
@@ -114,7 +114,7 @@ export default function PageHeader({
         }}
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 md:py-3">
-          {/* FILA 1: Logo + Nombre + TelÃ©fono */}
+          {/* FILA 1: Logo + Nombre + Teléfono */}
           <div className="flex items-center gap-2 md:gap-4">
             {config.logo_url ? (
               <img
@@ -148,7 +148,7 @@ export default function PageHeader({
             </div>
           </div>
 
-          {/* FILA 2: DirecciÃ³n y contacto */}
+          {/* FILA 2: Dirección y contacto */}
           {(config.direccion || config.telefono || config.correo_contacto) && (
             <div className="flex flex-col gap-0.5 mt-1 md:mt-2 text-[11px] md:text-xs text-white font-medium">
               {config.direccion && (
@@ -174,7 +174,7 @@ export default function PageHeader({
         </div>
       </div>
 
-      {/* Header del mÃ³dulo con acento dinÃ¡mico */}
+      {/* Header del módulo con acento dinámico */}
       <div
         className="bg-white shadow-sm border-b-2 sticky top-0 z-20"
         style={{ borderColor: colorPrincipal }}

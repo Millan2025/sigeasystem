@@ -581,10 +581,10 @@ const tenantId = tenantFromUrl || negocio?.tenantId || "7e045520-5e36-4e3f-a39f-
                             Check-in
                           </button>
                         ) : tieneCheckOut ? (
-                          <span className="text-xs text-stone-500">âœ… {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
+                          <span className="text-xs text-stone-500">✅ {asistenciaHoy?.hora_entrada} - {asistenciaHoy?.hora_salida}</span>
                         ) : (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-blue-600">â³ {asistenciaHoy?.hora_entrada}</span>
+                            <span className="text-xs text-blue-600">⏳ {asistenciaHoy?.hora_entrada}</span>
                             <button onClick={() => registrarAsistencia(emp.id)} className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full hover:bg-orange-600">
                               Check-out
                             </button>

@@ -11,8 +11,8 @@ export default function InventarioRootPage() {
       </header>
       <div className="p-4 max-w-7xl mx-auto">
         <div className="bg-white rounded-2xl p-12 text-center border border-stone-200">
-          <p className="text-stone-500">MÃ³dulo de inventario en construcciÃ³n</p>
-          <p className="text-sm text-stone-400 mt-2">Funcionalidad disponible prÃ³ximamente</p>
+          <p className="text-stone-500">Módulo de inventario en construcción</p>
+          <p className="text-sm text-stone-400 mt-2">Funcionalidad disponible próximamente</p>
         </div>
       </div>
     </div>
