@@ -35,18 +35,18 @@ import NotificationBell from './NotificationBell';
 
 
 const beneficiosPorModulo: Record<string, { titulo: string; icono: string; beneficios: string[]; color: string }> = {
-  pos: { titulo: "Punto de Venta Inteligente", icono: "💰", beneficios: ["Productos por peso", "Cobro: Efectivo, Nequi, Daviplata", "Búsqueda rápida", "Descuento automático de inventario"], color: "bg-emerald-500" },
-  produccion: { titulo: "Producción y Recetas", icono: "🍞", beneficios: ["Fichas técnicas", "Food cost", "Cálculo automático", "Órdenes de producción"], color: "bg-lime-500" },
-  inventario: { titulo: "Inventario Inteligente", icono: "📦", beneficios: ["Control de stock", "Alarmas", "Predicción de agotamiento", "Múltiples unidades"], color: "bg-amber-500" },
-  personal: { titulo: "Gestión de Personal", icono: "👥", beneficios: ["Registro de empleados", "Control de asistencia", "Nómina", "Desprendible individual"], color: "bg-purple-500" },
-  pedidos: { titulo: "Pedidos y Domicilios", icono: "🛵", beneficios: ["Tus clientes compran desde la app", "Notificaciones", "Asignas repartidor", "Seguimiento"], color: "bg-sky-500" },
-  reportes: { titulo: "Reportes y Estadísticas", icono: "📈", beneficios: ["Ventas por hora", "Top productos", "Márgenes", "Gráficos"], color: "bg-rose-500" },
-  finanzas: { titulo: "Finanzas y Contabilidad", icono: "🦄", beneficios: ["Estado de Resultados", "Balance General", "Libro Diario", "Cierre de caja"], color: "bg-teal-500" },
-  tienda: { titulo: "Domicilios y Pedidos", icono: "🛵", beneficios: ["Tus clientes piden desde el celular", "Catálogo con carrito de compras", "Notificación instantánea de pedidos", "Enlace listo para compartir en WhatsApp"], color: "bg-blue-500" },
-  compras: { titulo: "Compras a Proveedores", icono: "🛍️", beneficios: ["Recomendación automática", "Lista por proveedor", "Órdenes de compra", "Historial"], color: "bg-indigo-500" },
-  creditos: { titulo: "Gestión de Créditos", icono: "📋", beneficios: ["Registro de créditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
-  marketing: { titulo: "Marketing Digital WhatsApp", icono: "📣", beneficios: ["Envío automático a grupos del barrio", "Programa 1 vez, se publica toda la semana", "Campañas cada hora (respeta ritmo del grupo)", "1 tap del dueño → llega a todo el barrio", "Sin riesgo de BAN", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
-  mesas: { titulo: "Gestión de Mesas", icono: "🪑", beneficios: ["Clientes piden desde su celular", "QR por mesa", "Stock en tiempo real", "Notificaciones a cocina", "Cuentas digitales", "Sin mesero intermedio"], color: "bg-yellow-500" },
+  pos: { titulo: "Punto de Venta Inteligente", icono: "ðŸ’°", beneficios: ["Productos por peso", "Cobro: Efectivo, Nequi, Daviplata", "BÃºsqueda rÃ¡pida", "Descuento automÃ¡tico de inventario"], color: "bg-emerald-500" },
+  produccion: { titulo: "ProducciÃ³n y Recetas", icono: "ðŸž", beneficios: ["Fichas tÃ©cnicas", "Food cost", "CÃ¡lculo automÃ¡tico", "Ã“rdenes de producciÃ³n"], color: "bg-lime-500" },
+  inventario: { titulo: "Inventario Inteligente", icono: "ðŸ“¦", beneficios: ["Control de stock", "Alarmas", "PredicciÃ³n de agotamiento", "MÃºltiples unidades"], color: "bg-amber-500" },
+  personal: { titulo: "GestiÃ³n de Personal", icono: "ðŸ‘¥", beneficios: ["Registro de empleados", "Control de asistencia", "NÃ³mina", "Desprendible individual"], color: "bg-purple-500" },
+  pedidos: { titulo: "Pedidos y Domicilios", icono: "ðŸ›µ", beneficios: ["Tus clientes compran desde la app", "Notificaciones", "Asignas repartidor", "Seguimiento"], color: "bg-sky-500" },
+  reportes: { titulo: "Reportes y EstadÃ­sticas", icono: "ðŸ“ˆ", beneficios: ["Ventas por hora", "Top productos", "MÃ¡rgenes", "GrÃ¡ficos"], color: "bg-rose-500" },
+  finanzas: { titulo: "Finanzas y Contabilidad", icono: "ðŸ¦„", beneficios: ["Estado de Resultados", "Balance General", "Libro Diario", "Cierre de caja"], color: "bg-teal-500" },
+  tienda: { titulo: "Domicilios y Pedidos", icono: "ðŸ›µ", beneficios: ["Tus clientes piden desde el celular", "CatÃ¡logo con carrito de compras", "NotificaciÃ³n instantÃ¡nea de pedidos", "Enlace listo para compartir en WhatsApp"], color: "bg-blue-500" },
+  compras: { titulo: "Compras a Proveedores", icono: "ðŸ›ï¸", beneficios: ["RecomendaciÃ³n automÃ¡tica", "Lista por proveedor", "Ã“rdenes de compra", "Historial"], color: "bg-indigo-500" },
+  creditos: { titulo: "GestiÃ³n de CrÃ©ditos", icono: "ðŸ“‹", beneficios: ["Registro de crÃ©ditos", "Control de saldos", "Abonos", "Historial"], color: "bg-pink-500" },
+  marketing: { titulo: "Marketing Digital WhatsApp", icono: "ðŸ“£", beneficios: ["EnvÃ­o automÃ¡tico a grupos del barrio", "Programa 1 vez, se publica toda la semana", "CampaÃ±as cada hora (respeta ritmo del grupo)", "1 tap del dueÃ±o â†’ llega a todo el barrio", "Sin riesgo de BAN", "Sin pagar publicidad a Meta"], color: "bg-emerald-500" },
+  mesas: { titulo: "GestiÃ³n de Mesas", icono: "ðŸª‘", beneficios: ["Clientes piden desde su celular", "QR por mesa", "Stock en tiempo real", "Notificaciones a cocina", "Cuentas digitales", "Sin mesero intermedio"], color: "bg-yellow-500" },
 };
 
 interface BusinessConfig {
@@ -114,7 +114,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
           setUnlocked(true);
         }
       } else {
-        // En producción, siempre desbloqueado
+        // En producciÃ³n, siempre desbloqueado
         setUnlocked(true);
       }
     }
@@ -224,7 +224,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       alert("No se pudo copiar. Copia manualmente: " + texto);
     }
   };
-    // ===== CAMBIO DE CREDENCIALES (SEGURIDAD DEL DUEÑO) =====
+    // ===== CAMBIO DE CREDENCIALES (SEGURIDAD DEL DUEÃ‘O) =====
   const abrirModalCred = async () => {
     setCredError(null);
     setCredSuccess(false);
@@ -242,41 +242,41 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     if (/[^A-Za-z0-9]/.test(p)) s++;
     return s;
   };
-    // ===== CERRAR SESIÓN =====
+    // ===== CERRAR SESIÃ“N =====
   const cerrarSesion = async () => {
     try {
       await supabase.auth.signOut();
       window.location.href = "/login";
     } catch (e) {
-      console.error("Error al cerrar sesión:", e);
+      console.error("Error al cerrar sesiÃ³n:", e);
       window.location.href = "/login";
     }
   };
 
   const cambiarCredenciales = async () => {
     setCredError(null);
-    if (!credForm.passwordActual) { setCredError("Ingresa tu contraseña actual"); return; }
-    if (credForm.passwordNueva.length < 8) { setCredError("La nueva contraseña debe tener al menos 8 caracteres"); return; }
-    if (!/[A-Z]/.test(credForm.passwordNueva) || !/[0-9]/.test(credForm.passwordNueva)) { setCredError("La nueva contraseña debe incluir al menos 1 mayúscula y 1 número"); return; }
-    if (credForm.passwordNueva !== credForm.passwordConfirmar) { setCredError("Las contraseñas nuevas no coinciden"); return; }
-    if (credForm.passwordNueva === credForm.passwordActual) { setCredError("La nueva contraseña debe ser diferente a la actual"); return; }
+    if (!credForm.passwordActual) { setCredError("Ingresa tu contraseÃ±a actual"); return; }
+    if (credForm.passwordNueva.length < 8) { setCredError("La nueva contraseÃ±a debe tener al menos 8 caracteres"); return; }
+    if (!/[A-Z]/.test(credForm.passwordNueva) || !/[0-9]/.test(credForm.passwordNueva)) { setCredError("La nueva contraseÃ±a debe incluir al menos 1 mayÃºscula y 1 nÃºmero"); return; }
+    if (credForm.passwordNueva !== credForm.passwordConfirmar) { setCredError("Las contraseÃ±as nuevas no coinciden"); return; }
+    if (credForm.passwordNueva === credForm.passwordActual) { setCredError("La nueva contraseÃ±a debe ser diferente a la actual"); return; }
     setCredLoading(true);
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user?.email) { setCredError("No se pudo obtener tu sesión. Vuelve a iniciar sesión."); return; }
+      if (userError || !userData.user?.email) { setCredError("No se pudo obtener tu sesiÃ³n. Vuelve a iniciar sesiÃ³n."); return; }
       const emailActualSesion = userData.user.email;
       const { error: authError } = await supabase.auth.signInWithPassword({ email: emailActualSesion, password: credForm.passwordActual });
-      if (authError) { setCredError("Contraseña actual incorrecta"); return; }
+      if (authError) { setCredError("ContraseÃ±a actual incorrecta"); return; }
       if (credForm.emailNuevo && credForm.emailNuevo.trim() && credForm.emailNuevo.trim() !== emailActualSesion) {
         const { error: emailErr } = await supabase.auth.updateUser({ email: credForm.emailNuevo.trim() });
         if (emailErr) { setCredError("Error al cambiar el email: " + emailErr.message); return; }
       }
       const { error: passErr } = await supabase.auth.updateUser({ password: credForm.passwordNueva });
-      if (passErr) { setCredError("Error al cambiar la contraseña: " + passErr.message); return; }
+      if (passErr) { setCredError("Error al cambiar la contraseÃ±a: " + passErr.message); return; }
       setCredSuccess(true);
       setTimeout(async () => { await supabase.auth.signOut(); window.location.href = "/login"; }, 3000);
     } catch (e) {
-      setCredError("Error de conexión. Intenta de nuevo.");
+      setCredError("Error de conexiÃ³n. Intenta de nuevo.");
     } finally {
       setCredLoading(false);
     }
@@ -298,7 +298,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-xl font-bold text-stone-800">No se encontró configuración del negocio</h1>
+          <h1 className="text-xl font-bold text-stone-800">No se encontrÃ³ configuraciÃ³n del negocio</h1>
           <p className="text-stone-500">Contacta al administrador.</p>
         </div>
       </div>
@@ -311,7 +311,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
   const modulos = [
     { id: "pos", label: "Nueva Venta", icon: ShoppingCart, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `${prefix}/pos?tenant=${tenantId}` },
-    { id: "produccion", label: "Producción", icon: ChefHat, color: "bg-lime-50 border-2 border-[#B8860B] text-lime-600", href: `${prefix}/produccion?tenant=${tenantId}` },
+    { id: "produccion", label: "ProducciÃ³n", icon: ChefHat, color: "bg-lime-50 border-2 border-[#B8860B] text-lime-600", href: `${prefix}/produccion?tenant=${tenantId}` },
     { id: "inventario", label: "Inventario", icon: Package, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `${prefix}/inventario?tenant=${tenantId}` },
     { id: "personal", label: "Personal", icon: Users, color: "bg-purple-50 border-2 border-[#B8860B] text-purple-600", href: `${prefix}/personal?tenant=${tenantId}` },
     { id: "pedidos", label: "Pedidos", icon: Truck, color: "bg-sky-50 border-2 border-[#B8860B] text-sky-600", href: `${prefix}/pedidos?tenant=${tenantId}` },
@@ -319,9 +319,10 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "finanzas", label: "Finanzas", icon: TrendingUp, color: "bg-teal-50 border-2 border-[#B8860B] text-teal-600", href: `${prefix}/finanzas?tenant=${tenantId}` },
     { id: "tienda", label: "Domicilios", icon: Truck, color: "bg-blue-50 border-2 border-[#B8860B] text-blue-600", href: `${prefix}/tienda?tenant=${tenantId}` },
     { id: "compras", label: "Compras", icon: ShoppingBag, color: "bg-indigo-50 border-2 border-[#B8860B] text-indigo-600", href: `${prefix}/compras?tenant=${tenantId}` },
-    { id: "creditos", label: "Créditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/creditos?tenant=${tenantId}` },
+    { id: "creditos", label: "CrÃ©ditos", icon: Receipt, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/creditos?tenant=${tenantId}` },
     { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `${prefix}/marketing?tenant=${tenantId}` },
     { id: "mesas", label: "Mesas", icon: Armchair, Gamepad2, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/mesas-gestion?origen=${encodeURIComponent(pathname)}&tenant=${tenantId}` },
+    { id: "conecta", label: "Conecta y Diviértete", icon: Gamepad2, color: "bg-violet-50 border-2 border-fuchsia-400 text-fuchsia-700", href: `${prefix}/conecta?tenant=${tenantId}` },
   ];
 
   return (
@@ -335,7 +336,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
       >
         <div className="absolute inset-0 bg-white/10 backdrop-blur-sm pointer-events-none"></div>
         <div className="relative z-10 max-w-3xl mx-auto pt-14 sm:pt-0">
-	          {/* Botón Reset AIDA (solo demos) */}
+	          {/* BotÃ³n Reset AIDA (solo demos) */}
           {isDemo && (
             <button
               onClick={() => {
@@ -346,18 +347,18 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
               className="absolute top-0 left-0 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-xs z-20 border border-rose-300"
               title="Resetear demo (para probar el gate AIDA)"
             >
-              🔄 Reset Demo
+              ðŸ”„ Reset Demo
             </button>
           )}
-          {/* Botón Cerrar Sesión - Esquina superior derecha */}
-                  {/* Botón Notificaciones - junto al de Cerrar Sesión */}
+          {/* BotÃ³n Cerrar SesiÃ³n - Esquina superior derecha */}
+                  {/* BotÃ³n Notificaciones - junto al de Cerrar SesiÃ³n */}
           <div className="absolute top-0 right-28 z-20">
             <NotificationBell tenantId={tenantId} negocioSlug={negocioSlug} />
           </div>  
 	<button
             onClick={cerrarSesion}
             className="absolute top-0 right-0 bg-white/90 hover:bg-white text-stone-700 font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition flex items-center gap-2 text-sm z-20"
-            title="Cerrar sesión"
+            title="Cerrar sesiÃ³n"
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Salir</span>
@@ -447,7 +448,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <p className="text-stone-700/80 text-sm font-light tracking-wider">VENTAS DE HOY</p>
             <p className="text-4xl font-bold mt-1 drop-shadow text-stone-800">${ventasHoy.total.toLocaleString()}</p>
             <p className="text-sm text-stone-700/80 mt-2">
-              {ventasHoy.transacciones} transacciones · Efectivo {ventasHoy.efectivo}% · Nequi {ventasHoy.nequi}% · Daviplata{" "}
+              {ventasHoy.transacciones} transacciones Â· Efectivo {ventasHoy.efectivo}% Â· Nequi {ventasHoy.nequi}% Â· Daviplata{" "}
               {ventasHoy.daviplata}%
             </p>
           </div>
@@ -467,7 +468,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 }
                 return true;
               })
-              .filter((m) => !isDemo || unlocked || m.id === "pos").map((m) => (
+              .filter((m) => !isDemo || unlocked || m.id === "pos" || m.id === "conecta").map((m) => (
             <Link
               key={m.id}
               href={m.href}
@@ -496,9 +497,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
       {isDemo && !unlocked && (
         <button onClick={() => setShowLeadForm(true)} className="mt-6 w-full bg-gradient-to-r from-[#fdb813] to-[#e8a800] text-stone-900 rounded-2xl p-6 text-left shadow-xl hover:shadow-2xl transition border-2 border-[#B8860B]">
-          <span className="block text-2xl font-bold">🔥 Tu negocio puede mucho más</span>
-          <span className="block mt-2 text-stone-800 text-sm">Marketing automático en grupos del barrio 📣 · Reportes · Finanzas · Pedidos · Tienda online y 6 módulos más te esperan.</span>
-          <span className="inline-block mt-4 bg-stone-900 text-amber-400 font-bold px-5 py-2 rounded-full text-sm">🤝 Vamos a conocernos</span>
+          <span className="block text-2xl font-bold">ðŸ”¥ Tu negocio puede mucho mÃ¡s</span>
+          <span className="block mt-2 text-stone-800 text-sm">Marketing automÃ¡tico en grupos del barrio ðŸ“£ Â· Reportes Â· Finanzas Â· Pedidos Â· Tienda online y 6 mÃ³dulos mÃ¡s te esperan.</span>
+          <span className="inline-block mt-4 bg-stone-900 text-amber-400 font-bold px-5 py-2 rounded-full text-sm">ðŸ¤ Vamos a conocernos</span>
         </button>
       )}
 
@@ -522,7 +523,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                   <div className="space-y-2">
                     {b.beneficios.map((ben, i) => (
                       <div key={i} className="flex items-start gap-3 p-3 bg-stone-50 rounded-xl">
-                        <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                        <span className="text-emerald-500 font-bold shrink-0">âœ“</span>
                         <span className="text-sm text-stone-700">{ben}</span>
                       </div>
                     ))}
@@ -558,10 +559,10 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
               <p className="text-sm text-stone-700 mb-2">
-                <strong>📱 Comparte este enlace</strong> con tus trabajadores para que puedan atender ventas en el POS.
+                <strong>ðŸ“± Comparte este enlace</strong> con tus trabajadores para que puedan atender ventas en el POS.
               </p>
               <p className="text-xs text-stone-600">
-                Cada trabajador podrá acceder al sistema de cobro con su propio dispositivo.
+                Cada trabajador podrÃ¡ acceder al sistema de cobro con su propio dispositivo.
               </p>
             </div>
 
@@ -581,7 +582,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                     (copiadoPos ? "bg-green-500" : "bg-amber-500 hover:bg-amber-600")
                   }
                 >
-                  {copiadoPos ? "✓ Copiado" : "Copiar"}
+                  {copiadoPos ? "âœ“ Copiado" : "Copiar"}
                 </button>
               </div>
             </div>
@@ -589,7 +590,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <button
               onClick={() =>
                 compartirWhatsApp(
-                  `🛒 *Acceso al POS de ${config?.nombre_negocio || "Mi Negocio"}*\\n\\nHola! Usa este enlace para acceder al sistema de punto de venta:`,
+                  `ðŸ›’ *Acceso al POS de ${config?.nombre_negocio || "Mi Negocio"}*\\n\\nHola! Usa este enlace para acceder al sistema de punto de venta:`,
                   generarEnlace("pos")
                 )
               }
@@ -600,7 +601,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             </button>
 
             <p className="text-xs text-stone-500 text-center mt-3">
-              💡 Tip: Envíalo al grupo de WhatsApp de tu equipo de trabajo
+              ðŸ’¡ Tip: EnvÃ­alo al grupo de WhatsApp de tu equipo de trabajo
             </p>
           </div>
         </div>
@@ -630,7 +631,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
 
             <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-4">
               <p className="text-sm text-stone-700 mb-2">
-                <strong>🛍️ Comparte este enlace</strong> con tus clientes para que puedan hacer pedidos a domicilio.
+                <strong>ðŸ›ï¸ Comparte este enlace</strong> con tus clientes para que puedan hacer pedidos a domicilio.
               </p>
               <p className="text-xs text-stone-600">
                 Ideal para grupos de WhatsApp del barrio, redes sociales o estados.
@@ -653,7 +654,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                     (copiadoTienda ? "bg-green-500" : "bg-orange-500 hover:bg-orange-600")
                   }
                 >
-                  {copiadoTienda ? "✓ Copiado" : "Copiar"}
+                  {copiadoTienda ? "âœ“ Copiado" : "Copiar"}
                 </button>
               </div>
             </div>
@@ -661,7 +662,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             <button
               onClick={() =>
                 compartirWhatsApp(
-                  `🍗 *${config?.nombre_negocio || "Mi Negocio"}*\\n${config?.slogan || "Tu tienda de confianza"}\\n\\n¡Haz tu pedido a domicilio! 🚚`,
+                  `ðŸ— *${config?.nombre_negocio || "Mi Negocio"}*\\n${config?.slogan || "Tu tienda de confianza"}\\n\\nÂ¡Haz tu pedido a domicilio! ðŸšš`,
                   generarEnlace("tienda")
                 )
               }
@@ -672,7 +673,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             </button>
 
             <p className="text-xs text-stone-500 text-center mt-3">
-              💡 Tip: Compártelo en los grupos de WhatsApp del barrio y en tus estados
+              ðŸ’¡ Tip: CompÃ¡rtelo en los grupos de WhatsApp del barrio y en tus estados
             </p>
           </div>
         </div>
@@ -694,8 +695,8 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             {credSuccess ? (
               <div className="text-center py-6">
                 <ShieldCheck className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-                <h3 className="font-bold text-lg text-stone-900 mb-2">¡Credenciales actualizadas!</h3>
-                <p className="text-sm text-stone-600">Por seguridad, cerrarás sesión en unos segundos para ingresar con tu nueva contraseña.</p>
+                <h3 className="font-bold text-lg text-stone-900 mb-2">Â¡Credenciales actualizadas!</h3>
+                <p className="text-sm text-stone-600">Por seguridad, cerrarÃ¡s sesiÃ³n en unos segundos para ingresar con tu nueva contraseÃ±a.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -705,9 +706,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Contraseña actual *</label>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">ContraseÃ±a actual *</label>
                   <div className="relative">
-                    <input type={showPassActual ? "text" : "password"} value={credForm.passwordActual} onChange={(e) => setCredForm({ ...credForm, passwordActual: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 pr-10 text-stone-800" placeholder="Tu contraseña actual" />
+                    <input type={showPassActual ? "text" : "password"} value={credForm.passwordActual} onChange={(e) => setCredForm({ ...credForm, passwordActual: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 pr-10 text-stone-800" placeholder="Tu contraseÃ±a actual" />
                     <button type="button" onClick={() => setShowPassActual(!showPassActual)} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500">
                       {showPassActual ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -715,9 +716,9 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Nueva contraseña *</label>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Nueva contraseÃ±a *</label>
                   <div className="relative">
-                    <input type={showPassNueva ? "text" : "password"} value={credForm.passwordNueva} onChange={(e) => setCredForm({ ...credForm, passwordNueva: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 pr-10 text-stone-800" placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número" />
+                    <input type={showPassNueva ? "text" : "password"} value={credForm.passwordNueva} onChange={(e) => setCredForm({ ...credForm, passwordNueva: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 pr-10 text-stone-800" placeholder="MÃ­nimo 8 caracteres, 1 mayÃºscula y 1 nÃºmero" />
                     <button type="button" onClick={() => setShowPassNueva(!showPassNueva)} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500">
                       {showPassNueva ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -729,23 +730,23 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
                           <div key={n} className={`h-1.5 flex-1 rounded-full ${fortalezaPass(credForm.passwordNueva) >= n ? (fortalezaPass(credForm.passwordNueva) <= 2 ? "bg-red-500" : fortalezaPass(credForm.passwordNueva) === 3 ? "bg-amber-500" : "bg-emerald-500") : "bg-stone-200"}`} />
                         ))}
                       </div>
-                      <p className="text-xs text-stone-500 mt-1">{fortalezaPass(credForm.passwordNueva) <= 2 ? "Débil" : fortalezaPass(credForm.passwordNueva) === 3 ? "Media" : "Fuerte"}</p>
+                      <p className="text-xs text-stone-500 mt-1">{fortalezaPass(credForm.passwordNueva) <= 2 ? "DÃ©bil" : fortalezaPass(credForm.passwordNueva) === 3 ? "Media" : "Fuerte"}</p>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Confirmar nueva contraseña *</label>
-                  <input type="password" value={credForm.passwordConfirmar} onChange={(e) => setCredForm({ ...credForm, passwordConfirmar: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-stone-800" placeholder="Repite la nueva contraseña" />
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Confirmar nueva contraseÃ±a *</label>
+                  <input type="password" value={credForm.passwordConfirmar} onChange={(e) => setCredForm({ ...credForm, passwordConfirmar: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-stone-800" placeholder="Repite la nueva contraseÃ±a" />
                   {credForm.passwordConfirmar && credForm.passwordConfirmar !== credForm.passwordNueva && (
-                    <p className="text-xs text-red-600 mt-1">Las contraseñas no coinciden</p>
+                    <p className="text-xs text-red-600 mt-1">Las contraseÃ±as no coinciden</p>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Nuevo email (opcional)</label>
-                  <input type="email" value={credForm.emailNuevo} onChange={(e) => setCredForm({ ...credForm, emailNuevo: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-stone-800" placeholder="Deja vacío para mantener el email actual" />
-                  <p className="text-xs text-stone-500 mt-1">Si lo cambias, recibirás un correo de confirmación.</p>
+                  <input type="email" value={credForm.emailNuevo} onChange={(e) => setCredForm({ ...credForm, emailNuevo: e.target.value })} className="w-full border border-stone-300 rounded-xl px-3 py-2 text-stone-800" placeholder="Deja vacÃ­o para mantener el email actual" />
+                  <p className="text-xs text-stone-500 mt-1">Si lo cambias, recibirÃ¡s un correo de confirmaciÃ³n.</p>
                 </div>
 
                 {credError && (
@@ -766,7 +767,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
         onClick={() => setShowLeadForm(true)}
         className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#fdb813] text-stone-900 border-2 border-[#B8860B] rounded-full px-6 py-3 font-bold shadow-2xl hover:bg-[#e8a800]"
       >
-        🤝 Vamos a conocernos
+        ðŸ¤ Vamos a conocernos
       </button>
       )}
       {isDemo && showLeadForm && (
@@ -776,7 +777,7 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
             setUnlocked(true);
             localStorage.setItem("sigea_demo_unlocked", "1");
             localStorage.removeItem("sigea_demo_force_lock");
-            alert("🎉 ¡Desbloqueado! Ya tienes el dashboard completo con Marketing automático.");
+            alert("ðŸŽ‰ Â¡Desbloqueado! Ya tienes el dashboard completo con Marketing automÃ¡tico.");
           }}
           tipoNegocio={negocioSlug || "tienda"}
         />
@@ -784,5 +785,4 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     </div>
   );
 }
-
 
