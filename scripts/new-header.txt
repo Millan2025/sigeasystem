@@ -1,0 +1,30 @@
+﻿<header className="bg-gradient-to-b from-stone-950 via-stone-900 to-emerald-950 text-white px-4 sm:px-6 pt-8 sm:pt-12 pb-8 sm:pb-12 text-center overflow-hidden">
+  <div className="max-w-6xl mx-auto">
+    <span className="inline-flex items-center justify-center bg-emerald-500/20 border border-emerald-300 text-emerald-200 text-sm sm:text-base font-extrabold tracking-widest uppercase px-4 py-2 rounded-full shadow-lg">
+      Demo interactiva · Sin registro · 2 minutos
+    </span>
+    <h1 className="mt-5 text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight">
+      ¿Y si tu negocio te diera <span className="text-[#fdb813] drop-shadow-lg">PAZ</span> en vez de dolor de cabeza?
+    </h1>
+    <div className="mt-6 max-w-5xl mx-auto rounded-[2rem] border-4 border-[#fdb813]/60 bg-white/10 backdrop-blur-sm shadow-2xl px-4 py-5 sm:px-8 sm:py-7">
+      <p className="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight text-white">
+        SIGEA es el socio silencioso que vigila tu inventario, tus ventas y tu plata
+        <span className="block mt-3 text-[#fdb813]">mientras tú vives.</span>
+      </p>
+    </div>
+    <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-5xl mx-auto">
+      <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-4 shadow-lg">
+        <div className="text-2xl sm:text-3xl font-black text-[#fdb813]">✅</div>
+        <p className="mt-1 text-xl sm:text-2xl font-extrabold leading-tight">Sabrás cuánto ganas cada día</p>
+      </div>
+      <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-4 shadow-lg">
+        <div className="text-2xl sm:text-3xl font-black text-[#fdb813]">✅</div>
+        <p className="mt-1 text-xl sm:text-2xl font-extrabold leading-tight">Cero fugas de producto</p>
+      </div>
+      <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-4 shadow-lg">
+        <div className="text-2xl sm:text-3xl font-black text-[#fdb813]">✅</div>
+        <p className="mt-1 text-xl sm:text-2xl font-extrabold leading-tight">Vende mientras duermes</p>
+      </div>
+    </div>
+  </div>
+</header>

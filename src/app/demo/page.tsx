@@ -46,60 +46,46 @@ const MODULOS = [
 export default function DemoIntro() {
   return (
     <div className="min-h-screen bg-stone-100 text-stone-800">
+      <style>{`
+        @media (max-width: 640px) {
+          .text-xs { font-size: 1rem !important; line-height: 1.45 !important; }
+          .text-sm { font-size: 1.125rem !important; line-height: 1.45 !important; }
+          .text-base { font-size: 1.25rem !important; line-height: 1.45 !important; }
+          .text-lg { font-size: 1.45rem !important; }
+          .text-xl { font-size: 1.6rem !important; }
+        }
+      `}</style>
       {/* ===== A · ATENCION ===== */}
-      <header className="bg-gradient-to-b from-stone-900 via-stone-900 to-emerald-950 text-white px-4 pt-10 pb-8 text-center">
-        <span className="inline-block bg-emerald-500/15 border border-emerald-400 text-emerald-300 text-[11px] tracking-widest uppercase px-3 py-1 rounded-full">Demo interactiva · Sin registro · 2 minutos</span>
-        <h1 className="mt-4 text-3xl sm:text-5xl font-extrabold leading-tight">
-          ¿Y si tu negocio te diera <span className="text-[#fdb813]">PAZ</span> en vez de dolor de cabeza?
-        </h1>
-        <p className="mt-3 text-stone-300 max-w-xl mx-auto text-sm sm:text-base">
-          SIGEA es el socio silencioso que vigila tu inventario, tus ventas y tu plata — <b className="text-3xl md:text-6xl font-extrabold text-white leading-tight max-w-5xl mx-auto">mientras tú vives</b>.
-        </p>
-        <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs sm:text-sm">
-          <span className="bg-white/10 rounded-full px-3 py-1">✅ Sabrás cuánto ganas cada día</span>
-          <span className="bg-white/10 rounded-full px-3 py-1">✅ Cero fugas de producto</span>
-          <span className="bg-white/10 rounded-full px-3 py-1">✅ Vende mientras duermes</span>
-        </div>
-<div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-white/20 text-white">
-          <div className="text-center mb-5">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm md:text-lg font-extrabold uppercase tracking-wide">
-              👀 Vista previa: así verás TU negocio en SIGEA
-            </div>
-            <p className="mt-3 text-xs md:text-sm text-white/80 font-semibold">
-              ⚠️ Datos de ejemplo para mostrar tu pantalla — NO es el precio del software.
-            </p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
-            <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-white/80">Ventas de hoy (demo en vivo)</p>
-            <div className="text-4xl md:text-5xl font-extrabold mt-1">$1.980.000</div>
-            <p className="text-sm md:text-base mt-1 text-white/90">24 transacciones registradas en tu punto de venta</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/20">
-              <div className="text-3xl md:text-4xl font-extrabold text-yellow-300">65%</div>
-              <div className="text-sm md:text-lg font-bold mt-1">💵 Efectivo</div>
-              <div className="text-xs md:text-sm text-white/80 mt-0.5">$1.287.000 en tu caja</div>
-            </div>
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/20">
-              <div className="text-3xl md:text-4xl font-extrabold text-yellow-300">20%</div>
-              <div className="text-sm md:text-lg font-bold mt-1">📱 Nequi</div>
-              <div className="text-xs md:text-sm text-white/80 mt-0.5">$396.000 recibidos</div>
-            </div>
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/20">
-              <div className="text-3xl md:text-4xl font-extrabold text-yellow-300">15%</div>
-              <div className="text-sm md:text-lg font-bold mt-1">🟠 Daviplata</div>
-              <div className="text-xs md:text-sm text-white/80 mt-0.5">$297.000 recibidos</div>
-            </div>
-          </div>
-          <p className="text-center text-xs md:text-base mt-5 text-white font-extrabold">
-            ✅ Esto es lo que verás en TU pantalla cada día: cuánto entró, por dónde entró y cuántas ventas hiciste.
-          </p>
-        </div>
-        <div className="mt-5 flex flex-col sm:flex-row justify-center gap-2">
-          <a href="#negocios" className="bg-[#fdb813] text-stone-900 font-bold rounded-xl px-6 py-3 hover:bg-[#e8a800]">👇 Elige tu negocio y pruébalo</a>
-          <a href="https://wa.me/573016111412" target="_blank" className="bg-emerald-600 text-white font-bold rounded-xl px-6 py-3 hover:bg-emerald-700">💬 Hablar por WhatsApp</a>
-        </div>
-      </header>
+      <header className="bg-gradient-to-b from-stone-950 via-stone-900 to-emerald-950 text-white px-4 sm:px-6 pt-8 sm:pt-12 pb-8 sm:pb-12 text-center overflow-hidden">
+  <div className="max-w-6xl mx-auto">
+    <span className="inline-flex items-center justify-center bg-emerald-500/20 border border-emerald-300 text-emerald-200 text-sm sm:text-base font-extrabold tracking-widest uppercase px-4 py-2 rounded-full shadow-lg">
+      Demo interactiva · Sin registro · 2 minutos
+    </span>
+    <h1 className="mt-5 text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight">
+      ¿Y si tu negocio te diera <span className="text-[#fdb813] drop-shadow-lg">PAZ</span> en vez de dolor de cabeza?
+    </h1>
+    <div className="mt-6 max-w-5xl mx-auto rounded-[2rem] border-4 border-[#fdb813]/60 bg-white/10 backdrop-blur-sm shadow-2xl px-4 py-5 sm:px-8 sm:py-7">
+      <p className="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight text-white">
+        SIGEA es el socio silencioso que vigila tu inventario, tus ventas y tu plata
+        <span className="block mt-3 text-[#fdb813]">mientras tú vives.</span>
+      </p>
+    </div>
+    <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-5xl mx-auto">
+      <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-4 shadow-lg">
+        <div className="text-2xl sm:text-3xl font-black text-[#fdb813]">✅</div>
+        <p className="mt-1 text-xl sm:text-2xl font-extrabold leading-tight">Sabrás cuánto ganas cada día</p>
+      </div>
+      <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-4 shadow-lg">
+        <div className="text-2xl sm:text-3xl font-black text-[#fdb813]">✅</div>
+        <p className="mt-1 text-xl sm:text-2xl font-extrabold leading-tight">Cero fugas de producto</p>
+      </div>
+      <div className="bg-white/15 border border-white/20 rounded-2xl px-4 py-4 shadow-lg">
+        <div className="text-2xl sm:text-3xl font-black text-[#fdb813]">✅</div>
+        <p className="mt-1 text-xl sm:text-2xl font-extrabold leading-tight">Vende mientras duermes</p>
+      </div>
+    </div>
+  </div>
+</header>
 
       {/* ===== I · INTERES ===== */}
       <section className="max-w-5xl mx-auto px-4 py-10">
