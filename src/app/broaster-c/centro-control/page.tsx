@@ -110,7 +110,7 @@ export default function CentroControl() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {tab === "dashboard" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sedes.length === 0 && <div className="col-span-full bg-white rounded-2xl p-10 border border-stone-200 text-center text-stone-500">No hay sedes aún. Crea la primera con "Nueva Sede".</div>}
+            {sedes.length === 0 && <div className="col-span-full bg-white rounded-2xl p-10 border border-stone-200 text-center text-stone-500">No hay sedes aun. Crea la primera con "Nueva Sede".</div>}
             {sedes.map((s) => (
               <div key={s.id} className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
                 <div className="flex items-start justify-between mb-3">
@@ -120,7 +120,7 @@ export default function CentroControl() {
                 <div className="space-y-1 text-xs text-stone-600">
                   <div className="flex items-center gap-2"><MapPin className="w-3 h-3" />{s.zona || "Sin zona"}</div>
                   <div className="flex items-center gap-2"><Users className="w-3 h-3" />{s.responsable || "Sin responsable"}</div>
-                  <div className="flex items-center gap-2"><Package className="w-3 h-3" />{(s.modulos_activos || "").split(",").filter(Boolean).length} módulos</div>
+                  <div className="flex items-center gap-2"><Package className="w-3 h-3" />{(s.modulos_activos || "").split(",").filter(Boolean).length} modulos</div>
                 </div>
                 <div className="flex gap-2 mt-4">
                   <a href={"/pos?tenant=" + s.id} className="flex-1 py-2 bg-stone-900 text-white rounded-lg text-sm font-semibold text-center hover:bg-stone-800">Entrar</a>
@@ -147,7 +147,7 @@ export default function CentroControl() {
         )}
         {tab === "ranking" && (
           <div className="bg-white rounded-2xl p-6 border border-stone-200 space-y-3">
-            {sedes.length === 0 && <p className="text-stone-500 text-center py-8">Sin datos de ventas aún.</p>}
+            {sedes.length === 0 && <p className="text-stone-500 text-center py-8">Sin datos de ventas aun.</p>}
             {sedes.map((s, i) => (
               <div key={s.id} className="flex items-center gap-4 border border-stone-200 rounded-xl p-4">
                 <div className={"w-10 h-10 rounded-full flex items-center justify-center font-extrabold " + (i === 0 ? "bg-yellow-400 text-stone-900" : "bg-stone-200 text-stone-700")}>{i + 1}</div>
@@ -168,10 +168,10 @@ export default function CentroControl() {
               <div><label className="block text-xs font-semibold text-stone-500 mb-1">Nombre del puesto *</label><input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Ej: Puesto Norte 45" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
               <div><label className="block text-xs font-semibold text-stone-500 mb-1">Zona / barrio</label><input value={form.zona} onChange={(e) => setForm({ ...form, zona: e.target.value })} placeholder="Ej: Norte" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
               <div><label className="block text-xs font-semibold text-stone-500 mb-1">Responsable</label><input value={form.responsable} onChange={(e) => setForm({ ...form, responsable: e.target.value })} placeholder="Nombre del encargado" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
-              <div><label className="block text-xs font-semibold text-stone-500 mb-1">Teléfono</label><input value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} placeholder="300 123 4567" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
-              <div className="md:col-span-2"><label className="block text-xs font-semibold text-stone-500 mb-1">Dirección</label><input value={form.direccion} onChange={(e) => setForm({ ...form, direccion: e.target.value })} placeholder="Calle 45 #12-34" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
+              <div><label className="block text-xs font-semibold text-stone-500 mb-1">Telefono</label><input value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} placeholder="300 123 4567" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
+              <div className="md:col-span-2"><label className="block text-xs font-semibold text-stone-500 mb-1">Direccion</label><input value={form.direccion} onChange={(e) => setForm({ ...form, direccion: e.target.value })} placeholder="Calle 45 #12-34" className="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-800 placeholder-stone-400" /></div>
               <div className="md:col-span-2">
-                <p className="text-xs font-semibold text-stone-500 mb-2">Módulos habilitados</p>
+                <p className="text-xs font-semibold text-stone-500 mb-2">Modulos habilitados</p>
                 <div className="flex flex-wrap gap-2">
                   {MODS.map((m) => (
                     <button key={m} onClick={() => toggleMod(m)} className={"px-3 py-2 rounded-lg text-sm font-semibold border " + (form.modulos.includes(m) ? "bg-[#fdb813] border-[#fdb813] text-stone-900" : "bg-white border-stone-300 text-stone-600")}>{m}</button>
