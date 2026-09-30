@@ -17,13 +17,31 @@ export default function FacturacionConfig() {
     integracion_activa: false, integracion_proveedor: "ninguno", integracion_api_key: "", integracion_api_secret: ""
   });
 
-  useEffect(() => {
-    fetch("/api/admin/tenants").then(r => r.json()).then(d => {
-      if (d.data) {
-        const t = d.data.find((x: any) => x.id === slug || x.slug === slug);
-        if (t) { setTenantId(t.id); cargar(t.id); }
-      }
-    }).catch(() => {});
+   useEffect(() => {
+    const resolver = async () => {
+      const q = new URLSearchParams(window.location.search).get("tenant");
+      if (q) { setTenantId(q); cargar(q); return; }
+      try {
+        const mod = await import("@/config/negocios");
+        const n: any = (mod as any).NEGOCIOS?.[slug];
+        const id = n?.id || n?.tenant_id || n?.tenantId;
+        if (id) { setTenantId(id); cargar(id); return; }
+      } catch (e) {}
+      try {
+        const r = await fetch("/api/admin/tenants");
+        const d = await r.json();
+        if (d.data) {
+          const t = d.data.find((x: any) =>
+            x.id === slug ||
+            x.slug === slug ||
+            (x.nombre_negocio || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") === slug
+          );
+          if (t) { setTenantId(t.id); cargar(t.id); return; }
+        }
+      } catch (e) {}
+      setMsg("No se identifico el negocio. Abre con ?tenant=UUID al final de la URL");
+    };
+    resolver();
   }, [slug]);
 
   const cargar = (tid: string) => {
