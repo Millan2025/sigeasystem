@@ -43,12 +43,25 @@ export async function POST(request: Request) {
       .single();
     if (sErr) throw sErr;
 
-    const { error: updErr } = await supabase.rpc("actualizar_estadisticas_cliente", {
-      p_cliente_id: cliente_id,
-      p_sellos: v,
-      p_puntos: 0,
-      p_nueva_visita: true
-    }).then(() => ({ error: null })).catch((e) => ({ error: e }));
+    // Leer cliente actual y actualizar estadísticas
+    const { data: clienteActual } = await supabase
+      .from("clientes_fidelizados")
+      .select("*")
+      .eq("id", cliente_id)
+      .single();
+
+    if (clienteActual) {
+      const nuevosSellos = (clienteActual.sellos_acumulados || 0) + v;
+      const nuevasVisitas = (clienteActual.total_visitas || 0) + 1;
+      await supabase
+        .from("clientes_fidelizados")
+        .update({
+          sellos_acumulados: nuevosSellos,
+          total_visitas: nuevasVisitas,
+          ultima_visita: new Date().toISOString()
+        })
+        .eq("id", cliente_id);
+    }
 
     const { data: cliente } = await supabase
       .from("clientes_fidelizados")

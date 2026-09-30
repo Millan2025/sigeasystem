@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'; import { createClient } from '@/lib/supabase/client';
 import { ShoppingCart, Minus, Plus, Trash2, ArrowLeft, X, Scale, Search } from 'lucide-react'
 import Link from 'next/link'
+import GeneradorRecibo from '@/components/GeneradorRecibo'
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -36,6 +37,8 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [showPay, setShowPay] = useState(false)
+  const [showRecibo, setShowRecibo] = useState(false)
+  const [ultimaVenta, setUltimaVenta] = useState<any>(null)
   const [msg, setMsg] = useState('')
   const [catFilter, setCatFilter] = useState('Todo')
   const [searchTerm, setSearchTerm] = useState('')
@@ -86,9 +89,22 @@ export default function POSPage() {
     setProductoPesaje(null); setPesoInput('')
   }
 
-  function pay(m: string) {
+  async function pay(m: string) {
+    const itemsVenta = cart.map(i => ({ productId: i.id, product_id: i.id, nombre: i.nombre, name: i.nombre, quantity: i.cantidad, cantidad: i.cantidad, price: i.precioUnitario, precio: i.precioUnitario, subtotal: i.subtotal }))
+    const ventaData = { items: cart.map(i => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precioUnitario })), metodo_pago: m, total: totalPrecio }
+    let ventaId: any = null
+    try {
+      const res = await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: tenantId, sessionId: null, customerName: 'Cliente General', saleItems: itemsVenta, items: itemsVenta, total: totalPrecio, paymentMethod: m, metodo_pago: m })
+      })
+      const d = await res.json()
+      ventaId = d?.sale?.id || d?.data?.id || null
+    } catch (e) {}
     setMsg('✅ Cobrado: $' + totalPrecio.toLocaleString() + ' - ' + m)
-    setCart([]); setShowPay(false); setShowCart(false)
+    setUltimaVenta({ ...ventaData, id: ventaId })
+    setCart([]); setShowPay(false); setShowCart(false); setShowRecibo(true)
     setTimeout(() => setMsg(''), 3000)
   }
 
@@ -186,6 +202,9 @@ export default function POSPage() {
             <button onClick={() => setShowPay(false)} className="w-full py-3 text-stone-500 font-medium">Cancelar</button>
           </div>
         </div>
+      )}
+      {showRecibo && ultimaVenta && (
+        <GeneradorRecibo tenantId={tenantId} venta={ultimaVenta} items={ultimaVenta.items} cliente={{ nombre: "Cliente General" }} onClose={() => setShowRecibo(false)} />
       )}
     </div>
   )

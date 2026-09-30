@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     );
     const b = await request.json();
     const { tenant_id, cliente_id, tipo, cantidad, descripcion, venta_id } = b;
-    if (!tenant_id || !cliente_id || !cantidad) {
+    if (!tenant_id || !cliente_id || cantidad === undefined) {
       return NextResponse.json({ success: false, error: "Faltan datos" }, { status: 400 });
     }
 
@@ -42,13 +42,23 @@ export async function POST(request: Request) {
       .single();
     if (mErr) throw mErr;
 
-    await supabase
+    // Leer cliente actual y actualizar puntos
+    const { data: clienteActual } = await supabase
       .from("clientes_fidelizados")
-      .update({ 
-        puntos_acumulados: supabase.rpc ? undefined : cantidad,
-        ultima_visita: new Date().toISOString()
-      })
-      .eq("id", cliente_id);
+      .select("*")
+      .eq("id", cliente_id)
+      .single();
+
+    if (clienteActual) {
+      const nuevosPuntos = (clienteActual.puntos_acumulados || 0) + (tipo === "canjeado" ? -cantidad : cantidad);
+      await supabase
+        .from("clientes_fidelizados")
+        .update({
+          puntos_acumulados: Math.max(0, nuevosPuntos),
+          ultima_visita: new Date().toISOString()
+        })
+        .eq("id", cliente_id);
+    }
 
     const { data: cliente } = await supabase
       .from("clientes_fidelizados")
