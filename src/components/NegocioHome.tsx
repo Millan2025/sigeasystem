@@ -29,7 +29,7 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  LogOut, Megaphone,
+  LogOut, Megaphone, FileText, Heart
 } from "lucide-react";
 import NotificationBell from './NotificationBell';
 
@@ -323,8 +323,8 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "marketing", label: "Marketing", icon: Megaphone, color: "bg-emerald-50 border-2 border-emerald-600 text-emerald-700 shadow-lg", href: `${prefix}/marketing?tenant=${tenantId}` },
     { id: "mesas", label: "Mesas", icon: Armchair, Gamepad2, color: "bg-yellow-50 border-2 border-[#B8860B] text-yellow-700", href: `/mesas-gestion?origen=${encodeURIComponent(pathname)}&tenant=${tenantId}` },
     { id: "conecta", label: "Conecta y Diviértete", icon: Gamepad2, color: "bg-violet-50 border-2 border-fuchsia-400 text-fuchsia-700", href: `${prefix}/conecta?tenant=${tenantId}` },
-    { id: "facturacion", titulo: "Facturacion y Recibos", descripcion: "Datos fiscales, resolucion DIAN y recibos PDF", href: "/facturacion", icon: Receipt, color: "from-amber-500 to-orange-500" },
-    { id: "clientes", titulo: "Clientes y Fidelizacion", descripcion: "Sellos, puntos, campanas y clientes VIP", href: "/clientes", icon: Users, color: "from-pink-500 to-rose-500" },
+    { id: "facturacion", label: "Facturacion", icon: FileText, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `${prefix}/facturacion?tenant=${tenantId}` },
+    { id: "clientes", label: "Clientes", icon: Heart, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/clientes?tenant=${tenantId}` },
   ];
 
   return (
