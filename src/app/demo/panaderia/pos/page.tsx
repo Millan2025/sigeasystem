@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -8,6 +8,7 @@ import { NEGOCIOS } from "@/config/negocios";
 import PageHeader from "@/components/PageHeader";
 import { intentarVentaConFallback } from "@/lib/ventaHelper";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import GeneradorRecibo from "@/components/GeneradorRecibo";
 
 interface ProductoBase {
   id: string; nombre: string; icono: string; stock: number; cat: string; esPeso: boolean;
@@ -42,6 +43,8 @@ export default function POSPage() {
   const [productos, setProductos] = useState<ProductoBase[]>([]);
   const [pesoModal, setPesoModal] = useState<{ producto: ProductoBase | null, cantidad: number, unidad: string }>({ producto: null, cantidad: 1, unidad: 'gramos' });
   const [cobrando, setCobrando] = useState(false);
+  const [showRecibo, setShowRecibo] = useState(false);
+  const [ultimaVenta, setUltimaVenta] = useState<any>(null);
   const isOnline = useOnlineStatus();
 
   const cargarProductos = () => {
@@ -387,6 +390,11 @@ export default function POSPage() {
           </div>
         </div>
       )}
+
+      {showRecibo && ultimaVenta && (
+        <GeneradorRecibo tenantId={tenantId} venta={ultimaVenta} items={ultimaVenta.items} cliente={{ nombre: "Cliente General" }} onClose={() => setShowRecibo(false)} />
+      )}
     </div>
   );
 }
+

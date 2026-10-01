@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
@@ -88,7 +88,7 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
     
-    const hoy = new Date().toISOString().split('T')[0]
+    const hoyCol = new Date(Date.now() - 5*60*60*1000); const hoy = hoyCol.toISOString().split('T')[0]
     const { data, error } = await supabase.from('sales')
       .select('*')
       .gte('created_at', hoy)
