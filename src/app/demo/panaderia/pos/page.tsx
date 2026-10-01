@@ -159,6 +159,12 @@ export default function POSPage() {
     isOnline,
     (msg) => {
       setMsg(msg);
+      setUltimaVenta({
+        items: cart.map((it) => ({ nombre: it.nombre, cantidad: it.cantidad, precio: it.precioUnitario })),
+        metodo_pago: metodo,
+        total: totalPrecio
+      });
+      setShowRecibo(true);
       setCart([]);
       setShowPay(false);
       setShowCart(false);
