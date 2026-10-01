@@ -7,4 +7,10 @@ export const NEGOCIOS = {
   tienda: { titulo: "Tienda La Esquina De Calidad", categoria: "Tienda", tenantId: "58d06407-6d1c-4beb-acee-8965001fbbee" },
   "la-casa-del-pan": { titulo: "La Casa del Pan", categoria: "Panaderia", tenantId: "20e53ee4-44df-40d5-bcd0-cc8b5fbc8965" },
   "pollo-broster": { titulo: "Pollo Broster", categoria: "Restaurante", tenantId: "2382b73d-0f4d-4f1a-98a0-f25ad0fb7b11" },
+  "lyke-food": { titulo: "LYKE FOOD", categoria: "Comidas Rapidas", tenantId: "8192036b-d6dd-49f5-b301-b8cbb7b7cb76" },
+  "zuleima-vila": { titulo: "ZULEIMA VILA SAN PABLO", categoria: "Restaurante", tenantId: "443da7c0-af48-4797-a564-2334cb7ab96f" },
+  "lucy": { titulo: "Lucy", categoria: "Restaurante", tenantId: "e1a6e5f8-29a0-4275-9984-6babcbde0b19" },
+  "pizzeria": { titulo: "Pizzeria", categoria: "Restaurante", tenantId: "08701b52-0102-4503-8b8e-2226ea879cee" },
+  "demo-restaurante": { titulo: "Restaurante Demo SIGEA", categoria: "Restaurante", tenantId: "11111111-1111-1111-1111-111111111111" },
+  "pollo-broster-zule": { titulo: "El Pollo Broster de Zule", categoria: "Restaurante", tenantId: "2382b73d-0f4d-4f1a-98a0-f25ad0fb7b11" },
 };
