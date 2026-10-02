@@ -126,7 +126,8 @@ export default function FinanzasPage() {
     
     if (dataFinanzas.success) {
       const transacciones = dataFinanzas.data || [];
-      setTransacciones(transacciones);
+      const todasUnificadas = [...transacciones, ...ventasPOS, ...ventasDomicilio].sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+      setTransacciones(todasUnificadas);
       
       // PaginaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
       const total = transacciones.length;
@@ -168,7 +169,66 @@ export default function FinanzasPage() {
     }
 
     // 4. Calcular resumen REAL (igual que Reportes)
-    const ingresosCalc = totalVentas; // Ingresos desde Ventas
+    
+    // ===== UNIFICACION: Ventas POS + Domicilios =====
+    let ventasPOS: any[] = [];
+    let ventasDomicilio: any[] = [];
+    try {
+      let urlSales = `/api/sales?tenant=${tenantId}`;
+      if (filtros.start) urlSales += `&start=${filtros.start}`;
+      if (filtros.end) urlSales += `&end=${filtros.end}`;
+      const resSales = await fetch(urlSales);
+      const dataSales = await resSales.json();
+      if (dataSales.success && dataSales.data) {
+        ventasPOS = dataSales.data.map((s: any) => ({
+          id: 'pos-' + s.id,
+          tipo: 'ingreso',
+          fecha: s.created_at ? s.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          descripcion: `🛒 Venta POS - ${s.customer_name || 'Cliente'}`,
+          descripcion_resumida: `POS ${s.session_id || ''}`,
+          metodo_pago: s.payment_method || 'Efectivo',
+          total: Number(s.total_amount || 0),
+          subtotal: Number(s.total_amount || 0),
+          iva: 0,
+          retencion: 0,
+          ica: 0,
+          cantidad: 1,
+          precio_unitario: Number(s.total_amount || 0),
+          fuente: 'POS',
+          item: 'POS'
+        }));
+      }
+
+      let urlPedidos = `/api/pedidos?tenant=${tenantId}`;
+      const resPedidos = await fetch(urlPedidos);
+      const dataPedidos = await resPedidos.json();
+      if (dataPedidos.success && dataPedidos.data) {
+        ventasDomicilio = dataPedidos.data
+          .filter((p: any) => p.estado !== 'cancelado')
+          .map((p: any) => ({
+            id: 'ped-' + p.id,
+            tipo: 'ingreso',
+            fecha: p.created_at ? p.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+            descripcion: `🛵 Domicilio - ${p.cliente || 'Cliente'}`,
+            descripcion_resumida: p.direccion || 'Domicilio',
+            metodo_pago: p.metodo_pago || 'Efectivo',
+            total: Number(p.total || 0),
+            subtotal: Number(p.total || 0),
+            iva: 0,
+            retencion: 0,
+            ica: 0,
+            cantidad: 1,
+            precio_unitario: Number(p.total || 0),
+            fuente: 'Domicilio',
+            item: 'DOM'
+          }));
+      }
+    } catch (e) {
+      console.error('Error cargando ventas POS/domicilios:', e);
+    }
+    // ===== FIN UNIFICACION =====
+
+    const ingresosCalc = totalVentas + ventasPOS.reduce((s: number, v: any) => s + (v.total || 0), 0) + ventasDomicilio.reduce((s: number, v: any) => s + (v.total || 0), 0); // Ingresos desde Ventas + POS + Domicilios
     const egresosCalc = totalCompras; // Egresos desde Compras
     const saldoCalc = ingresosCalc - egresosCalc;
     
