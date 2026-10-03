@@ -418,8 +418,30 @@ export default function AdminMasterPage() {
       if (data.data.credentials) {
         setCredenciales(data.data.credentials);
       }
-      setMensaje("✅ Cliente creado exitosamente");
-      setTimeout(() => setMensaje(""), 3000);
+      // ===== SINCRONIZACION: Crear registro en módulo Clientes =====
+      const nuevoTenantId = data.data?.id || data.data?.tenant_id || data.data?.tenantId;
+      if (nuevoTenantId) {
+        try {
+          await fetch("/api/clientes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tenant_id: nuevoTenantId,
+              nombre: body.gerente || body.nombre_negocio,
+              telefono: body.telefono,
+              email: body.correo_contacto,
+              fecha_cumpleanos: null,
+              segmento: "vip"
+            })
+          });
+          console.log("✅ Cliente fidelizado creado para", body.nombre_negocio);
+        } catch (e) {
+          console.warn("No se pudo crear cliente fidelizado:", e);
+        }
+      }
+      // ===== FIN SINCRONIZACION =====
+      setMensaje("✅ Cliente creado + sincronizado con módulo Clientes");
+      setTimeout(() => setMensaje(""), 4000);
       setShowNuevoCliente(false);
       cargarDatos();
     } else {
