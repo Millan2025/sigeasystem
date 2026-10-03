@@ -13,4 +13,5 @@ export const NEGOCIOS = {
   "pizzeria": { titulo: "Pizzeria", categoria: "Restaurante", tenantId: "08701b52-0102-4503-8b8e-2226ea879cee" },
   "demo-restaurante": { titulo: "Restaurante Demo SIGEA", categoria: "Restaurante", tenantId: "11111111-1111-1111-1111-111111111111" },
   "pollo-broster-zule": { titulo: "El Pollo Broster de Zule", categoria: "Restaurante", tenantId: "2382b73d-0f4d-4f1a-98a0-f25ad0fb7b11" },
+"sabroperro": { titulo: "SABROPERRO", categoria: "Comidas Rapidas", tenantId: "39d09849-939d-4004-9c17-f72be4fb114d" },
 };
