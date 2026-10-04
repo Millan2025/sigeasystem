@@ -168,13 +168,13 @@ export default function POSPage() {
         metodo_pago: metodo,
         total: totalPrecio
       });
-      setShowRecibo(true);
       setCart([]);
       setShowPay(false);
       setShowCart(false);
       setCobrando(false);
       cargarProductos();
-      setTimeout(() => setMsg(''), 4000);
+      setTimeout(() => setShowRecibo(true), 1500);
+      setTimeout(() => setMsg(''), 5000);
     },
     (msg) => {
       setMsg(msg);
@@ -239,7 +239,7 @@ export default function POSPage() {
               <Share2 className="w-5 h-5" />
       {/* Toast de mensajes - Z-INDEX ALTO para ser visible siempre */}
       {(msg || cobrando) && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-xl shadow-2xl font-bold text-white animate-in fade-in slide-in-from-top-2 duration-300" style={{
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[999999] px-6 py-3 rounded-xl shadow-2xl font-bold text-white animate-in fade-in slide-in-from-top-2 duration-300" style={{
           background: (msg || '').includes('✅') ? 'linear-gradient(135deg, #10b981, #059669)' : (msg || '').includes('❌') ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #3b82f6, #2563eb)'
         }}>
           <div className="flex items-center gap-2">
