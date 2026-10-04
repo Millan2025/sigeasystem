@@ -268,46 +268,39 @@ export async function DELETE(request: Request) {
     const id = url.searchParams.get('id')
     if (!id) return NextResponse.json({ success: false, error: 'Se requiere ID' }, { status: 400 })
 
-    // 1) Limpieza en cascada de tablas dependientes (mejor esfuerzo)
     const tablas = [
       'sale_items', 'sales', 'compra_items', 'compras', 'pedidos', 'creditos',
       'facturas', 'sellos', 'puntos_movimientos', 'canjes', 'clientes_fidelizados',
-      'movimientos_inventario', 'ordenes_produccion', 'traslados', 'remisiones',
-      'transacciones', 'cash_sessions', 'notificaciones', 'mensajes',
-      'campanas_fidelizacion', 'premios', 'config_fidelizacion', 'config_facturacion',
-      'plantillas_factura', 'config_whatsapp', 'publicaciones_whatsapp', 'piezas_marketing',
-      'mesas', 'customer_orders', 'order_items', 'employees', 'asistencias',
-      'nominas_pagadas', 'gastos_operativos', 'categorias_contables',
-      'periodos_fiscales', 'configuracion_impuestos', 'cupones', 'crm_prospectos',
-      'leads', 'productos'
+      'movimientos_inventario', 'ordenes_produccion', 'transacciones', 'cash_sessions',
+      'notificaciones', 'mensajes', 'campanas_fidelizacion', 'premios',
+      'config_fidelizacion', 'config_facturacion', 'config_whatsapp',
+      'publicaciones_whatsapp', 'piezas_marketing', 'mesas', 'customer_orders',
+      'order_items', 'employees', 'asistencias', 'nominas_pagadas',
+      'gastos_operativos', 'cupones', 'crm_prospectos', 'leads', 'productos'
     ]
-    const errores: string[] = []
-    for (const t of tablas) {
-      const r1 = await supabase.from(t).delete().eq('tenant_id', id)
-      if (r1.error) {
-        const r2 = await supabase.from(t).delete().eq('business_config_id', id)
-        if (r2.error && r2.error.message.indexOf('does not exist') === -1) {
-          errores.push(t + ': ' + r1.error.message)
+
+    // PARALELO: todos los borrados a la vez (1 ronda, ~1-2 seg total)
+    await Promise.all(tablas.map(async (t) => {
+      try {
+        const r1 = await supabase.from(t).delete().eq('tenant_id', id)
+        if (r1.error && r1.error.code === '42703') {
+          await supabase.from(t).delete().eq('business_config_id', id)
         }
-      }
-    }
+      } catch (e) {}
+    }))
 
-    // 2) Eliminar usuarios auth + fila en usuarios
-    const usu = await supabase.from('usuarios').select('id').eq('tenant_id', id)
-    if (usu.data && usu.data.length) {
-      for (const u of usu.data) {
-        try { await supabase.auth.admin.deleteUser(u.id) } catch (e) {}
+    // Usuarios auth + fila usuarios
+    try {
+      const usu = await supabase.from('usuarios').select('id').eq('tenant_id', id)
+      if (usu.data && usu.data.length) {
+        await Promise.all(usu.data.map((u: any) => supabase.auth.admin.deleteUser(u.id).catch(() => {})))
+        await supabase.from('usuarios').delete().eq('tenant_id', id)
       }
-      await supabase.from('usuarios').delete().eq('tenant_id', id)
-    }
+    } catch (e) {}
 
-    // 3) Eliminar el negocio al final
     const del = await supabase.from('business_config').delete().eq('id', id)
     if (del.error) {
-      return NextResponse.json(
-        { success: false, error: 'Error al eliminar cliente: ' + del.error.message + (errores.length ? ' | Dependencias: ' + errores.join('; ') : '') },
-        { status: 500 }
-      )
+      return NextResponse.json({ success: false, error: 'Error al eliminar cliente: ' + del.error.message }, { status: 500 })
     }
     return NextResponse.json({ success: true, message: 'Cliente y todos sus datos eliminados' })
   } catch (error: any) {

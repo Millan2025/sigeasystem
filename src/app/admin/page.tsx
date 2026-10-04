@@ -136,7 +136,7 @@ export default function AdminMasterPage() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const resTenants = await fetch("/api/admin/tenants");
+      const resTenants = await fetch("/api/admin/tenants", { cache: "no-store" });
       const dataTenants = await resTenants.json();
       if (dataTenants.success) setClientes(dataTenants.data || []);
 
@@ -225,18 +225,21 @@ export default function AdminMasterPage() {
 
   async function eliminarClienteReal(id: string) {
     if (!confirm("¿Eliminar este cliente? (Esto eliminará todos sus datos)")) return;
-    const res = await fetch(`/api/admin/tenants?id=${id}`, { method: "DELETE" });
-    const data = await res.json();
-    if (data.success) {
-      setMensaje("✅ Cliente eliminado");
-      setTimeout(() => setMensaje(""), 3000);
-      cargarDatos();
-    } else {
-      alert("Error: " + data.error);
+    try {
+      const res = await fetch(`/api/admin/tenants?id=${id}`, { method: "DELETE", cache: "no-store" });
+      const data = await res.json();
+      if (data.success) {
+        setMensaje("✅ Cliente eliminado");
+        setTimeout(() => setMensaje(""), 3000);
+        cargarDatos();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (err: any) {
+      alert("El borrado fallo o tardo demasiado. Recarga e intenta de nuevo. Detalle: " + err.message);
     }
   }
-
-  async function editarCliente(e: React.FormEvent) {
+async function editarCliente(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const body: any = {
