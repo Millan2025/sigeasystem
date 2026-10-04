@@ -153,6 +153,8 @@ export default function POSPage() {
   setCobrando(true);
   const t0 = Date.now();
   setMsg('💳 Procesando venta...');
+    setShowPay(false);
+    setShowCart(false);
   await intentarVentaConFallback(
     tenantId,
     metodo,
