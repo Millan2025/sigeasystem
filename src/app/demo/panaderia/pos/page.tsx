@@ -151,6 +151,8 @@ export default function POSPage() {
   });
 
   setCobrando(true);
+  const t0 = Date.now();
+  setMsg('💳 Procesando venta...');
   await intentarVentaConFallback(
     tenantId,
     metodo,
@@ -158,7 +160,7 @@ export default function POSPage() {
     items,
     isOnline,
     (msg) => {
-      setMsg(msg);
+      const elapsed = Date.now() - t0; console.log('✅ Venta OK en', elapsed, 'ms'); setMsg('✅ Venta registrada (\$' + totalPrecio.toLocaleString() + ') - ' + elapsed + 'ms');
       setUltimaVenta({
         items: cart.map((it) => ({ nombre: it.nombre, cantidad: it.cantidad, precio: it.precioUnitario })),
         metodo_pago: metodo,
@@ -234,13 +236,13 @@ export default function POSPage() {
             <button onClick={() => setShowShareModal(true)} className="p-2 hover:bg-stone-100 rounded-xl text-stone-600" title="Compartir accesos">
               <Share2 className="w-5 h-5" />
       {/* Toast de mensajes - Z-INDEX ALTO para ser visible siempre */}
-      {msg && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-xl shadow-2xl font-bold text-white animate-in fade-in slide-in-from-top-2 duration-300" style={{
-          background: msg.includes('✅') ? 'linear-gradient(135deg, #10b981, #059669)' : msg.includes('❌') ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #3b82f6, #2563eb)'
+      {(msg || cobrando) && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] px-6 py-3 rounded-xl shadow-2xl font-bold text-white animate-in fade-in slide-in-from-top-2 duration-300" style={{
+          background: (msg || '').includes('✅') ? 'linear-gradient(135deg, #10b981, #059669)' : (msg || '').includes('❌') ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #3b82f6, #2563eb)'
         }}>
           <div className="flex items-center gap-2">
-            {msg.includes('💳') && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-            {msg}
+            {(msg || '').includes('💳') && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            {msg || (cobrando ? '💳 Procesando venta...' : '')}
           </div>
         </div>
       )}
@@ -254,7 +256,7 @@ export default function POSPage() {
         }
       />
 
-      {msg && <div className="bg-emerald-50 text-emerald-700 p-3 text-center font-medium border-b border-emerald-200">{msg}</div>}
+      
 
       <div className="p-4 flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
@@ -415,4 +417,3 @@ export default function POSPage() {
     </div>
   );
 }
-
