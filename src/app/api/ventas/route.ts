@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -165,22 +165,38 @@ export async function POST(request: Request) {
       created_at: fechaISO
     }))
 
-    const updatesStock = items.map((item: any) => {
-      const prod = prodMap.get(item.producto_id)!
-      return supabase
-        .from('productos')
-        .update({ stock: prod.stock - item.cantidad })
-        .eq('id', item.producto_id)
-        .eq('tenant_id', tenant_id)
-    })
-
+    // OLA 3 ATÓMICA: UPDATE stock solo si stock >= cantidad requerida (protege contra race condition)
+    // Primero: insertar items y movimientos (no depende de stock)
     await Promise.all([
       supabase.from('sale_items').insert(saleItems),
-      supabase.from('movimientos_inventario').insert(movimientos),
-      ...updatesStock
+      supabase.from('movimientos_inventario').insert(movimientos)
     ])
 
-    console.log('OLA 3 (items + movimientos + stock):', Date.now() - startTime, 'ms')
+    // Luego: descontar stock uno por uno con validación atómica
+    for (const item of items) {
+      const { data, error } = await supabase
+        .from('productos')
+        .update({ stock: prodMap.get(item.producto_id)!.stock - item.cantidad })
+        .eq('id', item.producto_id)
+        .eq('tenant_id', tenant_id)
+        .gte('stock', item.cantidad)  // ← ATÓMICO: solo actualiza si stock >= cantidad
+        .select()
+
+      if (error) throw error
+      if (!data || data.length === 0) {
+        // Rollback: eliminar la venta y sus items (no se pudo descontar stock)
+        await supabase.from('sale_items').delete().eq('sale_id', venta.id)
+        await supabase.from('movimientos_inventario').delete().eq('motivo', 'Venta #' + venta.id)
+        await supabase.from('ventas').delete().eq('id', venta.id)
+        const prod = prodMap.get(item.producto_id)!
+        return NextResponse.json(
+          { success: false, error: `Stock insuficiente para ${prod.nombre}. Intenta de nuevo.` },
+          { status: 409 }
+        )
+      }
+    }
+
+    console.log('OLA 3 (items + movimientos + stock atómico):', Date.now() - startTime, 'ms')
 
     // OLA 4: PARALELO - Insertar transacción financiera (solo si hay categoría)
     if (categoria?.id) {
