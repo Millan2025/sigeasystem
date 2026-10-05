@@ -338,10 +338,10 @@ export default function POSPage() {
             <h3 className="text-lg font-bold text-stone-800 mb-2">Cobrar</h3>
             <p className="text-2xl font-bold text-emerald-600 mb-4">${totalPrecio.toLocaleString()}</p>
             <div className="flex flex-col gap-2">
-              <button onClick={() => pay('Efectivo')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Efectivo</button>
-              <button onClick={() => pay('Nequi')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Nequi</button>
-              <button onClick={() => pay('Bancolombia')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Bancolombia</button>
-              <button onClick={() => pay('Daviplata')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Daviplata</button>
+              <button onClick={() => pay('Efectivo')} disabled={cobrando} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Efectivo</button>
+              <button onClick={() => pay('Nequi')} disabled={cobrando} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Nequi</button>
+              <button onClick={() => pay('Bancolombia')} disabled={cobrando} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Bancolombia</button>
+              <button onClick={() => pay('Daviplata')} disabled={cobrando} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Daviplata</button>
               <button onClick={() => pay('Crédito')} className="w-full bg-stone-100 hover:bg-stone-200 py-2 rounded-xl text-stone-800">Crédito</button>
             </div>
             <button onClick={() => setShowPay(false)} className="w-full border border-stone-300 py-2 rounded-xl mt-4 text-stone-700">Cancelar</button>
