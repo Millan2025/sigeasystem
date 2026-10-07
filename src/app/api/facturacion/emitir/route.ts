@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -73,6 +73,64 @@ export async function POST(request: Request) {
         .eq("id", factura.id);
     }
     
+
+    // 7) SINCRONIZACION AUTOMATICA: Cliente fidelizado (+1 sello, +1 visita, ticket promedio)
+    try {
+      const telefono = (cliente?.telefono || '').trim();
+      if (telefono && telefono.length >= 7) {
+        const { data: clienteExistente } = await supabase
+          .from('clientes_fidelizados')
+          .select('id, sellos_acumulados, total_visitas, ticket_promedio, puntos_acumulados')
+          .eq('tenant_id', tenant_id)
+          .eq('telefono', telefono)
+          .maybeSingle();
+
+        const ahora = new Date().toISOString();
+
+        if (clienteExistente) {
+          const nuevasVisitas = (clienteExistente.total_visitas || 0) + 1;
+          const ticketAnterior = Number(clienteExistente.ticket_promedio || 0);
+          const nuevoPromedio = ((ticketAnterior * (nuevasVisitas - 1)) + total) / nuevasVisitas;
+
+          await supabase
+            .from('clientes_fidelizados')
+            .update({
+              sellos_acumulados: (clienteExistente.sellos_acumulados || 0) + 1,
+              total_visitas: nuevasVisitas,
+              ticket_promedio: nuevoPromedio,
+              ultima_visita: ahora,
+              puntos_acumulados: (clienteExistente.puntos_acumulados || 0) + Math.floor(total / 1000)
+            })
+            .eq('id', clienteExistente.id);
+
+          console.log('[FIDELIZACION] Cliente actualizado:', telefono, '- sellos:', (clienteExistente.sellos_acumulados || 0) + 1);
+        } else {
+          const nombreCliente = (cliente?.nombre && cliente.nombre !== 'Cliente General') ? cliente.nombre : 'Cliente nuevo';
+
+          await supabase
+            .from('clientes_fidelizados')
+            .insert({
+              tenant_id,
+              nombre: nombreCliente,
+              telefono,
+              email: cliente?.correo || null,
+              sellos_acumulados: 1,
+              total_visitas: 1,
+              ticket_promedio: total,
+              puntos_acumulados: Math.floor(total / 1000),
+              ultima_visita: ahora,
+              segmento: 'nuevo'
+            });
+
+          console.log('[FIDELIZACION] Nuevo cliente creado:', telefono, '-', nombreCliente);
+        }
+      }
+    } catch (syncError: any) {
+      // NO bloqueante: si falla la fidelización, el recibo se emite igual
+      console.error('[FIDELIZACION] Error no bloqueante:', syncError.message);
+    }
+    // FIN SINCRONIZACION
+
     return NextResponse.json({ 
       success: true, 
       factura,
