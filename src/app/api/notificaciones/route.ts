@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
     const inicioDiaUTC = new Date(inicioDiaColombia.getTime() - offsetColombia * 60 * 1000);
     const inicioDiaISO = inicioDiaUTC.toISOString();
 
-    console.log('🕐 Inicio del día (Colombia) en UTC:', inicioDiaISO);
+    // [CLEANED] log removed en UTC:', inicioDiaISO);
 
     const { data, error } = await supabase
       .from('notificaciones')
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    console.log('🔔 GET /api/notificaciones:', data?.length || 0, 'notificaciones del día para', tenantId);
+    // [CLEANED] log removed
     return NextResponse.json({ success: true, data: data || [] });
   } catch (error: any) {
     console.error('❌ Error GET /api/notificaciones:', error);
@@ -64,7 +65,7 @@ export async function PATCH(request: NextRequest) {
         .eq('leida', false);
 
       if (error) throw error;
-      console.log('✅ Todas marcadas como leídas para tenant:', tenant_id);
+      // [CLEANED] log removed
       return NextResponse.json({ success: true });
     }
 
@@ -76,7 +77,7 @@ export async function PATCH(request: NextRequest) {
         .eq('tenant_id', tenant_id);
 
       if (error) throw error;
-      console.log('✅ Notificación marcada:', id, '-> leida:', leida);
+      // [CLEANED] log removed
       return NextResponse.json({ success: true });
     }
 

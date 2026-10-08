@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
 
     // Intento 2 (fallback): sin relaciones si falla
     if (error) {
-      console.warn('⚠️ GET con relaciones falló, usando fallback:', error.message)
+      // [CLEANED] warn removed
       let q2 = supabase
         .from('ordenes_produccion')
         .select('*')

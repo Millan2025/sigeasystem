@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
     }
 
     const totalTime = Date.now() - startTime
-    console.log('Pedido creado en', totalTime, 'ms - ID:', data.id)
+    // [CLEANED] log removed
 
     return NextResponse.json({ success: true, data })
   } catch (error: any) {

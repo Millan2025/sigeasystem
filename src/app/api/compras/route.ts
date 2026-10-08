@@ -1,4 +1,5 @@
-﻿import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic';
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -49,17 +50,7 @@ export async function POST(request: Request) {
       total_con_impuestos 
     } = body
 
-    console.log('📥 POST /api/compras - Datos recibidos:', { 
-      tenant_id, 
-      proveedor, 
-      metodo_pago, 
-      items: items?.length,
-      subtotal,
-      iva,
-      retencion,
-      ica,
-      total_con_impuestos
-    })
+    // [CLEANED] log removed
 
     if (!tenant_id || !items || items.length === 0) {
       return NextResponse.json(
@@ -92,8 +83,8 @@ export async function POST(request: Request) {
       console.error('❌ Error al insertar compra:', compraErr)
       throw compraErr
     }
-    console.log('✅ Compra insertada con ID:', compra.id)
-    console.log('📊 Impuestos guardados:', { subtotal, iva, retencion, ica, total_con_impuestos })
+    // [CLEANED] log removed
+    // [CLEANED] log removed
 
     // 2. Insertar items de compra
     const compraItems = items.map((item: any) => ({
@@ -112,11 +103,11 @@ export async function POST(request: Request) {
       console.error('❌ Error al insertar items:', itemsErr)
       throw itemsErr
     }
-    console.log('✅ Items insertados:', compraItems.length)
+    // [CLEANED] log removed
 
     // 3. Actualizar stock
     for (const item of items) {
-      console.log('🔍 Procesando item:', item.producto_id, 'cantidad:', item.cantidad)
+      // [CLEANED] log removed
       
       const { error: movInsertErr } = await supabase
         .from('movimientos_inventario')
@@ -151,11 +142,11 @@ export async function POST(request: Request) {
         .eq('id', item.producto_id)
         .eq('tenant_id', tenant_id)
     }
-    console.log('✅ Stock actualizado')
+    // [CLEANED] log removed
 
     // 4. REGISTRAR EN FINANZAS con todos los impuestos
     try {
-      console.log('🔍 Buscando categoría contable para tenant:', tenant_id)
+      // [CLEANED] log removed
 
       let { data: categoria, error: catErr } = await supabase
         .from('categorias_contables')
@@ -165,7 +156,7 @@ export async function POST(request: Request) {
         .maybeSingle()
 
       if (!categoria) {
-        console.log('⚠️ Categoría 5-01-01 no encontrada, creándola...')
+        // [CLEANED] log removed
         const { data: newCat, error: createErr } = await supabase
           .from('categorias_contables')
           .insert({
@@ -181,7 +172,7 @@ export async function POST(request: Request) {
           console.error('❌ Error al crear categoría:', createErr)
         } else {
           categoria = newCat
-          console.log('✅ Categoría creada:', categoria?.id)
+          // [CLEANED] log removed
         }
       }
 
@@ -210,7 +201,7 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString()
         }
 
-        console.log('📝 Insertando en transacciones:', transaccion)
+        // [CLEANED] log removed
 
         const { error: transError } = await supabase
           .from('transacciones')
@@ -219,7 +210,7 @@ export async function POST(request: Request) {
         if (transError) {
           console.error('❌ Error al insertar en transacciones:', transError)
         } else {
-          console.log('✅ Transacción registrada en finanzas para compra #' + compra.id)
+          // [CLEANED] log removed
         }
       } else {
         console.error('❌ No se pudo obtener/crear categoría contable.')
