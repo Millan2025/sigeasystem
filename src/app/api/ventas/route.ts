@@ -215,6 +215,26 @@ export async function POST(request: Request) {
         created_at: fechaISO
       })
     }
+	// OLA 5: SINCRONIZAR CLIENTE Y MARKETING
+if (body.telefono_cliente || body.cliente_telefono) {
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/clientes/sincronizar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id,
+        telefono: body.telefono_cliente || body.cliente_telefono,
+        nombre: body.nombre_cliente || '',
+        monto: total,
+        canal: 'pos',
+        cupon_usado: body.cupon_usado || null,
+        venta_id: venta.id,
+      }),
+    });
+  } catch (syncErr) {
+    console.error('Error sincronizando cliente (no bloqueante):', syncErr);
+  }
+}
 
     const totalTime = Date.now() - startTime
     console.log('POS completado en', totalTime, 'ms - Venta:', venta.id)

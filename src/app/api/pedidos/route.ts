@@ -62,7 +62,26 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
-
+	// SINCRONIZAR CLIENTE
+if (telefono) {
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/clientes/sincronizar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_id,
+        telefono,
+        nombre: cliente,
+        monto: total,
+        canal: 'domicilio',
+        cupon_usado: body.cupon_usado || null,
+        venta_id: data.id,
+      }),
+    });
+  } catch (syncErr) {
+    console.error('Error sincronizando cliente domicilio:', syncErr);
+  }
+}
     // ===== SINCRONISMO INVENTARIO: descuenta stock al crear pedido =====
     try {
       for (const item of itemsConNombre) {
