@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -28,11 +28,49 @@ export default function LoginPage() {
       return
     }
 
-    const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
-    if (adminEmails.includes(data.user.email || '')) {
+    // Obtener datos del usuario desde la tabla usuarios
+    const { data: userData, error: userError } = await supabase
+      .from('usuarios')
+      .select('*, business_config(id, nombre_negocio, slug)')
+      .eq('id', data.user.id)
+      .single();
+
+    if (userError || !userData) {
+      setError('Error al cargar datos del usuario')
+      setLoading(false)
+      return
+    }
+
+    // Redirigir según rol
+    if (userData.rol === 'admin_master') {
       router.push('/admin')
     } else {
-      router.push('/')
+      // Obtener slug del negocio
+      let slug = userData.negocio_slug
+      
+      // Si no tiene slug, buscar en business_config
+      if (!slug && userData.business_config) {
+        slug = userData.business_config.slug
+      }
+
+      // Si aún no hay slug, usar tenant_id
+      if (!slug && userData.tenant_id) {
+        const { data: config } = await supabase
+          .from('business_config')
+          .select('slug')
+          .eq('id', userData.tenant_id)
+          .single()
+        
+        if (config) {
+          slug = config.slug
+        }
+      }
+
+      if (slug) {
+        router.push(`/${slug}`)
+      } else {
+        router.push('/dashboard')
+      }
     }
   }
 
@@ -55,6 +93,7 @@ export default function LoginPage() {
     </div>
   )
 }
+
 
 
 
