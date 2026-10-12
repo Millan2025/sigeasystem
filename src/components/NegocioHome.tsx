@@ -1,6 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
+import GuiaPasoAPaso from "./GuiaPasoAPaso";
+import SugerenciasMejoras from "./SugerenciasMejoras";
+import { BookOpen, Lightbulb } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -127,6 +130,8 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   const [copiadoPos, setCopiadoPos] = useState(false);
   const [copiadoTienda, setCopiadoTienda] = useState(false);
   const [showCredModal, setShowCredModal] = useState(false);
+  const [showGuiaPasoAPaso, setShowGuiaPasoAPaso] = useState(false);
+  const [showSugerencias, setShowSugerencias] = useState(false);
   const [credForm, setCredForm] = useState({ passwordActual: "", passwordNueva: "", passwordConfirmar: "", emailNuevo: "" });
   const [credLoading, setCredLoading] = useState(false);
   const [credError, setCredError] = useState<string | null>(null);
@@ -325,6 +330,8 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
     { id: "conecta", label: "Conecta y Diviértete", icon: Gamepad2, color: "bg-violet-50 border-2 border-fuchsia-400 text-fuchsia-700", href: `${prefix}/conecta?tenant=${tenantId}` },
     { id: "facturacion", label: "Facturacion", icon: FileText, color: "bg-amber-50 border-2 border-[#B8860B] text-amber-600", href: `${prefix}/facturacion?tenant=${tenantId}` },
     { id: "clientes", label: "Clientes", icon: Heart, color: "bg-pink-50 border-2 border-[#B8860B] text-pink-600", href: `${prefix}/clientes?tenant=${tenantId}` },
+    { id: "guia", label: "Guía Paso a Paso", icon: BookOpen, color: "bg-cyan-50 border-2 border-cyan-600 text-cyan-700 shadow-lg", href: "#guia", esEspecial: true },
+    { id: "sugerencias", label: "Mejoras y Sugerencias", icon: Lightbulb, color: "bg-violet-50 border-2 border-violet-600 text-violet-700 shadow-lg", href: "#sugerencias", esEspecial: true },
   ];
 
   return (
@@ -788,3 +795,21 @@ export default function NegocioHome({ negocioSlug, tenantId: tenantIdProp }: { n
   );
 }
 
+
+
+      {/* Modal de Guía Paso a Paso */}
+      {showGuiaPasoAPaso && (
+        <GuiaPasoAPaso
+          tenantId={tenantId}
+          negocioNombre={config?.nombre_negocio || negocio?.titulo}
+          onClose={() => setShowGuiaPasoAPaso(false)}
+        />
+      )}
+
+      {/* Modal de Sugerencias y Mejoras */}
+      {showSugerencias && (
+        <SugerenciasMejoras
+          tenantId={tenantId}
+          onClose={() => setShowSugerencias(false)}
+        />
+      )}
