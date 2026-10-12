@@ -30,40 +30,61 @@ export default function LoginPage() {
     }
 
     try {
-      // Consulta SIMPLE sin relaciones embebidas (evita error de FK)
-      const { data: userData, error: userError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', data.user.id)
-        .single()
-
-      if (userError || !userData) {
-        setError('No se encontró tu registro de usuario. Contacta al administrador.')
-        setLoading(false)
-        return
-      }
-
-      // Admin master va al panel general
-      if (userData.rol === 'admin_master') {
+      const emailUser = (data.user.email || '').toLowerCase()
+      const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
+      if (adminEmails.includes(emailUser)) {
         router.push('/admin')
         return
       }
 
-      // Buscar el slug en la config del frontend (NEGOCIOS) por tenant_id
-      let slug: string | null = null
-      const tenantId = userData.tenant_id
+      let userData: any = null
+      let detail = ''
 
-      if (tenantId) {
-        const keys = Object.keys(NEGOCIOS) as Array<keyof typeof NEGOCIOS>
-        for (const k of keys) {
-          if ((NEGOCIOS[k] as any).tenantId === tenantId) {
-            slug = k
-            break
-          }
+      // 1) Intento principal: funcion SECURITY DEFINER (ignora RLS)
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_usuario').single()
+      if (!rpcError && rpcData) {
+        userData = rpcData
+      } else {
+        detail = rpcError ? rpcError.message : ''
+        // 2) Respaldo: consulta directa a usuarios
+        const { data: directData, error: directError } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+        if (!directError && directData) {
+          userData = directData
+        } else if (directError) {
+          detail = detail + ' | ' + directError.message
         }
       }
 
-      // Respaldo: consultar business_config por separado (sin join)
+      // 3) Respaldo final: tenant_id desde metadatos del JWT
+      let tenantId: string | null = userData && userData.tenant_id ? userData.tenant_id : null
+      if (!tenantId) {
+        const meta: any = data.user.user_metadata || {}
+        tenantId = meta.tenant_id || null
+      }
+
+      if (!userData && !tenantId) {
+        setError('No se encontro tu registro. Detalle: ' + (detail || 'sin datos'))
+        setLoading(false)
+        return
+      }
+
+      if (userData && userData.rol === 'admin_master') {
+        router.push('/admin')
+        return
+      }
+
+      let slug: string | null = null
+      if (tenantId) {
+        const keys = Object.keys(NEGOCIOS) as Array<keyof typeof NEGOCIOS>
+        for (const k of keys) {
+          if ((NEGOCIOS[k] as any).tenantId === tenantId) { slug = k; break }
+        }
+      }
+
       if (!slug && tenantId) {
         const { data: config } = await supabase
           .from('business_config')
@@ -75,13 +96,15 @@ export default function LoginPage() {
 
       if (slug && tenantId) {
         router.push('/' + slug + '?tenant=' + tenantId)
+      } else if (tenantId) {
+        router.push('/?tenant=' + tenantId)
       } else {
-        setError('Tu negocio aún no está configurado. Contacta al administrador.')
+        setError('Tu negocio aun no esta configurado. Contacta al administrador.')
         setLoading(false)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error post-login:', err)
-      setError('Error al cargar datos del usuario')
+      setError('Error al cargar datos: ' + (err && err.message ? err.message : 'desconocido'))
       setLoading(false)
     }
   }
@@ -104,6 +127,7 @@ export default function LoginPage() {
     </div>
   )
 }
+
 
 
 
