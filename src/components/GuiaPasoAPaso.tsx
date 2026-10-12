@@ -5,10 +5,71 @@ import { BookOpen, Package, ShoppingBag, Armchair, ShoppingCart, Megaphone, Chec
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
-export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }) {
-  const [moduloActual, setModuloActual] = useState("inicio");
+interface GuiaPasoAPasoProps {
+  tenantId: string;
+  negocioNombre?: string;
+  onClose: () => void;
+}
+
+type ModuloId = "inicio" | "inventario" | "compras" | "mesas" | "pos" | "marketing" | "final";
+
+interface PasoGuia {
+  titulo: string;
+  descripcion: string;
+  icono: string;
+  tip?: string;
+}
+
+interface GuiaModulo {
+  id: ModuloId;
+  titulo: string;
+  subtitulo: string;
+  icono: any;
+  color: string;
+  pasos: PasoGuia[];
+}
+
+const GUIAS: Record<ModuloId, GuiaModulo> = {
+  inicio: { id: "inicio", titulo: "¡Bienvenido a SIGEA!", subtitulo: "Vamos a preparar tu negocio paso a paso", icono: Sparkles, color: "from-amber-400 to-orange-500", pasos: [] },
+  inventario: { id: "inventario", titulo: "Paso 1: Dale vida a tu menú", subtitulo: "Registra todo lo que vendes", icono: Package, color: "from-amber-400 to-amber-600", pasos: [
+    { titulo: "Abre el módulo Inventario", descripcion: "Haz clic en el botón 'Inventario' del dashboard principal.", icono: "📦" },
+    { titulo: "Agrega un producto nuevo", descripcion: "Haz clic en '+ Nuevo Producto' y llena: nombre, precio de venta y costo.", icono: "➕" },
+    { titulo: "Define el stock mínimo", descripcion: "Ejemplo: si vendes pan, pon mínimo 10. El sistema te avisará cuando baje.", icono: "📊", tip: "¡El costo es clave! Así SIGEA calcula tu ganancia real." },
+    { titulo: "Sube una foto", descripcion: "Una buena foto vende más. Toma la foto desde tu celular.", icono: "📸" }
+  ]},
+  compras: { id: "compras", titulo: "Paso 2: Repone tu despensa", subtitulo: "Registra tus compras a proveedores", icono: ShoppingBag, color: "from-indigo-400 to-indigo-600", pasos: [
+    { titulo: "Abre el módulo Compras", descripcion: "Verás en rojo los productos con stock bajo.", icono: "🚚" },
+    { titulo: "Selecciona qué comprar", descripcion: "Marca los productos que necesitas reponer.", icono: "✅" },
+    { titulo: "Elige tu proveedor", descripcion: "Selecciona de la lista o crea uno nuevo con nombre y teléfono.", icono: "🏪" },
+    { titulo: "Registra la compra", descripcion: "Haz clic en 'Registrar Compra'. ¡El inventario se actualiza solo!", icono: "🎉", tip: "Magia: el gasto se registra en Finanzas automáticamente." }
+  ]},
+  mesas: { id: "mesas", titulo: "Paso 3: Prepara tus mesas", subtitulo: "Crea códigos QR para pedidos digitales", icono: Armchair, color: "from-yellow-400 to-yellow-600", pasos: [
+    { titulo: "Abre el módulo Mesas", descripcion: "Haz clic en 'Mesas' en el dashboard.", icono: "🪑" },
+    { titulo: "Genera un rango de mesas", descripcion: "Ejemplo: prefijo 'M', del 1 al 10. ¡En 1 segundo tendrás 10 mesas!", icono: "⚡" },
+    { titulo: "Imprime los QRs", descripcion: "Haz clic en 'Imprimir Hoja A4'. Saldrán todos los QRs listos.", icono: "🖨️" },
+    { titulo: "Plastifica y pega", descripcion: "Recorta cada QR, plastifícalo y pégalo en su mesa correspondiente.", icono: "🪑", tip: "Pégalo en una esquina visible, ¡no debajo del plato!" }
+  ]},
+  pos: { id: "pos", titulo: "Paso 4: ¡A vender!", subtitulo: "Todo está listo para cobrar", icono: ShoppingCart, color: "from-emerald-400 to-emerald-600", pasos: [
+    { titulo: "Abre el módulo POS", descripcion: "Verás tus productos con sus fotos en pantalla.", icono: "💰" },
+    { titulo: "Toca los productos", descripcion: "El cliente te dice qué quiere. Toca cada producto y se suma al carrito.", icono: "👆" },
+    { titulo: "Haz clic en COBRAR", descripcion: "El botón verde grande abajo. Se abre el modal de pago.", icono: "🟢" },
+    { titulo: "Elige método de pago", descripcion: "Efectivo, Nequi, Daviplata, tarjeta... lo que use el cliente.", icono: "💳", tip: "Tip Pro: siempre pide el teléfono del cliente para sumarle sellos de fidelidad." }
+  ]},
+  marketing: { id: "marketing", titulo: "Paso 5: Haz que vuelvan", subtitulo: "Envía mensajes y crea cupones", icono: Megaphone, color: "from-fuchsia-400 to-fuchsia-600", pasos: [
+    { titulo: "Abre el módulo Marketing", descripcion: "Aquí están tus clientes y campañas.", icono: "📣" },
+    { titulo: "Elige un segmento", descripcion: "Ejemplo: 'Clientes inactivos (+30 días)'. El sistema te dice cuántos son.", icono: "🎯" },
+    { titulo: "Escribe tu mensaje", descripcion: "Sé claro y con gancho. Ej: '¡Te extrañamos! Vuelve con 20% OFF'.", icono: "✍️" },
+    { titulo: "Activa un cupón", descripcion: "Crea un código como 'VUELVE20' con 20% de descuento.", icono: "🎟️", tip: "Los cupones con fecha corta (48h) se redimen 3x más." }
+  ]},
+  final: { id: "final", titulo: "¡Lo lograste!", subtitulo: "Tu negocio está listo para brillar", icono: CheckCircle2, color: "from-green-400 to-emerald-600", pasos: [] }
+};
+
+const ORDEN_MODULOS: ModuloId[] = ["inicio", "inventario", "compras", "mesas", "pos", "marketing", "final"];
+
+export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: GuiaPasoAPasoProps) {
+  const [moduloActual, setModuloActual] = useState<ModuloId>("inicio");
   const [pasoActual, setPasoActual] = useState(0);
-  const [progresoCompletado, setProgresoCompletado] = useState(new Set());
+  const [progresoCompletado, setProgresoCompletado] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     cargarProgreso();
@@ -17,52 +78,15 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }) {
   const cargarProgreso = async () => {
     try {
       const { data } = await supabase.from('progreso_guias').select('modulo').eq('tenant_id', tenantId).eq('completado', true);
-      if (data) setProgresoCompletado(new Set(data.map((p) => p.modulo)));
+      if (data) setProgresoCompletado(new Set(data.map((p: any) => p.modulo)));
     } catch (e) { console.error('Error cargando progreso:', e); }
   };
 
-  const marcarModuloCompletado = async (modulo) => {
+  const marcarModuloCompletado = async (modulo: string) => {
     try {
       await supabase.from('progreso_guias').upsert({ tenant_id: tenantId, modulo, completado: true, completado_en: new Date().toISOString() }, { onConflict: 'tenant_id,modulo' });
       setProgresoCompletado(prev => new Set([...prev, modulo]));
     } catch (e) { console.error('Error guardando progreso:', e); }
-  };
-
-  const ORDEN_MODULOS = ["inicio", "inventario", "compras", "mesas", "pos", "marketing", "final"];
-  
-  const GUIAS = {
-    inicio: { id: "inicio", titulo: "¡Bienvenido a SIGEA!", subtitulo: "Vamos a preparar tu negocio paso a paso", icono: Sparkles, color: "from-amber-400 to-orange-500", pasos: [] },
-    inventario: { id: "inventario", titulo: "Paso 1: Dale vida a tu menú", subtitulo: "Registra todo lo que vendes", icono: Package, color: "from-amber-400 to-amber-600", pasos: [
-      { titulo: "Abre el módulo Inventario", descripcion: "Haz clic en el botón 'Inventario' del dashboard principal.", icono: "📦" },
-      { titulo: "Agrega un producto nuevo", descripcion: "Haz clic en '+ Nuevo Producto' y llena: nombre, precio de venta y costo.", icono: "➕" },
-      { titulo: "Define el stock mínimo", descripcion: "Ejemplo: si vendes pan, pon mínimo 10. El sistema te avisará cuando baje.", icono: "📊", tip: "¡El costo es clave! Así SIGEA calcula tu ganancia real." },
-      { titulo: "Sube una foto", descripcion: "Una buena foto vende más. Toma la foto desde tu celular.", icono: "📸" }
-    ]},
-    compras: { id: "compras", titulo: "Paso 2: Repone tu despensa", subtitulo: "Registra tus compras a proveedores", icono: ShoppingBag, color: "from-indigo-400 to-indigo-600", pasos: [
-      { titulo: "Abre el módulo Compras", descripcion: "Verás en rojo los productos con stock bajo.", icono: "🚚" },
-      { titulo: "Selecciona qué comprar", descripcion: "Marca los productos que necesitas reponer.", icono: "✅" },
-      { titulo: "Elige tu proveedor", descripcion: "Selecciona de la lista o crea uno nuevo con nombre y teléfono.", icono: "🏪" },
-      { titulo: "Registra la compra", descripcion: "Haz clic en 'Registrar Compra'. ¡El inventario se actualiza solo!", icono: "🎉", tip: "Magia: el gasto se registra en Finanzas automáticamente." }
-    ]},
-    mesas: { id: "mesas", titulo: "Paso 3: Prepara tus mesas", subtitulo: "Crea códigos QR para pedidos digitales", icono: Armchair, color: "from-yellow-400 to-yellow-600", pasos: [
-      { titulo: "Abre el módulo Mesas", descripcion: "Haz clic en 'Mesas' en el dashboard.", icono: "🪑" },
-      { titulo: "Genera un rango de mesas", descripcion: "Ejemplo: prefijo 'M', del 1 al 10. ¡En 1 segundo tendrás 10 mesas!", icono: "⚡" },
-      { titulo: "Imprime los QRs", descripcion: "Haz clic en 'Imprimir Hoja A4'. Saldrán todos los QRs listos.", icono: "🖨️" },
-      { titulo: "Plastifica y pega", descripcion: "Recorta cada QR, plastifícalo y pégalo en su mesa correspondiente.", icono: "🪑", tip: "Pégalo en una esquina visible, ¡no debajo del plato!" }
-    ]},
-    pos: { id: "pos", titulo: "Paso 4: ¡A vender!", subtitulo: "Todo está listo para cobrar", icono: ShoppingCart, color: "from-emerald-400 to-emerald-600", pasos: [
-      { titulo: "Abre el módulo POS", descripcion: "Verás tus productos con sus fotos en pantalla.", icono: "💰" },
-      { titulo: "Toca los productos", descripcion: "El cliente te dice qué quiere. Toca cada producto y se suma al carrito.", icono: "👆" },
-      { titulo: "Haz clic en COBRAR", descripcion: "El botón verde grande abajo. Se abre el modal de pago.", icono: "🟢" },
-      { titulo: "Elige método de pago", descripcion: "Efectivo, Nequi, Daviplata, tarjeta... lo que use el cliente.", icono: "💳", tip: "Tip Pro: siempre pide el teléfono del cliente para sumarle sellos de fidelidad." }
-    ]},
-    marketing: { id: "marketing", titulo: "Paso 5: Haz que vuelvan", subtitulo: "Envía mensajes y crea cupones", icono: Megaphone, color: "from-fuchsia-400 to-fuchsia-600", pasos: [
-      { titulo: "Abre el módulo Marketing", descripcion: "Aquí están tus clientes y campañas.", icono: "📣" },
-      { titulo: "Elige un segmento", descripcion: "Ejemplo: 'Clientes inactivos (+30 días)'. El sistema te dice cuántos son.", icono: "🎯" },
-      { titulo: "Escribe tu mensaje", descripcion: "Sé claro y con gancho. Ej: '¡Te extrañamos! Vuelve con 20% OFF'.", icono: "✍️" },
-      { titulo: "Activa un cupón", descripcion: "Crea un código como 'VUELVE20' con 20% de descuento.", icono: "🎟️", tip: "Los cupones con fecha corta (48h) se redimen 3x más." }
-    ]},
-    final: { id: "final", titulo: "¡Lo lograste!", subtitulo: "Tu negocio está listo para brillar", icono: CheckCircle2, color: "from-green-400 to-emerald-600", pasos: [] }
   };
 
   const guia = GUIAS[moduloActual];

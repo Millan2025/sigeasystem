@@ -2,6 +2,11 @@
 import { useState } from "react";
 import { Lightbulb, X, Send, CheckCircle, Bug, Wrench, Sparkles, MessageSquare } from "lucide-react";
 
+interface SugerenciasMejorasProps {
+  tenantId: string;
+  onClose: () => void;
+}
+
 const CATEGORIAS = [
   { value: "bug", label: "Reportar un error", icono: Bug, color: "bg-red-50 border-red-300 text-red-700" },
   { value: "mejora", label: "Mejorar algo existente", icono: Wrench, color: "bg-blue-50 border-blue-300 text-blue-700" },
@@ -11,7 +16,7 @@ const CATEGORIAS = [
 
 const MODULOS = ["POS / Ventas", "Inventario", "Compras", "Finanzas", "Reportes", "Personal", "Producción", "Mesas", "Marketing", "Domicilios", "Clientes", "Créditos", "Otro"];
 
-export default function SugerenciasMejoras({ tenantId, onClose }) {
+export default function SugerenciasMejoras({ tenantId, onClose }: SugerenciasMejorasProps) {
   const [categoria, setCategoria] = useState("");
   const [modulo, setModulo] = useState("");
   const [titulo, setTitulo] = useState("");
