@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { NEGOCIOS } from '@/config/negocios'
 import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
@@ -28,52 +29,62 @@ export default function LoginPage() {
       return
     }
 
-    // Obtener datos del usuario desde la tabla usuarios
-    const { data: userData, error: userError } = await supabase
-      .from('usuarios')
-      .select('*, business_config(id, nombre_negocio, slug)')
-      .eq('id', data.user.id)
-      .single();
+    try {
+      // Consulta SIMPLE sin relaciones embebidas (evita error de FK)
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
 
-    if (userError || !userData) {
-      setError('Error al cargar datos del usuario')
-      setLoading(false)
-      return
-    }
-
-    // Redirigir según rol
-    if (userData.rol === 'admin_master') {
-      router.push('/admin')
-    } else {
-      // Obtener slug del negocio
-      let slug = userData.negocio_slug
-      
-      // Si no tiene slug, buscar en business_config
-      if (!slug && userData.business_config) {
-        slug = userData.business_config.slug
+      if (userError || !userData) {
+        setError('No se encontró tu registro de usuario. Contacta al administrador.')
+        setLoading(false)
+        return
       }
 
-      // Si aún no hay slug, usar tenant_id
-      if (!slug && userData.tenant_id) {
-        const { data: config } = await supabase
-          .from('business_config')
-          .select('slug')
-          .eq('id', userData.tenant_id)
-          .single()
-        
-        if (config) {
-          slug = config.slug
+      // Admin master va al panel general
+      if (userData.rol === 'admin_master') {
+        router.push('/admin')
+        return
+      }
+
+      // Buscar el slug en la config del frontend (NEGOCIOS) por tenant_id
+      let slug: string | null = null
+      const tenantId = userData.tenant_id
+
+      if (tenantId) {
+        const keys = Object.keys(NEGOCIOS) as Array<keyof typeof NEGOCIOS>
+        for (const k of keys) {
+          if ((NEGOCIOS[k] as any).tenantId === tenantId) {
+            slug = k
+            break
+          }
         }
       }
 
-      if (slug) {
-        router.push(`/${slug}`)
-      } else {
-        router.push('/dashboard')
+      // Respaldo: consultar business_config por separado (sin join)
+      if (!slug && tenantId) {
+        const { data: config } = await supabase
+          .from('business_config')
+          .select('slug')
+          .eq('id', tenantId)
+          .single()
+        if (config && config.slug) slug = config.slug
       }
+
+      if (slug && tenantId) {
+        router.push('/' + slug + '?tenant=' + tenantId)
+      } else {
+        setError('Tu negocio aún no está configurado. Contacta al administrador.')
+        setLoading(false)
+      }
+    } catch (err) {
+      console.error('Error post-login:', err)
+      setError('Error al cargar datos del usuario')
+      setLoading(false)
     }
   }
-
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -93,6 +104,7 @@ export default function LoginPage() {
     </div>
   )
 }
+
 
 
 
