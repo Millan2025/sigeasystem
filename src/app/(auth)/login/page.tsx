@@ -33,7 +33,7 @@ export default function LoginPage() {
       const emailUser = (data.user.email || '').toLowerCase()
       const adminEmails = ['fjmillan38@gmail.com', 'admin@sigea.com']
       if (adminEmails.includes(emailUser)) {
-        router.push('/admin')
+        window.location.href = '/admin'
         return
       }
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
       }
 
       if (userData && userData.rol === 'admin_master') {
-        router.push('/admin')
+        window.location.href = '/admin'
         return
       }
 
@@ -95,9 +95,9 @@ export default function LoginPage() {
       }
 
       if (slug && tenantId) {
-        router.push('/' + slug + '?tenant=' + tenantId)
+        window.location.href = '/' + slug + '?tenant=' + tenantId
       } else if (tenantId) {
-        router.push('/?tenant=' + tenantId)
+        window.location.href = '/?tenant=' + tenantId
       } else {
         setError('Tu negocio aun no esta configurado. Contacta al administrador.')
         setLoading(false)
@@ -127,6 +127,7 @@ export default function LoginPage() {
     </div>
   )
 }
+
 
 
 

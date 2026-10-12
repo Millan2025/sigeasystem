@@ -149,6 +149,11 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
       />
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        <div className="flex justify-end">
+          <button onClick={cerrarSesion} className="bg-stone-900 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-stone-800">
+            <LogOut className="w-4 h-4" /> Cerrar Sesion
+          </button>
+        </div>
         {/* Métricas del Día */}
         <div className="bg-gradient-to-br from-[#fdb813] to-[#e8a800] rounded-2xl p-6 text-stone-900 shadow-lg">
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">💰 Ventas del Día</h2>
@@ -169,7 +174,7 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
             🚀 Accesos Rápidos
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {modulos.filter((m) => m.id !== "pos").map((m) => {
+            {modulos.map((m) => {
               const Icon = m.icon as any;
               const esEspecial = (m as any).esEspecial;
               
@@ -257,4 +262,5 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     </div>
   );
 }
+
 
