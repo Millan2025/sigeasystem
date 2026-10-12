@@ -113,7 +113,6 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
 
   const Icono = guia.icono;
 
-  // PANTALLA DE BIENVENIDA (compacta)
   if (moduloActual === "inicio") {
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3">
@@ -124,7 +123,7 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
             </button>
             <Sparkles className="w-10 h-10 mb-2" />
             <h1 className="text-2xl font-extrabold mb-1">¡Bienvenido!</h1>
-            <p className="text-sm opacity-95">Prepara tu negocio paso a paso. Es más fácil de lo que crees.</p>
+            <p className="text-sm opacity-95">Prepara tu negocio paso a paso.</p>
           </div>
           <div className="p-5">
             <h2 className="text-base font-bold text-stone-900 mb-3">📋 Ten a la mano:</h2>
@@ -150,38 +149,16 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
     );
   }
 
-  // PANTALLA FINAL (compacta)
   if (moduloActual === "final") {
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3">
         <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-br from-green-400 to-emerald-600 p-8 text-white text-center relative">
-            <div className="absolute inset-0 opacity-20 overflow-hidden">
-              {[...Array(10)].map((_, i) => (
-                <div key={i} className="absolute text-2xl animate-ping" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s` }}>🎊</div>
-              ))}
-            </div>
-            <div className="relative z-10">
-              <div className="text-6xl mb-3">🏆</div>
-              <h1 className="text-3xl font-extrabold mb-1">¡Lo lograste!</h1>
-              <p className="text-base opacity-95">Tu negocio está listo para brillar.</p>
-            </div>
+            <div className="text-6xl mb-3">🏆</div>
+            <h1 className="text-3xl font-extrabold mb-1">¡Lo lograste!</h1>
+            <p className="text-base opacity-95">Tu negocio está listo para brillar.</p>
           </div>
           <div className="p-5">
-            <div className="space-y-2 mb-5">
-              {[
-                { icono: "📦", texto: "Inventario al día" },
-                { icono: "🪑", texto: "Mesas con QR" },
-                { icono: "💰", texto: "Listo para vender" },
-                { icono: "📣", texto: "Campañas listas" }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <span className="text-lg">{item.icono}</span>
-                  <p className="text-sm text-stone-800 font-semibold">{item.texto}</p>
-                </div>
-              ))}
-            </div>
             <button onClick={onClose} className="w-full py-3 bg-gradient-to-r from-stone-800 to-stone-900 text-white rounded-xl font-extrabold flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-95">
               Ir al Dashboard 🏠
             </button>
@@ -191,14 +168,12 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
     );
   }
 
-  // PANTALLA DE PASOS (optimizada para móvil)
   const paso = guia.pasos[pasoActual];
   const progresoPorcentaje = ((pasoActual + 1) / totalPasos) * 100;
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3">
       <div className="bg-white rounded-2xl max-w-md w-full max-h-[92vh] overflow-y-auto shadow-2xl">
-        {/* Header compacto */}
         <div className={`bg-gradient-to-br ${guia.color} p-4 text-white relative rounded-t-2xl`}>
           <button onClick={onClose} className="absolute top-3 right-3 p-1.5 hover:bg-white/20 rounded-lg transition">
             <X className="w-5 h-5" />
@@ -210,14 +185,12 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
               <p className="text-xs opacity-90">{guia.subtitulo}</p>
             </div>
           </div>
-          {/* Barra de progreso */}
           <div className="bg-white/20 rounded-full h-1.5 overflow-hidden">
             <div className="bg-white h-full rounded-full transition-all duration-500" style={{ width: `${progresoPorcentaje}%` }} />
           </div>
           <p className="text-xs mt-1.5 opacity-90">Paso {pasoActual + 1} de {totalPasos}</p>
         </div>
 
-        {/* Contenido del paso */}
         <div className="p-4">
           <div className="mb-4">
             <div className="flex items-start gap-3">
@@ -226,7 +199,7 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
                 <h3 className="text-base font-bold text-stone-900 mb-1.5">{paso.titulo}</h3>
                 <p className="text-sm text-stone-700 leading-relaxed">{paso.descripcion}</p>
                 {paso.tip && (
-                  <div className="mt-3 bg-amber-50 border-l-3 border-amber-400 p-3 rounded-r-lg">
+                  <div className="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r-lg">
                     <div className="flex items-start gap-2">
                       <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-stone-700"><strong>Tip:</strong> {paso.tip}</p>
@@ -237,50 +210,13 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
             </div>
           </div>
 
-          {/* Navegación */}
           <div className="flex gap-2">
-            <button
-              onClick={anterior}
-              disabled={indiceModulo === 1 && pasoActual === 0}
-              className="flex-1 py-3 border-2 border-stone-300 text-stone-700 rounded-xl font-bold flex items-center justify-center gap-1 hover:bg-stone-50 transition disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-            >
+            <button onClick={anterior} disabled={indiceModulo === 1 && pasoActual === 0} className="flex-1 py-3 border-2 border-stone-300 text-stone-700 rounded-xl font-bold flex items-center justify-center gap-1 hover:bg-stone-50 transition disabled:opacity-40 disabled:cursor-not-allowed text-sm">
               <ChevronLeft className="w-4 h-4" /> Anterior
             </button>
-            <button
-              onClick={siguiente}
-              className="flex-[2] py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-extrabold flex items-center justify-center gap-1 hover:shadow-lg transition-all active:scale-95 text-sm"
-            >
+            <button onClick={siguiente} className="flex-[2] py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-extrabold flex items-center justify-center gap-1 hover:shadow-lg transition-all active:scale-95 text-sm">
               {esUltimoPaso ? "¡Completar!" : "Siguiente"} <ChevronRight className="w-4 h-4" />
             </button>
-          </div>
-        </div>
-
-        {/* Selector de módulos (compacto) */}
-        <div className="border-t border-stone-200 p-3 bg-stone-50">
-          <p className="text-xs font-semibold text-stone-600 mb-2">Saltar a:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {ORDEN_MODULOS.filter(m => m !== "inicio" && m !== "final").map((m) => {
-              const g = GUIAS[m];
-              const IconoM = g.icono;
-              const completado = progresoCompletado.has(m);
-              return (
-                <button
-                  key={m}
-                  onClick={() => { setModuloActual(m); setPasoActual(0); }}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    moduloActual === m
-                      ? 'bg-amber-500 text-white'
-                      : completado
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                      : 'bg-white text-stone-700 border border-stone-300'
-                  }`}
-                >
-                  <IconoM className="w-3 h-3" />
-                  {g.titulo.replace("Paso ", "").split(":")[0].trim()}
-                  {completado && <CheckCircle2 className="w-3 h-3 text-emerald-600" />}
-                </button>
-              );
-            })}
           </div>
         </div>
       </div>

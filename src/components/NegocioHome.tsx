@@ -257,3 +257,4 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     </div>
   );
 }
+
