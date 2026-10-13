@@ -780,7 +780,7 @@ async function editarCliente(e: React.FormEvent) {
                 <div key={p.plan} className={"rounded-2xl border-2 p-5 " + p.color}>
       <button
         onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login'; }}
-        className="fixed top-4 right-4 z-50 bg-stone-900 hover:bg-stone-700 text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition shadow-lg ring-1 ring-stone-600"
+        className="fixed top-4 right-4 z-50 bg-amber-400 hover:bg-amber-300 text-stone-900 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-lg"
       >
         <LogOut className="w-4 h-4" /> Cerrar Sesión
       </button>
@@ -1645,6 +1645,7 @@ async function editarCliente(e: React.FormEvent) {
 
 
 // Deploy forzado: 2026-08-11 14:13:26
+
 
 
 
