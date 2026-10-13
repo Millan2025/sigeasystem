@@ -27,7 +27,8 @@ import {
   TrendingUp,
 
   Rocket,
-, LogOut } from "lucide-react";
+  LogOut,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 // ============================================
@@ -1644,4 +1645,5 @@ async function editarCliente(e: React.FormEvent) {
 
 
 // Deploy forzado: 2026-08-11 14:13:26
+
 
