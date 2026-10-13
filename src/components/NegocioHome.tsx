@@ -3,11 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { NEGOCIOS } from "@/config/negocios";
-import { 
-  ShoppingCart, Package, TrendingUp, Users, Truck, BarChart3, 
-  ShoppingBag, Receipt, Megaphone, Armchair, Gamepad2, FileText, 
-  Heart, BookOpen, Lightbulb, Share2, Copy, LogOut, User, Settings, Bell 
-} from "lucide-react";
+import { Armchair, BarChart3, Bell, BookOpen, Copy, FileText, Gamepad2, Heart, Lightbulb, LogOut, Mail, MapPin, Megaphone, Package, Phone, Receipt, Settings, Share2, ShoppingBag, ShoppingCart, TrendingUp, Truck, User, Users } from 'lucide-react';
 import PageHeader from "./PageHeader";
 import OfflineBanner from "./OfflineBanner";
 import NotificationBell from "./NotificationBell";
@@ -118,6 +114,8 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     { id: "sugerencias", label: "Mejoras y Sugerencias", icon: Lightbulb, color: "bg-violet-50 border-2 border-violet-600 text-violet-700 shadow-lg", href: "#sugerencias", esEspecial: true },
   ];
 
+    const brandHex = (() => { const c = config?.color_principal || '#fdb813'; return c.startsWith('#') ? c : '#' + c; })();
+  const brandHex2 = (() => { const c = config?.color_secundario || config?.color_principal || '#e8a800'; return c.startsWith('#') ? c : '#' + c; })();
   const totalVentas = ventasDia.reduce((sum: number, v: any) => sum + Number(v.total || 0), 0);
   const totalTransacciones = ventasDia.length;
 
@@ -141,57 +139,101 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
   return (
     <div className="min-h-screen bg-stone-50">
       <OfflineBanner />
-      <PageHeader 
-        negocioSlug={negocioSlug} 
-        titulo={config?.nombre_negocio || negocio?.titulo || "Mi Negocio"} 
-        icono="🏠" 
-        subtitulo="Dashboard Principal" 
-        tenantId={tenantId} 
-      />
+      {/* ENCABEZADO INSTITUCIONAL UNIFICADO */}
+      <header
+        className="relative text-white shadow-xl"
+        style={{ background: `linear-gradient(135deg, ${brandHex} 0%, ${brandHex2} 100%)` }}
+      >
+        <div className="max-w-7xl mx-auto px-4 pt-6 pb-8 text-center relative">
+          <button
+            onClick={cerrarSesion}
+            className="absolute top-4 right-4 bg-black/25 hover:bg-black/40 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
+          >
+            <LogOut className="w-4 h-4" /> Cerrar Sesión
+          </button>
+
+          {config?.logo_url ? (
+            <img
+              src={config.logo_url}
+              alt={config?.nombre_negocio || 'Logo'}
+              className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-2xl object-contain bg-white p-2 shadow-2xl mb-4"
+            />
+          ) : (
+            <div
+              className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-2xl bg-white flex items-center justify-center text-6xl font-extrabold shadow-2xl mb-4"
+              style={{ color: brandHex }}
+            >
+              {(config?.nombre_negocio || 'MI NEGOCIO').charAt(0)}
+            </div>
+          )}
+
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">
+            {config?.nombre_negocio || 'Mi Negocio'}
+          </h1>
+          {config?.slogan && (
+            <p className="text-base md:text-xl italic opacity-95 mt-2 drop-shadow">{config.slogan}</p>
+          )}
+
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-5 text-xs md:text-sm font-medium">
+            {config?.direccion && (
+              <span className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2"><MapPin className="w-4 h-4" /> {config.direccion}</span>
+            )}
+            {config?.telefono && (
+              <span className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2"><Phone className="w-4 h-4" /> {config.telefono}</span>
+            )}
+            {config?.correo_contacto && (
+              <span className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2"><Mail className="w-4 h-4" /> {config.correo_contacto}</span>
+            )}
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3 mt-7 text-left">
+            <div className="bg-white/95 rounded-2xl p-4 shadow-lg">
+              <p className="font-bold text-stone-800 text-sm mb-1 flex items-center gap-2"><ShoppingCart className="w-4 h-4" style={{ color: brandHex }} /> Enlace de Ventas (POS)</p>
+              <p className="text-[11px] text-stone-500 break-all mb-2">{'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/pos?tenant=' + tenantId); setCopiado('pos'); }}
+                  className="flex-1 text-white text-xs font-bold py-2 rounded-xl transition hover:opacity-90"
+                  style={{ backgroundColor: brandHex }}
+                >
+                  {copiado === 'pos' ? '✅ Copiado' : 'Copiar enlace'}
+                </button>
+                <a
+                  href={'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}
+                  target="_blank"
+                  className="flex-1 bg-stone-100 border border-stone-300 text-stone-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-stone-200"
+                >
+                  Abrir POS
+                </a>
+              </div>
+            </div>
+            <div className="bg-white/95 rounded-2xl p-4 shadow-lg">
+              <p className="font-bold text-stone-800 text-sm mb-1 flex items-center gap-2"><Truck className="w-4 h-4" style={{ color: brandHex }} /> Enlace de Domicilios (Tienda)</p>
+              <p className="text-[11px] text-stone-500 break-all mb-2">{'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId); setCopiado('tienda'); }}
+                  className="flex-1 text-white text-xs font-bold py-2 rounded-xl transition hover:opacity-90"
+                  style={{ backgroundColor: brandHex }}
+                >
+                  {copiado === 'tienda' ? '✅ Copiado' : 'Copiar enlace'}
+                </button>
+                <a
+                  href={'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}
+                  target="_blank"
+                  className="flex-1 bg-stone-100 border border-stone-300 text-stone-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-stone-200"
+                >
+                  Abrir Tienda
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        <div className="flex justify-end">
-          <button onClick={cerrarSesion} className="bg-stone-900 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-stone-800">
-            <LogOut className="w-4 h-4" /> Cerrar Sesion
-          </button>
-        </div>
-              {/* HERO PAGINA CERO */}
-      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6 text-center">
-        {config?.logo_url ? (
-          <img src={config.logo_url} alt="logo" className="w-28 h-28 mx-auto rounded-2xl object-contain mb-3" />
-        ) : (
-          <div className="w-28 h-28 mx-auto rounded-2xl bg-gradient-to-br from-[#fdb813] to-[#e8a800] flex items-center justify-center text-5xl font-extrabold text-stone-900 mb-3">
-            {(config?.nombre_negocio || 'MI NEGOCIO').charAt(0)}
-          </div>
-        )}
-        <h1 className="text-3xl font-extrabold text-stone-900">{config?.nombre_negocio || 'Mi Negocio'}</h1>
-        {config?.slogan && <p className="text-stone-500 italic mt-1">{config.slogan}</p>}
-        <div className="flex flex-wrap justify-center gap-2 mt-3 text-xs text-stone-600">
-          {config?.direccion && <span className="bg-stone-100 px-3 py-1 rounded-full">📍 {config.direccion}</span>}
-          {config?.telefono && <span className="bg-stone-100 px-3 py-1 rounded-full">📞 {config.telefono}</span>}
-          {config?.correo_contacto && <span className="bg-stone-100 px-3 py-1 rounded-full">✉️ {config.correo_contacto}</span>}
-        </div>
-        <div className="grid sm:grid-cols-2 gap-3 mt-5 text-left">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-            <p className="font-bold text-emerald-800 text-sm mb-2">🛒 Enlace de Ventas (POS)</p>
-            <p className="text-[11px] text-emerald-700 break-all mb-2">{'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}</p>
-            <div className="flex gap-2">
-              <button onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/pos?tenant=' + tenantId); setCopiado('pos'); }} className="flex-1 bg-emerald-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-emerald-700">{copiado === 'pos' ? '✅ Copiado' : 'Copiar'}</button>
-              <a href={'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId} target="_blank" className="flex-1 bg-white border border-emerald-300 text-emerald-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-emerald-100">Abrir</a>
-            </div>
-          </div>
-          <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4">
-            <p className="font-bold text-sky-800 text-sm mb-2">🛵 Enlace de Domicilios (Tienda)</p>
-            <p className="text-[11px] text-sky-700 break-all mb-2">{'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}</p>
-            <div className="flex gap-2">
-              <button onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId); setCopiado('tienda'); }} className="flex-1 bg-sky-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-sky-700">{copiado === 'tienda' ? '✅ Copiado' : 'Copiar'}</button>
-              <a href={'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId} target="_blank" className="flex-1 bg-white border border-sky-300 text-sky-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-sky-100">Abrir</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Métricas del Día */}
-        <div className="bg-gradient-to-br from-[#fdb813] to-[#e8a800] rounded-2xl p-6 text-stone-900 shadow-lg">
+        {/* Métricas del Día */}
+        <div className="bg-white rounded-2xl p-6 text-stone-900 shadow-sm border border-stone-200" style={{ borderLeft: `6px solid ${brandHex}` }}>
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">💰 Ventas del Día</h2>
           <p className="text-5xl font-extrabold mb-2">${totalVentas.toLocaleString("es-CO")}</p>
           <p className="text-stone-800 font-medium">
@@ -229,55 +271,22 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
                   key={m.id}
                   href={m.href}
                   onClick={handleClick}
-                  className={`${m.color} rounded-2xl p-4 hover:scale-[1.02] transition-all duration-300 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-xl active:scale-95 ${esEspecial ? 'ring-2 ring-offset-2 ring-cyan-400/50' : ''}`}
+                  className="group bg-white rounded-2xl border border-stone-200 p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95"
                 >
-                  <Icon className="w-8 h-8" />
-                  <span className="text-sm font-bold text-center leading-tight">{m.label}</span>
+                  <span
+                    className="w-14 h-14 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110"
+                    style={{ backgroundColor: brandHex + '1A', color: brandHex }}
+                  >
+                    <Icon className="w-7 h-7" strokeWidth={2.2} />
+                  </span>
+                  <span className="text-sm font-bold text-stone-800 text-center leading-tight">{m.label}</span>
                 </a>
               );
             })}
           </div>
         </div>
 
-        {/* Compartir Enlaces */}
-        <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm">
-          <h3 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">🔗 Compartir Enlaces</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-stone-50 rounded-xl p-4 border border-stone-200">
-              <p className="text-sm font-semibold text-stone-600 mb-2">Enlace del POS (para cajeros)</p>
-              <div className="flex gap-2">
-                <input 
-                  readOnly 
-                  value={`${window.location.origin}${prefix}/pos?tenant=${tenantId}`} 
-                  className="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-600"
-                />
-                <button 
-                  onClick={() => navigator.clipboard.writeText(`${window.location.origin}${prefix}/pos?tenant=${tenantId}`)}
-                  className="bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-stone-800 flex items-center gap-2"
-                >
-                  <Copy className="w-4 h-4" /> Copiar
-                </button>
               </div>
-            </div>
-            <div className="bg-stone-50 rounded-xl p-4 border border-stone-200">
-              <p className="text-sm font-semibold text-stone-600 mb-2">Enlace de la Tienda (para clientes)</p>
-              <div className="flex gap-2">
-                <input 
-                  readOnly 
-                  value={`${window.location.origin}${prefix}/tienda?tenant=${tenantId}`} 
-                  className="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-600"
-                />
-                <button 
-                  onClick={() => navigator.clipboard.writeText(`${window.location.origin}${prefix}/tienda?tenant=${tenantId}`)}
-                  className="bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-stone-800 flex items-center gap-2"
-                >
-                  <Copy className="w-4 h-4" /> Copiar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Modal de Guía Paso a Paso */}
       {showGuiaPasoAPaso && (
@@ -298,6 +307,8 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     </div>
   );
 }
+
+
 
 
 
