@@ -41,6 +41,7 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
   const [showCredModal, setShowCredModal] = useState(false);
   const [showGuiaPasoAPaso, setShowGuiaPasoAPaso] = useState(false);
   const [showSugerencias, setShowSugerencias] = useState(false);
+  const [copiado, setCopiado] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Cargar configuración y ventas del día
@@ -154,7 +155,42 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
             <LogOut className="w-4 h-4" /> Cerrar Sesion
           </button>
         </div>
-        {/* Métricas del Día */}
+              {/* HERO PAGINA CERO */}
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6 text-center">
+        {config?.logo_url ? (
+          <img src={config.logo_url} alt="logo" className="w-28 h-28 mx-auto rounded-2xl object-contain mb-3" />
+        ) : (
+          <div className="w-28 h-28 mx-auto rounded-2xl bg-gradient-to-br from-[#fdb813] to-[#e8a800] flex items-center justify-center text-5xl font-extrabold text-stone-900 mb-3">
+            {(config?.nombre_negocio || 'MI NEGOCIO').charAt(0)}
+          </div>
+        )}
+        <h1 className="text-3xl font-extrabold text-stone-900">{config?.nombre_negocio || 'Mi Negocio'}</h1>
+        {config?.slogan && <p className="text-stone-500 italic mt-1">{config.slogan}</p>}
+        <div className="flex flex-wrap justify-center gap-2 mt-3 text-xs text-stone-600">
+          {config?.direccion && <span className="bg-stone-100 px-3 py-1 rounded-full">📍 {config.direccion}</span>}
+          {config?.telefono && <span className="bg-stone-100 px-3 py-1 rounded-full">📞 {config.telefono}</span>}
+          {config?.correo_contacto && <span className="bg-stone-100 px-3 py-1 rounded-full">✉️ {config.correo_contacto}</span>}
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3 mt-5 text-left">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+            <p className="font-bold text-emerald-800 text-sm mb-2">🛒 Enlace de Ventas (POS)</p>
+            <p className="text-[11px] text-emerald-700 break-all mb-2">{'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}</p>
+            <div className="flex gap-2">
+              <button onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/pos?tenant=' + tenantId); setCopiado('pos'); }} className="flex-1 bg-emerald-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-emerald-700">{copiado === 'pos' ? '✅ Copiado' : 'Copiar'}</button>
+              <a href={'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId} target="_blank" className="flex-1 bg-white border border-emerald-300 text-emerald-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-emerald-100">Abrir</a>
+            </div>
+          </div>
+          <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4">
+            <p className="font-bold text-sky-800 text-sm mb-2">🛵 Enlace de Domicilios (Tienda)</p>
+            <p className="text-[11px] text-sky-700 break-all mb-2">{'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}</p>
+            <div className="flex gap-2">
+              <button onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId); setCopiado('tienda'); }} className="flex-1 bg-sky-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-sky-700">{copiado === 'tienda' ? '✅ Copiado' : 'Copiar'}</button>
+              <a href={'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId} target="_blank" className="flex-1 bg-white border border-sky-300 text-sky-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-sky-100">Abrir</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Métricas del Día */}
         <div className="bg-gradient-to-br from-[#fdb813] to-[#e8a800] rounded-2xl p-6 text-stone-900 shadow-lg">
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">💰 Ventas del Día</h2>
           <p className="text-5xl font-extrabold mb-2">${totalVentas.toLocaleString("es-CO")}</p>
@@ -262,5 +298,6 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     </div>
   );
 }
+
 
 
