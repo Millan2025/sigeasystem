@@ -140,88 +140,81 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     <div className="min-h-screen bg-stone-50">
       <OfflineBanner />
       {/* ENCABEZADO INSTITUCIONAL UNIFICADO */}
-      <header
-        className="relative text-white shadow-xl"
-        style={{ background: `linear-gradient(135deg, ${brandHex} 0%, ${brandHex2} 100%)` }}
-      >
-        <div className="max-w-7xl mx-auto px-4 pt-6 pb-8 text-center relative">
+      <header className="relative text-white overflow-hidden" style={{ background: `linear-gradient(140deg, ${brandHex} 0%, ${brandHex2} 100%)` }}>
+        <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="max-w-6xl mx-auto px-4 pt-8 pb-10 md:pt-10 md:pb-12 text-center relative">
           <button
             onClick={cerrarSesion}
-            className="absolute top-4 right-4 bg-black/25 hover:bg-black/40 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-md ring-1 ring-white/25 text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition"
           >
             <LogOut className="w-4 h-4" /> Cerrar Sesión
           </button>
-
-          {config?.logo_url ? (
-            <img
-              src={config.logo_url}
-              alt={config?.nombre_negocio || 'Logo'}
-              className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-2xl object-contain bg-white p-2 shadow-2xl mb-4"
-            />
-          ) : (
-            <div
-              className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-2xl bg-white flex items-center justify-center text-6xl font-extrabold shadow-2xl mb-4"
-              style={{ color: brandHex }}
-            >
-              {(config?.nombre_negocio || 'MI NEGOCIO').charAt(0)}
-            </div>
-          )}
-
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">
+          <div className="relative inline-block mb-5">
+            {config?.logo_url ? (
+              <img
+                src={config.logo_url}
+                alt={config?.nombre_negocio || 'Logo'}
+                className="w-32 h-32 md:w-40 md:h-40 object-contain rounded-[2.2rem] ring-1 ring-white/30 shadow-2xl shadow-black/25"
+              />
+            ) : (
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.2rem] bg-white/15 backdrop-blur-md ring-1 ring-white/30 flex items-center justify-center text-6xl font-extrabold shadow-2xl">
+                {(config?.nombre_negocio || 'MI NEGOCIO').charAt(0)}
+              </div>
+            )}
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-sm">
             {config?.nombre_negocio || 'Mi Negocio'}
           </h1>
           {config?.slogan && (
-            <p className="text-base md:text-xl italic opacity-95 mt-2 drop-shadow">{config.slogan}</p>
+            <p className="mt-3 text-xs md:text-sm uppercase tracking-[0.25em] text-white/80 font-medium">{config.slogan}</p>
           )}
-
-          <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-5 text-xs md:text-sm font-medium">
+          <div className="flex flex-wrap justify-center gap-2 mt-6 text-xs font-medium text-white/90">
             {config?.direccion && (
-              <span className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2"><MapPin className="w-4 h-4" /> {config.direccion}</span>
+              <span className="bg-white/10 backdrop-blur-md ring-1 ring-white/20 rounded-full px-4 py-1.5 flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> {config.direccion}</span>
             )}
             {config?.telefono && (
-              <span className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2"><Phone className="w-4 h-4" /> {config.telefono}</span>
+              <span className="bg-white/10 backdrop-blur-md ring-1 ring-white/20 rounded-full px-4 py-1.5 flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> {config.telefono}</span>
             )}
             {config?.correo_contacto && (
-              <span className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2"><Mail className="w-4 h-4" /> {config.correo_contacto}</span>
+              <span className="bg-white/10 backdrop-blur-md ring-1 ring-white/20 rounded-full px-4 py-1.5 flex items-center gap-2"><Mail className="w-3.5 h-3.5" /> {config.correo_contacto}</span>
             )}
           </div>
-
-          <div className="grid sm:grid-cols-2 gap-3 mt-7 text-left">
-            <div className="bg-white/95 rounded-2xl p-4 shadow-lg">
-              <p className="font-bold text-stone-800 text-sm mb-1 flex items-center gap-2"><ShoppingCart className="w-4 h-4" style={{ color: brandHex }} /> Enlace de Ventas (POS)</p>
-              <p className="text-[11px] text-stone-500 break-all mb-2">{'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}</p>
+          <div className="grid sm:grid-cols-2 gap-3 mt-8 text-left max-w-3xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md ring-1 ring-white/20 rounded-2xl p-4">
+              <p className="font-semibold text-white text-sm mb-1 flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Enlace de Ventas (POS)</p>
+              <p className="text-[11px] text-white/60 break-all mb-3">{'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/pos?tenant=' + tenantId); setCopiado('pos'); }}
-                  className="flex-1 text-white text-xs font-bold py-2 rounded-xl transition hover:opacity-90"
-                  style={{ backgroundColor: brandHex }}
+                  className="flex-1 bg-white text-xs font-bold py-2 rounded-xl transition hover:opacity-90"
+                  style={{ color: brandHex }}
                 >
                   {copiado === 'pos' ? '✅ Copiado' : 'Copiar enlace'}
                 </button>
                 <a
                   href={'/' + (negocioSlug || '') + '/pos?tenant=' + tenantId}
                   target="_blank"
-                  className="flex-1 bg-stone-100 border border-stone-300 text-stone-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-stone-200"
+                  className="flex-1 ring-1 ring-white/30 text-white text-xs font-bold py-2 rounded-xl text-center hover:bg-white/10 transition"
                 >
                   Abrir POS
                 </a>
               </div>
             </div>
-            <div className="bg-white/95 rounded-2xl p-4 shadow-lg">
-              <p className="font-bold text-stone-800 text-sm mb-1 flex items-center gap-2"><Truck className="w-4 h-4" style={{ color: brandHex }} /> Enlace de Domicilios (Tienda)</p>
-              <p className="text-[11px] text-stone-500 break-all mb-2">{'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}</p>
+            <div className="bg-white/10 backdrop-blur-md ring-1 ring-white/20 rounded-2xl p-4">
+              <p className="font-semibold text-white text-sm mb-1 flex items-center gap-2"><Truck className="w-4 h-4" /> Enlace de Domicilios (Tienda)</p>
+              <p className="text-[11px] text-white/60 break-all mb-3">{'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => { navigator.clipboard.writeText(window.location.origin + '/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId); setCopiado('tienda'); }}
-                  className="flex-1 text-white text-xs font-bold py-2 rounded-xl transition hover:opacity-90"
-                  style={{ backgroundColor: brandHex }}
+                  className="flex-1 bg-white text-xs font-bold py-2 rounded-xl transition hover:opacity-90"
+                  style={{ color: brandHex }}
                 >
                   {copiado === 'tienda' ? '✅ Copiado' : 'Copiar enlace'}
                 </button>
                 <a
                   href={'/' + (negocioSlug || '') + '/tienda?tenant=' + tenantId}
                   target="_blank"
-                  className="flex-1 bg-stone-100 border border-stone-300 text-stone-700 text-xs font-bold py-2 rounded-xl text-center hover:bg-stone-200"
+                  className="flex-1 ring-1 ring-white/30 text-white text-xs font-bold py-2 rounded-xl text-center hover:bg-white/10 transition"
                 >
                   Abrir Tienda
                 </a>
@@ -232,7 +225,7 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
       </header>
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Métricas del Día */}
+{/* Métricas del Día */}
         <div className="bg-white rounded-2xl p-6 text-stone-900 shadow-sm border border-stone-200" style={{ borderLeft: `6px solid ${brandHex}` }}>
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">💰 Ventas del Día</h2>
           <p className="text-5xl font-extrabold mb-2">${totalVentas.toLocaleString("es-CO")}</p>
@@ -271,15 +264,15 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
                   key={m.id}
                   href={m.href}
                   onClick={handleClick}
-                  className="group bg-white rounded-2xl border border-stone-200 p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 active:scale-95"
+                  className="group bg-white rounded-2xl border border-stone-200/70 p-5 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
                 >
                   <span
-                    className="w-14 h-14 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
                     style={{ backgroundColor: brandHex + '1A', color: brandHex }}
                   >
-                    <Icon className="w-7 h-7" strokeWidth={2.2} />
+                    <Icon className="w-6 h-6" strokeWidth={2} />
                   </span>
-                  <span className="text-sm font-bold text-stone-800 text-center leading-tight">{m.label}</span>
+                  <span className="text-[13px] font-semibold text-stone-700 text-center leading-tight">{m.label}</span>
                 </a>
               );
             })}
@@ -307,6 +300,7 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     </div>
   );
 }
+
 
 
 
