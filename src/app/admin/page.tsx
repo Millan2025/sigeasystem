@@ -478,12 +478,12 @@ async function editarCliente(e: React.FormEvent) {
       </div>
       {showCred && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+          <div className="bg-white text-stone-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
             <h3 className="text-lg font-extrabold text-stone-900 mb-1">Editar Credenciales</h3>
             <p className="text-xs text-stone-500 mb-4">Admin Master: cambia tu contraseña o correo de acceso</p>
-            <input id="cred-pass" type="password" placeholder="Nueva contraseña (min 8, mayuscula y numero)" className="w-full border-2 border-stone-300 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
-            <input id="cred-pass2" type="password" placeholder="Confirmar nueva contraseña" className="w-full border-2 border-stone-300 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
-            <input id="cred-email" type="email" placeholder="Nuevo correo (opcional)" className="w-full border-2 border-stone-300 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
+            <input id="cred-pass" type="password" placeholder="Nueva contraseña (min 8, mayuscula y numero)" className="w-full border-2 border-stone-300 bg-white text-stone-900 placeholder-stone-400 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
+            <input id="cred-pass2" type="password" placeholder="Confirmar nueva contraseña" className="w-full border-2 border-stone-300 bg-white text-stone-900 placeholder-stone-400 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
+            <input id="cred-email" type="email" placeholder="Nuevo correo (opcional)" className="w-full border-2 border-stone-300 bg-white text-stone-900 placeholder-stone-400 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
             {credMsg && <p className="text-xs font-semibold mb-2 text-red-600">{credMsg}</p>}
             <div className="flex gap-2 mt-2">
               <button onClick={() => { setShowCred(false); setCredMsg(''); }} className="flex-1 border-2 border-stone-300 rounded-xl py-2 text-sm font-bold text-stone-700 hover:bg-stone-50">Cancelar</button>
@@ -1694,6 +1694,7 @@ async function editarCliente(e: React.FormEvent) {
 
 
 // Deploy forzado: 2026-08-11 14:13:26
+
 
 
 
