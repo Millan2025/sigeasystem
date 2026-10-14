@@ -9,6 +9,7 @@ import OfflineBanner from "./OfflineBanner";
 import NotificationBell from "./NotificationBell";
 import GuiaPasoAPaso from "./GuiaPasoAPaso";
 import SugerenciasMejoras from "./SugerenciasMejoras";
+import CentroAyuda from "./CentroAyuda";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,6 +38,7 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
   const [showCredModal, setShowCredModal] = useState(false);
   const [showGuiaPasoAPaso, setShowGuiaPasoAPaso] = useState(false);
   const [showSugerencias, setShowSugerencias] = useState(false);
+  const [showCentroAyuda, setShowCentroAyuda] = useState(false);
   const [copiado, setCopiado] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -143,12 +145,20 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
       <header className="relative text-white overflow-hidden" style={{ background: `linear-gradient(140deg, ${brandHex} 0%, ${brandHex2} 100%)` }}>
         <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 pt-8 pb-10 md:pt-10 md:pb-12 text-center relative">
-          <button
-            onClick={cerrarSesion}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-md ring-1 ring-white/25 text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition"
-          >
-            <LogOut className="w-4 h-4" /> Cerrar Sesión
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={() => setShowCentroAyuda(true)}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md ring-1 ring-white/25 text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition"
+            >
+              <BookOpen className="w-4 h-4" /> Ayuda
+            </button>
+            <button
+              onClick={cerrarSesion}
+              className="bg-amber-400 hover:bg-amber-300 text-stone-900 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-lg"
+            >
+              <LogOut className="w-4 h-4" /> Cerrar Sesión
+            </button>
+          </div>
           <div className="relative inline-block mb-5">
             {config?.logo_url ? (
               <img
@@ -290,6 +300,11 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
         />
       )}
 
+      {/* Modal del Centro de Ayuda */}
+      {showCentroAyuda && (
+        <CentroAyuda onClose={() => setShowCentroAyuda(false)} />
+      )}
+
       {/* Modal de Sugerencias y Mejoras */}
       {showSugerencias && (
         <SugerenciasMejoras
@@ -300,6 +315,7 @@ export default function NegocioHome({ negocioSlug: propSlug, tenantId: propTenan
     </div>
   );
 }
+
 
 
 

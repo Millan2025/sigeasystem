@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Package, ShoppingBag, Armchair, ShoppingCart, Megaphone, CheckCircle2, ChevronRight, ChevronLeft, X, Sparkles, Lightbulb } from "lucide-react";
+import { Package, ShoppingBag, Armchair, ShoppingCart, Megaphone, CheckCircle2, ChevronRight, ChevronLeft, X, Sparkles, Lightbulb, BookOpen } from "lucide-react";
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
@@ -9,6 +9,7 @@ interface GuiaPasoAPasoProps {
   tenantId: string;
   negocioNombre?: string;
   onClose: () => void;
+  onOpenCentroAyuda?: () => void;
 }
 
 type ModuloId = "inicio" | "inventario" | "compras" | "mesas" | "pos" | "marketing" | "final";
@@ -66,7 +67,7 @@ const GUIAS: Record<ModuloId, GuiaModulo> = {
 
 const ORDEN_MODULOS: ModuloId[] = ["inicio", "inventario", "compras", "mesas", "pos", "marketing", "final"];
 
-export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: GuiaPasoAPasoProps) {
+export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose, onOpenCentroAyuda }: GuiaPasoAPasoProps) {
   const [moduloActual, setModuloActual] = useState<ModuloId>("inicio");
   const [pasoActual, setPasoActual] = useState(0);
   const [progresoCompletado, setProgresoCompletado] = useState<Set<string>>(new Set());
@@ -159,9 +160,14 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
             <p className="text-base opacity-95">Tu negocio está listo para brillar.</p>
           </div>
           <div className="p-5">
-            <button onClick={onClose} className="w-full py-3 bg-gradient-to-r from-stone-800 to-stone-900 text-white rounded-xl font-extrabold flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-95">
-              Ir al Dashboard 🏠
-            </button>
+            <div className="flex gap-2">
+              <button onClick={() => { onClose(); if (onOpenCentroAyuda) onOpenCentroAyuda(); }} className="flex-1 py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-extrabold flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-95 text-sm">
+                <BookOpen className="w-5 h-5" /> Centro de Ayuda
+              </button>
+              <button onClick={onClose} className="flex-1 py-3 bg-gradient-to-r from-stone-800 to-stone-900 text-white rounded-xl font-extrabold flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-95 text-sm">
+                Ir al Dashboard
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -223,3 +229,4 @@ export default function GuiaPasoAPaso({ tenantId, negocioNombre, onClose }: Guia
     </div>
   );
 }
+
