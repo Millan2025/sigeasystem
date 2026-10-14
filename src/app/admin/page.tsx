@@ -81,6 +81,8 @@ export default function AdminMasterPage() {
   const [busqueda, setBusqueda] = useState("");
   const [copied, setCopied] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [showCred, setShowCred] = useState(false);
+  const [credMsg, setCredMsg] = useState('');
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [clienteDetalle, setClienteDetalle] = useState<Cliente | null>(null);
@@ -460,6 +462,59 @@ async function editarCliente(e: React.FormEvent) {
   // ============================================
   return (
     <div className="min-h-screen bg-stone-50">
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <button
+          onClick={() => setShowCred(true)}
+          className="bg-white/10 hover:bg-white/20 backdrop-blur-md ring-1 ring-white/25 text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition shadow-lg"
+        >
+          <UserCog className="w-4 h-4" /> Credenciales
+        </button>
+        <button
+          onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login'; }}
+          className="bg-amber-400 hover:bg-amber-300 text-stone-900 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-lg"
+        >
+          <LogOut className="w-4 h-4" /> Cerrar Sesión
+        </button>
+      </div>
+      {showCred && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <h3 className="text-lg font-extrabold text-stone-900 mb-1">Editar Credenciales</h3>
+            <p className="text-xs text-stone-500 mb-4">Admin Master: cambia tu contraseña o correo de acceso</p>
+            <input id="cred-pass" type="password" placeholder="Nueva contraseña (min 8, mayuscula y numero)" className="w-full border-2 border-stone-300 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
+            <input id="cred-pass2" type="password" placeholder="Confirmar nueva contraseña" className="w-full border-2 border-stone-300 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
+            <input id="cred-email" type="email" placeholder="Nuevo correo (opcional)" className="w-full border-2 border-stone-300 rounded-xl px-3 py-2 mb-2 text-sm outline-none focus:border-amber-400" />
+            {credMsg && <p className="text-xs font-semibold mb-2 text-red-600">{credMsg}</p>}
+            <div className="flex gap-2 mt-2">
+              <button onClick={() => { setShowCred(false); setCredMsg(''); }} className="flex-1 border-2 border-stone-300 rounded-xl py-2 text-sm font-bold text-stone-700 hover:bg-stone-50">Cancelar</button>
+              <button
+                onClick={async () => {
+                  const pass = (document.getElementById('cred-pass') as HTMLInputElement).value;
+                  const pass2 = (document.getElementById('cred-pass2') as HTMLInputElement).value;
+                  const mail = (document.getElementById('cred-email') as HTMLInputElement).value;
+                  if (!pass && !mail) { setCredMsg('Ingresa al menos un cambio'); return; }
+                  if (pass) {
+                    if (pass.length < 8 || !/[A-Z]/.test(pass) || !/\d/.test(pass)) { setCredMsg('Min 8 caracteres, una mayuscula y un numero'); return; }
+                    if (pass !== pass2) { setCredMsg('La confirmacion no coincide'); return; }
+                  }
+                  const updates: any = {};
+                  if (pass) updates.password = pass;
+                  if (mail) updates.email = mail;
+                  const { error } = await supabase.auth.updateUser(updates);
+                  if (error) { setCredMsg(error.message); return; }
+                  setShowCred(false);
+                  setCredMsg('');
+                  await supabase.auth.signOut();
+                  window.location.href = '/login';
+                }}
+                className="flex-1 bg-stone-900 text-white rounded-xl py-2 text-sm font-bold hover:bg-stone-700"
+              >
+                Guardar y salir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="bg-gradient-to-r from-stone-900 to-stone-800 text-white p-5">
         <div className="flex items-center gap-3 mb-2">
           <Link href="/" className="p-2 hover:bg-white/10 rounded-xl">
@@ -778,12 +833,6 @@ async function editarCliente(e: React.FormEvent) {
               const count = clientes.filter((c) => c.plan === p.plan).length;
               return (
                 <div key={p.plan} className={"rounded-2xl border-2 p-5 " + p.color}>
-      <button
-        onClick={async () => { await supabase.auth.signOut(); window.location.href = '/login'; }}
-        className="fixed top-4 right-4 z-50 bg-amber-400 hover:bg-amber-300 text-stone-900 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-lg"
-      >
-        <LogOut className="w-4 h-4" /> Cerrar Sesión
-      </button>
 
                   <div className="flex justify-between">
                     <div>
